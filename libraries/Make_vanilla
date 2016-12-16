@@ -1,0 +1,29 @@
+# ------------------------------------------------------------------
+# Scalar processor compilation for library routines
+# Should work for all architectures with a suitable CFLAGS and CC
+
+# The "fast" variants of the code explicitly unroll loops and inline
+
+MAKEFILE = Make_vanilla
+
+CC       = gcc
+OPT      = -O3    # Keep optimization by itself to omit below
+OCFLAGS  = -Wall
+CODETYPE = # -DFAST # Only works if NCOL = DIMF = 3
+AR       = ar
+
+# Also check include/config.h
+# ------------------------------------------------------------------
+
+
+
+# ------------------------------------------------------------------
+# Complete set of compiler flags - do not change
+CFLAGS = ${OPT} ${OCFLAGS} ${CODETYPE}
+
+# Compile prefetching with no optimization
+prefetch.o: prefetch.c
+	${CC} ${OCFLAGS} -c prefetch.c
+
+include Make_template
+# ------------------------------------------------------------------

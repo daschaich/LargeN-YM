@@ -1,0 +1,42 @@
+#  Generic routines for Wilson fermions
+#  MIMD version 6
+#
+#  Generic make-include file for generic_wilson codes
+#  This template file defines rules and macros common to all applications
+#  It is intended to be an include file for other Makefiles.
+#  Don't use it by itself!
+#
+#  The paths are relative to the application directory.
+
+G_NHYP_ALL =  \
+  block_nhyp.o \
+  nhyp.o
+
+# Must list our headers in generic_nhyp_includes.h
+G_NHYP_HEADERS = \
+  ../include/config.h \
+  ../include/complex.h \
+  ../include/su3.h \
+  ../include/macros.h \
+  ../include/comdefs.h \
+  ../include/generic.h \
+  ../include/generic_quark_types.h \
+  ../include/generic_nhyp.h \
+  lattice.h
+
+G_NHYP_ALL_DEPEND = \
+  ../generic_nhyp/generic_nhyp_includes.h \
+  ../generic_nhyp/Make_template \
+  ../include \
+  ${LASTMAKE} \
+  ${G_NHYP_HEADERS}
+
+${G_NHYP_ALL}: ${G_NHYP_ALL_DEPEND}
+
+block_nhyp.o: ../generic_nhyp/block_nhyp.c
+	${CC} -c ${CFLAGS} $<
+
+
+nhyp.o: ../generic_nhyp/nhyp.c ../generic_nhyp/nhyp_SU2.c ../generic_nhyp/nhyp_SU3.c ../generic_nhyp/nhyp_SU4.c ../generic_nhyp/Power.h
+	${CC} -c ${CFLAGS} ../generic_nhyp/nhyp.c
+

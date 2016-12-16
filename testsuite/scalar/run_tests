@@ -1,0 +1,62 @@
+#!/bin/bash
+# This script needs to be run from the testsuite/scalar directory
+
+# Require user to specify both directory and target
+if [ $# -lt 4 ]; then
+  echo "Try these:"
+  echo "./run_tests clover_hmc hmc 3 3 fundamental"
+  echo "./run_tests clover_hmc hmc 3 6 symmetric2"
+  echo "./run_tests clover_hmc hmc 4 4 fundamental"
+  echo "./run_tests clover_hmc hmc 4 6 antisymmetric2"
+  exit 0
+fi
+
+dir=$1
+target=$2
+N=$3
+DIMF=$4
+rep=$5
+
+if [[ "$rep" == "fundamental" ]] ; then
+  tag='F'
+elif [[ "$rep" == "symmetric2" ]] ; then
+  tag='S'
+elif [[ "$rep" == "antisymmetric2" ]] ; then
+  tag='A'
+else
+  echo "Error: Unrecognized rep $rep"
+  exit 1
+fi
+
+# Change N and rep
+# TODO: Also need different fermion_rep_*.o in $dir/Make_template
+cd ../../include/
+awk -v"X=#define NCOL $N" '{sub(/^#define NCOL .*/,X);print}' su3.h > TEMP && mv TEMP su3.h
+awk -v"X=#define DIMF $DIMF" '{sub(/^#define DIMF .*/,X);print}' su3.h > TEMP && mv TEMP su3.h
+awk -v"X=#define FREP $rep" '{sub(/^#define FREP .*/,X);print}' su3.h > TEMP && mv TEMP su3.h
+
+# Compile
+cd ../$dir/
+echo "Compiling su3_$target..."
+if ! make -f Make_scalar su3_$target >& /dev/null ; then
+  echo "ERROR: su3_$target compilation failed"
+  make -f Make_scalar su3_$target
+  exit
+fi
+
+# Run
+cd ../testsuite/
+rm -f scalar/$target.$N$tag.out
+echo "Running su3_$target..."
+../$dir/su3_$target < in.$N$tag.$target > scalar/$target.$N$tag.out
+
+# Check
+cd scalar/
+d="`diff -I'Time' -I'time' -I'seconds' -I'secs' -I'^start' -I'^exit:' $target.$N$tag.ref $target.$N$tag.out`"
+if [ -n "$d" ] ; then   # Non-zero string length
+  echo "$target.$N$tag.ref and $target.$N$tag.out differ:"
+  echo "$d"
+else
+  echo "PASS: su3_$target reproduces reference output"
+fi
+exit

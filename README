@@ -1,0 +1,18 @@
+MILC-based code for Wilson-clover fermions
+
+Top-level directories follow the MILC layout
+generic        -- Procedures common to most applications: communications, I/O, data layout, pure-gauge computations, etc.
+generic_wilson -- Procedures common to Wilson-fermion applications
+generic_clover -- Procedures common to Wilson-clover applications
+generic_nhyp   -- Procedures common to nHYP-smeared applications
+include        -- Header files for common procedures
+libraries      -- Single processor linear algebra routines
+
+Then there are various application directories, each with more detailed READMEs:
+clover_hmc -- Wilson-clover HMC with nHYP smearing and multilevel Omelyan integrator
+
+Finally, the testsuite directory contains some sample input files and corresponding output for testing
+
+Feel free to contact David Schaich with any questions, requests for new
+features, or (especially) bug reports:
+http://www.davidschaich.net
