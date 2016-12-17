@@ -20,27 +20,26 @@
 
 // Only set up anti_hermitmat and explicit loops in libraries for N <= 4
 #if (NCOL>4)
-	#error "NCOL > 4 not yet implemented!"
+  #error "NCOL > 4 not yet implemented!"
 #endif
 
 #if (NCOL != 3 || DIMF != 3)
-#ifdef FAST
-	#error "FAST only works if NCOL = DIMF = 3"
-#endif
-#ifdef NATIVEDOUBLE
-	#error "NATIVEDOUBLE only works if NCOL = DIMF = 3"
-#endif
+  #ifdef FAST
+    #error "FAST only works if NCOL = DIMF = 3"
+  #endif
+  #ifdef NATIVEDOUBLE
+    #error "NATIVEDOUBLE only works if NCOL = DIMF = 3"
+  #endif
 #endif
 
 #if (NCOL != 3 && DIMF != 3)
-#ifdef SSE_GLOBAL_INLINE
-	#error "SSE_GLOBAL_INLINE cannot be implemented: neither NCOL nor DIMF = 3"
+  #ifdef SSE_GLOBAL_INLINE
+    #error "SSE_GLOBAL_INLINE cannot be implemented: neither NCOL nor DIMF = 3"
+  #endif
+  #ifdef C_GLOBAL_INLINE
+    #error "C_GLOBAL_INLINE cannot be implemented: neither NCOL nor DIMF = 3"
+  #endif
 #endif
-#ifdef C_GLOBAL_INLINE
-	#error "C_GLOBAL_INLINE cannot be implemented: neither NCOL nor DIMF = 3"
-#endif
-#endif
-/*******************************************/
 
 typedef struct { fcomplex e[NCOL][NCOL]; } fsu3_matrix_f;
 typedef struct { fcomplex e[DIMF][DIMF]; } fsu3_matrix;
@@ -84,17 +83,17 @@ typedef struct {
 
 #if (PRECISION==1)
 
-#define su3_matrix_f 	fsu3_matrix_f
+#define su3_matrix_f  fsu3_matrix_f
 #define su3_matrix      fsu3_matrix
-#define su3_vector_f 	fsu3_vector_f
+#define su3_vector_f  fsu3_vector_f
 #define su3_vector      fsu3_vector
 #define anti_hermitmat  fanti_hermitmat
 
 #else
 
-#define su3_matrix_f 	dsu3_matrix_f
+#define su3_matrix_f  dsu3_matrix_f
 #define su3_matrix      dsu3_matrix
-#define su3_vector_f 	dsu3_vector_f
+#define su3_vector_f  dsu3_vector_f
 #define su3_vector      dsu3_vector
 #define anti_hermitmat  danti_hermitmat
 
@@ -104,14 +103,14 @@ typedef struct {
 typedef struct { complex e[2][2]; } su2_matrix;
 
 /* Wilson vectors */
-/* e.g. 					     */
+/* e.g.                */
 /* wilson_propagator prop;                           */
 /* prop.c[ci].d[si].d[sf].c[cf]                      */
 /* ----------------------->    complex               */
 /* ----------------->          su3_vector            */
 /* ----------->                wilson_vector         */
 /* ----->                      spin_wilson_vector    */
-/* e.g. 					     */
+/* e.g.                */
 /* wilson_matrix matr;                               */
 /* matr.d[si].c[ci].d[sf].c[cf]                      */
 /* ----------------------->    complex               */
@@ -171,8 +170,8 @@ typedef struct { dspin_wilson_vector c[DIMF]; } dwilson_propagator;
 #define TIMESPLUSI(a,b) { (b).real = -(a).imag; (b).imag =  (a).real; }
 #define TIMESMINUSI(a,b) { (b).real =  (a).imag; (b).imag = -(a).real; }
 
-/*  NO SU(N) CHANGES BELOW HERE					*
-*   Add declarations for _f objects as needed -BS		*/
+/*  NO SU(N) CHANGES BELOW HERE         *
+*   Add declarations for _f objects as needed -BS   */
 
 /*
 * ROUTINES FOR SU(3) MATRIX OPERATIONS
@@ -180,36 +179,36 @@ typedef struct { dspin_wilson_vector c[DIMF]; } dwilson_propagator;
 * fundamental rep:
 *
 * void mult_su3_an_f( su3_matrix_f *a, su3_matrix_f *b, su3_matrix_f *c )
-*	file "m_mat_an_f.c"
+* file "m_mat_an_f.c"
 * void mult_su3_na_f(  su3_matrix_f *a, su3_matrix_f *b, su3_matrix_f *c )
-*	file "m_mat_na_f.c"
+* file "m_mat_na_f.c"
 * void mult_su3_nn_f( su3_matrix_f *a, su3_matrix_f *b, su3_matrix_f *c )
-*	file "m_mat_nn_f.c"
+* file "m_mat_nn_f.c"
 * void add_su3_matrix_f( su3_matrix_f *a, su3_matrix_f *b, su3_matrix_f *c );
 *       file "addmat_f.c"
 * Real realtrace_su3_f(  su3_matrix_f *a, su3_matrix_f *b )
-*	file "realtr_f.c"
+* file "realtr_f.c"
 * void scalar_mult_add_su3_matrix_f( su3_matrix_f *a, su3_matrix_f *b,
 *       Real s, su3_matrix_f *c)
-*	file s_m_a_mat_f.c
+* file s_m_a_mat_f.c
 * void scalar_mult_sub_su3_matrix_f( su3_matrix_f *src1, su3_matrix_f *src2,
-	Real scalar, su3_matrix_f *dest);
+  Real scalar, su3_matrix_f *dest);
 * void su3_adjoint_f( su3_matrix_f *a, su3_matrix_f *b )
-*	file "su3_adjoint_f.c"
+* file "su3_adjoint_f.c"
 * void su3mat_copy_f( su3_matrix_f *a, su3_matrix_f *b )
-*	file "su3mat_copy_f.c"
+* file "su3mat_copy_f.c"
 * void clearvec_f( su3_vector_f *v )
 *       file "clearvec_f.c"
 * complex trace_su3_f( su3_matrix_f *a )
-*	file "trace_su3_f.c"
+* file "trace_su3_f.c"
 * void sub_su3_matrix_f( su3_matrix_f *a, su3_matrix_f *b, su3_matrix_f *c )
-*	file "submat_f.c"
+* file "submat_f.c"
 * void scalar_mult_su3_matrix_f( su3_matrix_f *a, Real s, su3_matrix_f *b )
-*	file "s_m_mat_f.c"
+* file "s_m_mat_f.c"
 * void scalar_add_diag_su3_f(su3_matrix_f *a, Real s)
-*	file "s_a_d_mat_f.c"
+* file "s_a_d_mat_f.c"
 * void c_scalar_add_diag_su3_f(su3_matrix_f *a, complex *f)
-*	file "cs_a_d_mat_f.c"
+* file "cs_a_d_mat_f.c"
 * complex complextrace_su3_f( su3_matrix_f *a, su3_matrix_f *b )
 *       file "complextr_f.c"
 * void c_scalar_mult_su3mat_f( su3_matrix_f *b, complex *s, su3_matrix_f *c )
@@ -218,64 +217,64 @@ typedef struct { dspin_wilson_vector c[DIMF]; } dwilson_propagator;
 *        complex *phase, su3_matrix_f *m3)
 *       file "cs_m_a_mat_f.c"
 * void make_anti_hermitian( su3_matrix_f *m3,  anti_hermitmat *ah3 )
-*	file "make_ahmat.c"
+* file "make_ahmat.c"
 * void random_anti_hermitian( anti_hermitmat *mat_antihermit, double_prn *prn_pt )
-*	(prn_pt passed through to myrand())
-*	file "rand_ahmat.c"
+* (prn_pt passed through to myrand())
+* file "rand_ahmat.c"
 * void uncompress_anti_hermitian( anti_hermitmat *mat_anti, su3_matrix_f *mat )
-*	file "uncmp_ahmat.c"
+* file "uncmp_ahmat.c"
 * void compress_anti_hermitian( su3_matrix_f *mat, anti_hermitmat *mat_anti)
-*	file "cmp_ahmat.c"
+* file "cmp_ahmat.c"
 * void dumpmat_f( su3_matrix_f *m )
 *       file "dumpmat_f.c"
 *
 * fermion rep:
 *
 * void mult_su3_nn(  su3_matrix *a, su3_matrix *b, su3_matrix *c  )
-*	matrix multiply, no adjoints
-*	files "m_mat_nn.c", "m_mat_nn.m4"
+* matrix multiply, no adjoints
+* files "m_mat_nn.c", "m_mat_nn.m4"
 * void mult_su3_na( su3_matrix *a, su3_matrix *b, su3_matrix *c )
-*	matrix multiply, second matrix is adjoint
-*	files "m_mat_na.c", "m_mat_na.m4"
+* matrix multiply, second matrix is adjoint
+* files "m_mat_na.c", "m_mat_na.m4"
 * void mult_su3_an( su3_matrix *a, su3_matrix *b, su3_matrix *c )
-*	matrix multiply, first matrix is adjoint
-*	files "m_mat_an.c", "m_mat_an.m4"
+* matrix multiply, first matrix is adjoint
+* files "m_mat_an.c", "m_mat_an.m4"
 * Real realtrace_su3(  su3_matrix *a, su3_matrix *b )
-*	(Re(Tr( A_adjoint*B)) )
-*	file "realtr.c"
+* (Re(Tr( A_adjoint*B)) )
+* file "realtr.c"
 * complex trace_su3( su3_matrix *a )
-*	file "trace_su3.c"
+* file "trace_su3.c"
 * complex complextrace_su3( su3_matrix *a, su3_matrix *b )
-*	(Tr( A_adjoint*B))
-*	file "complextr.c"
+* (Tr( A_adjoint*B))
+* file "complextr.c"
 * complex det_su3( su3_matrix *a )
-*	file "det_su3.c"
+* file "det_su3.c"
 * void add_su3_matrix( su3_matrix *a, su3_matrix *b, su3_matrix *c )
-*	file "addmat.c"
+* file "addmat.c"
 * void sub_su3_matrix( su3_matrix *a, su3_matrix *b, su3_matrix *c )
-*	file "submat.c"
+* file "submat.c"
 * void scalar_mult_su3_matrix( su3_matrix *a, Real s, su3_matrix *b )
-*	file "s_m_mat.c"
+* file "s_m_mat.c"
 * void scalar_mult_add_su3_matrix( su3_matrix *a, su3_matrix *b,
-*	Real s, su3_matrix *c)
-*	file "s_m_a_mat.c"
+* Real s, su3_matrix *c)
+* file "s_m_a_mat.c"
 * void scalar_mult_sub_su3_matrix( su3_matrix *a, su3_matrix *b,
-*	Real s, su3_matrix *c)
-*	file "s_m_s_mat.c"
+* Real s, su3_matrix *c)
+* file "s_m_s_mat.c"
 * void c_scalar_mult_su3mat( su3_matrix *src, complex *phase, su3_matrix *dest)
-*	file "cs_m_mat.c"
+* file "cs_m_mat.c"
 * void c_scalar_mult_add_su3mat( su3_matrix *m1, su3_matrix *m2,
-*	complex *phase, su3_matrix *m3)
-*	file "cs_m_a_mat.c"
+* complex *phase, su3_matrix *m3)
+* file "cs_m_a_mat.c"
 * void c_scalar_mult_sub_su3mat( su3_matrix *m1, su3_matrix *m2,
-*	complex *phase, su3_matrix *m3)
-*	file "cs_m_s_mat.c"
+* complex *phase, su3_matrix *m3)
+* file "cs_m_s_mat.c"
 * void su3_adjoint( su3_matrix *a, su3_matrix *b )
-*	file "su3_adjoint.c"
+* file "su3_adjoint.c"
 * void clear_su3mat( su3_matrix *dest );
 *       file clear_mat.c
 * void su3mat_copy( su3_matrix *a, su3_matrix *b )
-*	file "su3mat_copy.c"
+* file "su3mat_copy.c"
 * void dumpmat( su3_matrix *m )
 *       file "dumpmat.c"
 *
@@ -283,73 +282,73 @@ typedef struct { dspin_wilson_vector c[DIMF]; } dwilson_propagator;
 * ROUTINES FOR su3_vector OPERATIONS ( 3 COMPONENT COMPLEX )
 *
 * void su3_projector( su3_vector *a, su3_vector *b, su3_matrix *c )
-*	( outer product of A and B)
-*	file "su3_proj.c"
+* ( outer product of A and B)
+* file "su3_proj.c"
 * complex su3_dot( su3_vector *a, su3_vector *b )
-*	file "su3_dot.c"
+* file "su3_dot.c"
 * Real su3_rdot( su3_vector *a, su3_vector *b )
-*	file "su3_rdot.c", "su3_rdot.m4"
+* file "su3_rdot.c", "su3_rdot.m4"
 * Real magsq_su3vec( su3_vector *a )
-*	file "msq_su3vec.c", "msq_su3vec.m4"
+* file "msq_su3vec.c", "msq_su3vec.m4"
 * void su3vec_copy( su3_vector *a, su3_vector *b )
-*	file "su3vec_copy.c"
+* file "su3vec_copy.c"
 *
 * void mult_su3_mat_vec( su3_matrix *a, su3_vector *b, su3_vector *c )
-*	 C  <-  A*B
-*	file "m_matvec.c", "m_matvec.m4"
+*  C  <-  A*B
+* file "m_matvec.c", "m_matvec.m4"
 * void mult_su3_mat_vec_sum( su3_matrix *a, su3_vector *b, su3_vector *c )
-*	 C  <-  C + A*B
-*	file "m_matvec_s.c", "m_matvec_s.m4"
+*  C  <-  C + A*B
+* file "m_matvec_s.c", "m_matvec_s.m4"
 * void mult_su3_mat_vec_sum_4dir( su3_matrix *a, su3_vector *b0,
-*	su3_vector *b1, su3_vector *b2, su3_vector *b3, su3_vector *c )
-*	file "m_mv_s_4dir.c", "m_mv_s_4dir.m4"
-*	file "m_mv_s_4di2.m4" is alternate version with pipelined loads.
-*	Multiply four su3_vectors by elements of an array of su3_matrices,
-*	sum results.
-*	C <- A[0]*B0 + A[1]*B1 + A[2]*B2 + A[3]*B3
+* su3_vector *b1, su3_vector *b2, su3_vector *b3, su3_vector *c )
+* file "m_mv_s_4dir.c", "m_mv_s_4dir.m4"
+* file "m_mv_s_4di2.m4" is alternate version with pipelined loads.
+* Multiply four su3_vectors by elements of an array of su3_matrices,
+* sum results.
+* C <- A[0]*B0 + A[1]*B1 + A[2]*B2 + A[3]*B3
 * void mult_su3_mat_vec_nsum( su3_matrix *a, su3_vector *b, su3_vector *c )
-*	file "m_matvec_ns.c"
+* file "m_matvec_ns.c"
 * void mult_adj_su3_mat_vec( su3_matrix *a, su3_vector *b, su3_vector *c )
-*	file "m_amatvec.c", "m_amatvec.m4"
+* file "m_amatvec.c", "m_amatvec.m4"
 * void mult_adj_su3_mat_vec_4dir( su3_matrix *a, su3_vector *b, su3_vector *c )
-*	file "m_amv_4dir.c", "m_amv_4dir.m4"
-*	file "m_amv_4di2.m4" is alternate version with pipelined loads.
-*	Multiply an su3_vector by adjoints of elements of an array
-*	of su3_matrices, results in an array of su3_vectors.
-*	C[i] <- A_adjoint[i]*B, i = 0,1,2,3
+* file "m_amv_4dir.c", "m_amv_4dir.m4"
+* file "m_amv_4di2.m4" is alternate version with pipelined loads.
+* Multiply an su3_vector by adjoints of elements of an array
+* of su3_matrices, results in an array of su3_vectors.
+* C[i] <- A_adjoint[i]*B, i = 0,1,2,3
 * void mult_adj_su3_mat_4vec( su3_matrix *mat, su3_vector *src,
-*			     su3_vector *dest0, su3_vector *dest1,
-*			     su3_vector *dest2, su3_vector *dest3  ) ;
+*          su3_vector *dest0, su3_vector *dest1,
+*          su3_vector *dest2, su3_vector *dest3  ) ;
 *       file m_amv_4vec.c
-*	Same as above, but result vectors need not be in an array.
+* Same as above, but result vectors need not be in an array.
 * void mult_adj_su3_mat_vec_sum( su3_matrix *a, su3_vector *b, su3_vector *c )
-*	file "m_amatvec_s.c"
+* file "m_amatvec_s.c"
 * void mult_adj_su3_mat_vec_nsum( su3_matrix *a, su3_vector *b, su3_vector *c )
-*	file "m_amatvec_ns.c"
+* file "m_amatvec_ns.c"
 * void add_su3_vector( su3_vector *a, su3_vector *b, su3_vector *c )
-*	file "addvec.c", "addvec.m4"
+* file "addvec.c", "addvec.m4"
 * void sub_su3_vector( su3_vector *a, su3_vector *b, su3_vector *c )
-*	file "subvec.c", "subvec.m4"
+* file "subvec.c", "subvec.m4"
 * void sub_four_su3_vecs( su3_vector *a, su3_vector *b1, su3_vector *b2,
 *   su3_vector *b3, su3_vector *b4 )
-*	file "sub4vecs.c", "sub4vecs.m4"
+* file "sub4vecs.c", "sub4vecs.m4"
 *
 * void scalar_mult_su3_vector( su3_vector *a, Real s, su3_vector *c )
-*	file "s_m_vec.c"
+* file "s_m_vec.c"
 * void scalar_mult_add_su3_vector( su3_vector *a, su3_vector *b, Real s,
-*	su3_vector *c)
-*	file "s_m_a_vec.c", "s_m_a_vec.m4"
+* su3_vector *c)
+* file "s_m_a_vec.c", "s_m_a_vec.m4"
 * void scalar_mult_sum_su3_vector( su3_vector *a, su3_vector *b, Real s )
-*	file "s_m_sum_vec.c", "s_m_sum_vec.m4"
+* file "s_m_sum_vec.c", "s_m_sum_vec.m4"
 * void scalar_mult_sub_su3_vector( su3_vector *a, su3_vector *b, Real s,
-*	su3_vector *c )
-*	file "s_m_s_vec.c"
+* su3_vector *c )
+* file "s_m_s_vec.c"
 * void c_scalar_mult_su3vec( su3_vector *src, complex *phase, su3_vector *dest )
-*	file "cs_m_vec.c"
+* file "cs_m_vec.c"
 * void c_scalar_mult_add_su3vec( su3_vector *v1, complex *phase, su3_vector *v2)
-*	file "cs_m_a_vec.c"
+* file "cs_m_a_vec.c"
 * void c_scalar_mult_sub_su3vec( su3_vector *v1, complex *phase, su3_vector *v2)
-*	file "cs_m_s_vec.c"
+* file "cs_m_s_vec.c"
 * void dumpvec( su3_vector *v )
 *       file "dumpvec.c"
 * void clearvec( su3_vector *v )
@@ -375,144 +374,144 @@ typedef struct { dspin_wilson_vector c[DIMF]; } dwilson_propagator;
 * ROUTINES FOR WILSON VECTORS
 *
 * void mult_mat_wilson_vec( su3_matrix *mat, wilson_vector *src,
-*	wilson_vector *dest );
-*	file m_mat_wvec.c
-*	   dest <- mat*src
+* wilson_vector *dest );
+* file m_mat_wvec.c
+*    dest <- mat*src
 * void mult_su3_mat_hwvec( su3_matrix *mat, half_wilson_vector *src,
-*	half_wilson_vector *dest );
-*	file m_mat_hwvec.c
-*	   dest <- mat*src
+* half_wilson_vector *dest );
+* file m_mat_hwvec.c
+*    dest <- mat*src
 * void mult_adj_mat_wilson_vec( su3_matrix *mat, wilson_vector *src,
-*	wilson_vector *dest)
-*	file m_amat_wvec.c
-*	   dest <- mat_adjoint*src
+* wilson_vector *dest)
+* file m_amat_wvec.c
+*    dest <- mat_adjoint*src
 * void mult_adj_su3_mat_hwvec su3_matrix *mat,
-*	half_wilson_vector *src, half_wilson_vector *dest )
-*	file m_amat_hwvec.c
-*	   dest <- mat_adjoint*src
+* half_wilson_vector *src, half_wilson_vector *dest )
+* file m_amat_hwvec.c
+*    dest <- mat_adjoint*src
 *
 * void add_wilson_vector( wilson_vector *src1, wilson_vector *src2,
-*	wilson_vector *dest );
-*	file add_wvec.c
-*	   dest <- src1+src2
+* wilson_vector *dest );
+* file add_wvec.c
+*    dest <- src1+src2
 * void sub_wilson_vector( wilson_vector *src1, wilson_vector *src2,
 *       wilson_vector *dest );
-*	file sub_wvec.c
-*	   dest <- src1-src2
+* file sub_wvec.c
+*    dest <- src1-src2
 *
 * void scalar_mult_wvec  wilson_vector *src, Real s, wilson_vector *dest )
-*	file s_m_wvec.c
-*	   dest <- s*src
+* file s_m_wvec.c
+*    dest <- s*src
 * void scalar_mult_hwvec( half_wilson_vector *src, Real s,
 *          half_wilson_vector *dest)
-*	file s_m_hwvec.c
-*	   dest <- s*src
+* file s_m_hwvec.c
+*    dest <- s*src
 * Real magsq_wvec( wilson_vector *src );
-*	file msq_wvec.c
-*	   s <- squared magnitude of src
+* file msq_wvec.c
+*    s <- squared magnitude of src
 * complex wvec_dot( wilson_vector *src1, wilson_vector *src2 );
-*	file wvec_dot.c
-*	   c <- dot product of src1 and src2
+* file wvec_dot.c
+*    c <- dot product of src1 and src2
 * complex wvec2_dot( wilson_vector *src1, wilson_vector *src2 );
-*	file wvec2_dot.c
-*	   c <- dot product of src1 and src2, Used only in Claude's
-*	   mrilu.c,  I don't know what the difference is.  DT.
+* file wvec2_dot.c
+*    c <- dot product of src1 and src2, Used only in Claude's
+*    mrilu.c,  I don't know what the difference is.  DT.
 * Real wvec_rdot( wilson_vector *a, wilson_vector *b )
-*	wilson_vector *a,*b;
-*	file "wvec_rdot.c", "wvec_rdot.m4"
-*	   r <- real part of dot product of src1 and src2
+* wilson_vector *a,*b;
+* file "wvec_rdot.c", "wvec_rdot.m4"
+*    r <- real part of dot product of src1 and src2
 * void scalar_mult_add_wvec(  wilson_vector *src1,*src2, Real s,
 *           wilson_vector *dest)
-*	file s_m_a_wvec.c
-*	   dest <- src1 + s*src2
+* file s_m_a_wvec.c
+*    dest <- src1 + s*src2
 * void scalar_mult_addtm_wvec( wilson_vector *src1,*src2, Real s,
 *           wilson_vector *dest)
-*	file s_m_atm_wvec.c
-*	   dest <- -src1 + s*src2   ("atm"="add to minus")
+* file s_m_atm_wvec.c
+*    dest <- -src1 + s*src2   ("atm"="add to minus")
 * void c_scalar_mult_wvec( wilson_vector *v1, complex *phase,
-*	    wilson_vector *v2)
+*     wilson_vector *v2)
 *       file "cs_m_wvec.c"
 * void c_scalar_mult_add_wvec( wilson_vector *v1, wilson_vector *v2,
-*	complex *phase, wilson_vector *v3)
+* complex *phase, wilson_vector *v3)
 *       file "cs_m_a_wvec.c"
 * void c_scalar_mult_add_wvec2( wilson_vector *v1, wilson_vector *v2,
-*	complex scalar, wilson_vector *v3)
+* complex scalar, wilson_vector *v3)
 *       file "cs_m_a_wvec2.c"
-*	differs from previous one: value of scalar, not address is arg.
+* differs from previous one: value of scalar, not address is arg.
 * void wp_shrink( wilson_vector *src, half_wilson_vector *dest,
-*	int dir, int sign );
-*	file wp_shrink.c , wp_shrink.m4
-*	   if(dir = [XYZT]UP) dest <- components of src along eigenvectors
-*		of gamma_dir with eigenvalue +1
-*	   if(dir = [XYZT]DOWN) dest <- components of src along eigenvectors
-*		of gamma_dir with eigenvalue -1
-*	   if(sign==MINUS)switch roles of +1 and -1
+* int dir, int sign );
+* file wp_shrink.c , wp_shrink.m4
+*    if(dir = [XYZT]UP) dest <- components of src along eigenvectors
+*   of gamma_dir with eigenvalue +1
+*    if(dir = [XYZT]DOWN) dest <- components of src along eigenvectors
+*   of gamma_dir with eigenvalue -1
+*    if(sign==MINUS)switch roles of +1 and -1
 * void wp_shrink_4dir( wilson_vector *a,  half_wilson_vector *b1,
-*	half_wilson_vector *b2, half_wilson_vector *b3,
-*	half_wilson_vector *b4,	int sign );
-*	file wp_shrink4.c wp_shrink4.m4
-*	  Shrink A in X,Y,Z,T directions respectively, results in B1-B4
+* half_wilson_vector *b2, half_wilson_vector *b3,
+* half_wilson_vector *b4, int sign );
+* file wp_shrink4.c wp_shrink4.m4
+*   Shrink A in X,Y,Z,T directions respectively, results in B1-B4
 * void wp_grow(  half_wilson_vector *src, wilson_vector *dest,
-*	int dir, int sign );
-*	file wp_grow.c , wp_grow.m4
-*	   if(dir = [XYZT]UP) dest <- components of src times eigenvectors
-*		of gamma_dir with eigenvalue +1
-*	   if(dir = [XYZT]DOWN) dest <- components of src times eigenvectors
-*		of gamma_dir with eigenvalue -1
-*	   if(sign==MINUS)switch roles of +1 and -1
-*  	    Note: wp_shrink( +-dir) followed by wp_grow( +-dir) amounts to
-*		multiplication by 1+-gamma_dir, or 1-+gamma_dir if sign=MINUS
+* int dir, int sign );
+* file wp_grow.c , wp_grow.m4
+*    if(dir = [XYZT]UP) dest <- components of src times eigenvectors
+*   of gamma_dir with eigenvalue +1
+*    if(dir = [XYZT]DOWN) dest <- components of src times eigenvectors
+*   of gamma_dir with eigenvalue -1
+*    if(sign==MINUS)switch roles of +1 and -1
+*       Note: wp_shrink( +-dir) followed by wp_grow( +-dir) amounts to
+*   multiplication by 1+-gamma_dir, or 1-+gamma_dir if sign=MINUS
 * void wp_grow_add( half_wilson_vector *src, wilson_vector *dest,
-*	int dir, int sign );
-*	file wp_grow_a.c , wp_grow_a.m4
-*	   wp_grow, and add result to previous contents of dest.
+* int dir, int sign );
+* file wp_grow_a.c , wp_grow_a.m4
+*    wp_grow, and add result to previous contents of dest.
 * void grow_add_four_wvecs( wilson_vector *a, half_wilson_vector *b1,
-*	half_wilson_vector *b2, half_wilson_vector *b3,
-*	half_wilson_vector *b4, int sign, int sum );
-*	file grow4wvecs.c grow4wvecs.m4
+* half_wilson_vector *b2, half_wilson_vector *b3,
+* half_wilson_vector *b4, int sign, int sum );
+* file grow4wvecs.c grow4wvecs.m4
 *         If sum==0
-*	  Grow b1-b4 in X,Y,Z,T directions respectively, sum of results in A
+*   Grow b1-b4 in X,Y,Z,T directions respectively, sum of results in A
 *         If sum==1
-*	  Grow b1-b4 in X,Y,Z,T directions respectively, add to current A
+*   Grow b1-b4 in X,Y,Z,T directions respectively, add to current A
 *
 * void mult_by_gamma( wilson_vector *src, wilson_vector *dest, int dir );
-*	file mb_gamma.c
-*	   dest <- gamma[dir] * src,  dir=[XYZT]UP,GAMMAFIVE
+* file mb_gamma.c
+*    dest <- gamma[dir] * src,  dir=[XYZT]UP,GAMMAFIVE
 * void mult_by_gamma_left( wilson_matrix *src,  wilson_matrix *dest, int dir );
-*	file mb_gamma_l.c
-*	   dest <- gamma[dir] * src,  dir=[XYZT]UP,GAMMAFIVE
-*	   acts on first index of matrix
+* file mb_gamma_l.c
+*    dest <- gamma[dir] * src,  dir=[XYZT]UP,GAMMAFIVE
+*    acts on first index of matrix
 * void mult_by_gamma_right( wilson_matrix *src,  wilson_matrix *dest, int dir );
-*	file mb_gamma_r.c
-*	   dest_ij <- gamma[dir]_ik * src_jk,  dir=[XYZT]UP,GAMMAFIVE
-*	   acts on second index of matrix
+* file mb_gamma_r.c
+*    dest_ij <- gamma[dir]_ik * src_jk,  dir=[XYZT]UP,GAMMAFIVE
+*    acts on second index of matrix
 *
 * void mult_swv_by_gamma_l( spin_wilson_vector *src,  spin_wilson_vector *dest, int dir );
-*	file mswvb_gamma_l.c
-*	   same as mult_by_gamma_left, but acts on a spin_wilson_vector
+* file mswvb_gamma_l.c
+*    same as mult_by_gamma_left, but acts on a spin_wilson_vector
 *
 * void mult_swv_by_gamma_r( spin_wilson_vector *src,  spin_wilson_vector *dest, int dir );
-*	file mswvb_gamma_r.c
-*	   same as mult_by_gamma_right, but acts on a spin_wilson_vector
+* file mswvb_gamma_r.c
+*    same as mult_by_gamma_right, but acts on a spin_wilson_vector
 *
 * void su3_projector_w( wilson_vector *a, wilson_vector *b, su3_matrix *c )
-*	sum over spins of outer product of A.d[s] and B.d[s]  - a three
-*	  by three complex matrix
-*	file "su3_proj_w.c"
+* sum over spins of outer product of A.d[s] and B.d[s]  - a three
+*   by three complex matrix
+* file "su3_proj_w.c"
 * void clear_wvec( wilson_vector *dest );
-*	file clear_wvec.c
-*	   dest <- 0.0
+* file clear_wvec.c
+*    dest <- 0.0
 * void copy_wvec( wilson_vector *src, wilson_vector *dest );
-*	file copy_wvec.c
-*	   dest <- src
+* file copy_wvec.c
+*    dest <- src
 * void dump_wvec( wilson_vector *src );
-*	file dump_wvec.c
-*	   print out a wilson vector
+* file dump_wvec.c
+*    print out a wilson vector
 *
 * MISCELLANEOUS ROUTINES
 *
 * Real gaussian_rand_no( double_prn *prn_pt )
-*	file "gaussrand.c"
+* file "gaussrand.c"
 * void byterevn(int32type w[], int n)
 * void byterevn64(int32type w[], int n)
 *
@@ -520,7 +519,7 @@ typedef struct { dspin_wilson_vector c[DIMF]; } dwilson_propagator;
 
 Real realtrace_su3_f(  su3_matrix_f *a, su3_matrix_f *b );
 void scalar_mult_sub_su3_matrix_f( su3_matrix_f *src1, su3_matrix_f *src2,
-	Real scalar, su3_matrix_f *dest);
+  Real scalar, su3_matrix_f *dest);
 void su3_adjoint_f( su3_matrix_f *a, su3_matrix_f *b );
 void su3mat_copy_f( su3_matrix_f *a, su3_matrix_f *b );
 complex trace_su3_f( su3_matrix_f *a );
@@ -535,13 +534,13 @@ void sub_su3_matrix_f( su3_matrix_f *a, su3_matrix_f *b, su3_matrix_f *c );
 void scalar_mult_su3_matrix( su3_matrix *src, Real scalar, su3_matrix *dest);
 void scalar_mult_su3_matrix_f( su3_matrix_f *src, Real scalar, su3_matrix_f *dest);
 void scalar_mult_sub_su3_matrix( su3_matrix *src1, su3_matrix *src2,
-	Real scalar, su3_matrix *dest);
+  Real scalar, su3_matrix *dest);
 void c_scalar_mult_su3mat( su3_matrix *src, complex *scalar,
-	su3_matrix *dest);
+  su3_matrix *dest);
 void c_scalar_mult_add_su3mat( su3_matrix *src1, su3_matrix *src2,
-	complex *scalar, su3_matrix *dest);
+  complex *scalar, su3_matrix *dest);
 void c_scalar_mult_sub_su3mat( su3_matrix *src1, su3_matrix *src2,
-	complex *scalar, su3_matrix *dest);
+  complex *scalar, su3_matrix *dest);
 void su3_adjoint( su3_matrix *a, su3_matrix *b );
 void scalar_add_diag_su3_f(su3_matrix_f *a, Real s);
 void c_scalar_add_diag_su3_f(su3_matrix_f *a, complex *f);
@@ -569,24 +568,24 @@ void mult_adj_su3_mat_vec_sum( su3_matrix *a, su3_vector *b, su3_vector *c );
 void mult_adj_su3_mat_vec_nsum( su3_matrix *a, su3_vector *b, su3_vector *c );
 
 void scalar_mult_su3_vector(  su3_vector *src, Real scalar,
-	su3_vector *dest);
+  su3_vector *dest);
 void scalar_mult_sum_su3_vector( su3_vector *src1, su3_vector *src2,
-	Real scalar);
+  Real scalar);
 void scalar_mult_sub_su3_vector( su3_vector *src1, su3_vector *src2,
-	Real scalar, su3_vector *dest);
+  Real scalar, su3_vector *dest);
 void scalar_mult_wvec( wilson_vector *src, Real s, wilson_vector *dest );
 void scalar_mult_hwvec( half_wilson_vector *src, Real s,
     half_wilson_vector *dest );
 void scalar_mult_add_wvec( wilson_vector *src1, wilson_vector *src2,
-	Real scalar, wilson_vector *dest );
+  Real scalar, wilson_vector *dest );
 void scalar_mult_addtm_wvec( wilson_vector *src1, wilson_vector *src2,
-	Real scalar, wilson_vector *dest );
+  Real scalar, wilson_vector *dest );
 void c_scalar_mult_wvec(wilson_vector *src1, complex *phase,
-	wilson_vector *dest );
+  wilson_vector *dest );
 void c_scalar_mult_add_wvec(wilson_vector *src1, wilson_vector *src2,
-	complex *phase, wilson_vector *dest );
+  complex *phase, wilson_vector *dest );
 void c_scalar_mult_add_wvec2(wilson_vector *src1, wilson_vector *src2,
-	complex s, wilson_vector *dest );
+  complex s, wilson_vector *dest );
 void c_scalar_mult_su3vec( su3_vector *src, complex *phase, su3_vector *dest );
 void c_scalar_mult_add_su3vec(su3_vector *v1, complex *phase, su3_vector *v2);
 void c_scalar_mult_sub_su3vec(su3_vector *v1, complex *phase, su3_vector *v2);
@@ -600,12 +599,12 @@ void mult_su2_mat_vec_elem_n(su2_matrix *u,complex *x0,complex *x1);
 void mult_su2_mat_vec_elem_a(su2_matrix *u,complex *x0,complex *x1);
 
 void mult_mat_wilson_vec( su3_matrix *mat, wilson_vector *src,
-	wilson_vector *dest );
+  wilson_vector *dest );
 void mult_adj_mat_wilson_vec( su3_matrix *mat, wilson_vector *src,
-	wilson_vector *dest);
+  wilson_vector *dest);
 
 void add_wilson_vector( wilson_vector *src1, wilson_vector *src2,
-	wilson_vector *dest );
+  wilson_vector *dest );
 void sub_wilson_vector( wilson_vector *src1, wilson_vector *src2,
        wilson_vector *dest );
 Real magsq_wvec( wilson_vector *src );
@@ -614,11 +613,11 @@ complex wvec2_dot( wilson_vector *src1, wilson_vector *src2 );
 Real wvec_rdot( wilson_vector *a, wilson_vector *b );
 
 void wp_shrink( wilson_vector *src, half_wilson_vector *dest,
-	int dir, int sign );
+  int dir, int sign );
 void wp_grow(  half_wilson_vector *src, wilson_vector *dest,
-	int dir, int sign );
+  int dir, int sign );
 void wp_grow_add( half_wilson_vector *src, wilson_vector *dest,
-	int dir, int sign );
+  int dir, int sign );
 void mult_by_gamma( wilson_vector *src, wilson_vector *dest, int dir );
 void mult_by_gamma_left( wilson_matrix *src,  wilson_matrix *dest, int dir );
 void mult_by_gamma_right( wilson_matrix *src,  wilson_matrix *dest, int dir );
@@ -737,7 +736,7 @@ void byterevn64(int32type w[], int n);
 #define mult_su3_mat_vec_sum_4dir(...) _inline_sse_mult_su3_mat_vec_sum_4dir(__VA_ARGS__)
 #define su3_projector(...) _inline_sse_su3_projector(__VA_ARGS__)
 void sub_four_su3_vecs( su3_vector *a, su3_vector *b1, su3_vector *b2,
-	su3_vector *b3, su3_vector *b4 );
+  su3_vector *b3, su3_vector *b4 );
 #endif
 
 /********************************************************************/
@@ -859,8 +858,8 @@ void add_su3_vector( su3_vector *a, su3_vector *b, su3_vector *c );
 
 #ifndef grow_add_four_wvecs
 void grow_add_four_wvecs( wilson_vector *a, half_wilson_vector *b1,
-	half_wilson_vector *b2, half_wilson_vector *b3,
-	half_wilson_vector *b4, int sign, int sum );
+  half_wilson_vector *b2, half_wilson_vector *b3,
+  half_wilson_vector *b4, int sign, int sum );
 #endif
 
 #ifndef magsq_su3vec
@@ -905,50 +904,50 @@ void mult_adj_su3_mat_vec_4dir( su3_matrix *a, su3_vector *b, su3_vector *c );
 
 #ifndef mult_adj_su3_mat_4vec
 void mult_adj_su3_mat_4vec( su3_matrix *mat, su3_vector *src,
-			    su3_vector *dest0, su3_vector *dest1,
-			    su3_vector *dest2, su3_vector *dest3  ) ;
+          su3_vector *dest0, su3_vector *dest1,
+          su3_vector *dest2, su3_vector *dest3  ) ;
 #endif
 
 #ifndef mult_adj_su3_mat_hwvec
 void mult_adj_su3_mat_hwvec( su3_matrix *mat, half_wilson_vector *src,
-	half_wilson_vector *dest );
+  half_wilson_vector *dest );
 #endif
 
 #ifndef mult_su3_mat_vec_sum_4dir
 void mult_su3_mat_vec_sum_4dir( su3_matrix *a, su3_vector *b0,
-	su3_vector *b1, su3_vector *b2, su3_vector *b3, su3_vector *c );
+  su3_vector *b1, su3_vector *b2, su3_vector *b3, su3_vector *c );
 #endif
 
 #ifndef mult_su3_mat_hwvec
 void mult_su3_mat_hwvec( su3_matrix *mat, half_wilson_vector *src,
-	half_wilson_vector *dest );
+  half_wilson_vector *dest );
 #endif
 
 #ifndef scalar_mult_add_hwvec_proj
 void scalar_mult_add_hwvec_proj( su3_matrix * const a,
-				 half_wilson_vector * const b,
-				 half_wilson_vector * const c,
-				 Real * const s, su3_matrix *d );
+         half_wilson_vector * const b,
+         half_wilson_vector * const c,
+         Real * const s, su3_matrix *d );
 #endif
 
 #ifndef scalar_mult_add_su3_matrix
 void scalar_mult_add_su3_matrix( su3_matrix *src1, su3_matrix *src2,
-	Real scalar, su3_matrix *dest);
+  Real scalar, su3_matrix *dest);
 #endif
 
 #ifndef scalar_mult_add_su3_matrix_f
 void scalar_mult_add_su3_matrix_f( su3_matrix_f *src1, su3_matrix_f *src2,
-	Real scalar, su3_matrix_f *dest);
+  Real scalar, su3_matrix_f *dest);
 #endif
 
 #ifndef scalar_mult_add_su3_matrix_f
 void scalar_mult_add_su3_matrix_f( su3_matrix_f *src1, su3_matrix_f *src2,
-	Real scalar, su3_matrix_f *dest);
+  Real scalar, su3_matrix_f *dest);
 #endif
 
 #ifndef scalar_mult_add_su3_vector
 void scalar_mult_add_su3_vector( su3_vector *src1, su3_vector *src2,
-	Real scalar, su3_vector *dest);
+  Real scalar, su3_vector *dest);
 #endif
 
 #ifndef su3_projector
@@ -958,7 +957,7 @@ Real su3_rdot( su3_vector *a, su3_vector *b );
 
 #ifndef sub_four_su3_vecs
 void sub_four_su3_vecs( su3_vector *a, su3_vector *b1, su3_vector *b2,
-	su3_vector *b3, su3_vector *b4 );
+  su3_vector *b3, su3_vector *b4 );
 #endif
 
 #ifndef sub_su3_vector
@@ -967,8 +966,8 @@ void sub_su3_vector( su3_vector *a, su3_vector *b, su3_vector *c );
 
 #ifndef wp_shrink_4dir
 void wp_shrink_4dir( wilson_vector *a,  half_wilson_vector *b1,
-	half_wilson_vector *b2, half_wilson_vector *b3,
-	half_wilson_vector *b4,	int sign );
+  half_wilson_vector *b2, half_wilson_vector *b3,
+  half_wilson_vector *b4, int sign );
 #endif
 
 /********************************************************************/

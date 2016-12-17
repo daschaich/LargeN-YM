@@ -1,47 +1,36 @@
+// -----------------------------------------------------------------
+// Macros, structures and prototypes for gauge configuration input and output
 #ifndef _IO_LAT_H
 #define _IO_LAT_H
-/************************* io_lat.h *************************************/
 
-/* Macros, structures and prototypes for gauge configuration input and
-   output */
-
-/* Original by CD */
-/* 
-   2/17/98 added new gauge_info_keywords for hvy_qpot and ks_imp_dyn
-*/
-
-/* Definitions of restore and save lattice flags used in io_helpers.c */
-/* Some are also used for Wilson propagators */
-#define CONTINUE 10
-#define FRESH    11
-#define RELOAD_ASCII  12
-#define RELOAD_SERIAL  13
-#define RELOAD_MULTIDUMP 18
-#define RELOAD_PARALLEL  19
-#define FORGET 40
-#define SAVE_ASCII 41
-#define SAVE_SERIAL 42
-#define SAVE_CHECKPOINT 43
-#define SAVE_SERIAL_FM 44
-#define SAVE_SERIAL_ILDG 45
-#define SAVE_PARALLEL_ILDG 46
-#define SAVE_MULTIFILE_ILDG 47
-#define SAVE_PARTITION_ILDG 48
-#define SAVE_SERIAL_SCIDAC 49
-#define SAVE_PARALLEL_SCIDAC 50
+// Definitions of restore and save lattice flags used in io_helpers.c
+// Some are also used for Wilson propagators
+#define CONTINUE              10
+#define FRESH                 11
+#define RELOAD_ASCII          12
+#define RELOAD_SERIAL         13
+#define RELOAD_MULTIDUMP      18
+#define RELOAD_PARALLEL       19
+#define FORGET                40
+#define SAVE_ASCII            41
+#define SAVE_SERIAL           42
+#define SAVE_CHECKPOINT       43
+#define SAVE_SERIAL_FM        44
+#define SAVE_SERIAL_ILDG      45
+#define SAVE_PARALLEL_ILDG    46
+#define SAVE_MULTIFILE_ILDG   47
+#define SAVE_PARTITION_ILDG   48
+#define SAVE_SERIAL_SCIDAC    49
+#define SAVE_PARALLEL_SCIDAC  50
 #define SAVE_MULTIFILE_SCIDAC 51
 #define SAVE_PARTITION_SCIDAC 52
-#define SAVE_PARALLEL 53
-#define SAVE_MULTIDUMP 54
-#define SAVE_SERIAL_ARCHIVE 55
+#define SAVE_PARALLEL         53
+#define SAVE_MULTIDUMP        54
+#define SAVE_SERIAL_ARCHIVE   55
 
-/* For KS propagators */
-#define SAVE_SERIAL_TSLICE 932
-#define SAVE_ASCII_TSLICE 933
-
-/* Helps in defining globals */
+// Helps global variable definitions
 #ifdef CONTROL
-#define EXTERN 
+#define EXTERN
 #else
 #define EXTERN extern
 #endif
@@ -79,18 +68,18 @@
 typedef struct {
   int32type magic_number;               /* Identifies file format */
   char   time_stamp[MAX_TIME_STAMP]; /* Date and time stamp - used to
-					check consistency between the
-					ASCII header file and the
-					lattice file */
+          check consistency between the
+          ASCII header file and the
+          lattice file */
   int32type dims[4];                    /* Full lattice dimensions */
   int32type header_bytes;               /* NOT WRITTEN TO THE FILE but
-					 helpful for finding the data */
+           helpful for finding the data */
   int32type order;                      /* 0 means no coordinate list is
-				        attached and the values are in
-				        coordinate serial order.
-				        Nonzero means that a
-				        coordinate list is attached,
-				        specifying the order of values */
+                attached and the values are in
+                coordinate serial order.
+                Nonzero means that a
+                coordinate list is attached,
+                specifying the order of values */
 } gauge_header;
 
 
@@ -99,8 +88,7 @@ typedef struct {
       A listing of site coordinates for the data in this file
       in the order of appearance.  The number of coordinates must
       be exactly nx*ny*nz*nt.  The site coordinate is encoded
-      as nx*(ny*(nz*t + z) + y) + x in a 32-bit integer.   
-
+      as nx*(ny*(nz*t + z) + y) + x in a 32-bit integer.
       */
 
 /* 3. Next, the gauge field link matrices appear */
@@ -116,7 +104,7 @@ typedef struct {
 /* Info file format */
 
 /* List of admissible keywords for version 5 ASCII lattice info file
-   
+
    The information file describes the action that was used to create
    the lattice file in whatever detail you want.
 
@@ -177,8 +165,7 @@ char *gauge_info_keyword[] = {
 extern char *gauge_info_keyword[];
 #endif
 
-/* Used to create info file name */
-
+// Used to create info file name
 #define ASCII_GAUGE_INFO_EXT ".info"
 
 /**********************************************************************/
@@ -208,12 +195,12 @@ typedef struct {
   int32type magic_number;          /* Identifies file format */
   int32type dims[4];               /* Full lattice dimensions */
   int32type header_bytes;          /* Number of bytes for data belonging to
-				   this structure -- NOT necessarily 
-				   the length of this structure! */
+           this structure -- NOT necessarily
+           the length of this structure! */
   int32type order;                 /* 0 means no coordinate list is attached
-				   and the values are in coordinate serial order
-				   Nonzero means that a coordinate list is attached,
-				   specifying the order of values */
+           and the values are in coordinate serial order
+           Nonzero means that a coordinate list is attached,
+           specifying the order of values */
   struct {                      /* Gauge field parameters */
     int32type n_descript;          /* Number of bytes in character string */
     char   descript[MAX_GAUGE_FIELD_DESCRIPT];  /* Describes gauge field */
@@ -235,13 +222,13 @@ typedef struct {  /* Structure to hold header tokens */
 typedef struct {
   int32type magic_number;          /* Identifies file format */
   int32type gmtime_stamp;             /* Used in FNAL header from call to time*/
-  int32type size_of_element;	  /* bytes per data value, i.e, 4=single 						   precision */
-  int32type elements_per_site;	   /* number of data elements stored at 
-					each site */
+  int32type size_of_element;    /* bytes per data value, i.e, 4=single               precision */
+  int32type elements_per_site;     /* number of data elements stored at
+          each site */
   int32type dims[4];               /* Full lattice dimensions */
   int32type order;                 /* 0 means no coordinate list is attached
-			   and the values are in coordinate serial order.
-			  Nonzero is not a Fermilab option */
+         and the values are in coordinate serial order.
+        Nonzero is not a Fermilab option */
 } FNALheader ;
 
 /* 2. Parallel files only:
@@ -249,12 +236,12 @@ typedef struct {
       Next comes a listing of site coordinates for the data in this file
       in the order of appearance.  The number of coordinates must
       be exactly nx*ny*nz*nt.  The site coordinate is encoded
-      as nx*(ny*(nz*t + z) + y) + x in a 32-bit integer.   
+      as nx*(ny*(nz*t + z) + y) + x in a 32-bit integer.
 
       Serial files only:
 
       The site order of gauge field elements is required to be in subscript
-      order (x,y,z,t) with x varying most rapidly, followed by y, etc. 
+      order (x,y,z,t) with x varying most rapidly, followed by y, etc.
       so this list is omitted.
 
       */
@@ -281,10 +268,10 @@ typedef struct {
   gauge_header*  header;        /* Pointer to header for file */
   char *         filename;       /* Pointer to file name string */
   int            byterevflag;   /* Byte reverse flag - used only for reading */
-  int32type *       rank2rcv;      /* File site list - used only for 
-				   serial reading */ 
+  int32type *       rank2rcv;      /* File site list - used only for
+           serial reading */
   int            parallel;      /* 1 if file was opened in parallel
-				   0 if serial */
+           0 if serial */
   gauge_check    check;         /* Checksum */
 } gauge_file;
 
@@ -311,25 +298,25 @@ gauge_file *save_checkpoint(char *filename);
 gauge_file *save_serial_archive(char *filename);
 gauge_file *save_parallel_archive(char *filename);
 int write_gauge_info_item( FILE *fpout, /* ascii file pointer */
-		       char *keyword,   /* keyword */
-		       char *fmt,       /* output format -
-					      must use s, d, f, or e */
-		       char *src,       /* address of starting data */
-		       int count,       /* number of data items if > 1 */
-		       int stride);     /* byte stride of data if
-					   count > 1 */
-int sprint_gauge_info_item( 
+           char *keyword,   /* keyword */
+           char *fmt,       /* output format -
+                must use s, d, f, or e */
+           char *src,       /* address of starting data */
+           int count,       /* number of data items if > 1 */
+           int stride);     /* byte stride of data if count > 1 */
+
+int sprint_gauge_info_item(
   char *string,    /* character string */
-  size_t nstring,     /* string length */			    
+  size_t nstring,     /* string length */
   char *keyword,   /* keyword */
   char *fmt,       /* output format -
-		      must use s, d, e, f, or g */
+          must use s, d, e, f, or g */
   char *src,       /* address of starting data
-		      floating point data must be
-		      of type (Real) */
+          floating point data must be
+          of type (Real) */
   int count,       /* number of data items if > 1 */
   int stride);     /* byte stride of data if
-		      count > 1 */
+          count > 1 */
 gauge_file *setup_output_gauge_file(void);
 gauge_file *setup_input_gauge_file(char *filename);
 
@@ -377,41 +364,41 @@ void f2d_4mat(fsu3_matrix_f *a, su3_matrix_f *b);
 void d2f_4mat(su3_matrix_f *a, fsu3_matrix_f *b);
 void swrite_data(FILE* fp, void *src, size_t size, char *myname, char *descrip);
 void pwrite_data(FILE* fp, void *src, size_t size, char *myname, char *descrip);
-void pswrite_data(int parallel, FILE* fp, void *src, size_t size, 
-		  char *myname, char *descrip);
+void pswrite_data(int parallel, FILE* fp, void *src, size_t size,
+      char *myname, char *descrip);
 int sread_data(FILE* fp, void *src, size_t size, char *myname, char *descrip);
 int pread_data(FILE* fp, void *src, size_t size, char *myname, char *descrip);
 int pread_byteorder(int byterevflag, FILE* fp, void *src, size_t size, char *myname, char *descrip);
 int sread_byteorder(int byterevflag, FILE* fp, void *src, size_t size, char *myname, char *descrip);
-int psread_data(int parallel, FILE* fp, void *src, size_t size, 
-		char *myname, char *descrip);
-int psread_byteorder(int byterevflag, int parallel, FILE* fp, 
-		      void *src, size_t size, 
-		     char *myname, char *descrip);
+int psread_data(int parallel, FILE* fp, void *src, size_t size,
+    char *myname, char *descrip);
+int psread_byteorder(int byterevflag, int parallel, FILE* fp,
+          void *src, size_t size,
+         char *myname, char *descrip);
 void pwrite_gauge_hdr(FILE *fp, gauge_header *gh);
 void swrite_gauge_hdr(FILE *fp, gauge_header *gh);
 int write_gauge_info_item( FILE *fpout,    /* ascii file pointer */
-		       char *keyword,   /* keyword */
-		       char *fmt,       /* output format -
-					      must use s, d, e, f, or g */
-		       char *src,       /* address of starting data
-					   floating point data must be
-					   of type (Real) */
-		       int count,       /* number of data items if > 1 */
-		       int stride);      /* byte stride of data if
-                                           count > 1 */
-int sprint_gauge_info_item( 
+           char *keyword,   /* keyword */
+           char *fmt,       /* output format -
+                must use s, d, e, f, or g */
+           char *src,       /* address of starting data
+             floating point data must be
+             of type (Real) */
+           int count,       /* number of data items if > 1 */
+           int stride);      /* byte stride of data if count > 1 */
+
+int sprint_gauge_info_item(
   char *string,    /* character string */
-  size_t nstring,     /* string length */			    
+  size_t nstring,     /* string length */
   char *keyword,   /* keyword */
   char *fmt,       /* output format -
-		      must use s, d, e, f, or g */
+          must use s, d, e, f, or g */
   char *src,       /* address of starting data
-		      floating point data must be
-		      of type (Real) */
+          floating point data must be
+          of type (Real) */
   int count,       /* number of data items if > 1 */
-  int stride);      /* byte stride of data if
-		      count > 1 */
+  int stride);      /* byte stride of data if count > 1 */
+
 void write_gauge_info_file(gauge_file *gf);
 gauge_file *setup_input_gauge_file(char *filename);
 gauge_file *setup_output_gauge_file();
@@ -433,8 +420,7 @@ void r_serial_f(gauge_file *gf);
 void w_parallel_f(gauge_file *gf);
 void r_parallel_f(gauge_file *gf);
 
-
 void byterevn(int32type w[], int n);
 
-
-#endif /* _IO_LAT_H */
+#endif
+// -----------------------------------------------------------------

@@ -11,9 +11,9 @@ Machine = Scalar processor, with 1 nodes
 Hybrid Monte Carlo algorithm
 PHI algorithm
 LU preconditioning
-start: Fri Dec 16 12:00:50 2016
+start: Sat Dec 17 11:43:20 2016
 
-type 0 for no prompts  or 1 for prompts
+type 0 for no prompts or 1 for prompts
 nflavors 2
 nx 4
 ny 4
@@ -48,16 +48,17 @@ max_cg_restarts 10
 error_per_site 1e-06
 error_for_propagator 1e-06
 reload_serial config.3F.4444
-forget 
+forget
 Restored binary gauge configuration serially from file config.3F.4444
 Time stamp Fri Dec 16 00:37:45 2016
 Checksums 83567242 2efc25a5 OK
-Time to reload gauge configuration = 4.715800e-02
+Time to reload gauge configuration = 0.0002198 seconds
 CHECK PLAQ: 1.2754809836229895e+00 1.3359434793371250e+00
 CHECK NERSC LINKTR: -2.4656227161254187e-03 CKSUM: 0
-Reunitarized for double precision. Max deviation 5.61e-08 changed to 5.55e-16
-Time to check unitarity = 5.788803e-04
-START 1.275481e+00 1.335943e+00 2.611424e+00
+Reunitarized for double precision.  Max deviation 5.6e-08 changed to 5.6e-16
+Time to check unitarity = 0.0004508 seconds
+START 1.275481 1.3359435 2.6114245
+f_eps0 0.2 f_eps1 0.05 g_eps 0.005
 WARMUPS COMPLETED
 D_ACTION: g,h,f = 4.337377e+03  4.040381e+03  3.086897e+03  1.146465e+04
 D_ACTION: g,h,f = 4.368107e+03  4.016837e+03  3.080004e+03  1.146495e+04
@@ -68,9 +69,8 @@ MONITOR_FORCE_FERMION0 6.070540e-03
 MONITOR_FORCE_FERMION1 5.609425e-03
 MONITOR_JACOBI_AVRG -nan
 MONITOR_JACOBI_HIST   -nan -nan -nan -nan -nan -nan -nan -nan -nan -nan 
- OK converged size_r= 9e-07 iters= 39
-F2MES 1.154730e+01 2.476952e-01 -4.744433e-01 -1.144782e+00 1.203590e+01 5.490065e-02 3.794708e-17
-GMES 1.301302e-01 -9.884211e-02 3.900000e+01 1.263897e+00 1.323520e+00 2.509975e+00 2.560230e+00
+FMES 11.547303 0.24769523 -0.47444327 -1.1447823 12.035902 0.054900654 3.7947076e-17
+GMES 0.13013022 -0.09884211 1186 39 1.2638967 1.3235197 2.5099747 2.5602303
 D_ACTION: g,h,f = 4.368107e+03  4.159062e+03  3.037697e+03  1.156487e+04
 D_ACTION: g,h,f = 4.392737e+03  4.113823e+03  3.054732e+03  1.156129e+04
 ACCEPT: delta S = -1.608769e+00, start S = 1.157830123194e+04, end S = 1.157669246326e+04
@@ -80,9 +80,8 @@ MONITOR_FORCE_FERMION0 6.332269e-03
 MONITOR_FORCE_FERMION1 6.177374e-03
 MONITOR_JACOBI_AVRG -nan
 MONITOR_JACOBI_HIST   -nan -nan -nan -nan -nan -nan -nan -nan -nan -nan 
- OK converged size_r= 8.7e-07 iters= 40
-F2MES 1.214516e+01 2.305246e-02 -1.571278e+00 -6.129964e-01 1.257145e+01 -7.980960e-02 9.020562e-17
-GMES -1.706836e-01 1.268984e-01 4.000000e+01 1.292297e+00 1.275877e+00 2.493537e+00 2.486580e+00
+FMES 12.145164 0.023052456 -1.5712781 -0.61299642 12.571447 -0.079809599 9.0205621e-17
+GMES -0.17068364 0.12689841 1251 40 1.2922969 1.2758774 2.4935366 2.4865803
 D_ACTION: g,h,f = 4.392737e+03  4.082117e+03  3.006954e+03  1.148181e+04
 D_ACTION: g,h,f = 4.318680e+03  4.147880e+03  3.016022e+03  1.148258e+04
 ACCEPT: delta S = -1.947915e-02, start S = 1.149720849647e+04, end S = 1.149718901732e+04
@@ -92,23 +91,18 @@ MONITOR_FORCE_FERMION0 6.606685e-03
 MONITOR_FORCE_FERMION1 6.340610e-03
 MONITOR_JACOBI_AVRG -nan
 MONITOR_JACOBI_HIST   -nan -nan -nan -nan -nan -nan -nan -nan -nan -nan 
- OK converged size_r= 7.6e-07 iters= 40
-F2MES 1.170575e+01 -4.277709e-02 -6.379824e-01 -6.930124e-01 1.204538e+01 1.842118e-01 -6.548581e-17
-GMES 5.434868e-02 -5.818298e-02 4.000000e+01 1.333257e+00 1.292774e+00 2.505346e+00 2.515104e+00
+FMES 11.705748 -0.04277709 -0.63798239 -0.69301243 12.045376 0.18421181 -6.5485811e-17
+GMES 0.054348681 -0.058182978 1202 40 1.333257 1.2927741 2.5053458 2.5151041
 RUNNING COMPLETED
-STOP 1.333257e+00 1.292774e+00 2.626031e+00
-average cg iters for update= 1.213000e+03
-average cg iters for measurement= 3.966667e+01
-
-Total time         = 3.269817e+01 seconds
-dcongrad time      = 4.277349e+00 seconds
-fermion_force time = 1.984581e+01 seconds
-block_nhyp time    = 2.329715e+00 seconds
-compute_fhb time   = 1.112314e+00 seconds
-
+STOP 1.333257 1.2927741 2.6260311
+Average cg iters for steps: 1213
+Average cg iters for measurements: 119
+Time               = 20.22 seconds
+congrad time       = 2.586 seconds
+fermion_force time = 12.18 seconds
+block_nhyp time    = 1.544 seconds
+compute_fhb time   = 0.7265 seconds
 total_iters = 3735
 
-
-get_i(0): EOF on input.
-exit: Fri Dec 16 12:01:23 2016
+exit: Sat Dec 17 11:43:41 2016
 

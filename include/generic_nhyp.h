@@ -4,8 +4,6 @@
 *									*
 *  Macros and declarations for generic_nhyp routines                    *
 *  This header is for codes that call generic_nhyp routines             *
-*  MIMD version 7 							*
-*									*
 */
 
 #include "../include/su3.h"

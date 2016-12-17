@@ -1,208 +1,170 @@
-/******** control.c ********/
-/* Main procedure for SU3 with dynamical clover fermions
-   and Symanzik/Tadpole improved gauge action	*/
-/* MIMD version 6 */
-
-/* Modifications
-   1996 Created by Matt Wingate
-   6/6/98 Version 5
-*/
-
-/* This version combines code for the PHI algorithm (approriate for 4
-   flavors) and the R algorithm for "epsilon squared" updating of
-   1 to 4 flavors.  Compilation should occur with PHI_ALGORITHM defined
-   for the former and not defined for the latter.  It also contains code
-   for the hybrid Monte Carlo algorithm, for which HMC_ALGORITHM and
-   PHI_ALGORITHM should be defined.  (Actually, the
-   changes to control.c are minimal and the real differences will appear
-   in update.c */
-
+// -----------------------------------------------------------------
+// Main procedure for nHYP-smeared Wilson-clover SU(N) evolation
 #define CONTROL
-
 #include "cl_dyn_includes.h"
+// -----------------------------------------------------------------
 
-int main(int argc, char *argv[])  {
-int meascount,todo;
-int prompt;
-double dssplaq,dstplaq,dssplaq_frep,dstplaq_frep;
-int m_iters=0,s_iters,avm_iters,avs_iters;
+
+
+// -----------------------------------------------------------------
+int main(int argc, char *argv[]) {
+  int traj_done, m_iters, s_iters, avm_iters = 0, avs_iters = 0, Nmeas = 0;
+  int prompt;
+  Real f_eps0, f_eps1, g_eps;
+  double ss_plaq, st_plaq, ss_plaq_frep, st_plaq_frep, dtime;
 #ifdef SPECTRUM
-int spect_iters,avspect_iters;
+  int spect_iters, avspect_iters = 0;
 #endif
-complex plp;
-double dtime;
+  complex plp = cmplx(99.0, 99.0);
 
+  // Set up
+  setlinebuf(stdout); // DEBUG
+  // Remap standard I/O
+  if (remap_stdio_from_args(argc, argv) == 1)
+    terminate(1);
 
-setlinebuf(stdout); /*DEBUG*/
- initialize_machine(&argc,&argv);
+  initialize_machine(&argc, &argv);
 #ifdef HAVE_QDP
   QDP_initialize(&argc, &argv);
 #endif
-  /* Remap standard I/O */
-  if(remap_stdio_from_args(argc, argv) == 1)terminate(1);
+  g_sync();
+  prompt = setup();
 
- g_sync();
-    /* set up */
-    prompt = setup();
+  // Load input and run (loop removed)
+  if (readin(prompt) != 0) {
+    node0_printf("ERROR in readin, aborting\n");
+    terminate(1);
+  }
 
-    /* loop over input sets */
-    while( readin(prompt) == 0){
-
-/* set up loop tables */
+  // Set up loop tables
 #ifdef IMP
-        make_loop_table2();
+  make_loop_table2();
 #endif
-	/* perform warmup trajectories */
-	dtime = -dclock();
+
+  // Start the clocks
+  dtime = -dclock();
 #ifdef TIMING
-        time_dcongrad=time_fermion_force=time_fermion_rep=time_block_nhyp=time_compute_fhb=0.;
-// time_gmp=time_jacobi=0.;
+  time_dcongrad = 0.0;
+  time_fermion_force = 0.0;
+  time_fermion_rep = 0.0;
+  time_block_nhyp = 0.0;
+  time_compute_fhb = 0.0;
+//  time_jacobi = 0.0;
 #endif
 
-	/* call plaquette measuring process */
-/* Check: compute initial plaquette (T. D.) */
-                d_plaquette(&dssplaq,&dstplaq);
-                if(this_node==0)printf("START %e %e %e\n",
-                    dssplaq,dstplaq,
-                        dssplaq+dstplaq);
+  // Check: compute initial plaquette
+  d_plaquette(&ss_plaq, &st_plaq);
+  node0_printf("START %.8g %.8g %.8g\n", ss_plaq, st_plaq, ss_plaq + st_plaq);
 
-	for(todo=warms; todo > 0; --todo ){
-	    update();
-	}
-	if(this_node==0)printf("WARMUPS COMPLETED\n");
+  f_eps0 = traj_length / (Real)nsteps[0];
+  f_eps1 = f_eps0 / (2 * (Real)nsteps[1]);
+  g_eps = f_eps1 / (2 * (Real)nsteps[MAX_MASSES]);
+  node0_printf("f_eps0 %.4g f_eps1 %.4g g_eps %.4g\n", f_eps0, f_eps1, g_eps);
 
-	/* perform measuring trajectories, reunitarizing and measuring 	*/
-	meascount=0;		/* number of measurements 		*/
-	plp = cmplx((Real)99.9,(Real)99.9);
-	avm_iters = avs_iters = 0;
-#ifdef SPECTRUM
-        avspect_iters = 0;
+  // Perform warmup trajectories
+  for (traj_done = 0; traj_done < warms; traj_done++)
+    update();
+  node0_printf("WARMUPS COMPLETED\n");
+
+  // Perform trajectories, reunitarizations and measurements
+  for (traj_done = 0; traj_done < trajecs; traj_done++) {
+    s_iters = update();
+    avs_iters += s_iters;
+
+    /* Do "local" measurements every trajectory! */
+    /* The action from the RG trans */
+#ifdef IMP  /* For improved action only
+               Plaquette action trivially follows from ds[s|t]plaq */
+    gauge_action(&ss_plaq);
+    node0_printf("ACTION_V %.8g %.8g\n",
+                 ss_plaq, ss_plaq / (double)(6.0 * volume));
 #endif
-	for(todo=trajecs; todo > 0; --todo ){
-	    /* do the trajectories */
-	    s_iters=update();
-
-	    /* Do "local" measurements every trajectory! */
-#ifdef SF   /* compute the SF coupling */
-            coupling();
-#endif
-            /* The action from the RG trans */
-#ifdef IMP  /* For improved action only.
-               Plaqutte action trivially follows from ds[s|t]plaq */
-            gauge_action(&dssplaq);
-            if(this_node==0)printf("ACTION_V  %e  %e\n",
-                dssplaq,(dssplaq)/(double)(volume*6));
-#endif
-	    /* call the Polyakov loop measuring program */
-	    plp = ploop();
-
-	    /* call plaquette measuring process */
-	    d_plaquette(&dssplaq,&dstplaq);
-	    d_plaquette_frep(&dssplaq_frep,&dstplaq_frep);
+    // Measure Polyakov loop and plaquette
+    plp = ploop();
+    d_plaquette(&ss_plaq, &st_plaq);
+    d_plaquette_frep(&ss_plaq_frep, &st_plaq_frep);
 #ifdef LU
-            /* generate a pseudofermion configuration */
-	    m_iters = f_measure_cl();
+    // Generate a pseudofermion configuration
+    m_iters = f_measure_cl();
 #endif
-	    ++meascount;
-	    avm_iters += m_iters;
-	    avs_iters += s_iters;
+    avm_iters += m_iters;
 
-	    if(this_node==0)printf("GMES %e %e %e %e %e %e %e\n",
-		(double)plp.real,(double)plp.imag,(double)m_iters,
-		dssplaq,dstplaq,dssplaq_frep,dstplaq_frep);
-	    /* Re(Polyakov) Im(Poyakov) cg_iters ss_plaq st_plaq */
+    node0_printf("GMES %.8g %.8g %d %d %.8g %.8g %.8g %.8g\n",
+                 plp.real, plp.imag, s_iters, m_iters,
+                 ss_plaq, st_plaq, ss_plaq_frep, st_plaq_frep);
 
-	    /* measure other stuff every "propinterval" trajectories */
-	    if(((todo-1)%propinterval) == 0){
+    // Measure every "propinterval" trajectories
+    if ((traj_done % propinterval) == (propinterval - 1)) {
+      Nmeas++;
 #ifdef LU
-#ifdef PCAC
-#ifndef SF
-            /* correlators in pcac relation */
-/*  t direction: doubling the lattice via PBC+APBC  */
-            m_iters += pcac_t();
-/*  x direction:  PBC and PBC+APBC                  */
-            if(nt<nx) m_iters += pcac_x();
-/*  x direction: PBC+APBC only
-            if(nt<nx) m_iters += pcac_x_dbl();      */
-#else  /* ifdef SF */
-            if(nt>=4){
-/*  t direction, SFBC                               */
-              m_iters += pcac_sf();
-/*  x direction:  PBC and PBC+APBC                  */
-              if(nt<nx) m_iters += pcac_x();
-            }
-#endif /* SF   */
-#endif /* PCAC */
-#endif /* LU   */
-
-	      fixflag = NO_GAUGE_FIX;
-#ifdef SPECTRUM
-#ifdef SCREEN
-		gaugefix(ZUP,(Real)1.5,500,(Real)GAUGE_FIX_TOL,
-			 F_OFFSET(staple),F_OFFSET(tempmat1),
-			 0,NULL,NULL,0,NULL,NULL);
-		fixflag = COULOMB_GAUGE_FIX;
-		spect_iters = s_props_cl();
-		avspect_iters += spect_iters;
-#else	/* spectrum in time direction */
-		gaugefix(TUP,(Real)1.5,500,(Real)GAUGE_FIX_TOL,
-			 F_OFFSET(staple),F_OFFSET(tempmat1),
-			 0,NULL,NULL,0,NULL,NULL);
-		fixflag = COULOMB_GAUGE_FIX;
-/* commented 15 OCT 95, MBW....we'll use periodic b.c. for spect. */
-/* Don't need t_props if we are doing w_spectrum  - C. DeTar */
-/*		spect_iters = t_props_cl();
-		avspect_iters += spect_iters; */
-		spect_iters = w_spectrum_cl();
-		avspect_iters += spect_iters;
-#endif	/* end ifndef SCREEN */
-#endif	/* end ifdef SPECTRUM */
-
-	    }
-	    fflush(stdout);
-
-	}	/* end loop over trajectories */
-
-	if(this_node==0)printf("RUNNING COMPLETED\n");
-/* Check: compute final plaquette (T. D.) */
-                d_plaquette(&dssplaq,&dstplaq);
-                if(this_node==0)printf("STOP %e %e %e\n",
-                    dssplaq,dstplaq,
-                        dssplaq+dstplaq);
-
-	if(meascount>0)  {
-	    if(this_node==0)printf("average cg iters for update= %e\n",
-		(double)avs_iters/meascount);
-	    if(this_node==0)printf("average cg iters for measurement= %e\n",
-		(double)avm_iters/meascount);
-#ifdef SPECTRUM
-	    if(this_node==0)printf("average cg iters for spectrum = %e\n",
-		(double)avspect_iters/meascount);
+  #ifdef PCAC
+      // Correlators for PCAC relation
+      // t direction: Double the lattice via PBC+APBC
+      m_iters += pcac_t();
+      // x direction: PBC and PBC+APBC
+      if (nt < nx)
+        m_iters += pcac_x();
+  #endif
 #endif
-	}
 
-	dtime += dclock();
-	if(this_node==0){
-	    printf("\nTotal time         = %e seconds\n",dtime);
-#ifdef TIMING
-            printf("dcongrad time      = %e seconds\n",time_dcongrad);
-            printf("fermion_force time = %e seconds\n",time_fermion_force);
-//          printf("fermion_rep time   = %e seconds\n",time_fermion_rep);
-            printf("block_nhyp time    = %e seconds\n",time_block_nhyp);
-            printf("compute_fhb time   = %e seconds\n",time_compute_fhb);
-//          printf("gmp time           = %e seconds\n",time_gmp);
-//          printf("jacobi time        = %e seconds\n\n",time_jacobi);
-            printf("\n");
+      fixflag = NO_GAUGE_FIX;
+#ifdef SPECTRUM
+  #ifdef SCREEN
+      gaugefix(ZUP, 1.5, 500, (Real)GAUGE_FIX_TOL,
+               F_OFFSET(staple), F_OFFSET(tempmat1),
+               0, NULL, NULL, 0, NULL, NULL);
+      fixflag = COULOMB_GAUGE_FIX;
+      spect_iters = s_props_cl();
+      avspect_iters += spect_iters;
+  #else // Spectrum in time direction
+      gaugefix(TUP, 1.5, 500, (Real)GAUGE_FIX_TOL,
+               F_OFFSET(staple),F_OFFSET(tempmat1),
+               0, NULL, NULL, 0, NULL, NULL);
+      fixflag = COULOMB_GAUGE_FIX;
+      spect_iters = w_spectrum_cl();
+      avspect_iters += spect_iters;
+  #endif
 #endif
-	    printf("total_iters = %d\n",total_iters);
-	}
-	fflush(stdout);
-	dtime = -dclock();
 
-	/* save lattice if requested */
-        if( saveflag != FORGET ){
-	  save_lattice( saveflag, savefile, stringLFN );
-        }
     }
-    return 0;
+    fflush(stdout);
+  }
+  node0_printf("RUNNING COMPLETED\n");
+
+  // Check: compute final plaquette
+  d_plaquette(&ss_plaq, &st_plaq);
+  node0_printf("STOP %.8g %.8g %.8g\n",
+               ss_plaq, st_plaq, ss_plaq + st_plaq);
+
+  node0_printf("Average cg iters for steps: %.4g\n",
+               (double)avs_iters / trajecs);
+  if (Nmeas > 0) {
+    node0_printf("Average cg iters for measurements: %.4g\n",
+                 (double)avm_iters / Nmeas);
+#ifdef SPECTRUM
+    node0_printf("Average cg iters for spectrum: %.4g\n",
+                 (double)avspect_iters / Nmeas);
+#endif
+  }
+
+  dtime += dclock();
+  node0_printf("Time               = %.4g seconds\n", dtime);
+#ifdef TIMING
+  node0_printf("congrad time       = %.4g seconds\n", time_dcongrad);
+  node0_printf("fermion_force time = %.4g seconds\n", time_fermion_force);
+//  node0_printf("fermion_rep time   = %.4g seconds\n", time_fermion_rep);
+  node0_printf("block_nhyp time    = %.4g seconds\n", time_block_nhyp);
+  node0_printf("compute_fhb time   = %.4g seconds\n", time_compute_fhb);
+//  node0_printf("jacobi time        = %.4g seconds\n\n", time_jacobi);
+#endif
+  node0_printf("total_iters = %d\n\n", total_iters);
+  fflush(stdout);
+
+  // Save lattice if requested
+  if (saveflag != FORGET)
+    save_lattice(saveflag, savefile, stringLFN);
+
+  normal_exit(0);
+  return 0;
 }
+// -----------------------------------------------------------------
