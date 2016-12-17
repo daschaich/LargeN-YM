@@ -44,6 +44,13 @@ if ! make -f Make_scalar su3_$target >& /dev/null ; then
   exit
 fi
 
+# Reset N and rep to SU(3) fundamental
+# TODO: Also need different fermion_rep_*.o in $dir/Make_template
+cd ../include/
+awk -v"X=#define NCOL 3" '{sub(/^#define NCOL .*/,X);print}' su3.h > TEMP && mv TEMP su3.h
+awk -v"X=#define DIMF 3" '{sub(/^#define DIMF .*/,X);print}' su3.h > TEMP && mv TEMP su3.h
+awk -v"X=#define FREP fundamental" '{sub(/^#define FREP .*/,X);print}' su3.h > TEMP && mv TEMP su3.h
+
 # Run
 cd ../testsuite/
 rm -f scalar/$target.$N$tag.out
