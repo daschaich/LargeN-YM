@@ -19,7 +19,7 @@ void compute_fhb( su3_matrix_f *Omega, su3_matrix_f *Q,
 #endif
 
 #if (NCOL != 4)
-	#error "Wrong NCOL in nhyp.c!"
+  #error "Wrong NCOL in nhyp.c!"
 #endif
 
 {
@@ -81,16 +81,16 @@ TIC(4)
 
 /* calculate f's and their derivatives */
 
-	den = -(x*(-(u*v*w) + w*w + u*u*x));
+  den = -(x*(-(u*v*w) + w*w + u*u*x));
 
-	f[0] = -w*w*w - u*u*w*x + v*w*x + u*(v*w*w - v*v*x + x*x);
-	f[0] = f[0]/den;
-	f[1] = 2*u*u*v*w - u*(v*v*v + 2*w*w) - u*u*u*x + w*(v*v + x);
-	f[1] = f[1]/den;
-	f[2] = u*u*u*v - u*u*w + 2*v*w + u*(-2*v*v + x);
-	f[2] = f[2]/den;
-	f[3] = -(u*v) + w;
-	f[3] = f[3]/den;
+  f[0] = -w*w*w - u*u*w*x + v*w*x + u*(v*w*w - v*v*x + x*x);
+  f[0] = f[0]/den;
+  f[1] = 2*u*u*v*w - u*(v*v*v + 2*w*w) - u*u*u*x + w*(v*v + x);
+  f[1] = f[1]/den;
+  f[2] = u*u*u*v - u*u*w + 2*v*w + u*(-2*v*v + x);
+  f[2] = f[2]/den;
+  f[3] = -(u*v) + w;
+  f[3] = f[3]/den;
 
     /* most of the time, the coefficients are all we need */
     if (compute_b==0){

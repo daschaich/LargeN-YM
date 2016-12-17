@@ -25,11 +25,11 @@ void dump_math_f(su3_matrix_f *Q);
     fflush(stdout);
 #endif
 
-#if (NCOL == 2)
+#if NCOL == 2
 #include "nhyp_SU2.c"
-#elif (NCOL == 3)
+#elif NCOL == 3
 #include "nhyp_SU3.c"
-#elif (NCOL == 4)
+#elif NCOL == 4
 #include "nhyp_SU4.c"
 #else
 #include "nhyp_polcof.c"

@@ -18,7 +18,7 @@
 *********** NOTE! NOTE! NOTE! NOTE! NOTE! NOTE! NOTE! **********/
 
 #if (NCOL != 3)
-	#error "Wrong NCOL in nhyp.c!"
+  #error "Wrong NCOL in nhyp.c!"
 #endif
 
 void compute_RS(su3_matrix_f *Q, double *R, double *S);
@@ -113,7 +113,7 @@ TIC(4)
             if( acos_input > 1.00001 ){
                 printf("NHYP_DEBUG_WARNING(4): acos_input > 1.00001\n  S = %.12e, R = %.12e, acos_input = %.12e\n", S, R, acos_input );
                 DUMP_STUFF
-        	nhyp_debug_flag=1;
+          nhyp_debug_flag=1;
             }
 #endif
             acos_input=1. ;
@@ -124,7 +124,7 @@ TIC(4)
             if( acos_input < -1.00001 ){
                 printf("NHYP_DEBUG_WARNING(4): acos_input < -1.00001\n  S = %.12e, R = %.12e, acos_input = %.12e\n", S, R, acos_input );
                 DUMP_STUFF
-        	nhyp_debug_flag=1;
+          nhyp_debug_flag=1;
             }
 #endif
             acos_input=-1. ;
@@ -228,17 +228,17 @@ TOC(4,time_compute_fhb)
 #endif
 
     b[0][0]=(-u03*u16+p*(3*u02*(u02 + u1)*u14+p*(-3*u0*(4*u02 + u1)*u13
-		+p*(u02*(-u04 + 3*u02*u1 + 16*u12) + u13+p*( -4*u0*(u02 + 2*u1)+p)))))/den;
+    +p*(u02*(-u04 + 3*u02*u1 + 16*u12) + u13+p*( -4*u0*(u02 + 2*u1)+p)))))/den;
 
     b[1][0]=
     b[0][1]=(u03*(u02 - 2*u1)*u14+p*(-(u02*(u04 + u02*u1 - 6*u12)*u12)+p*(-(u03*(u04 - 6*u02*u1 + 6*u12) + 6*u13*u0)
-		+p*( 5*u02*(-u02 + 2*u1) + 2*u12-3*u0*p))))/den;
+    +p*( 5*u02*(-u02 + 2*u1) + 2*u12-3*u0*p))))/den;
 
     b[2][0]=
     b[0][2]=(-(u03*u14)+p*(u02*(u02 + 3*u1)*u12 + p*(u0*(u04 - 4*u02*u1 - 3*u12) +p*(4*u02 + u1))))/den;
 
     b[1][1]=(-u03*sqr(u02 - 2*u1)*u12+p*(-((u02 - 3*u1)*sqr(u03 - 2*u0*u1))
-	    +p*(-(u0*(5*u02 - 6*u1)*(u02 - 2*u1))+p*( -3*u02 + 3*u1))))/den;
+      +p*(-(u0*(5*u02 - 6*u1)*(u02 - 2*u1))+p*( -3*u02 + 3*u1))))/den;
 
     b[2][1]=
     b[1][2]=(u03*(u02 - 2*u1)*u12+p*(u02*(u04 - 5*u02*u1 + 6*u12)+p*(4*u03 - 6*u0*u1+p)))/den;
@@ -280,7 +280,7 @@ void compute_RS(su3_matrix_f *Q, double *R, double *S)
     ttt=ctmp.real*Q->e[2][0].real-ctmp.imag*Q->e[2][0].imag;
 
     ttt=6*ttt +q012*(e22-2.*e33) + q022*(e33-2.*e22) + q122*(e33+e22)
-	        +(e22*e22*(2*e22-3*e33)+e33*e33*(2*e33-3*e22))/9.;
+          +(e22*e22*(2*e22-3*e33)+e33*e33*(2*e33-3*e22))/9.;
 
     *R=ttt/6.;
 
