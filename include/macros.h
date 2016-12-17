@@ -24,34 +24,42 @@
 #define NO_GAUGE_FIX 30
 #define COULOMB_GAUGE_FIX 31
 #define LANDAU_GAUGE_FIX 32
+// -----------------------------------------------------------------
 
-/* ---------------------------------------------------------- */
-/* "field offset" and "field pointer" */
 
-/* used when fields are arguments to subroutines */
-/* Usage:  fo = F_OFFSET( field ), where "field" is the name of a field
-  in lattice.
-     address = F_PT( &site , fo ), where &site is the address of the
-  site and fo is a field_offset.  Usually, the result will have to be
-  cast to a pointer to the appropriate type. (It is naturally a char *).
-*/
+
+// -----------------------------------------------------------------
+// field offset and field pointer
+// Used when fields in the site are arguments to subroutines
+// Usage: fo = F_OFFSET(field)
+//   where "field" is the name of a field in the site struct
+// Usage: address = F_PT(&site, fo)
+//   where &site is the address of the site and fo is a field_offset
+//   Usually, the result will have to be cast to an appropriate pointer
+//   It is naturally a char*
 typedef int field_offset;
 #define F_OFFSET(a) \
   ((field_offset)(((char *)&(lattice[0]. a ))-((char *)&(lattice[0])) ))
 #define F_PT( site , fo )  ((char *)( site ) + (fo))
+// -----------------------------------------------------------------
 
-/* ---------------------------------------------------------- */
-/* Macros for looping over directions */
 
-#define FORALLUPDIR(dir) for(dir=XUP; dir<=TUP; dir++)
 
-#define FORALLUPDIRBUT(direction,dir) \
+// -----------------------------------------------------------------
+// Macros for looping over directions
+#define FORALLUPDIR(dir) for (dir = XUP; dir <= TUP; dir++)
+
+#define FORALLUPDIRBUT(direction, dir) \
    for(dir=XUP; dir<= TUP; dir++)if(dir != direction)
 
-#define OPP_PAR(parity) (0x03 ^ parity) /* Switches EVEN and ODD. Nulls EVENANDOdd*/
+// Switches EVEN and ODD, nulls EVENANDODD
+#define OPP_PAR(parity) (0x03 ^ parity)
+// -----------------------------------------------------------------
 
-/* ---------------------------------------------------------- */
-/* printf on node zero only */
+
+
+// -----------------------------------------------------------------
+// printf on node zero only
 #define node0_printf if(this_node==0)printf
 
 /* ---------------------------------------------------------- */
@@ -119,44 +127,16 @@ typedef int field_offset;
 #endif  /* N_SUBL32 */
 
 
-#ifdef SF
-#define FOREVENSITESDOMAIN(i,s) \
-    FOREVENSITES(i,s) if(s->t > 0)
-#define FORODDSITESDOMAIN(i,s) \
-    FORODDSITES(i,s) if(s->t > 0)
-#define FORALLSITESDOMAIN(i,s) \
-    FORALLSITES(i,s) if(s->t > 0)
-#define FORSOMEPARITYDOMAIN(i,s,parity) \
-    FORSOMEPARITY(i,s,parity) if(s->t > 0)
-#else
 #define FOREVENSITESDOMAIN FOREVENSITES
 #define FORODDSITESDOMAIN FORODDSITES
 #define FORALLSITESDOMAIN FORALLSITES
 #define FORSOMEPARITYDOMAIN FORSOMEPARITY
-#endif
-
-#ifdef SF
-#define FORALLDYNLINKS(i,s,mu) \
-    FORALLSITES(i,s) if((mu)==TUP || s->t>0)
-#else
-#define FORALLDYNLINKS(i,s,mu) \
-    FORALLSITES(i,s)
-#endif
-
-#ifdef SF
-#define CHOOSE_NBR(i,s,nu,chooseme,which_pt) \
-  ( ((s)->t==(nt-1) && (nu)==TUP) ?          \
-    (char *)&(chooseme)                      \
-    :                                        \
-    (gen_pt[which_pt][i])                    \
-  )
-#else
-#define CHOOSE_NBR(i,s,nu,chooseme,which_pt) \
-  (gen_pt[which_pt][i])
-#endif
+// -----------------------------------------------------------------
 
 
-/* Timing switches */
+
+// -----------------------------------------------------------------
+// Timing switches
 #ifdef TIMING
 #define TIC(n) tmptime[n] = -dclock();
 #define TOC(n,mytimer) tmptime[n] += dclock(); mytimer+=tmptime[n];
@@ -165,5 +145,5 @@ typedef int field_offset;
 #define TOC(n,mytimer)
 #endif
 
-
-#endif  /* _MACROS_H */
+#endif
+// -----------------------------------------------------------------

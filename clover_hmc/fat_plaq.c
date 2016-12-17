@@ -1,31 +1,27 @@
-/*** do measurements with the fat fundamental link ******************/
+// -----------------------------------------------------------------
+// Do measurements with the smeared NCOLxNCOL link
 void fat_plaq() {
+  register int i, mu;
+  register site *s;
+  double ssplaq, stplaq;
+  complex plp;
 
-site *st;
-int mu,i;
-double dssplaq,dstplaq;
-complex plp;
+  // Copy the smeared link into s->linkf
+  FORALLUPDIR(mu) {
+    FORALLSITES(i, s)
+      su3mat_copy_f(gauge_field[mu] + i, &(s->linkf[mu]));
+  }
 
-   /* copy the fat link into st->linkf */
-   for(mu=0;mu<4;mu++){
-      FORALLDYNLINKS(i,st,mu){
-         su3mat_copy_f( gauge_field[mu]+i, &(st->linkf[mu]) );
-      }
-   }
+  // Measure and print the Polyakov loop and plaquette
+  plp = ploop();
+  d_plaquette(&ssplaq, &stplaq);
+  node0_printf("GFAT %.8g %.8g %.8g %.8g\n",
+               (double)plp.real, (double)plp.imag, ssplaq, stplaq);
 
-   /* call the Polyakov loop measuring program */
-   plp = ploop();
-
-   /* call plaquette measuring process */
-   d_plaquette(&dssplaq,&dstplaq);
-
-   if(this_node==0)printf("GFAT %e %e %e %e\n",
-        (double)plp.real,(double)plp.imag,dssplaq,dstplaq);
-
-   /* restore the thin link */
-   for(mu=0;mu<4;mu++){
-      FORALLDYNLINKS(i,st,mu){
-         su3mat_copy_f( gauge_field_thin[mu]+i, &(st->linkf[mu]) );
-      }
-   }
-} 
+  // Restore the thin link
+  FORALLUPDIR(mu) {
+    FORALLSITES(i, s)
+      su3mat_copy_f(gauge_field_thin[mu] + i, &(s->linkf[mu]));
+  }
+}
+// -----------------------------------------------------------------

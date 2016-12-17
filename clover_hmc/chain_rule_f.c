@@ -1,3 +1,7 @@
+/********** chain_rule_f2.c ****************************/
+/* MIMD version 7 */
+/* YS 8/08	  */
+
 /* chain_rule_f.c :  dummy, force already given in fund rep
    chain_rule_f.c is just as trivial as fund_rep_force_f.c,
    but we need to be consistent with chain_rule(..) prototype.

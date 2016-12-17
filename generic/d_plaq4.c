@@ -1,201 +1,130 @@
-/************************** d_plaq4.c *******************************/
-/* MIMD version 7 */
-/* This version mallocs the temporary su3_matrix */
-
-/* Double precision version of "plaquette4.c" including optional
-   Schroedinger functional - UMH - 1/27/00 */
-
-/* All matrices declared to be NCOLxNCOL.  -bqs 12/06	*/
-
-/* Measure the average plaquette of the space-space and
-   space-time plaquettes */
-
+// -----------------------------------------------------------------
+// Measure average space--space and space--time plaquettes,
+// mallocing the temporary su3_matrix
 #include "generic_includes.h"
+// -----------------------------------------------------------------
 
-void d_plaquette(double *ss_plaq,double *st_plaq) {
-/* su3mat is scratch space of size su3_matrix */
-su3_matrix_f *su3mat;
-register int i,dir1,dir2;
-register site *s;
-register su3_matrix_f *m1,*m4;
-su3_matrix_f mtmp;
-double ss_sum,st_sum;
-msg_tag *mtag0,*mtag1;
-    ss_sum = st_sum = 0.0;
 
-    su3mat = (su3_matrix_f *)malloc(sizeof(su3_matrix_f)*sites_on_node);
-    if(su3mat == NULL)
-      {
-	printf("plaquette: can't malloc su3mat\n");
-	fflush(stdout); terminate(1);
+
+// -----------------------------------------------------------------
+void d_plaquette(double *ss_plaq, double *st_plaq) {
+  register int i, dir, dir2;
+  register site *s;
+  register su3_matrix_f *m1, *m4;
+  double ss_sum = 0.0, st_sum = 0.0;
+  msg_tag *mtag0, *mtag1;
+  su3_matrix_f tmat, *tempmat = malloc(sites_on_node * sizeof(*tempmat));
+
+  if (tempmat == NULL) {
+    printf("plaquette: can't malloc tempmat\n");
+    fflush(stdout);
+    terminate(1);
+  }
+
+  // We can exploit a symmetry under dir<-->dir2
+  for (dir = YUP; dir <= TUP; dir++) {
+    for (dir2 = XUP; dir2 < dir; dir2++) {
+      // gen_pt[0] is U_b(x+a), gen_pt[1] is U_a(x+b)
+      mtag0 = start_gather_site(F_OFFSET(linkf[dir2]), sizeof(su3_matrix_f),
+                                dir, EVENANDODD, gen_pt[0]);
+      mtag1 = start_gather_site(F_OFFSET(linkf[dir]), sizeof(su3_matrix_f),
+                                dir2, EVENANDODD, gen_pt[1]);
+
+      // tempmat = Udag_b(x) U_a(x)
+      FORALLSITES(i,s) {
+        m1 = &(s->linkf[dir]);
+        m4 = &(s->linkf[dir2]);
+        mult_su3_an_f(m4, m1, &tempmat[i]);
       }
+      wait_gather(mtag0);
+      wait_gather(mtag1);
 
-    for(dir1=YUP;dir1<=TUP;dir1++){
-	for(dir2=XUP;dir2<dir1;dir2++){
+      // Compute tr[Udag_a(x+b) Udag_b(x) U_a(x) U_b(x+a)]
+      FORALLSITES(i,s) {
+        m1 = (su3_matrix_f *)(gen_pt[0][i]);
+        m4 = (su3_matrix_f *)(gen_pt[1][i]);
+        mult_su3_nn_f(&(tempmat[i]), m1, &tmat);
 
-	    mtag0 = start_gather_site( F_OFFSET(linkf[dir2]), sizeof(su3_matrix_f),
-		dir1, EVENANDODD, gen_pt[0] );
-	    mtag1 = start_gather_site( F_OFFSET(linkf[dir1]), sizeof(su3_matrix_f),
-		dir2, EVENANDODD, gen_pt[1] );
+        if (dir == TUP)
+          st_sum += (double)realtrace_su3_f(m4, &tmat);
+        else
+          ss_sum += (double)realtrace_su3_f(m4, &tmat);
+      }
+      cleanup_gather(mtag0);
+      cleanup_gather(mtag1);
+    }
+  }
+  g_doublesum(&ss_sum);
+  g_doublesum(&st_sum);
 
-	    FORALLSITES(i,s){
-		m1 = &(s->linkf[dir1]);
-		m4 = &(s->linkf[dir2]);
-		mult_su3_an_f(m4,m1,&su3mat[i]);
-	    }
+  // Average over three plaquettes that involve the temporal link
+  // and three that do not
+  *ss_plaq = ss_sum / (double)(3.0 * volume);
+  *st_plaq = st_sum / (double)(3.0 * volume);
+  free(tempmat);
+}
+// -----------------------------------------------------------------
 
-	    wait_gather(mtag0);
-	    wait_gather(mtag1);
-/* SF: supersede the gather when necessary                            */
-            FORALLSITES(i,s){
-                gen_pt[0][i]=CHOOSE_NBR(i,s,dir1,linkf_bndr_up[dir2],0);
-            }
 
-/* SF: we need the space-time plaquettes associated with t=0 as well  */
-            if (dir1==TUP ) {
-               FORALLSITES(i,s){
-	          mult_su3_nn_f( &(su3mat[i]), (su3_matrix_f *)(gen_pt[0][i]),
-                        &mtmp);
-                  st_sum += (double)
-		      realtrace_su3_f((su3_matrix_f *)(gen_pt[1][i]),&mtmp);
-               }
-            }
-/* SF: space-space plaquettes only for t>0  */
-            else {
-               FORALLSITESDOMAIN(i,s){
-		  mult_su3_nn_f( &(su3mat[i]), (su3_matrix_f *)(gen_pt[0][i]),
-			&mtmp);
-                  ss_sum += (double)
-		        realtrace_su3_f((su3_matrix_f *)(gen_pt[1][i]),&mtmp);
-               }
-            }
 
-/*	    FORALLSITES(i,s){
-#ifdef SCHROED_FUN
-*		if(dir1==TUP ){
-*		    if(s->t==(nt-1)){
-*			mult_su3_nn_f( &su3mat[i],
-*			    &(s->boundary[dir2]), &mtmp);
-*		    }
-*		    else{
-*			mult_su3_nn_f( &su3mat[i],
-*			    (su3_matrix_f *)(gen_pt[0][i]), &mtmp);
-*		    }
-*		    st_sum +=
-*			realtrace_su3_f((su3_matrix_f *)(gen_pt[1][i]), &mtmp);
-*		}
-*		else if(s->t > 0){
-*		    mult_su3_nn_f( &su3mat[i], (su3_matrix_f *)(gen_pt[0][i]),
-*			&mtmp);
-*		    ss_sum +=
-*			realtrace_su3_f((su3_matrix_f *)(gen_pt[1][i]), &mtmp);
-*		}
-#else
-*		mult_su3_nn_f( &su3mat[i], (su3_matrix_f *)(gen_pt[0][i]),
-*		    &mtmp);
-*
-*		if(dir1==TUP )st_sum += (double)
-*		    realtrace_su3_f((su3_matrix_f *)(gen_pt[1][i]),&mtmp);
-*		else          ss_sum += (double)
-*		    realtrace_su3_f((su3_matrix_f *)(gen_pt[1][i]),&mtmp);
-#endif
-*	    }
-*/
-	    cleanup_gather(mtag0);
-	    cleanup_gather(mtag1);
-	} /* dir2 */
-    } /* dir1 */
-    g_doublesum( &ss_sum );
-    g_doublesum( &st_sum );
-/* there are three space-space and three time-space plaquettes */
-#ifdef SCHROED_FUN
-    *ss_plaq = ss_sum /((double)(3*nx*ny*nz*(nt-1)));
-#else
-    *ss_plaq = ss_sum /((double)(3*nx*ny*nz*nt));
-#endif
-    *st_plaq = st_sum /((double)(3*nx*ny*nz*nt));
-
-    free(su3mat);
-} /* d_plaquette4 */
-
+// -----------------------------------------------------------------
 #ifndef PURE_GAUGE
-/*** fermion irrep's plaquette  ***/
+// Plaquette in fermion irrep
 void d_plaquette_frep(double *ss_plaq_frep, double *st_plaq_frep) {
-/* su3mat is scratch space of size su3_matrix */
-su3_matrix *su3mat;
-register int i,dir1,dir2;
-register site *s;
-register su3_matrix *m1,*m4;
-su3_matrix mtmp;
-double ss_sum,st_sum;
-msg_tag *mtag0,*mtag1;
-    ss_sum = st_sum = 0.0;
+  register int i, dir, dir2;
+  register site *s;
+  register su3_matrix *m1, *m4;
+  double ss_sum = 0.0, st_sum = 0.0;
+  msg_tag *mtag0, *mtag1;
+  su3_matrix tmat, *tempmat = malloc(sites_on_node * sizeof(*tempmat));
 
+  if (tempmat == NULL) {
+    printf("plaquette_frep: can't malloc tempmat\n");
+    fflush(stdout);
+    terminate(1);
+  }
 
+  // We can exploit a symmetry under dir<-->dir2
+  for (dir = YUP; dir <= TUP; dir++) {
+    for (dir2 = XUP; dir2 < dir; dir2++) {
+      // gen_pt[0] is U_b(x+a), gen_pt[1] is U_a(x+b)
+      mtag0 = start_gather_site(F_OFFSET(link[dir2]), sizeof(su3_matrix),
+                                dir, EVENANDODD, gen_pt[0]);
+      mtag1 = start_gather_site(F_OFFSET(link[dir]), sizeof(su3_matrix),
+                                dir2, EVENANDODD, gen_pt[1]);
 
-    su3mat = (su3_matrix *)malloc(sizeof(su3_matrix)*sites_on_node);
-    if(su3mat == NULL)
-      {
-	printf("plaquette: can't malloc su3mat\n");
-	fflush(stdout); terminate(1);
+      // tempmat = Udag_b(x) U_a(x)
+      FORALLSITES(i, s) {
+        m1 = &(s->link[dir]);
+        m4 = &(s->link[dir2]);
+        mult_su3_an(m4, m1, &tempmat[i]);
       }
+      wait_gather(mtag0);
+      wait_gather(mtag1);
 
-    for(dir1=YUP;dir1<=TUP;dir1++){
-	for(dir2=XUP;dir2<dir1;dir2++){
+      // Compute tr[Udag_a(x+b) Udag_b(x) U_a(x) U_b(x+a)]
+      FORALLSITES(i, s) {
+        m1 = (su3_matrix *)(gen_pt[0][i]);
+        m4 = (su3_matrix *)(gen_pt[1][i]);
+        mult_su3_nn(&(tempmat[i]), m1, &tmat);
 
-	    mtag0 = start_gather_site( F_OFFSET(link[dir2]), sizeof(su3_matrix),
-		dir1, EVENANDODD, gen_pt[0] );
-	    mtag1 = start_gather_site( F_OFFSET(link[dir1]), sizeof(su3_matrix),
-		dir2, EVENANDODD, gen_pt[1] );
+        if (dir == TUP)
+          st_sum += (double)realtrace_su3(m4, &tmat);
+        else
+          ss_sum += (double)realtrace_su3(m4, &tmat);
+      }
+      cleanup_gather(mtag0);
+      cleanup_gather(mtag1);
+    }
+  }
+  g_doublesum(&ss_sum);
+  g_doublesum(&st_sum);
 
-	    FORALLSITES(i,s){
-		m1 = &(s->link[dir1]);
-		m4 = &(s->link[dir2]);
-		mult_su3_an(m4,m1,&su3mat[i]);
-	    }
-
-	    wait_gather(mtag0);
-	    wait_gather(mtag1);
-/* SF: supersede the gather when necessary                            */
-            FORALLSITES(i,s){
-                gen_pt[0][i]=CHOOSE_NBR(i,s,dir1,link_bndr_up[dir2],0);
-            }
-
-/* SF: we need the space-time plaquettes associated with t=0 as well  */
-            if (dir1==TUP ) {
-               FORALLSITES(i,s){
-	          mult_su3_nn( &(su3mat[i]), (su3_matrix *)(gen_pt[0][i]),
-                        &mtmp);
-                  st_sum += (double)
-		      realtrace_su3((su3_matrix *)(gen_pt[1][i]),&mtmp);
-               }
-            }
-/* SF: space-space plaquettes only for t>0  */
-            else {
-               FORALLSITESDOMAIN(i,s){
-		  mult_su3_nn( &(su3mat[i]), (su3_matrix *)(gen_pt[0][i]),
-			&mtmp);
-                  ss_sum += (double)
-		        realtrace_su3((su3_matrix *)(gen_pt[1][i]),&mtmp);
-               }
-            }
-
-
-	    cleanup_gather(mtag0);
-	    cleanup_gather(mtag1);
-	} /* dir2 */
-    } /* dir1 */
-    g_doublesum( &ss_sum );
-    g_doublesum( &st_sum );
-/* there are three space-space and three time-space plaquettes */
-#ifdef SCHROED_FUN
-    *ss_plaq_frep = ss_sum /((double)(3*nx*ny*nz*(nt-1)));
-#else
-    *ss_plaq_frep = ss_sum /((double)(3*nx*ny*nz*nt));
+  // Average over three plaquettes that involve the temporal link
+  // and three that do not
+  *ss_plaq_frep = ss_sum / (double)(3.0 * volume);
+  *st_plaq_frep = st_sum / (double)(3.0 * volume);
+  free(tempmat);
+}
 #endif
-    *st_plaq_frep = st_sum /((double)(3*nx*ny*nz*nt));
-
-    free(su3mat);
-} /* d_plaquette_frep */
-
-#endif /* PURE_GAUGE */
+// -----------------------------------------------------------------

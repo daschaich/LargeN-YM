@@ -1,3 +1,7 @@
+/************************* force_nhyp.c ***********************************/
+/* MIMD version 7       */
+/* adapted YS Sept 2008 */
+
 /* Reference:
 * Hypercubic smeared links for dynamical fermions.
 * By Anna Hasenfratz, Roland Hoffmann, Stefan Schaefer.
@@ -15,12 +19,6 @@ void compute_sigma23(su3_matrix_f* sig,
                      su3_matrix_f* lnk1, su3_matrix_f* lnk2,
                      su3_matrix_f* lambda1, su3_matrix_f* lambda2,
                      int dir1, int dir2);
-#ifdef SF
-void dfatlink_deta(su3_matrix_f* lnk1, su3_matrix_f* lnk2,
-                   su3_matrix_f* lambda1, su3_matrix_f* lambda2,
-                   int dir1, int dir2);
-#endif
-
 /*
 * Derivative of the NHYP link wrt to the constinuent links
 * Two contributions:
@@ -30,9 +28,7 @@ void dfatlink_deta(su3_matrix_f* lnk1, su3_matrix_f* lnk2,
 */
 
 /*** first-level force *****************************************************/
-void stout_force1()
-{
-
+void stout_force1(){
     int dir, dir2;
 #if(SMEAR_LEVEL==1)
     int i;
@@ -62,28 +58,15 @@ void stout_force1()
       compute_sigma23(SigmaH[dir],
                             hyplink2[dir2][dir], hyplink2[dir][dir2],
                 LambdaU[dir], LambdaU[dir2], dir, dir2 );
-#ifdef SF
-/* in SF, if the original call was from fermion_coupling,            */
-/* at this point we compute this level's contribution to K/g^2       */
-            if(sf_coupling_flag==SF_COUPLING)
-                dfatlink_deta(hyplink2[dir2][dir], hyplink2[dir][dir2],
-                  LambdaU[dir], LambdaU[dir2], dir, dir2 );
-#endif /* SF */
 
 #else  /* SMEAR_LEVEL==1 */
       compute_sigma23(SigmaH[dir],
                             gauge_field_thin[dir], gauge_field_thin[dir2],
                 LambdaU[dir], LambdaU[dir2], dir, dir2 );
-            FORALLDYNLINKS(i,s,dir)
+            FORALLSITES(i,s)
             {
                add_su3_matrix_f(Sigma[dir]+i,SigmaH[dir]+i,Sigma[dir]+i);
             }
-#ifdef SF
-            /* this level's contribution to K/g^2       */
-            if(sf_coupling_flag==SF_COUPLING)
-                dfatlink_deta(gauge_field_thin[dir], gauge_field_thin[dir2],
-                  LambdaU[dir], LambdaU[dir2], dir, dir2 );
-#endif /* SF */
 #endif /* SMEAR_LEVEL */
 
   } /* dir */
@@ -99,78 +82,92 @@ void stout_force1()
 
 #if (SMEAR_LEVEL>1)
 /*** second-level force ****************************************************/
-void stout_force2(int dir2) {
-  register int i;
-  register site *s;
-  int dir, dir3, dir4;
+void stout_force2(int dir2)
+{
+
+    register int i;
+    register site *s;
+    int dir, dir3, dir4;
 #if (SMEAR_LEVEL==3)
-  int imap[4][4]={{0,0,1,2},{0,0,0,3},{1,0,0,0},{2,3,0,0}};
-  int iimap;
+    int imap[4][4]={{0,0,1,2},{0,0,0,3},{1,0,0,0},{2,3,0,0}};
+    int iimap;
 #endif
 
-  /* dir3 is the main direction of the twice smeared hyplink2
-     dir2 is the secondary direction of the twice smeared hyplink2
-     dir is the main direction of the once-smeared link
-     */
+    /* dir3 is the main direction of the twice smeared hyplink2
+       dir2 is the secondary direction of the twice smeared hyplink2
+       dir is the main direction of the once-smeared link
+    */
 
   for (dir3 = XUP; dir3 <= TUP; dir3++) if (dir3 != dir2)
-  {
-    Sigma_update1 (dir3, SigmaH[dir3],Staple2[dir2][dir3],Lambda1,
+        {
+      Sigma_update1 (dir3, SigmaH[dir3],Staple2[dir2][dir3],Lambda1,
         (1.-alpha_smear[1]), alpha_smear[1] / 4.,1);
   } /*dir3 */
 
   for (dir3 = XUP; dir3 <= TUP; dir3++) if( dir3 != dir2)
   {
-    for (dir = XUP; dir<= TUP; dir++) if (dir3!=dir && dir!= dir2)
-    {
-      for (dir4=XUP;dir4<=TUP;dir4++)
+      for (dir = XUP; dir<= TUP; dir++) if (dir3!=dir && dir!= dir2)
       {
-        if (dir4!=dir && dir4!=dir2 && dir4 !=dir3) break;
-      }
+          for (dir4=XUP;dir4<=TUP;dir4++)
+                {
+                    if (dir4!=dir && dir4!=dir2 && dir4 !=dir3) break;
+                }
 
 #if (SMEAR_LEVEL==3)
-      compute_sigma23(SigmaH[dir],
-          hyplink1[dir4][dir], hyplink1[dir4][dir3],
-          Lambda1[dir], Lambda1[dir3],dir,dir3 );
+    compute_sigma23(SigmaH[dir],
+                                hyplink1[dir4][dir], hyplink1[dir4][dir3],
+              Lambda1[dir], Lambda1[dir3],dir,dir3 );
+#ifdef SF
+                /* this level's contribution to K/g^2       */
+                if(sf_coupling_flag==SF_COUPLING)
+                    dfatlink_deta(hyplink1[dir4][dir], hyplink1[dir4][dir3],
+                Lambda1[dir], Lambda1[dir3],dir,dir3 );
+#endif /* SF */
 
 #else  /* SMEAR_LEVEL==2 */
-      compute_sigma23(SigmaH[dir],
-          gauge_field_thin[dir], gauge_field_thin[dir3],
-          Lambda1[dir], Lambda1[dir3],dir,dir3 );
-      FORALLDYNLINKS(i,s,dir)
-      {
-        add_su3_matrix_f(Sigma[dir]+i,SigmaH[dir]+i,Sigma[dir]+i);
-      }
+    compute_sigma23(SigmaH[dir],
+                                gauge_field_thin[dir], gauge_field_thin[dir3],
+              Lambda1[dir], Lambda1[dir3],dir,dir3 );
+                FORALLSITES(i,s)
+                {
+                   add_su3_matrix_f(Sigma[dir]+i,SigmaH[dir]+i,Sigma[dir]+i);
+                }
+#ifdef SF
+                /* this level's contribution to K/g^2       */
+                if(sf_coupling_flag==SF_COUPLING)
+                  dfatlink_deta(gauge_field_thin[dir], gauge_field_thin[dir3],
+                Lambda1[dir], Lambda1[dir3],dir,dir3 );
+#endif /* SF */
 #endif /* SMEAR_LEVEL */
 
-    } /* dir */
+      } /* dir */
 
-    /* this part is really awkward: The stout_force3 is symmetric in the arguments,
-       but the input is not. So one can add the dir2,dir3 and the dir3,dir2 terms.
-       to do so, one has to stort them.....I don't like this at all.
-       To save some memory, store only the upper triangular part of the 4x4 matrix
-       For that, only a 4 'vector' is necessary, which field to use is given by the
-       imap array (hard-coded above)
-       */
+/* this part is really awkward: The stout_force3 is symmetric in the arguments,
+   but the input is not. So one can add the dir2,dir3 and the dir3,dir2 terms.
+   to do so, one has to stort them.....I don't like this at all.
+   To save some memory, store only the upper triangular part of the 4x4 matrix
+   For that, only a 4 'vector' is necessary, which field to use is given by the
+   imap array (hard-coded above)
+*/
 
 #if (SMEAR_LEVEL==3)
-    if (dir2<dir3)
-    {
-      iimap=imap[dir2][dir3];
-      FORALLSITES(i,s)for(dir=XUP;dir<=TUP;dir++)
+      if (dir2<dir3)
       {
+    iimap=imap[dir2][dir3];
+    FORALLSITES(i,s)for(dir=XUP;dir<=TUP;dir++)
+                {
         su3mat_copy_f(SigmaH[dir]+i,SigmaH2[iimap][dir]+i);
-      }
+                }
 
-    } else {
-      iimap=imap[dir2][dir3];
-      FORALLSITES(i,s)for(dir=XUP;dir<=TUP;dir++)
-      {
+      } else {
+    iimap=imap[dir2][dir3];
+    FORALLSITES(i,s)for(dir=XUP;dir<=TUP;dir++)
+                {
         add_su3_matrix_f(SigmaH[dir]+i,SigmaH2[iimap][dir]+i,
-            SigmaH[dir]+i);
+                                   SigmaH[dir]+i);
+                }
+    stout_force3(dir2, dir3);
       }
-      stout_force3(dir2, dir3);
-    }
 #endif /* SMEAR_LEVEL==3 */
 
   } /* dir3 */
@@ -207,7 +204,13 @@ void stout_force3(int dir3, int dir2)
           compute_sigma23(tempmat_nhyp1,
                                 gauge_field_thin[dir], gauge_field_thin[dir1],
                     Lambda2[dir],Lambda2[dir1],dir,dir1 );
-          FORALLDYNLINKS(i,s,dir)
+#ifdef SF
+                /* this level's contribution to K/g^2       */
+                if(sf_coupling_flag==SF_COUPLING)
+                  dfatlink_deta(gauge_field_thin[dir], gauge_field_thin[dir1],
+                    Lambda2[dir],Lambda2[dir1],dir,dir1);
+#endif
+          FORALLSITES(i,s)
                 {
                   add_su3_matrix_f(Sigma[dir]+i,tempmat_nhyp1+i,Sigma[dir]+i);
                 }
@@ -239,7 +242,7 @@ void Sigma_update1 (int dir, su3_matrix_f* sigma_off, su3_matrix_f* stp,
 #endif
 #endif
 
-    FORALLDYNLINKS(i,s,dir) {
+    FORALLSITES(i,s) {
   /* make Omega, Q, Q^2 */
   Omega=stp[i];
   mult_su3_an_f(&Omega,&Omega,&Q);
@@ -338,6 +341,9 @@ void Sigma_update1 (int dir, su3_matrix_f* sigma_off, su3_matrix_f* stp,
    If this is the first level, then Sigma has to be initiallized. On later
    levels, we accumulate the respecive contributions
 */
+/* if we're doing SF and the call originated from fermion_coupling,
+   we won't be using the force tensor Sigma[dir].  So be it.
+*/
         if (sigfresh==0)
             scalar_mult_su3_matrix_f(&Gamma, alpha1, Sigma[dir]+i);
         else
@@ -376,12 +382,6 @@ void compute_sigma23(su3_matrix_f* sig,
     wait_gather(tag0);
     wait_gather(tag2);
 
-    /* fix boundary values for SF */
-    FORALLSITES(i,st) {
-        gen_pt[0][i] = CHOOSE_NBR(i,st,dir1,linkf_bndr_up[dir2],0);
-        gen_pt[2][i] = CHOOSE_NBR(i,st,dir1,linkf_zero[dir2],2);
-    }
-
     /* get link[dir1] from direction dir2   */
     tag1 = start_gather_field( lnk1, sizeof(su3_matrix_f), dir2,
                                EVENANDODD, gen_pt[1] );
@@ -415,15 +415,8 @@ void compute_sigma23(su3_matrix_f* sig,
     wait_gather(tag1);
     wait_gather(tag3);
 
-    /* fix boundary values for SF */
-    FORALLSITES(i,st) {
-        gen_pt[1][i] = CHOOSE_NBR(i,st,dir2,linkf_bndr_up[dir1],1);
-        gen_pt[3][i] = CHOOSE_NBR(i,st,dir2,linkf_zero[dir1],3);
-    }
-
-
     /* Upper staple */
-    FORALLDYNLINKS(i,st,dir1){
+    FORALLSITES(i,st){
         /* "term1" */
         mult_su3_nn_f( lambda2+i, (su3_matrix_f *)gen_pt[1][i], &tmat1 );
         mult_su3_na_f( (su3_matrix_f *)gen_pt[0][i], &tmat1, sig+i );
@@ -442,23 +435,121 @@ void compute_sigma23(su3_matrix_f* sig,
     /* finally add the lower staple. */
     wait_gather(tag4);
 
-    FORALLDYNLINKS(i,st,dir1){
+    FORALLSITES(i,st)
   add_su3_matrix_f( sig+i, (su3_matrix_f *)gen_pt[4][i], sig+i );
-    }
 
     cleanup_gather(tag0);
     cleanup_gather(tag1);
     cleanup_gather(tag2);
     cleanup_gather(tag3);
     cleanup_gather(tag4);
-
 } /* compute_sigma23 */
 
 
 
+/*** contribution to K/g^2 from fat-link dependence ************************/
+/*   derived from compute_sigma23()                 ************************/
+
+#ifdef SF
+
+void dfatlink_deta(su3_matrix_f* lnk1, su3_matrix_f* lnk2,
+                   su3_matrix_f* lambda1, su3_matrix_f* lambda2,
+                   int dir1, int dir2)
+{
+    register int i;
+    register site *st;
+    msg_tag *tag0, *tag1, *tag2, *tag3;
+    su3_matrix_f tmat1, tmat2;
+
+/*  dir1 is the direction of the link
+    dir2 is the other direction that defines the staple
+
+    Here, the link is a spatial link at the boundary,
+    and only temporal dynamical links "touch" it,
+    therefore we must have dir1==XUP,YUP,ZUP and dir2=TUP
+*/
+    if( dir1==TUP || dir2!=TUP ) return;
+
+/*  "lower" and "upper" staples refer to dir2=TUP
+    The lower staple contributes only at t=nt-1
+    The upper staple contributes only at t=0
+*/
+    /* get link[dir2] from direction dir1   */
+    tag0 = start_gather_field( lnk2, sizeof(su3_matrix_f), dir1,
+                               EVENANDODD, gen_pt[0] );
+
+    /* get Lambda[dir2] from direction dir1 */
+    tag2 = start_gather_field( lambda2, sizeof(su3_matrix_f), dir1,
+                               EVENANDODD, gen_pt[2] );
+
+    wait_gather(tag0);
+    wait_gather(tag2);
+
+    /* get link[dir1] from direction dir2   */
+    tag1 = start_gather_field( lnk1, sizeof(su3_matrix_f), dir2,
+                               EVENANDODD, gen_pt[1] );
+
+    /* get Lambda[dir1] from direction dir2 */
+    tag3 = start_gather_field( lambda1, sizeof(su3_matrix_f), dir2,
+                               EVENANDODD, gen_pt[3] );
+
+/*  when comparing to compute_sigma23 recall that
+    realtrace_su3_f returns Re tr A^dag B.
+    Hence also 2*f_fat in coupling()
+*/
+    /* Lower staple first                   */
+    FORALLSITES(i,st) if( st->t == nt-1 ){
+        /* "term2" */
+        mult_su3_nn_f( lambda1+i, (su3_matrix_f *)gen_pt[0][i], &tmat1 );
+        mult_su3_an_f( lnk2+i, &tmat1, &tmat2 );
+        f_fat += (double)realtrace_su3_f( &(linkf_driv_up[dir1]), &tmat2 );
+        /* "term3" */
+        mult_su3_nn_f( lnk1+i, (su3_matrix_f *)gen_pt[2][i], &tmat1 );
+        mult_su3_an_f( lnk2+i, &tmat1, &tmat2 );
+        f_fat += (double)realtrace_su3_f( &(linkf_driv_up[dir1]), &tmat2 );
+        /* "term4" */
+        mult_su3_nn_f( lnk1+i, (su3_matrix_f *)gen_pt[0][i], &tmat1 );
+        mult_su3_an_f( lambda2+i, &tmat1, &tmat2 );
+        f_fat += (double)realtrace_su3_f( &(linkf_driv_up[dir1]), &tmat2 );
+    }
+
+    wait_gather(tag1);
+    wait_gather(tag3);
+
+    /* Upper staple                         */
+    FORALLSITES(i,st) if( st->t == 0 ){
+        /* "term1" */
+        mult_su3_nn_f( lambda2+i, (su3_matrix_f *)gen_pt[1][i], &tmat1 );
+        mult_su3_na_f( &tmat1, (su3_matrix_f *)gen_pt[0][i], &tmat2 );
+        f_fat += (double)realtrace_su3_f( &(linkf_driv_dn[dir1]), &tmat2 );
+        /* "term5" */
+        mult_su3_na_f( (su3_matrix_f *)gen_pt[2][i],
+                       (su3_matrix_f *)gen_pt[1][i], &tmat1 );
+        mult_su3_na_f( lnk2+i, &tmat1, &tmat2 );
+        f_fat += (double)realtrace_su3_f( &(linkf_driv_dn[dir1]), &tmat2 );
+        /* "term6" */
+        mult_su3_na_f( (su3_matrix_f *)gen_pt[0][i],
+                       (su3_matrix_f *)gen_pt[3][i], &tmat1 );
+        mult_su3_na_f( lnk2+i, &tmat1, &tmat2 );
+        f_fat += (double)realtrace_su3_f( &(linkf_driv_dn[dir1]), &tmat2 );
+    }
+
+/* Note: global gather of f_fat done in calling routine:
+   fermion_coupling() in coupling.c                      */
+
+    cleanup_gather(tag0);
+    cleanup_gather(tag1);
+    cleanup_gather(tag2);
+    cleanup_gather(tag3);
+
+} /* dfatlink_deta */
+
+#endif /* SF */
+
 
 /*** helper ****************************************************************/
-void make_2hermitian_f(su3_matrix_f *A) {
+void make_2hermitian_f(su3_matrix_f *A)
+{
     int i,j;
     for (i=0;i<NCOL;i++) for (j=i;j<NCOL;j++)
     {
@@ -466,5 +557,6 @@ void make_2hermitian_f(su3_matrix_f *A) {
   A->e[i][j].imag=(A->e[i][j].imag-A->e[j][i].imag);
   A->e[j][i].real= A->e[i][j].real;
   A->e[j][i].imag=-A->e[i][j].imag;
+
     }
 }
