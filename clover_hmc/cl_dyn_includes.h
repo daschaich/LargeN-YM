@@ -2,6 +2,7 @@
 // Include files for dynamical Wilson-clover HMC
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 #include "../include/config.h"  /* Keep this first */
 #include "../include/complex.h"

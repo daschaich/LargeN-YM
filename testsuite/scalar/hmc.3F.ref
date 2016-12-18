@@ -1,17 +1,15 @@
 SU(3) with clover fermions, DIMF = 3, fermion rep = fundamental
-nHYP links with 3 smearing level(s)
-  Reading alpha_smear parameters from infile
-  IR_STAB = 1.000000e-06
-  EPS_SQ = 1.000000e-05
-NHYP_DEBUG turned on
-
 Microcanonical simulation with refreshing
-MIMD version 7ish
 Machine = Scalar processor, with 1 nodes
+nHYP links, reading alpha_smear parameters from infile
+  IR_STAB = 1e-06
+  EPS_SQ = 1e-05
+NHYP_DEBUG turned on
+BETA_FREP turned on
 Hybrid Monte Carlo algorithm
 Phi algorithm
 LU preconditioning
-start: Sat Dec 17 12:15:20 2016
+start: Sun Dec 18 18:26:46 2016
 
 type 0 for no prompts or 1 for prompts
 nflavors 2
@@ -52,11 +50,11 @@ forget
 Restored binary gauge configuration serially from file config.3F.4444
 Time stamp Fri Dec 16 00:37:45 2016
 Checksums 83567242 2efc25a5 OK
-Time to reload gauge configuration = 0.0002282 seconds
+Time to reload gauge configuration = 0.0002041 seconds
 CHECK PLAQ: 1.2754809836229895e+00 1.3359434793371250e+00
 CHECK NERSC LINKTR: -2.4656227161254187e-03 CKSUM: 0
 Reunitarized for double precision.  Max deviation 5.6e-08 changed to 5.6e-16
-Time to check unitarity = 0.000437 seconds
+Time to check unitarity = 0.0004098 seconds
 START 1.275481 1.3359435 2.6114245
 f_eps0 0.2 f_eps1 0.05 g_eps 0.005
 WARMUPS COMPLETED
@@ -91,12 +89,12 @@ RUNNING COMPLETED
 STOP 1.333257 1.2927741 2.626031
 Average cg iters for steps: 1213
 Average cg iters for measurements: 119
-Time               = 20.36 seconds
-congrad time       = 2.565 seconds
-fermion_force time = 12.09 seconds
-block_nhyp time    = 1.531 seconds
-compute_fhb time   = 0.7193 seconds
+Time               = 20.23 seconds
+congrad time       = 2.563 seconds
+fermion_force time = 11.98 seconds
+block_nhyp time    = 1.528 seconds
+compute_fhb time   = 0.7155 seconds
 total_iters = 3735
 
-exit: Sat Dec 17 12:15:40 2016
+exit: Sun Dec 18 18:27:06 2016
 

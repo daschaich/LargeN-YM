@@ -357,6 +357,4 @@ TOC(4,time_compute_fhb)
 #ifdef TIMING
 TOC(4,time_compute_fhb)
 #endif
-
-    return;
 }

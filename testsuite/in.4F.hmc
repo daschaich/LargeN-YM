@@ -22,9 +22,9 @@ shift 0.2
 clov_c 1.0
 u0 1.0
 
-alpha_hyp0 0.
-alpha_hyp1 0.
-alpha_hyp2 0.
+alpha_hyp0 0.75
+alpha_hyp1 0.6
+alpha_hyp2 0.3
 
 max_cg_iterations 500
 max_cg_restarts 10

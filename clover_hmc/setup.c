@@ -1,87 +1,58 @@
 // -----------------------------------------------------------------
-/* Version for dynamical clover fermions with Symanzik/tadople
-  improved gauge field  */
-
+// Dynamical nHYP Wilson-clover setup
 #include "cl_dyn_includes.h"
-#include <string.h>
-int initial_set();
-void make_fields();
 #define IF_OK if (status==0)
 
-/* Each node has a params structure for passing simulation parameters */
+// Each node has a params structure for passing simulation parameters
 #include "params.h"
 params par_buf;
-
-int setup()   {
-  int prompt;
-
-  /* print banner, get volume, nflavors, seed */
-  prompt=initial_set();
-  /* initialize the node random number generator */
-  initialize_prn(&node_prn,iseed,volume+mynode());
-  /* Initialize the layout functions, which decide where sites live */
-  setup_layout();
-  /* allocate space for lattice, set up coordinate fields */
-  make_lattice();
-  /* set up neighbor pointers and comlink structures */
-  make_nn_gathers();
-  /* allocate space for fields */
-  make_fields();
-
-  return(prompt);
-}
+// -----------------------------------------------------------------
 
 
-/* SETUP ROUTINES */
+
+// -----------------------------------------------------------------
+// On node zero, read lattice size, seed, nflavors and send to others
 int initial_set() {
-  int prompt,status;
-  /* On node zero, read lattice size, seed, nflavors and send to others */
+  int prompt, status;
   if (mynode() == 0) {
-    /* print banner */
-/* stringification kludge from gnu preprocessor manual
-   http://gcc.gnu.org/onlinedocs/cpp/Stringification.html */
+    // Print banner
+    /* stringification kludge from gnu preprocessor manual
+http://gcc.gnu.org/onlinedocs/cpp/Stringification.html */
 #define XSTR(s) STR(s)
 #define STR(s) #s
-/* end kludge */
+    /* end kludge */
     printf("SU(%d) with clover fermions, DIMF = %d, fermion rep = "
-           XSTR(FREP) "\n",NCOL,DIMF);
-#ifdef BETA_FREP
-//  printf("BETA_FREP turned on\n");
+        XSTR(FREP) "\n",NCOL,DIMF);
+    printf("Microcanonical simulation with refreshing\n");
+    printf("Machine = %s, with %d nodes\n", machine_type(), numnodes());
+#if SMEAR_LEVEL == 3
+    printf("nHYP links, reading alpha_smear parameters from infile\n");
+#elif SMEAR_LEVEL < 3
+    printf("Smearing with %d levels (last %d unused)\n",
+        3 - SMEAR_LEVEL);
 #endif
-#ifdef NHYP
-    printf("nHYP links with %d smearing level(s)\n", SMEAR_LEVEL);
-    printf("  Reading alpha_smear parameters from infile\n");
-#if (SMEAR_LEVEL < 3)
-    printf("  REMEMBER: last %d smearing parameter(s) not used in this run\n",
-           3 - SMEAR_LEVEL);
-#endif
-    printf("  IR_STAB = %e\n", (Real)IR_STAB);
-#if (NCOL == 3)
-    printf("  EPS_SQ = %e\n", (Real)EPS_SQ);
-#elif (NCOL == 4)
+    printf("  IR_STAB = %.4g\n", (Real)IR_STAB);
+#if NCOL == 3
+    printf("  EPS_SQ = %.4g\n", (Real)EPS_SQ);
+#elif NCOL == 4
   #ifdef NHYP_JACOBI
     printf("Using Jacobi\n  TOL_JACOBI = %e\n  MAX_JACOBI_ITERS = %d\n",
-     TOL_JACOBI, MAX_JACOBI_ITERS);
+        TOL_JACOBI, MAX_JACOBI_ITERS);
   #else
     printf("  EPS_SQ_4 = %e\n  EPS_SQ_3 = %e\n",
-            (Real)EPS_SQ_4, (Real)EPS_SQ_3);
+        (Real)EPS_SQ_4, (Real)EPS_SQ_3);
   #endif
 #endif
 #ifdef NHYP_DEBUG
     printf("NHYP_DEBUG turned on\n");
-#if (NCOL == 4)
-    printf("  TOL_NHYP = %e\n", TOL_NHYP);
-  #ifdef NHYP_JACOBI
+  #if NCOL == 4
+    printf("  TOL_NHYP = %.4g for SU(4)\n", (Real)TOL_NHYP);
+    #ifdef NHYP_JACOBI
     printf("  PRINT_JACOBI_ITERS = %d\n", PRINT_JACOBI_ITERS);
-  #else
-    printf("  TOL_ACOS = %.4g\n", (Real)TOL_ACOS);
+    #endif
   #endif
 #endif
-#endif
-#endif /* NHYP */
-    printf("\nMicrocanonical simulation with refreshing\n");
-    printf("MIMD version 7ish\n");
-    printf("Machine = %s, with %d nodes\n",machine_type(),numnodes());
+    printf("BETA_FREP turned on\n");
 #ifdef HMC_ALGORITHM
     printf("Hybrid Monte Carlo algorithm\n");
 #endif
@@ -119,7 +90,7 @@ int initial_set() {
   } /* end if (mynode()==0) */
 
   /* Node 0 broadcasts parameter buffer to all other nodes */
-  broadcast_bytes((char *)&par_buf,sizeof(par_buf));
+  broadcast_bytes((char *)&par_buf, sizeof(par_buf));
 
   if (par_buf.stopflag != 0)
     normal_exit(0);
@@ -142,6 +113,78 @@ int initial_set() {
 
 
 // -----------------------------------------------------------------
+// Allocate all space for fields
+void make_fields() {
+
+  int memfield;
+
+  /* move here alloc for clov? */
+
+  FIELD_ALLOC_VEC(gauge_field, su3_matrix_f, 4);
+  FIELD_ALLOC_VEC(gauge_field_thin, su3_matrix_f, 4);
+
+  FIELD_ALLOC_VEC(Sigma, su3_matrix_f, 4);
+  FIELD_ALLOC_VEC(SigmaH, su3_matrix_f, 4);
+  FIELD_ALLOC_VEC(Staple3, su3_matrix_f, 4);
+  FIELD_ALLOC_VEC(LambdaU, su3_matrix_f, 4);
+  memfield = 26;
+
+#if SMEAR_LEVEL > 1
+  FIELD_ALLOC_VEC(Lambda1, su3_matrix_f, 4);
+  FIELD_ALLOC_MAT_OFFDIAG(hyplink2, su3_matrix_f, 4);
+  FIELD_ALLOC_MAT_OFFDIAG(Staple2, su3_matrix_f, 4);
+  memfield = 54;
+#endif
+
+#if SMEAR_LEVEL == 3
+  FIELD_ALLOC_VEC(Lambda2, su3_matrix_f, 4);
+  FIELD_ALLOC_MAT_OFFDIAG(hyplink1, su3_matrix_f, 4);
+  FIELD_ALLOC_MAT_OFFDIAG(Staple1, su3_matrix_f, 4);
+  FIELD_ALLOC_MAT(SigmaH2, su3_matrix_f, 4, 4);
+  memfield = 98;
+#endif
+
+  FIELD_ALLOC(tempmat_nhyp1, su3_matrix_f);
+  FIELD_ALLOC(tempmat_nhyp2, su3_matrix_f);
+
+  node0_printf("Mallocing %.1f MBytes per node for fields\n",
+      (double)sites_on_node * memfield * sizeof(su3_matrix_f)/1e6);
+
+#if NCOL == 4
+#ifdef NHYP_JACOBI
+  Qj = AllocateMatrix(NCOL);
+  Vj = AllocateMatrix(NCOL);
+#endif
+#endif
+}
+// -----------------------------------------------------------------
+
+
+
+// -----------------------------------------------------------------
+int setup()   {
+  int prompt;
+
+  // Print banner, get volume, nflavors, seed
+  prompt = initial_set();
+  // Initialize the node random number generator
+  initialize_prn(&node_prn, iseed, volume + mynode());
+  // Initialize the layout functions, which decide where sites live
+  setup_layout();
+  // Allocate space for lattice, set up coordinate fields
+  make_lattice();
+  // Set up neighbor pointers and comlink structures
+  make_nn_gathers();
+  // Allocate space for fields
+  make_fields();
+
+  return prompt;
+}
+// -----------------------------------------------------------------
+
+
+
+// -----------------------------------------------------------------
 // Read in parameters for SU(N) Monte Carlo
 int readin(int prompt) {
   // prompt=1 indicates prompts are to be given for input
@@ -149,7 +192,7 @@ int readin(int prompt) {
   Real x;
 
   // On node zero, read parameters and send to all other nodes
-  if (this_node==0) {
+  if (this_node == 0) {
     printf("\n\n");
     status = 0;
 
@@ -224,7 +267,7 @@ int readin(int prompt) {
     if (status > 0)par_buf.stopflag=1; else par_buf.stopflag=0;
   } /* end if (this_node==0) */
 
-  broadcast_bytes((char *)&par_buf,sizeof(par_buf));
+  broadcast_bytes((char *)&par_buf, sizeof(par_buf));
   if (par_buf.stopflag != 0)
     normal_exit(0);
 
@@ -246,17 +289,16 @@ int readin(int prompt) {
   rsqprop = par_buf.rsqprop;
 
   beta = par_buf.beta;
-#ifdef BETA_FREP
   beta_frep = par_buf.beta_frep;
-#endif
+
   kappa = par_buf.kappa;
   clov_c = par_buf.clov_c;
   u0 = par_buf.u0;
-#ifdef NHYP
+
   alpha_smear[0] = par_buf.alpha_hyp0;
   alpha_smear[1] = par_buf.alpha_hyp1;
   alpha_smear[2] = par_buf.alpha_hyp2;
-#endif
+
   strcpy(startfile,par_buf.startfile);
   strcpy(savefile,par_buf.savefile);
 
@@ -278,52 +320,5 @@ int readin(int prompt) {
      including spatially twisted b.c. for SF */
   fermion_rep();
   return 0;
-}
-
-/* allocate all space for fields */
-void make_fields() {
-
-int memfield;
-
-/* move here alloc for clov? */
-
-#ifdef NHYP
-    FIELD_ALLOC_VEC(gauge_field,su3_matrix_f,4);
-    FIELD_ALLOC_VEC(gauge_field_thin,su3_matrix_f,4);
-
-    FIELD_ALLOC_VEC(Sigma,su3_matrix_f,4);
-    FIELD_ALLOC_VEC(SigmaH,su3_matrix_f,4);
-    FIELD_ALLOC_VEC(Staple3,su3_matrix_f,4);
-    FIELD_ALLOC_VEC(LambdaU,su3_matrix_f,4);
-    memfield=26;
-#if (SMEAR_LEVEL>1)
-    FIELD_ALLOC_VEC(Lambda1,su3_matrix_f,4);
-    FIELD_ALLOC_MAT_OFFDIAG(hyplink2,su3_matrix_f,4);
-    FIELD_ALLOC_MAT_OFFDIAG(Staple2,su3_matrix_f,4);
-    memfield=54;
-#endif
-
-#if (SMEAR_LEVEL==3)
-    FIELD_ALLOC_VEC(Lambda2,su3_matrix_f,4);
-    FIELD_ALLOC_MAT_OFFDIAG(hyplink1,su3_matrix_f,4);
-    FIELD_ALLOC_MAT_OFFDIAG(Staple1,su3_matrix_f,4);
-    FIELD_ALLOC_MAT(SigmaH2,su3_matrix_f,4,4);
-    memfield=98;
-#endif
-
-    FIELD_ALLOC(tempmat_nhyp1,su3_matrix_f);
-    FIELD_ALLOC(tempmat_nhyp2,su3_matrix_f);
-
-    node0_printf("Mallocing %.1f MBytes per node for fields\n",
-            (double)sites_on_node * memfield * sizeof(su3_matrix_f)/1e6);
-
-#if (NCOL==4)
-#ifdef NHYP_JACOBI
-    Qj = AllocateMatrix(NCOL);
-    Vj = AllocateMatrix(NCOL);
-#endif
-#endif
-
-#endif
 }
 // -----------------------------------------------------------------

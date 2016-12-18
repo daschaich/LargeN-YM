@@ -12,9 +12,6 @@
    valid for SU(2,3,4) only: calculation of Q^{-1/2}, including compute_fhb()
 
 T.D. attempt to make this competely general
-
-
-
 */
 
 
@@ -25,42 +22,38 @@ void staple_nhyp(int dir, int dir2, su3_matrix_f *lnk1, su3_matrix_f *lnk2,
 
     register int i;
     register site *st;
-    msg_tag *tag0,*tag1,*tag2;
-    su3_matrix_f tmat1,tmat2;
+    msg_tag *tag0, *tag1, *tag2;
+    su3_matrix_f tmat1, tmat2;
 
-    /* dir is the direction of the original link
-       dir2 is the other direction that defines the staple        */
-
-    /* get blocked_link[dir2] from direction dir */
+    // dir is the direction of the original link
+    // dir2 is the other direction that defines the staple
+    // Get blocked_link[dir2] from direction dir */
     tag0 = start_gather_field(lnk2, sizeof(su3_matrix_f), dir,
                               EVENANDODD, gen_pt[0]);
 
-    /* get blocked_link[dir] from direction dir2 */
+    // Get blocked_link[dir] from direction dir2 */
     tag1 = start_gather_field(lnk1, sizeof(su3_matrix_f), dir2,
                               EVENANDODD, gen_pt[1]);
 
-    /* start working on the lower staple while we wait for the gathers.
-       the lower staple is prepared at x-dir2 and stored in tempmat_nhyp1,
-       then gathered to x.
-    */
-
+    // Start working on the lower staple while we wait for the gathers
+    // The lower staple is prepared at x-dir2, stored in tempmat_nhyp1
+    // and then gathered to x
     FORALLSITES(i, st)
-      mult_su3_an_f(lnk2+i, lnk1+i, tempmat_nhyp1+i);
+      mult_su3_an_f(lnk2 + i, lnk1 + i, tempmat_nhyp1 + i);
 
+
+    // Finish and gather lower staple from direction -dir2
     wait_gather(tag0);
     wait_gather(tag1);
-
-    /* finish lower staple */
     FORALLSITES(i, st) {
-  mult_su3_nn_f(tempmat_nhyp1+i, (su3_matrix_f *)gen_pt[0][i], &tmat1);
-        su3mat_copy_f(&tmat1, tempmat_nhyp1 + i);
+      mult_su3_nn_f(tempmat_nhyp1 + i, (su3_matrix_f *)gen_pt[0][i], &tmat1);
+      su3mat_copy_f(&tmat1, tempmat_nhyp1 + i);
     }
 
-    /* gather staple from direction -dir2 to "home" site */
     tag2 = start_gather_field(tempmat_nhyp1, sizeof(su3_matrix_f),
                               OPP_DIR(dir2), EVENANDODD, gen_pt[2]);
 
-    /* calculate upper staple, add it */
+    // Calculate and add upper staple while gather runs
     FORALLSITES(i, st) {
       mult_su3_nn_f(lnk2 + i, (su3_matrix_f *)gen_pt[1][i], &tmat1);
       mult_su3_na_f(&tmat1, (su3_matrix_f *)gen_pt[0][i], &tmat2);
