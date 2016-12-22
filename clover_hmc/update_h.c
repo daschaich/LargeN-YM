@@ -8,6 +8,7 @@ void update_anti_hermitian(site *st, int dir, Real eps, su3_matrix_f *force);
 // -----------------------------------------------------------------
 
 
+
 // -----------------------------------------------------------------
 // Update the momenta with the gauge force
 double gauge_force(Real eps) {
@@ -16,7 +17,7 @@ double gauge_force(Real eps) {
   register Real eb3 = eps * beta / (Real)NCOL;
   double norm = 0.0;
   msg_tag *tag0, *tag1, *tag2;
-  su3_matrix_f tmat1,tmat2;
+  su3_matrix_f tmat1, tmat2;
 
   // Loop over directions, update mom[dir]
   FORALLUPDIR(dir) {
@@ -195,8 +196,9 @@ double fermion_force(Real eps1, Real eps2) {
   int level;
   Real local_CKU0 = -clov_c * kappa / (8.0 * u0 * u0 * u0);
   Real ferm_epsilon = nflavors * eps1;
-  double tmpnorm, maxnorm=0.0, norm = 0.0, returnit=0.0;
-  su3_matrix temp1, tempf1;
+  double tmpnorm, maxnorm = 0.0, norm = 0.0, returnit = 0.0;
+  su3_matrix temp1;
+  su3_matrix_f tempf1;
 
 #ifdef TIMING
 TIC(1)
@@ -311,9 +313,8 @@ TIC(1)
         mult_su3_nn_f(&(s->linkf[mu]), Sigma[mu]+i, &tempf1);
         // Now update
         update_anti_hermitian(s, mu, ferm_epsilon, &tempf1);
-        norm += (double)realtrace_su3_f(&tempf1,&tempf1);
-
-        tmpnorm = (double)realtrace_su3_f(&tempf1,&tempf1);
+        tmpnorm = (double)realtrace_su3_f(&tempf1, &tempf1);
+        norm += tmpnorm;
         if (tmpnorm > maxnorm)
           maxnorm = tmpnorm;
       }

@@ -1,11 +1,11 @@
 #ifndef _GENERIC_H
 #define _GENERIC_H
 /************************ generic.h *************************************
-*									*
+*                 *
 *  Macros and declarations for miscellaneous generic routines           *
 *  This header is for codes that call generic routines                  *
-*  MIMD version 7 							*
-*									*
+*  MIMD version 7               *
+*                 *
 */
 
 /* Other generic directory declarations are elsewhere:
@@ -33,59 +33,58 @@ void ape_smear_field(
   Real link_u0,          /* single link weight - used in normalization
                              if SU(3) projection is turned off */
   int space_only,         /* = 1 (true) smear space-like links with
- 			          only spacelike staples
-			     = 0 (false) smear all links with
-			     all staples */
+                only spacelike staples
+           = 0 (false) smear all links with
+           all staples */
   int nhits,              /* reproject onto SU(3): number of
-			     SU(2) hits. 0 for no reprojection */
+           SU(2) hits. 0 for no reprojection */
   Real tol               /* tolerance for SU(3) projection.
-			     If nonzero, treat nhits as a maximum
-			     number of hits.  If zero, treat nhits
-			     as a prescribed number of hits. */
+           If nonzero, treat nhits as a maximum
+           number of hits.  If zero, treat nhits
+           as a prescribed number of hits. */
   );
 
 void ape_smear_dir(
   field_offset src,       /* field offset for su3_matrix[4] type
-			     input unsmeared links */
+           input unsmeared links */
   int dir1,               /* link direction to smear */
   field_offset dest,      /* field offset for su3_matrix type
-			     pointing to a specific direction
-			     output smeared links */
+           pointing to a specific direction
+           output smeared links */
   Real staple_weight,    /* single staple weight */
   Real link_u0,          /* single link weight - used in normalization
                              if SU(3) projection is turned off */
   int space_only,         /* = 1 (true) smear space-like links with
- 			          only spacelike staples
-			     = 0 (false) smear all links with
-			     all staples */
+                only spacelike staples
+           = 0 (false) smear all links with
+           all staples */
   int nhits,              /* reproject onto SU(3): number of
-			     SU(2) hits. 0 for no reprojection */
+           SU(2) hits. 0 for no reprojection */
   Real tol               /* tolerance for SU(3) projection.
-			     If nonzero, treat nhits as a maximum
-			     number of hits.  If zero, treat nhits
-			     as a prescribed number of hits. */
+           If nonzero, treat nhits as a maximum
+           number of hits.  If zero, treat nhits
+           as a prescribed number of hits. */
   );
 
 void ape_smear(
   field_offset src,       /* field offset for su3_matrix type
-			     input unsmeared links */
+           input unsmeared links */
   field_offset dest,      /* field offset for su3_matrix type
-			     output smeared links */
+           output smeared links */
   Real staple_weight,    /* single staple weight */
   Real link_u0,          /* single link weight - used in normalization
                              if SU(3) projection is turned off */
   int space_only,         /* = 1 (true) smear space-like links with
- 			          only spacelike staples
-			     = 0 (false) smear all links with
-			     all staples */
+                only spacelike staples
+           = 0 (false) smear all links with
+           all staples */
   int nhits,              /* reproject onto SU(3): number of
-			     SU(2) hits. 0 for no reprojection */
+           SU(2) hits. 0 for no reprojection */
   Real tol               /* tolerance for SU(3) projection.
-			     If nonzero, treat nhits as a maximum
-			     number of hits.  If zero, treat nhits
-			     as a prescribed number of hits. */
+           If nonzero, treat nhits as a maximum
+           number of hits.  If zero, treat nhits
+           as a prescribed number of hits. */
   );
-
 
 /* ax_gauge.c */
 void ax_gauge();
@@ -96,29 +95,31 @@ int32type bsd_sum (char *data,int32type total_bytes);
 /* check_unitarity.c */
 Real check_unitarity( void );
 
-/* d_linktrsum */
-void d_linktrsum(double_complex *linktrsum);
+// linktrsum
+void linktrsum(double_complex *linktr);
 
-/* d_plaq?.c */
-void d_plaquette(double *ss_plaq, double *st_plaq);
-void d_plaquette_frep(double *ss_plaq_frep, double *st_plaq_frep);
-void d_plaquette_lcl(double *ss_plaq, double *st_plaq);
-void d_plaquette_frep_lcl(double *ss_plaq_frep, double *st_plaq_frep);
+// plaquette.c
+void plaquette(double *ss_plaq, double *st_plaq);
+void plaquette_frep(double *ss_plaq_frep, double *st_plaq_frep);
+
+// plaquette_lcl.c
+void plaquette_lcl(double *ss_plaq, double *st_plaq);
+void plaquette_frep_lcl(double *ss_plaq_frep, double *st_plaq_frep);
 
 /* field_strength.c */
 void make_field_strength(
   field_offset link_src,       /* field offset for su3_matrix[4] type
-				  for the source link matrices */
+          for the source link matrices */
   field_offset field_dest      /* field offset for su3_matrix[6] type
-				  for the resulting field strength */
+          for the resulting field strength */
   );
 
 /* gaugefix.c and gaugefix2.c */
 void gaugefix(int gauge_dir,Real relax_boost,int max_gauge_iter,
-	      Real gauge_fix_tol, field_offset diffmat, field_offset sumvec,
-	      int nvector, field_offset vector_offset[], int vector_parity[],
-	      int nantiherm, field_offset antiherm_offset[],
-	      int antiherm_parity[] );
+        Real gauge_fix_tol, field_offset diffmat, field_offset sumvec,
+        int nvector, field_offset vector_offset[], int vector_parity[],
+        int nantiherm, field_offset antiherm_offset[],
+        int antiherm_parity[] );
 
 /* gauge_force_imp.c and gauge_force_symzk1_qop.c */
 void imp_gauge_force( Real eps, field_offset mom_off );
@@ -160,9 +161,9 @@ int ask_sf_flag( FILE *fp, int prompt, char *flag_name_string, int *value );
 int get_f( FILE *fp, int prompt, char *variable_name_string, Real *value );
 int get_i( FILE *fp, int prompt, char *variable_name_string, int *value );
 int get_vi( FILE *fp, int prompt, char *variable_name_string,
-	    int *value, int nvalues );
+      int *value, int nvalues );
 int get_vf( FILE *fp, int prompt, char *variable_name_string,
-	    Real *value, int nvalues );
+      Real *value, int nvalues );
 int get_s( FILE *fp, int prompt, char *variable_name_string, char *value );
 int get_prompt( FILE *fp, int *value );
 
@@ -187,7 +188,7 @@ void make_global_fields();
 /* path_product.c */
 void path_product( const int *dir, const int length, su3_matrix *tempmat1);
 void path_prod_subl(const int *dir, const int length, const int subl,
-		    su3_matrix *tempmat1);
+        su3_matrix *tempmat1);
 
 /* plaquette4.c */
 void plaquette(Real *ss_plaq,Real *st_plaq);
@@ -205,9 +206,9 @@ void project_su3(
    su3_matrix *q,         /* starting 3 x 3 complex matrix */
    int Nhit,              /* number of SU(2) hits. 0 for no projection */
    Real tol              /* tolerance for SU(3) projection.
-			     If nonzero, treat Nhit as a maximum
-			     number of hits.  If zero, treat Nhit
-			     as a prescribed number of hits. */
+           If nonzero, treat Nhit as a maximum
+           number of hits.  If zero, treat Nhit
+           as a prescribed number of hits. */
    );
 
 /* rand_gauge.c */
@@ -226,15 +227,15 @@ Real myrand(double_prn *prn_pt);
 /* restrict_fourier.c */
 void setup_restrict_fourier( int *key, int *slice);
 void restrict_fourier(
-     field_offset src,	 /* src is field to be transformed */
+     field_offset src,   /* src is field to be transformed */
      field_offset space, /* space is working space, same size as src */
      field_offset space2,/* space2 is working space, same size as src */
                          /* space2 is needed only for non power of 2 */
-     int size,		 /* Size of field in bytes.  The field must
-			    consist of size/sizeof(complex) consecutive
-			    complex numbers.  For example, an su3_vector
-			    is 3 complex numbers. */
-     int isign);	 /* 1 for x -> k, -1 for k -> x */
+     int size,     /* Size of field in bytes.  The field must
+          consist of size/sizeof(complex) consecutive
+          complex numbers.  For example, an su3_vector
+          is 3 complex numbers. */
+     int isign);   /* 1 for x -> k, -1 for k -> x */
 
 /* reunitarize2.c */
 void reunitarize( void );
@@ -248,4 +249,4 @@ void *qcdoc_alloc(size_t nbytes);
 void qfree(void *);
 #endif
 
-#endif	/* _GENERIC_H */
+#endif  /* _GENERIC_H */

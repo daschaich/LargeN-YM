@@ -10,7 +10,7 @@
 
 // -----------------------------------------------------------------
 // Fermion contribution to the action
-double d_fermion_action() {
+double fermion_action() {
   register int i;
   register site *s;
   double sum = 0.0;
@@ -72,7 +72,7 @@ Real ahmat_mag_sq(anti_hermitmat *pt) {
 
 // -----------------------------------------------------------------
 // Gauge momentum contribution to the action
-double d_hmom_action() {
+double hmom_action() {
   register int i,dir;
   register site *s;
   double sum = 0.0;
@@ -82,49 +82,44 @@ double d_hmom_action() {
       sum += (double)ahmat_mag_sq(&(s->mom[dir]));
   }
   g_doublesum(&sum);
-  return(sum);
+  return sum;
 }
 // -----------------------------------------------------------------
 
 
 
 // -----------------------------------------------------------------
-double d_action(){
-  double ssplaq, g_action, h_action, f_action;
+double action() {
+  double ssplaq, g_act = 0, g_frep = 0, h_act = 0, f_act = 0, tot;
 #ifndef IMP
-  double stplaq;
-#ifdef BETA_FREP
-  double ssplaq_frep, stplaq_frep,g_action_frep;
-#endif
+  double stplaq, ssplaq_frep, stplaq_frep;
 #endif
 
 #ifdef IMP
   gauge_action(&ssplaq);
-  g_action = beta * ssplaq / (Real)NCOL;
+  g_act = beta * ssplaq / (Real)NCOL;
 #else
-  /* d_plaquette returns average ss and st plaqs       */
-  d_plaquette(&ssplaq, &stplaq);
-  ssplaq=1-ssplaq/(Real)NCOL;
-  stplaq=1-stplaq/(Real)NCOL;
-  g_action = beta*3*nx*ny*nz*nt*(ssplaq+stplaq);
-#ifdef BETA_FREP
-  d_plaquette_frep(&ssplaq_frep, &stplaq_frep);
-  ssplaq_frep=1-ssplaq_frep/(Real)DIMF;
-  stplaq_frep=1-stplaq_frep/(Real)DIMF;
-  g_action_frep = beta_frep*3*nx*ny*nz*nt*(ssplaq_frep+stplaq_frep);
-#endif /* BETA_FREP */
-#endif /* IMP     */
+  plaquette(&ssplaq, &stplaq);
+  ssplaq = 1.0 - ssplaq / (Real)NCOL;
+  stplaq = 1.0 - stplaq / (Real)NCOL;
+  // Three space--space and three space--time plaquette orientations
+  g_act = beta * 3.0 * volume * (ssplaq + stplaq);
 
-  h_action = d_hmom_action();
-  f_action = d_fermion_action();
-  node0_printf("D_ACTION: g, h, f, tot = %.8g %.8g %.8g %.8g\n",
-               g_action, h_action, f_action,
-               g_action + h_action + f_action);
-#ifndef BETA_FREP
-  return g_action + h_action + f_action;
-#else
-  return g_action + g_action_frep + h_action + f_action;
+  if (fabs(beta_frep) > 1e-6) {
+    plaquette_frep(&ssplaq_frep, &stplaq_frep);
+    ssplaq_frep = 1.0 - ssplaq_frep / (Real)DIMF;
+    stplaq_frep = 1.0 - stplaq_frep / (Real)DIMF;
+    g_frep = beta_frep * 3.0 * volume * (ssplaq_frep + stplaq_frep);
+  }
 #endif
+
+  h_act = hmom_action();
+  f_act = fermion_action();
+  tot = g_act + g_frep + h_act + f_act;
+  node0_printf("ACTION: g, rep, h, f, tot = %.8g %.8g %.8g %.8g %.8g\n",
+               g_act, g_frep, h_act, f_act, tot);
+
+  return tot;
 }
 // -----------------------------------------------------------------
 

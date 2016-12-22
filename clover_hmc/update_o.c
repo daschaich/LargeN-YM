@@ -339,7 +339,7 @@ int update() {
   cg_time[1] = 0.0;
 
 #ifdef HMC_ALGORITHM    // Find action
-  startaction = d_action();
+  startaction = action();
   startaction -= 2.0 * starttrlogA;
 #ifdef CG_DEBUG
   node0_printf("startaction = %g\n", startaction);
@@ -365,7 +365,7 @@ int update() {
                           F_OFFSET(chi[1]), F_OFFSET(psi[1]), shift);
   }
 
-  endaction = d_action();
+  endaction = action();
   endaction -= (double)2.0 * endtrlogA;
 #ifdef CG_DEBUG
   node0_printf("endaction = %g\n", endaction);
@@ -374,10 +374,10 @@ int update() {
   change = endaction - startaction;
 
   // Reject configurations giving overflow
-  if (fabs((double)change)>1e20) {
+  if (fabs((double)change) > 1e20) {
     node0_printf("WARNING: Correcting apparent overflow: Delta S = %.4g\n",
                  change);
-    change = 1.0e20;
+    change = 1e20;
   }
 
   // Decide whether to accept.  If not, copy old link field back
@@ -386,13 +386,13 @@ int update() {
     xrandom = myrand(&node_prn);
 
   broadcast_float(&xrandom);
-    if (exp(-change) < (double)xrandom) {
-      gauge_field_copy_f(F_OFFSET(old_linkf[0]), F_OFFSET(linkf[0]));
-      fermion_rep();
-      node0_printf("REJECT: ");
-    }
-    else
-      node0_printf("ACCEPT: ");
+  if (exp(-change) < (double)xrandom) {
+    gauge_field_copy_f(F_OFFSET(old_linkf[0]), F_OFFSET(linkf[0]));
+    fermion_rep();
+    node0_printf("REJECT: ");
+  }
+  else
+    node0_printf("ACCEPT: ");
 
   node0_printf("delta S = %.4g start %.12g end %.12g\n",
                change, startaction, endaction);

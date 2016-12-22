@@ -7,7 +7,7 @@
 
 
 // -----------------------------------------------------------------
-void d_plaquette(double *ss_plaq, double *st_plaq) {
+void plaquette(double *ss_plaq, double *st_plaq) {
   register int i, dir, dir2;
   register site *s;
   register su3_matrix_f *m1, *m4;
@@ -70,7 +70,7 @@ void d_plaquette(double *ss_plaq, double *st_plaq) {
 // -----------------------------------------------------------------
 #ifndef PURE_GAUGE
 // Plaquette in fermion irrep
-void d_plaquette_frep(double *ss_plaq_frep, double *st_plaq_frep) {
+void plaquette_frep(double *ss_plaq_frep, double *st_plaq_frep) {
   register int i, dir, dir2;
   register site *s;
   register su3_matrix *m1, *m4;

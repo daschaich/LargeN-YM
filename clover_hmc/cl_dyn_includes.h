@@ -34,7 +34,7 @@ int congrad_cl_m(int niter, Real rsqmin, Real *final_rsq_ptr,
                  field_offset src, field_offset dest, Real mshift);
 
 void gauge_action(double *result);
-double d_action();
+double action();
 int f_measure_cl();
 int pcac_t();
 int pcac_x();

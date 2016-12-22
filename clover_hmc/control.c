@@ -53,7 +53,7 @@ int main(int argc, char *argv[]) {
 #endif
 
   // Check: compute initial plaquette
-  d_plaquette(&ss_plaq, &st_plaq);
+  plaquette(&ss_plaq, &st_plaq);
   node0_printf("START %.8g %.8g %.8g\n", ss_plaq, st_plaq, ss_plaq + st_plaq);
 
   f_eps0 = traj_length / (Real)nsteps[0];
@@ -81,8 +81,8 @@ int main(int argc, char *argv[]) {
 #endif
     // Measure Polyakov loop and plaquette
     plp = ploop();
-    d_plaquette(&ss_plaq, &st_plaq);
-    d_plaquette_frep(&ss_plaq_frep, &st_plaq_frep);
+    plaquette(&ss_plaq, &st_plaq);
+    plaquette_frep(&ss_plaq_frep, &st_plaq_frep);
 #ifdef LU
     // Generate a pseudofermion configuration
     m_iters = f_measure_cl();
@@ -132,7 +132,7 @@ int main(int argc, char *argv[]) {
   node0_printf("RUNNING COMPLETED\n");
 
   // Check: compute final plaquette
-  d_plaquette(&ss_plaq, &st_plaq);
+  plaquette(&ss_plaq, &st_plaq);
   node0_printf("STOP %.8g %.8g %.8g\n",
                ss_plaq, st_plaq, ss_plaq + st_plaq);
 

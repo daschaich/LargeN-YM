@@ -17,19 +17,16 @@ G_ALL = \
  com_mpi.o \
  com_qmp.o \
  com_vanilla.o \
- d_plaq2.o \
- d_plaq4.o \
- d_plaq4_lcl.o \
+ plaquette.o \
+ plaquette_lcl.o \
  field_strength.o \
  gaugefix.o \
  gaugefix2.o \
- gautefix.o \
  gauge_force_imp.o \
  gauge_force_symzk1_qdp.o \
  gauge_force_symzk1_qop.o \
  gauge_force_symzk1_qop_milc.o \
  gauge_stuff.o \
- glueball_op.o \
  hvy_pot.o \
  io_ansi.o \
  io_detect.o \
@@ -56,8 +53,6 @@ G_ALL = \
  nersc_cksum.o \
  nr.o \
  path_product.o \
- plaquette3.o \
- plaquette4.o \
  ploop2.o \
  ploop3.o \
  ploop_dist.o \
@@ -115,13 +110,9 @@ com_qmp.o: ../generic/com_qmp.c
 	${CC} -c ${CFLAGS} $<
 com_vanilla.o: ../generic/com_vanilla.c
 	${CC} -c ${CFLAGS} $<
-d_plaq2.o: ../generic/d_plaq2.c
+plaquette.o: ../generic/plaquette.c
 	${CC} -c ${CFLAGS} $<
-d_plaq4.o: ../generic/d_plaq4.c
-	${CC} -c ${CFLAGS} $<
-d_plaq4_lcl.o: ../generic/d_plaq4_lcl.c
-	${CC} -c ${CFLAGS} $<
-d_linktrsum.o: ../generic/d_linktrsum.c
+plaquette_lcl.o: ../generic/plaquette_lcl.c
 	${CC} -c ${CFLAGS} $<
 field_strength.o: ../generic/field_strength.c
 	${CC} -c ${CFLAGS} $<
@@ -140,8 +131,6 @@ gauge_force_symzk1_qop.o: ../generic/gauge_force_symzk1_qop.c
 gauge_force_symzk1_qop_milc.o: ../generic/gauge_force_symzk1_qop_milc.c
 	${CC} -c ${CFLAGS} $<
 gauge_stuff.o: ../generic/gauge_stuff.c
-	${CC} -c ${CFLAGS} $<
-glueball_op.o: ../generic/glueball_op.c
 	${CC} -c ${CFLAGS} $<
 hvy_pot.o: ../generic/hvy_pot.c
 	${CC} -c ${CFLAGS} $<
@@ -197,10 +186,6 @@ nersc_cksum.o: ../generic/nersc_cksum.c
 nr.o: ../generic/nr.c
 	${CC} -c ${CFLAGS} $<
 path_product.o: ../generic/path_product.c
-	${CC} -c ${CFLAGS} $<
-plaquette3.o: ../generic/plaquette3.c
-	${CC} -c ${CFLAGS} $<
-plaquette4.o: ../generic/plaquette4.c
 	${CC} -c ${CFLAGS} $<
 ploop2.o: ../generic/ploop2.c
 	${CC} -c ${CFLAGS} $<

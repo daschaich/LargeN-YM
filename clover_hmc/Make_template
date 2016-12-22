@@ -41,11 +41,11 @@ GLOBAL_HEADERS = ${INCLUDEDIR}/config.h              \
                  ${INCLUDEDIR}/loopend.h             \
                  ${INCLUDEDIR}/io_lat.h
 
-MY_HEADERS = lattice.h \
-  params.h \
-  defines.h \
-  cl_dyn_includes.h \
-  ${ADDHEADERS}
+MY_HEADERS = lattice.h         \
+             params.h          \
+             defines.h         \
+             cl_dyn_includes.h \
+             ${ADDHEADERS}
 
 HEADERS = ${GLOBAL_HEADERS} ${MY_HEADERS} ${INLINE_HEADERS} ${SCIDAC_HEADERS}
 
@@ -70,7 +70,7 @@ MY_OBJECTS = control.o          \
 # More from current directory, for improved action only
 IMP_OBJECTS = gauge_action.o \
               loop_table.o   \
-              path.o         \
+              path.o
 
 # Basic set from generic directory
 G_OBJECTS = check_unitarity.o \
@@ -79,8 +79,8 @@ G_OBJECTS = check_unitarity.o \
             io_lat_utils.o    \
             make_lattice.o    \
             nersc_cksum.o     \
-            d_plaq4.o         \
-            d_plaq4_lcl.o     \
+            plaquette.o       \
+            plaquette_lcl.o   \
             ploop_dist.o      \
             ranmom.o          \
             ranstuff.o        \
@@ -194,7 +194,6 @@ DARCH = ${DHAVE_QMP} ${DHAVE_QIO} ${DHAVE_QDP} ${DHAVE_QOP}
 
 # targets with plaquette action (including SF)
 
-
 su3_phi::
 	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" \
 	"DEFINES = ${DEFINES} -DLU -DPHI_ALGORITHM "
@@ -202,23 +201,23 @@ su3_phi::
 su3_hmc::
 	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" \
 	"DEFINES = ${DEFINES} -DLU -DPHI_ALGORITHM -DHMC_ALGORITHM " \
-	"EXTRA_OBJECTS = d_action.o   "
+	"EXTRA_OBJECTS = action.o   "
 
 su3_hmc_spectrum::
 	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" \
 	"DEFINES = ${DEFINES} -DLU -DPHI_ALGORITHM -DHMC_ALGORITHM -DSPECTRUM " \
-	"EXTRA_OBJECTS = d_action.o gaugefix2.o t_props_cl.o w_spectrum_cl.o "
+	"EXTRA_OBJECTS = action.o gaugefix2.o t_props_cl.o w_spectrum_cl.o "
 
 su3_hmc_screen::
 	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" \
 	"DEFINES = ${DEFINES} -DLU -DPHI_ALGORITHM -DHMC_ALGORITHM -DSPECTRUM \
              -DSCREEN " \
-	"EXTRA_OBJECTS = d_action.o gaugefix2.o s_props_cl.o "
+	"EXTRA_OBJECTS = action.o gaugefix2.o s_props_cl.o "
 
 su3_hmc_pcac::
 	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" \
 	"DEFINES = ${DEFINES} -DLU -DPHI_ALGORITHM -DHMC_ALGORITHM -DPCAC " \
-	"EXTRA_OBJECTS = d_action.o pcac_t.o pcac_x.o "
+	"EXTRA_OBJECTS = action.o pcac_t.o pcac_x.o "
 
 clean:
 	-/bin/rm -f *.o

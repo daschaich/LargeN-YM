@@ -36,7 +36,7 @@ static int print_dir=0;
 
 
 // -----------------------------------------------------------------
-void d_plaquette_lcl(double *ss_plaq,double *st_plaq) {
+void plaquette_lcl(double *ss_plaq,double *st_plaq) {
   register int i,dir,dir2;
   register site *s;
   register su3_matrix_f *m1, *m4;
@@ -159,7 +159,7 @@ void d_plaquette_lcl(double *ss_plaq,double *st_plaq) {
 
 // -----------------------------------------------------------------
 // Plaquette in fermion irrep
-void d_plaquette_frep_lcl(double *ss_plaq_frep, double *st_plaq_frep) {
+void plaquette_frep_lcl(double *ss_plaq_frep, double *st_plaq_frep) {
   register int i,dir,dir2;
   register site *s;
   register su3_matrix *m1, *m4;
