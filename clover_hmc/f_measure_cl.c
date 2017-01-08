@@ -112,8 +112,8 @@ int f_measure_cl() {
      }
      */
 
-  pbp = cmplx(0.0,0.0);
-  pbg5p = cmplx(0.0,0.0);
+  pbp = cmplx(0.0, 0.0);
+  pbg5p = cmplx(0.0, 0.0);
   faction = dslash_time = dslash_space = 0.0;
 
   /* psi-bar-psi = g_rand.psi */
@@ -121,16 +121,15 @@ int f_measure_cl() {
   FORALLSITES(i, s) {
     cc = wvec_dot(&(s->g_rand), &(s->psi[0]));
     CSUM(pbp,cc);
-    mult_by_gamma(&(s->psi[0]),&wv0,  GAMMAFIVE);
+    mult_by_gamma(&(s->psi[0]), &wv0, GAMMAFIVE);
     cc = wvec_dot(&(s->g_rand), &wv0);
-    CSUM(pbg5p,cc);
+    CSUM(pbg5p, cc);
   }
 
   /* fermion energy and pressure */
   FORALLUPDIR(dir) {
     /* multiply g_rand by one component of Dslash_adjoint, result in p.
-       dot product with psi.
-       */
+       dot product with psi */
 
     /* multiply g_rand by one component of Dslash_adjoint, result in p */
     FORALLSITES(i,s){
@@ -155,10 +154,12 @@ int f_measure_cl() {
     cleanup_gather(tag1);
 
     /* dot product with psi, result into energy or pressure */
-    FORALLSITESDOMAIN(i,s){
+    FORALLSITESDOMAIN(i,s) {
       cc = wvec_dot(&(s->psi[0]), &(s->p));
-      if(dir==TUP) dslash_time += cc.real;
-      else  dslash_space += cc.real;
+      if (dir==TUP)
+        dslash_time += cc.real;
+      else
+        dslash_space += cc.real;
     }
   }
   g_floatsum(&dslash_time);
@@ -171,10 +172,16 @@ int f_measure_cl() {
   dslash_time /= (double)volume;
   dslash_space /= (double)(3.0 * volume);
   faction = pbp.real - kappa * (dslash_time + 3.0 * dslash_space);
-  node0_printf("FMES %.8g %.8g %.8g %.8g %.8g %.8g %.8g\n",
+
+  // Check that pbg5p is purely real up to machine precision
+  if (fabs(pbg5p.imag) > IMAG_TOL) {
+    node0_printf("node%d WARNING: Im(pbg5p) = %.4g > %.4g\n",
+                 pbg5p.imag, IMAG_TOL);
+  }
+  // Print results
+  node0_printf("FMES %.8g %.8g %.8g %.8g %.8g %.8g\n",
                (double)pbp.real, (double)pbp.imag, (double)dslash_time,
-               (double)dslash_space, (double)faction, (double)pbg5p.real,
-               (double)pbg5p.imag);
+               (double)dslash_space, (double)faction, (double)pbg5p.real);
   fflush(stdout);
   return iters;
 }

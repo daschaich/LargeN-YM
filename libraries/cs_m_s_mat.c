@@ -1,39 +1,41 @@
-/****************  cs_m_s_mat.c  (in su3.a) *****************************
-*									*
-* void c_scalar_mult_sub_su3mat( su3_matrix *a, su3_matrix *b,		*
-*	complex *s, su3_matrix *c)					*
-* C <- A - s*B,   A,B and C matrices 					*
-*/
+// -----------------------------------------------------------------
+// Subtract result of complex scalar multiplication on irrep matrix
+// c <-- a + s * b
 #include "../include/config.h"
 #include "../include/complex.h"
 #include "../include/su3.h"
 
-/* c <- a - s*b, matrices */
-void c_scalar_mult_sub_su3mat( su3_matrix *a, su3_matrix *b, complex *s,
-	su3_matrix *c){
+void c_scalar_mult_sub_su3mat(su3_matrix *a, su3_matrix *b,
+                              complex *s, su3_matrix *c) {
 
+  register int i, j;
 #ifndef NATIVEDOUBLE
-register int i,j;
-complex t;
-    for(i=0;i<DIMF;i++)for(j=0;j<DIMF;j++){
-	t = cmul(&b->e[i][j], s);
-	c->e[i][j] = csub(&a->e[i][j], &t);
+  for (i = 0; i < DIMF; i++) {
+    for (j = 0; j < DIMF; j++) {
+      c->e[i][j].real = a->e[i][j].real - b->e[i][j].real * s->real
+                                        + b->e[i][j].imag * s->imag;
+      c->e[i][j].imag = a->e[i][j].imag - b->e[i][j].imag * s->real
+                                        - b->e[i][j].real * s->imag;
     }
+  }
 
 #else
-register int i,j;
-register double sr,si,br,bi,cr,ci;
+  register double sr, si, br, bi, cr, ci;
 
-    sr = (*s).real; si = (*s).imag;
+  sr = (*s).real;
+  si = (*s).imag;
+  for (i = 0; i < DIMF; i++) {
+    for (j = 0; j < DIMF; j++) {
+      br = b->e[i][j].real;
+      bi = b->e[i][j].imag;
 
-    for(i=0;i<DIMF;i++)for(j=0;j<DIMF;j++){
-	br=b->e[i][j].real; bi=b->e[i][j].imag;
+      cr = sr * br - si * bi;
+      ci = sr * bi + si * br;
 
-	cr = sr*br - si*bi;
-	ci = sr*bi + si*br;
-
-	c->e[i][j].real = a->e[i][j].real - cr;
-	c->e[i][j].imag = a->e[i][j].imag - ci;
+      c->e[i][j].real = a->e[i][j].real - cr;
+      c->e[i][j].imag = a->e[i][j].imag - ci;
     }
+  }
 #endif
 }
+// -----------------------------------------------------------------

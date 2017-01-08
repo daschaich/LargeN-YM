@@ -30,13 +30,11 @@ ${LASTMAKE}: ${ALL_MAKES}
 	${MAKE} -f ${MAKEFILE} clean
 	touch ${LASTMAKE}
 
-COMPLEXOBJS1 = cadd.1o cdiv.1o ce_itheta.1o cexp.1o clog.1o cmplx.1o cmul.1o \
-	conjg.1o csqrt.1o csub.1o dcadd.1o dcdiv.1o dce_itheta.1o \
-	dcexp.1o dclog.1o dcmplx.1o dcmul.1o dconjg.1o dcsqrt.1o dcsub.1o
+COMPLEXOBJS1 =  cmplx.1o  cexp.1o  clog.1o  csqrt.1o  ce_itheta.1o \
+               dcmplx.1o dcexp.1o dclog.1o dcsqrt.1o dce_itheta.1o
 
-COMPLEXOBJS2 = cadd.2o cdiv.2o ce_itheta.2o cexp.2o clog.2o cmplx.2o cmul.2o \
-	conjg.2o csqrt.2o csub.2o dcadd.2o dcdiv.2o dce_itheta.2o \
-	dcexp.2o dclog.2o dcmplx.2o dcmul.2o dconjg.2o dcsqrt.2o dcsub.2o
+COMPLEXOBJS2 =  cmplx.2o  cexp.2o  clog.2o  csqrt.2o  ce_itheta.2o \
+               dcmplx.2o dcexp.2o dclog.2o dcsqrt.2o dce_itheta.2o
 
 ${COMPLEXOBJS1} : ${HEADERS} ${ALLMAKES} ${LASTMAKE}
 ${COMPLEXOBJS2} : ${HEADERS} ${ALLMAKES} ${LASTMAKE}

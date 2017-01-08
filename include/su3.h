@@ -82,21 +82,17 @@ typedef struct {
 } danti_hermitmat;
 
 #if (PRECISION==1)
-
-#define su3_matrix_f  fsu3_matrix_f
+#define su3_matrix_f    fsu3_matrix_f
 #define su3_matrix      fsu3_matrix
-#define su3_vector_f  fsu3_vector_f
+#define su3_vector_f    fsu3_vector_f
 #define su3_vector      fsu3_vector
 #define anti_hermitmat  fanti_hermitmat
-
 #else
-
-#define su3_matrix_f  dsu3_matrix_f
+#define su3_matrix_f    dsu3_matrix_f
 #define su3_matrix      dsu3_matrix
-#define su3_vector_f  dsu3_vector_f
+#define su3_vector_f    dsu3_vector_f
 #define su3_vector      dsu3_vector
 #define anti_hermitmat  danti_hermitmat
-
 #endif
 
 /* SU(2) */
@@ -142,23 +138,19 @@ typedef struct { dcolor_wilson_vector d[4]; } dwilson_matrix;
 typedef struct { dspin_wilson_vector c[DIMF]; } dwilson_propagator;
 
 #if (PRECISION==1)
-
 #define wilson_vector       fwilson_vector
 #define half_wilson_vector  fhalf_wilson_vector
 #define color_wilson_vector fcolor_wilson_vector
 #define spin_wilson_vector  fspin_wilson_vector
 #define wilson_matrix       fwilson_matrix
 #define wilson_propagator   fwilson_propagator
-
 #else
-
 #define wilson_vector       dwilson_vector
 #define half_wilson_vector  dhalf_wilson_vector
 #define color_wilson_vector dcolor_wilson_vector
 #define spin_wilson_vector  dspin_wilson_vector
 #define wilson_matrix       dwilson_matrix
 #define wilson_propagator   dwilson_propagator
-
 #endif
 
 #define GAMMAFIVE -1    /* some integer which is not a direction */

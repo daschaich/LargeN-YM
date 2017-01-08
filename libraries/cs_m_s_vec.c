@@ -1,36 +1,32 @@
-/*******************  cs_m_s_vec.c  (in su3.a) **************************
-*									*
-*  c_scalar_mult_sub_su3vec()						*
-*  multiply an su3 vector by a complex scalar and subtract it from	*
-*  another vector:  v1 <- v1 - number*v2 				*
-*/
+// -----------------------------------------------------------------
+// Subtract result of complex scalar multiplication on irrep vector
+// b <-- b - s * c
 #include "../include/config.h"
 #include "../include/complex.h"
 #include "../include/su3.h"
 
-void c_scalar_mult_sub_su3vec( su3_vector *v1, complex *phase, su3_vector *v2 ){
-
+void c_scalar_mult_sub_su3vec(su3_vector *b, complex *s, su3_vector *c) {
+  register int i;
 #ifndef NATIVEDOUBLE
-register int i;
-complex t;
-    for(i=0;i<DIMF;i++){
-	t = cmul(&v2->c[i],phase);
-	v1->c[i] = csub(&v1->c[i],&t);
-    }
+  for (i = 0; i < DIMF; i++) {
+    b->c[i].real -= c->c[i].real * s->real - c->c[i].imag * s->imag;
+    b->c[i].imag -= c->c[i].imag * s->real + c->c[i].real * s->imag;
+  }
 #else
-register int i;
-register double sr,si,br,bi,cr,ci;
+  register double sr, si, br, bi, cr, ci;
 
-    sr = (*phase).real; si = (*phase).imag;
+  sr = (*s).real;
+  si = (*s).imag;
+  for (i = 0; i < DIMF; i++) {
+    br = c->c[i].real;
+    bi = c->c[i].imag;
 
-    for(i=0;i<DIMF;i++){
-	br=v2->c[i].real; bi=v2->c[i].imag;
+    cr = sr * br - si * bi;
+    ci = sr * bi + si * br;
 
-	cr = sr*br - si*bi;
-	ci = sr*bi + si*br;
-
-	v1->c[i].real -= cr;
-	v1->c[i].imag -= ci;
-    }
+    b->c[i].real -= cr;
+    b->c[i].imag -= ci;
+  }
 #endif
 }
+// -----------------------------------------------------------------
