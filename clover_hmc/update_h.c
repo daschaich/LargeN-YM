@@ -1,10 +1,18 @@
 // -----------------------------------------------------------------
 #include "cl_dyn_includes.h"
-#ifdef BETA_FREP
-void gauge_force_frep(field_offset scratch1, field_offset scratch2,
-                      field_offset forcemat, int dir1);
-#endif
-void update_anti_hermitian(site *st, int dir, Real eps, su3_matrix_f *force);
+// -----------------------------------------------------------------
+
+
+
+// -----------------------------------------------------------------
+// Update the momenta
+void update_anti_hermitian(site *s, int dir, Real eps, su3_matrix_f *force) {
+  su3_matrix_f tempf1, tempf2;
+
+  uncompress_anti_hermitian(&(s->mom[dir]), &tempf1);
+  scalar_mult_sub_su3_matrix_f(&tempf1, force, eps, &tempf2);
+  make_anti_hermitian(&tempf2, &(s->mom[dir]));
+}
 // -----------------------------------------------------------------
 
 
@@ -174,6 +182,86 @@ void delta(field_offset psi, field_offset p) {
 
 
 
+// -----------------------------------------------------------------
+// Gauge force from fermion irrep plaquette term
+void gauge_force_frep(field_offset scratch1, field_offset scratch2,
+                      field_offset forcemat, int dir1) {
+
+  register int i, dir2;
+  register site *s;
+  msg_tag *tag0,*tag1, *tag2;
+  su3_matrix tmat1,tmat2;
+  /* divide by nflavors=2 to compensate for
+     ferm_epsilon = nflavors*eps = 2*eps
+     */
+  Real bfrep_force = beta_frep/(Real)DIMF/(Real)nflavors;
+
+  /* Loop over directions for updating mom[dir1] is in the calling routine.
+     Here, we loop over other directions, computing force from frep plaquettes
+     in the dir1,dir2 plane
+     */
+  /* initialize staple */
+  FORALLSITES(i, s)
+    clear_su3mat((su3_matrix *)F_PT(s, scratch1));
+
+  for (dir2=XUP;dir2<=TUP;dir2++)if (dir2 != dir1) {
+    /* get link[dir2] from direction dir1 */
+    tag0 = start_gather_site(F_OFFSET(link[dir2]),
+        sizeof(su3_matrix), dir1, EVENANDODD, gen_pt[0]);
+
+    /* Start gather for the "upper staple" */
+    tag2 = start_gather_site(F_OFFSET(link[dir1]),
+        sizeof(su3_matrix), dir2, EVENANDODD, gen_pt[2]);
+
+    /* begin the computation "at the dir2DOWN point", we will
+       later gather the intermediate result "to the home point" */
+
+    wait_gather(tag0);
+    FORALLSITES(i, s) {
+      mult_su3_an(&(s->link[dir2]), &(s->link[dir1]), &tmat1);
+      mult_su3_nn(&tmat1, (su3_matrix *)gen_pt[0][i],
+          ((su3_matrix *)F_PT(s,scratch2)));
+    }
+
+    /* Gather lower staple "up to home site" */
+    tag1 = start_gather_site(scratch2, sizeof(su3_matrix),
+        OPP_DIR(dir2), EVENANDODD, gen_pt[1]);
+
+    /*  The "upper" staple.  Note that
+        one of the links has already been gathered, since it
+        was used in computing the "lower" staple of the site
+        above us (in dir2) */
+    wait_gather(tag2);
+    FORALLSITES(i, s) {
+      mult_su3_nn(&(s->link[dir2]),
+          (su3_matrix *)gen_pt[2][i], &tmat1);
+      mult_su3_na(&tmat1, (su3_matrix *)gen_pt[0][i],  &tmat2);
+      add_su3_matrix(((su3_matrix *)F_PT(s,scratch1)), &tmat2,
+          ((su3_matrix *)F_PT(s,scratch1)));
+    }
+
+    wait_gather(tag1);
+
+    FORALLSITES(i, s) {
+      add_su3_matrix((su3_matrix *)F_PT(s, scratch1),
+                     (su3_matrix *)gen_pt[1][i],
+                     (su3_matrix *)F_PT(s, scratch1));
+    }
+    cleanup_gather(tag0);
+    cleanup_gather(tag1);
+    cleanup_gather(tag2);
+  }
+
+  // Now multiply the staple sum by the link, then add to force
+  FORALLSITES(i, s) {
+    mult_su3_na(&(s->link[dir1]), (su3_matrix *)F_PT(s, scratch1), &tmat1);
+    scalar_mult_add_su3_matrix((su3_matrix *)F_PT(s, forcemat), &tmat1,
+                               bfrep_force, (su3_matrix *)F_PT(s, forcemat));
+  }
+}
+// -----------------------------------------------------------------
+
+
 
 // -----------------------------------------------------------------
 // Update the  momenta with the fermion force
@@ -229,12 +317,10 @@ TIC(1)
   }
 #endif
 
-#ifdef BETA_FREP
   FORALLUPDIR(mu) {
     gauge_force_frep(F_OFFSET(staple), F_OFFSET(tempmat2),
                      F_OFFSET(Force[mu]), mu);
   }
-#endif
 
     if (num_masses == 1)
       level = 0;
@@ -330,7 +416,7 @@ TIC(1)
 if (this_node==0)printf("F_FORCE: time = %e mflops = %e\n",
 dtime, (double)(5584.0*volume/(1.0e6*dtime*numnodes())));**/
     return(returnit);
-} /* end fermion_force */
+}
 // -----------------------------------------------------------------
 
 
@@ -392,102 +478,6 @@ void prepare_vecs(int level) {
      p = M * psi          */
 #endif /* LU */
 }
-// -----------------------------------------------------------------
-
-
-
-// -----------------------------------------------------------------
-// Update the momenta
-void update_anti_hermitian(site *s, int dir, Real eps, su3_matrix_f *force) {
-  su3_matrix_f tempf1, tempf2;
-
-  uncompress_anti_hermitian(&(s->mom[dir]), &tempf1);
-  scalar_mult_sub_su3_matrix_f(&tempf1, force, eps, &tempf2);
-  make_anti_hermitian(&tempf2, &(s->mom[dir]));
-}
-// -----------------------------------------------------------------
-
-
-
-// -----------------------------------------------------------------
-#ifdef BETA_FREP
-// Gauge force from fermion irrep plaquette term
-void gauge_force_frep(field_offset scratch1, field_offset scratch2,
-                      field_offset forcemat, int dir1) {
-
-  register int i, dir2;
-  register site *s;
-  msg_tag *tag0,*tag1, *tag2;
-  su3_matrix tmat1,tmat2;
-  /* divide by nflavors=2 to compensate for
-     ferm_epsilon = nflavors*eps = 2*eps
-     */
-  Real bfrep_force = beta_frep/(Real)DIMF/(Real)nflavors;
-
-  /* Loop over directions for updating mom[dir1] is in the calling routine.
-     Here, we loop over other directions, computing force from frep plaquettes
-     in the dir1,dir2 plane
-     */
-  /* initialize staple */
-  FORALLSITES(i, s)
-    clear_su3mat((su3_matrix *)F_PT(s, scratch1));
-
-  for (dir2=XUP;dir2<=TUP;dir2++)if (dir2 != dir1) {
-    /* get link[dir2] from direction dir1 */
-    tag0 = start_gather_site(F_OFFSET(link[dir2]),
-        sizeof(su3_matrix), dir1, EVENANDODD, gen_pt[0]);
-
-    /* Start gather for the "upper staple" */
-    tag2 = start_gather_site(F_OFFSET(link[dir1]),
-        sizeof(su3_matrix), dir2, EVENANDODD, gen_pt[2]);
-
-    /* begin the computation "at the dir2DOWN point", we will
-       later gather the intermediate result "to the home point" */
-
-    wait_gather(tag0);
-    FORALLSITES(i, s) {
-      mult_su3_an(&(s->link[dir2]), &(s->link[dir1]), &tmat1);
-      mult_su3_nn(&tmat1, (su3_matrix *)gen_pt[0][i],
-          ((su3_matrix *)F_PT(s,scratch2)));
-    }
-
-    /* Gather lower staple "up to home site" */
-    tag1 = start_gather_site(scratch2, sizeof(su3_matrix),
-        OPP_DIR(dir2), EVENANDODD, gen_pt[1]);
-
-    /*  The "upper" staple.  Note that
-        one of the links has already been gathered, since it
-        was used in computing the "lower" staple of the site
-        above us (in dir2) */
-    wait_gather(tag2);
-    FORALLSITES(i, s) {
-      mult_su3_nn(&(s->link[dir2]),
-          (su3_matrix *)gen_pt[2][i], &tmat1);
-      mult_su3_na(&tmat1, (su3_matrix *)gen_pt[0][i],  &tmat2);
-      add_su3_matrix(((su3_matrix *)F_PT(s,scratch1)), &tmat2,
-          ((su3_matrix *)F_PT(s,scratch1)));
-    }
-
-    wait_gather(tag1);
-
-    FORALLSITES(i, s) {
-      add_su3_matrix((su3_matrix *)F_PT(s, scratch1),
-                     (su3_matrix *)gen_pt[1][i],
-                     (su3_matrix *)F_PT(s, scratch1));
-    }
-    cleanup_gather(tag0);
-    cleanup_gather(tag1);
-    cleanup_gather(tag2);
-  }
-
-  // Now multiply the staple sum by the link, then add to force
-  FORALLSITES(i, s) {
-    mult_su3_na(&(s->link[dir1]), (su3_matrix *)F_PT(s, scratch1), &tmat1);
-    scalar_mult_add_su3_matrix((su3_matrix *)F_PT(s, forcemat), &tmat1,
-                               bfrep_force, (su3_matrix *)F_PT(s, forcemat));
-  }
-}
-#endif
 // -----------------------------------------------------------------
 
 

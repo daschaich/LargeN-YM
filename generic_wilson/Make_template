@@ -1,5 +1,4 @@
 #  Generic routines for Wilson fermions
-#  MIMD version 6
 #
 #  Generic make-include file for generic_wilson codes
 #  This template file defines rules and macros common to all applications
@@ -15,8 +14,6 @@ G_WILSON_ALL =  \
     boundary_flip_z3.o \
     canopy2weyl_rot.o \
     copy_site_wilson_vector.o \
-    d_bicgilu_w_lean.o \
-    d_bicgilu_w_lean2.o \
     d_cgilu_w_lean.o \
     d_cgilu_w_lean2.o \
     d_congrad2.o \
@@ -83,10 +80,6 @@ boundary_flip_z3.o: ../generic_wilson/boundary_flip_z3.c
 canopy2weyl_rot.o: ../generic_wilson/canopy2weyl_rot.c
 	${CC} -c ${CFLAGS} $<
 copy_site_wilson_vector.o: ../generic_wilson/copy_site_wilson_vector.c
-	${CC} -c ${CFLAGS} $<
-d_bicgilu_w_lean.o: ../generic_wilson/d_bicgilu_w_lean.c
-	${CC} -c ${CFLAGS} $<
-d_bicgilu_w_lean2.o: ../generic_wilson/d_bicgilu_w_lean2.c
 	${CC} -c ${CFLAGS} $<
 d_cgilu_w_lean.o: ../generic_wilson/d_cgilu_w_lean.c
 	${CC} -c ${CFLAGS} $<

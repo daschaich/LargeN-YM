@@ -75,11 +75,9 @@ typedef struct {
   su3_matrix tempmat1,tempmat2,staple; /* sometimes these will be
             cast to su3_matrix_f as
             needed for scratch space */
-  /* a bit wasteful of space but needed for Hasenbusch, I think */
-  su3_matrix Force[4];
 
-    /* align to double word boundary */
-  /**double space2;**/
+  // A bit wasteful of space
+  su3_matrix Force[4];
 } site;
 // -----------------------------------------------------------------
 
@@ -100,10 +98,7 @@ EXTERN int nsteps[MAX_MASSES + 1];
 EXTERN Real max_gf, max_ff[2];
 
 // Global action and evolution variables
-EXTERN Real rsqmin, rsqprop, beta, kappa, clov_c, u0;
-#ifdef BETA_FREP
-EXTERN Real beta_frep;
-#endif
+EXTERN Real rsqmin, rsqprop, beta, beta_frep, kappa, clov_c, u0;
 EXTERN Real epsilon;
 EXTERN char startfile[MAXFILENAME],savefile[MAXFILENAME];
 EXTERN double g_ssplaq, g_stplaq;
@@ -179,7 +174,6 @@ EXTERN char ** gen_pt[N_POINTERS];
 EXTERN su3_matrix_f *gauge_field[4];
 EXTERN su3_matrix_f *gauge_field_thin[4];
 
-#ifdef NHYP
 // nHYP stuff
 EXTERN Real alpha_smear[3];
 EXTERN su3_matrix_f *hyplink1[4][4]; /* Needed for other stuff, too */
@@ -207,7 +201,6 @@ EXTERN Matrix Qj, Vj;
 EXTERN int jacobi_hist[JACOBI_HIST_MAX], jacobi_total;
 EXTERN Real jacobi_avrg;
 #endif
-#endif /* NHYP */
 
 // Up to 20 concurrent timers for timing
 #ifdef TIMING

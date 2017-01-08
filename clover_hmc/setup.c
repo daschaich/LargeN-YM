@@ -79,12 +79,12 @@ http://gcc.gnu.org/onlinedocs/cpp/Stringification.html */
     }
 #endif
 
-    IF_OK status += get_i(stdin, prompt,"nx", &par_buf.nx);
-    IF_OK status += get_i(stdin, prompt,"ny", &par_buf.ny);
-    IF_OK status += get_i(stdin, prompt,"nz", &par_buf.nz);
-    IF_OK status += get_i(stdin, prompt,"nt", &par_buf.nt);
+    IF_OK status += get_i(stdin, prompt, "nx", &par_buf.nx);
+    IF_OK status += get_i(stdin, prompt, "ny", &par_buf.ny);
+    IF_OK status += get_i(stdin, prompt, "nz", &par_buf.nz);
+    IF_OK status += get_i(stdin, prompt, "nt", &par_buf.nt);
 
-    IF_OK status += get_i(stdin, prompt,"iseed", &par_buf.iseed);
+    IF_OK status += get_i(stdin, prompt, "iseed", &par_buf.iseed);
 
     if (status>0) par_buf.stopflag=1; else par_buf.stopflag=0;
   } /* end if (mynode()==0) */
@@ -115,7 +115,6 @@ http://gcc.gnu.org/onlinedocs/cpp/Stringification.html */
 // -----------------------------------------------------------------
 // Allocate all space for fields
 void make_fields() {
-
   int memfield;
 
   /* move here alloc for clov? */
@@ -197,12 +196,12 @@ int readin(int prompt) {
     status = 0;
 
     // Warms, trajecs
-    IF_OK status += get_i(stdin, prompt,"warms", &par_buf.warms);
-    IF_OK status += get_i(stdin, prompt,"trajecs", &par_buf.trajecs);
-    IF_OK status += get_f(stdin, prompt,"traj_length", &par_buf.traj_length);
+    IF_OK status += get_i(stdin, prompt, "warms", &par_buf.warms);
+    IF_OK status += get_i(stdin, prompt, "trajecs", &par_buf.trajecs);
+    IF_OK status += get_f(stdin, prompt, "traj_length", &par_buf.traj_length);
 
        // Number of pseudofermions
-        IF_OK status += get_i(stdin, prompt,"number_of_PF", &par_buf.num_masses);
+        IF_OK status += get_i(stdin, prompt, "number_of_PF", &par_buf.num_masses);
         if (par_buf.num_masses>MAX_MASSES || par_buf.num_masses<1) {
             printf("num_masses = %d must be <= %d and >0!\n", par_buf.num_masses, MAX_MASSES);
             status++;
@@ -212,31 +211,26 @@ int readin(int prompt) {
     IF_OK status += get_i(stdin, prompt, "nstep", &par_buf.nsteps[i]);
         IF_OK status += get_i(stdin, prompt, "nstep_gauge", &par_buf.nsteps[MAX_MASSES]);
     /* trajectories between propagator measurements */
-    IF_OK status += get_i(stdin, prompt,"traj_between_meas",
+    IF_OK status += get_i(stdin, prompt, "traj_between_meas",
         &par_buf.propinterval);
 
 
 
-    /* get couplings and broadcast to nodes */
-    /* beta, kappa */
-    IF_OK status += get_f(stdin, prompt,"beta", &par_buf.beta);
-#ifdef BETA_FREP
-    IF_OK status += get_f(stdin, prompt,"beta_frep", &par_buf.beta_frep);
-#endif
-    IF_OK status += get_f(stdin, prompt,"kappa", &par_buf.kappa);
+    // Get couplings beta, beta_frep, kappa and shift(s)
+    IF_OK status += get_f(stdin, prompt, "beta", &par_buf.beta);
+    IF_OK status += get_f(stdin, prompt, "beta_frep", &par_buf.beta_frep);
+    IF_OK status += get_f(stdin, prompt, "kappa", &par_buf.kappa);
     if (par_buf.num_masses > 1)
-    IF_OK status += get_f(stdin, prompt,"shift", &par_buf.shift);
+      IF_OK status += get_f(stdin, prompt, "shift", &par_buf.shift);
 
     // Clover coefficient and u0
     IF_OK status += get_f(stdin, prompt, "clov_c", &par_buf.clov_c);
     IF_OK status += get_f(stdin, prompt, "u0", &par_buf.u0);
 
-#ifdef NHYP
     // Smearing parameters
     IF_OK status += get_f(stdin, prompt, "alpha_hyp0", &par_buf.alpha_hyp0);
     IF_OK status += get_f(stdin, prompt, "alpha_hyp1", &par_buf.alpha_hyp1);
     IF_OK status += get_f(stdin, prompt, "alpha_hyp2", &par_buf.alpha_hyp2);
-#endif
 
     // Maximum numbers of conjugate gradient iterations and restarts
     IF_OK status += get_i(stdin, prompt, "max_cg_iterations", &par_buf.niter);
@@ -244,13 +238,13 @@ int readin(int prompt) {
 
     // Error per site for update CG
     IF_OK {
-      status += get_f(stdin, prompt,"error_per_site", &x);
+      status += get_f(stdin, prompt, "error_per_site", &x);
       par_buf.rsqmin = x * x;
     }
 
     // Error per site for propagator measurement CG
     IF_OK {
-      status += get_f(stdin, prompt,"error_for_propagator", &x);
+      status += get_f(stdin, prompt, "error_for_propagator", &x);
       par_buf.rsqprop = x * x;
     }
 

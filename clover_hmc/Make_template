@@ -112,14 +112,7 @@ G_NHYP_OBJECTS = block_nhyp.o \
                  force_nhyp.o
 
 # Uncomment for nHYP smearing
-FAT = -DNHYP -DNHYP_JACOBI
-ifdef FAT
-  THIN_OR_FAT= ${FAT}
-else
-  THIN_OR_FAT=
-  G_NHYP_OBJECTS=
-endif
-DEFINES = ${THIN_OR_FAT} -DBETA_FREP
+DEFINES = -DNHYP_JACOBI
 
 # Selection of layout
 ifeq ($(strip ${HAVEQDP}),true)
@@ -245,6 +238,3 @@ localmake: ${OBJECTS} ${LIBRARIES}
 	touch localmake
 
 target: libmake localmake
-
-
-
