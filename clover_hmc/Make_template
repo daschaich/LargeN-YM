@@ -1,4 +1,5 @@
 # clover fermions with nHYP smearing
+# Wilson-clover fermions
 # Generic make-include file
 # This template file defines rules and macros common to all architectures
 # It is intended to be an include file for other Makefiles
@@ -8,7 +9,7 @@
 #   su3_phi uses phi algorithm
 #   su3_hmc uses hybrid Monte Carlo algorithm
 #   su3_hmc_pcac also calculates propagators for PCAC along t direction
-#       (if nx>nt then it calculates spacelike propagators as well)
+#       (if nx > nt then it calculates spacelike propagators as well)
 #   su3_hmc_spectrum does spectrum measurements. NOT USED
 #   su3_hmc_screen does screening measurements.  NOT USED
 #  In all cases, defining "LU" causes the dynamical fermion matrix

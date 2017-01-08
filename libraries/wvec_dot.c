@@ -1,6 +1,5 @@
 /******************  wvec_dot.c  (in su3.a) ****************************/
-/* MIMD version 7 */
-/*									*
+/*
 * complex wvec_dot(a,b) wilson_vector *a,*b;				*
 * return dot product of two wilson_vectors					*
 */
@@ -8,12 +7,11 @@
 #include "../include/complex.h"
 #include "../include/su3.h"
 
-complex wvec_dot( wilson_vector *a, wilson_vector *b ){
-
+complex wvec_dot(wilson_vector *a, wilson_vector *b) {
 #ifndef FAST
   complex temp1,temp2;
   register int i;
-#if (NCOL<=6)
+#if DIMF <= 6
   temp1.real = temp1.imag = 0.0;
   for(i=0;i<4;i++){
     CMULJ_(a->d[i].c[0],b->d[i].c[0],temp2); CSUM(temp1,temp2);
@@ -31,18 +29,19 @@ complex wvec_dot( wilson_vector *a, wilson_vector *b ){
 #endif
 #endif
   }
-#else /* DIMF>6 */
+#else   // DIMF > 6
   register int j;
   temp1.real = temp1.imag = 0.0;
   for(i=0;i<4;i++){
     for(j=0;j<DIMF;j++){
-        CMULJ_(a->d[i].c[j],b->d[i].c[j],temp2); CSUM(temp1,temp2);
+        CMULJ_(a->d[i].c[j],b->d[i].c[j],temp2);
+        CSUM(temp1,temp2);
     }
   }
 #endif
-  return(temp1);
+  return temp1;
 
-#else
+#else // FAST
 
 #ifdef NATIVEDOUBLE
   register double ar,ai,br,bi,cr,ci;
@@ -50,7 +49,6 @@ complex wvec_dot( wilson_vector *a, wilson_vector *b ){
   register Real ar,ai,br,bi,cr,ci;
 #endif
   register complex cc;
-
 
   ar=a->d[0].c[0].real;  ai=a->d[0].c[0].imag;
   br=b->d[0].c[0].real;  bi=b->d[0].c[0].imag;
@@ -106,7 +104,6 @@ complex wvec_dot( wilson_vector *a, wilson_vector *b ){
 
   cc.real = cr;
   cc.imag = ci;
-  return(cc);
-
+  return cc;
 #endif
 }
