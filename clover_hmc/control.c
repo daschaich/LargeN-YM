@@ -79,16 +79,16 @@ int main(int argc, char *argv[]) {
     node0_printf("ACTION_V %.8g %.8g\n",
                  ss_plaq, ss_plaq / (double)(6.0 * volume));
 #endif
-    // Measure Polyakov loop and plaquette
+
+    // Measure fermionic observables: psi-bar-psi, fermion action, etc.
+    m_iters = f_measure_cl();
+    avm_iters += m_iters;
+
+    // Measure and print Polyakov loop and plaquette
+    // along with iterations for fermionic measurements above
     plp = ploop();
     plaquette(&ss_plaq, &st_plaq);
     plaquette_frep(&ss_plaq_frep, &st_plaq_frep);
-#ifdef LU
-    // Generate a pseudofermion configuration
-    m_iters = f_measure_cl();
-#endif
-    avm_iters += m_iters;
-
     node0_printf("GMES %.8g %.8g %d %d %.8g %.8g %.8g %.8g\n",
                  plp.real, plp.imag, s_iters, m_iters,
                  ss_plaq, st_plaq, ss_plaq_frep, st_plaq_frep);

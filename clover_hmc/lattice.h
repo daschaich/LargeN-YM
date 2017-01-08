@@ -46,12 +46,6 @@ typedef struct {
   wilson_vector g_rand; /* gaussian random vector */
   wilson_vector psi[MAX_MASSES];  /* solution vector */
   wilson_vector chi[MAX_MASSES];  /* source vector */
-#ifdef BI
-  wilson_vector sss;      /* internal biconjugate gradient vector */
-  wilson_vector ttt;      /* internal biconjugate gradient vector */
-  wilson_vector rv;       /* internal biconjugate gradient vector */
-  wilson_vector v;        /* internal biconjugate gradient vector */
-#endif
   wilson_vector p;        /* conjugate gradient change vector */
   wilson_vector mp;       /* another CG vector */
   wilson_vector tmp;      /* another temporary CG vector */

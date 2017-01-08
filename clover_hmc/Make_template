@@ -9,10 +9,9 @@
 #   su3_phi uses phi algorithm
 #   su3_hmc uses hybrid Monte Carlo algorithm
 #   su3_hmc_spectrum does spectrum measurements in addition to HMC
-#  In all cases, defining "LU" causes the dynamical fermion matrix
-#  to be the LU preconditioned matrix, on even sites only.
 
 # Features:
+#   LU-preconditioned CG, with dynamical fermion matrix on even sites only
 #   nHYP smearing (one level only)
 #   Hasenbusch preconditioning (one level only)
 #   Multiple time scale integration
@@ -177,26 +176,22 @@ endif
 
 DARCH = ${DHAVE_QMP} ${DHAVE_QIO} ${DHAVE_QDP} ${DHAVE_QOP}
 
-# LU specifies LU decomposition with standard cg inversions
-#
 ##### Targets:
 # Optional DEFINES for timing:
 # -DCGTIME for cg timing and iterations
 
-# targets with plaquette action (including SF)
-
 su3_phi::
 	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" \
-	"DEFINES = ${DEFINES} -DLU -DPHI_ALGORITHM "
+	"DEFINES = ${DEFINES} -DPHI_ALGORITHM "
 
 su3_hmc::
 	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" \
-	"DEFINES = ${DEFINES} -DLU -DPHI_ALGORITHM -DHMC_ALGORITHM " \
+	"DEFINES = ${DEFINES} -DPHI_ALGORITHM -DHMC_ALGORITHM " \
 	"EXTRA_OBJECTS = action.o   "
 
 su3_hmc_spectrum::
 	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" \
-	"DEFINES = ${DEFINES} -DLU -DPHI_ALGORITHM -DHMC_ALGORITHM -DSPECTRUM " \
+	"DEFINES = ${DEFINES} -DPHI_ALGORITHM -DHMC_ALGORITHM -DSPECTRUM " \
 	"EXTRA_OBJECTS = action.o gaugefix2.o t_props_cl.o w_spectrum_cl.o "
 
 clean:

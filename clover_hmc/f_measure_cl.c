@@ -2,14 +2,15 @@
 /* Measure fermionic observables:
     psi-bar-psi, fermion action, energy and pressure, psi-bar-gamma_5-psi
 
-   M = A - kappa*(Dslash_eo + DSLASH_oe)
-   In this version, M is NOT the LU preconditioned matrix.
-   MM = preconditioned matrix = A_e - kappa^2*Dslash_eo*(A_o)^{-1}*Dslash_oe
+   In this version, M is NOT the LU-preconditioned matrix
+   The preconditioned matrix is MM
+   M = A - kappa*(Dslash_eo + Dslash_oe)
+   MM = A_e - kappa^2 * Dslash_eo * (A_o)^{-1} * Dslash_oe
 
    Output is an FMES line containing the expectation value of
    the real part of Tr(1/M),
    the imaginary part of  Tr(1/M),
-   the  trace of D_slash(t),
+   the trace of D_slash(t),
    the average (over i)  trace of D_slash(i),
    the fermion action,
    the real part of Tr(gamma_5/M),
@@ -29,19 +30,14 @@
 
    psi-bar-psi = (nflavors/2) * 4 * kappa * $2
    entropy = (nflavors/2) * 2 * kappa * (-$4 + $5)
-   energy = (nflavors/2) * 2 * kappa * (-$4 + (4*3 - $2)*tderiv )
-   pressure = (nflavors/2) * 2 * kappa * ($5 - (4*3 - $2)*3*sderiv )
+   energy = (nflavors/2) * 2 * kappa * (-$4 + (4*3 - $2)*tderiv)
+   pressure = (nflavors/2) * 2 * kappa * ($5 - (4*3 - $2)*3*sderiv)
     where tderiv = partial 1/kappa_c / partial alpha_t
     where sderiv = partial 1/kappa_c / partial alpha_s
 
    These are the entropy, etc. summed over color and flavor.
 */
 #include "cl_dyn_includes.h"
-
-// Requires LU preconditioning in congrad
-#ifndef LU
-  #error "f_measure_cl requires LU preconditioning"
-#endif
 // -----------------------------------------------------------------
 
 
@@ -71,29 +67,19 @@ int f_measure_cl() {
   }
 
   // Copy gaussian source to chi[0]
-  FORALLSITES(i,s)
+  FORALLSITES(i, s)
     copy_wvec(&(s->g_rand), &(s->chi[0]));
 
+  // Load inversion control structure
+  qic.start_flag = 0;   // Use zero initial guess for psi
+
+  // Load Dirac matrix parameters, including temporaries
+  qic.wv1 = F_OFFSET(tmp);
+  qic.wv2 = F_OFFSET(mp);
+
   // Invert M, put result in psi[0]
-
-  /* Load inversion control structure */
-  qic.start_flag = 0;   /* Use zero initial guess for psi */
-
-  // Load Dirac matrix parameters,
-  // including temporaries specific to inverter
-#ifdef BI
-  qic.wv1 = F_OFFSET(tmp);
-  qic.wv2 = F_OFFSET(mp);
-  qic.wv3 = F_OFFSET(p);
-  qic.wv4 = F_OFFSET(sss);
-  iters = wilson_invert(F_OFFSET(chi[0]), F_OFFSET(psi[0]), F_OFFSET(r),
-                        bicgilu_cl, &qic, (void *)&dcp);
-#else
-  qic.wv1 = F_OFFSET(tmp);
-  qic.wv2 = F_OFFSET(mp);
   iters = wilson_invert(F_OFFSET(chi[0]), F_OFFSET(psi[0]), F_OFFSET(r),
                         cgilu_cl, &qic, (void *)&dcp);
-#endif
 
   // DEBUG CHECK:
   /* Multiply by M and see if I get g_rand back */
@@ -105,7 +91,7 @@ int f_measure_cl() {
      for(dir=0,j=0;j<4;j++)for(k=0;k<3;k++){
      if(s->g_rand.d[j].c[k].real - s->mp.d[j].c[k].real > 2e-5)dir=1;
      if(s->g_rand.d[j].c[k].imag - s->mp.d[j].c[k].imag > 2e-5)dir=1;
-     if(dir)printf("%d %d %d  (%.4e , %.4e)  ( %.4e , %.4e )\n",
+     if(dir)printf("%d %d %d  (%.4e , %.4e)  ( %.4e , %.4e)\n",
      i,j,k,s->g_rand.d[j].c[k].real,s->g_rand.d[j].c[k].imag,
      s->mp.d[j].c[k].real,s->mp.d[j].c[k].imag);
      }
@@ -145,9 +131,9 @@ int f_measure_cl() {
     wait_gather(tag1);
     FORALLSITESDOMAIN(i,s){
       mult_su3_mat_hwvec(&(s->link[dir]),
-          (half_wilson_vector *)(gen_pt[0][i]), &hwv0 );
+          (half_wilson_vector *)(gen_pt[0][i]), &hwv0);
       wp_grow(&hwv0, &(s->p), dir, MINUS);
-      wp_grow((half_wilson_vector *)(gen_pt[1][i]), &wv0, dir, PLUS );
+      wp_grow((half_wilson_vector *)(gen_pt[1][i]), &wv0, dir, PLUS);
       add_wilson_vector(&wv0, &(s->p), &(s->p));
     }
     cleanup_gather(tag0);

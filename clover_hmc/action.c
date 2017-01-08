@@ -16,12 +16,7 @@ double fermion_action() {
   double sum = 0.0;
   double shiftSq = shift * shift;
 
-#ifndef LU
-  FORALLSITES(i, s)
-#else
-  FOREVENSITES(i, s)
-#endif
-  {
+  FOREVENSITES(i, s) {
     if (num_masses == 1)
       sum += (double)wvec_rdot(&(s->psi[0]), &(s->chi[0]));
     else{

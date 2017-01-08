@@ -20,12 +20,6 @@ void predict_next_psi(Real *oldtime, Real *newtime,
 int update_step(Real *oldtime, Real *newtime, Real *nexttime,
                 double *fnorm, double *gnorm);
 double returntrlogA;
-
-#ifdef LU
-#define FORMYSITESDOMAIN FOREVENSITESDOMAIN
-#else
-#define FORMYSITESDOMAIN FORALLSITESDOMAIN
-#endif
 // -----------------------------------------------------------------
 
 
@@ -142,9 +136,7 @@ int update_step(Real *old_cg_time, Real *cg_time, Real *next_cg_time,
       predict_next_psi(old_cg_time, cg_time, next_cg_time, level);
       free_clov();
       make_clov(CKU0);
-#ifdef LU
       returntrlogA = make_clovinv(ODD);
-#endif
       iters += congrad_cl_m(niter, rsqmin, &final_rsq, F_OFFSET(chi[level]),
                             F_OFFSET(psi[level]), mshift);
 
@@ -165,9 +157,7 @@ int update_step(Real *old_cg_time, Real *cg_time, Real *next_cg_time,
         predict_next_psi(old_cg_time, cg_time, next_cg_time, level);
         free_clov();
         make_clov(CKU0);
-#ifdef LU
         returntrlogA = make_clovinv(ODD);
-#endif
         iters += congrad_cl_m(niter, rsqmin, &final_rsq, F_OFFSET(chi[level]),
                               F_OFFSET(psi[level]), mshift);
         tr = fermion_force(f_eps1 * TWO_LAMBDA, 0.0);
@@ -182,9 +172,7 @@ int update_step(Real *old_cg_time, Real *cg_time, Real *next_cg_time,
     predict_next_psi(old_cg_time, cg_time, next_cg_time,level);
     free_clov();
     make_clov(CKU0);
-#ifdef LU
     returntrlogA = make_clovinv(ODD);
-#endif
     iters += congrad_cl_m(niter, rsqmin, &final_rsq, F_OFFSET(chi[level]),
                           F_OFFSET(psi[level]), mshift);
 
@@ -212,9 +200,7 @@ int update_step(Real *old_cg_time, Real *cg_time, Real *next_cg_time,
       predict_next_psi(old_cg_time, cg_time, next_cg_time, level);
       free_clov();
       make_clov(CKU0);
-#ifdef LU
       returntrlogA = make_clovinv(ODD);
-#endif
       iters += congrad_cl_m(niter, rsqmin, &final_rsq, F_OFFSET(chi[level]),
                             F_OFFSET(psi[level]), mshift);
       tr = fermion_force(f_eps1 * LAMBDA_MID, 0.0);
@@ -233,9 +219,7 @@ int update_step(Real *old_cg_time, Real *cg_time, Real *next_cg_time,
         predict_next_psi(old_cg_time, cg_time, next_cg_time, level);
         free_clov();
         make_clov(CKU0);
-#ifdef LU
         returntrlogA = make_clovinv(ODD);
-#endif
         iters += congrad_cl_m(niter,rsqmin,&final_rsq,F_OFFSET(chi[level]),
             F_OFFSET(psi[level]),mshift);
         tr = fermion_force(f_eps1 * TWO_LAMBDA, 0.0);
@@ -251,9 +235,7 @@ int update_step(Real *old_cg_time, Real *cg_time, Real *next_cg_time,
     predict_next_psi(old_cg_time, cg_time, next_cg_time, level);
     free_clov();
     make_clov(CKU0);
-#ifdef LU
     returntrlogA = make_clovinv(ODD);
-#endif
     iters += congrad_cl_m(niter, rsqmin, &final_rsq, F_OFFSET(chi[level]),
                           F_OFFSET(psi[level]), mshift);
     if (num_masses == 2) {
@@ -315,9 +297,7 @@ int update() {
 
   // Generate a pseudofermion configuration only at start
   make_clov(CKU0);
-#ifdef LU
   starttrlogA = make_clovinv(ODD);
-#endif
   grsource_w();
   old_cg_time[0] = -1;
   old_cg_time[1] = -1;
@@ -353,10 +333,9 @@ int update() {
   iters += update_step(old_cg_time, cg_time, next_cg_time, fnorm, &gnorm);
 
 #ifdef HMC_ALGORITHM    // Find action, then accept or reject
-#ifdef LU
   // update_step() provides returntrlogA for us to reuse
   endtrlogA = returntrlogA;
-#endif
+
   // Do CG to get both psi = (M^dag M)^(-1) chi
   iters += congrad_cl_m(niter, rsqmin, &final_rsq,
                          F_OFFSET(chi[0]), F_OFFSET(psi[0]), 0.0);

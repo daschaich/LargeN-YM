@@ -30,8 +30,6 @@ void boundary_flip    (int sign);
 void boundary_flip_x  (int sign);
 void boundary_flip_z3 (int sign);
 
-int congrad_w(int niter, Real rsqmin, Real *final_rsq_ptr);
-
 void copy_site_wilson_vector(field_offset src, field_offset dest);
 
 /* For quark source routines */

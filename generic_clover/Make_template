@@ -7,41 +7,32 @@
 #
 #  The paths are relative to the application directory.
 
-G_CLOVER_ALL = \
-    d_cgilu_cl_lean.o \
-    d_cgilu_cl_lean2.o \
-    d_cgilu_cl_field.o \
-    f_mu_nu.o \
-    make_clov2.o
+G_CLOVER_ALL = f_mu_nu.o    \
+               make_clov2.o \
+               d_cgilu_cl_lean.o
 
 # Must match our headers in generic_clover_includes.h
-G_CLOVER_HEADERS = \
-  ../include/config.h \
-  ../include/complex.h \
-  ../include/su3.h \
-  ../include/macros.h \
-  ../include/comdefs.h \
-  ../include/generic.h \
-  ../include/generic_quark_types.h \
-  ../include/generic_wilson.h \
-  ../include/generic_clover.h \
-  lattice.h
+G_CLOVER_HEADERS = ../include/config.h              \
+                   ../include/complex.h             \
+                   ../include/su3.h                 \
+                   ../include/macros.h              \
+                   ../include/comdefs.h             \
+                   ../include/generic.h             \
+                   ../include/generic_quark_types.h \
+                   ../include/generic_wilson.h      \
+                   ../include/generic_clover.h      \
+                   lattice.h
 
-G_CLOVER_ALL_DEPEND = \
-  ../generic_clover/generic_clover_includes.h \
-  ../generic_clover/Make_template \
-  ../include \
-  ${LASTMAKE} \
-  ${G_CLOVER_HEADERS}
+G_CLOVER_ALL_DEPEND = ../generic_clover/generic_clover_includes.h \
+                      ../generic_clover/Make_template \
+                      ../include \
+                      ${LASTMAKE} \
+                      ${G_CLOVER_HEADERS}
 
 ${G_CLOVER_ALL} : ${G_CLOVER_ALL_DEPEND}
 
 d_cgilu_cl_lean.o: ../generic_clover/d_cgilu_cl_lean.c
 	${CC} -c ${CFLAGS}  ../generic_clover/d_cgilu_cl_lean.c 
-d_cgilu_cl_lean2.o: ../generic_clover/d_cgilu_cl_lean2.c
-	${CC} -c ${CFLAGS}  ../generic_clover/d_cgilu_cl_lean2.c 
-d_cgilu_cl_field.o: ../generic_clover/d_cgilu_cl_field.c
-	${CC} -c ${CFLAGS}  ../generic_clover/d_cgilu_cl_field.c 
 f_mu_nu.o: ../generic_clover/f_mu_nu.c
 	${CC} -c ${CFLAGS}  ../generic_clover/f_mu_nu.c 
 make_clov2.o: ../generic_clover/make_clov2.c

@@ -17,8 +17,6 @@ int cgilu_cl(            /* Return value is number of iterations taken */
     void *dmp            /* parameters defining the Dirac matrix */
     );
 
-int congrad_cl(int niter,Real rsqmin,Real *final_rsq_ptr);
-
 void f_mu_nu(su3_matrix f_mn[],int mu,int nu);
 
 typedef struct { complex tr[2][DIMF*(2*DIMF-1)]; } triangular;

@@ -268,14 +268,10 @@ void gauge_force_frep(field_offset scratch1, field_offset scratch2,
 /* Assumes that the conjugate gradient has been run, with the answer in psi */
 /* pseudofermion vector is chi */
 
-/* if "LU" is defined use the LU preconditioned fermion matrix, where
+/* Use the LU preconditioned fermion matrix, where
   the fermion spinors live on even sites only.  In other words, if
   Dslash_oe is the dslash operator with its source on even sites and
   its result on odd sites, etc.:
-
-  without LU:
-    M = A - kappa Dslash
-  with LU:
     M = A_e - kappa^2 * Dslash_eo (A_o)^{-1}* Dslash_oe
 */
 double fermion_force(Real eps1, Real eps2) {
@@ -283,7 +279,7 @@ double fermion_force(Real eps1, Real eps2) {
   register site *s;
   int level;
   Real local_CKU0 = -clov_c * kappa / (8.0 * u0 * u0 * u0);
-  Real ferm_epsilon = nflavors * eps1;
+  Real ferm_epsilon = nflavors * eps1, tr;
   double tmpnorm, maxnorm = 0.0, norm = 0.0, returnit = 0.0;
   su3_matrix temp1;
   su3_matrix_f tempf1;
@@ -292,7 +288,7 @@ double fermion_force(Real eps1, Real eps2) {
 TIC(1)
 #endif
 
-  // First we have to clear the force collectors
+  // Clear the force collectors
   FORALLUPDIR(mu) {
     FORALLSITES(i, s)
       clear_su3mat(&(s->Force[mu]));
@@ -301,7 +297,6 @@ TIC(1)
   /* while we're at it, get the diagonal clover entry */
   /* With A_odd == sigma_mu_nu F_mu_nu, now add force term
      U dF_mu_nu/dU Tr_{dirac} (sigma_mu_nu A_odd^{-1}) */
-#ifdef LU
   FORALLUPDIR(mu) {
     FORALLUPDIR(nu) {
       if (nu == mu)
@@ -315,7 +310,6 @@ TIC(1)
       }
     }
   }
-#endif
 
   FORALLUPDIR(mu) {
     gauge_force_frep(F_OFFSET(staple), F_OFFSET(tempmat2),
@@ -329,8 +323,7 @@ TIC(1)
     prepare_vecs(level);
     delta(F_OFFSET(psi[level]), F_OFFSET(p));
 
-    if (eps2 >0.0 && num_masses == 2) {
-#ifdef LU
+    if (eps2 > 0.0 && num_masses == 2) {
       dslash_w_site(F_OFFSET(psi[0]), F_OFFSET(tmp), PLUS, ODD);
       mult_ldu_site(F_OFFSET(tmp), F_OFFSET(psi[0]), ODD);
       FORODDSITES(i, s)
@@ -351,21 +344,14 @@ TIC(1)
    psi(odd)  = kappa * A_odd^{-1} * Dslash * psi(even)
    p(even) = M * psi(even)
    p(odd)  = kappa * A_odd^{-1} * Dslash_adjoint * M * psi(even). */
-#else /* no LU */
-      dslash_w_site(F_OFFSET(psi[0]), F_OFFSET(p), PLUS, EVENANDODD);
-      mult_ldu_site(F_OFFSET(psi[0]), F_OFFSET(tmp), EVENANDODD);
-      FORALLSITES(i, s)
-        scalar_mult_add_wvec(&(s->tmp), &(s->p), -kappa, &(s->p));
-      /* M = A - kappa * Dslash
-   psi = psi
-   p = M * psi          */
-#endif /* LU */
+
       /* And the overall factor of shift^2, here we also adjust the stepsize */
+      tr = shift * shift * eps2 / eps1;
       FORALLSITES(i,s)
-        scalar_mult_wvec(&(s->p), shift*shift*eps2/eps1, &(s->p));
+        scalar_mult_wvec(&(s->p), tr, &(s->p));
 
       delta(F_OFFSET(psi[0]), F_OFFSET(p));
-    } /*end eps2 part */
+    }
 
       FORALLUPDIR(mu) {
         FORALLSITES(i, s) {
@@ -431,7 +417,6 @@ void prepare_vecs(int level) {
   if (level!=0)
     ctmp = cmplx(0, shift);
 
-#ifdef LU
   dslash_w_site(F_OFFSET(psi[level]), F_OFFSET(tmp), PLUS, ODD);
   mult_ldu_site(F_OFFSET(tmp), F_OFFSET(psi[level]), ODD);
   FORODDSITES(i, s) {
@@ -440,11 +425,11 @@ void prepare_vecs(int level) {
   dslash_w_site(F_OFFSET(psi[level]), F_OFFSET(p), PLUS, EVEN);
   mult_ldu_site(F_OFFSET(psi[level]), F_OFFSET(tmp), EVEN);
   FOREVENSITES(i, s) {
-    if (level==1) {
+    if (level == 1) {
       scalar_mult_add_wvec(&(s->tmp), &(s->p), -kappa, &tmpvec);
       /* that was M*psi now we need to add i*shift*gamma_5*p */
-      mult_by_gamma(&(s->psi[level]),&tmpvec2,GAMMAFIVE);
-      c_scalar_mult_add_wvec2(&tmpvec,&tmpvec2,ctmp,&(s->p));
+      mult_by_gamma(&(s->psi[level]), &tmpvec2, GAMMAFIVE);
+      c_scalar_mult_add_wvec2(&tmpvec, &tmpvec2, ctmp, &(s->p));
     }
     else
       scalar_mult_add_wvec(&(s->tmp), &(s->p), -kappa, &(s->p));
@@ -459,24 +444,6 @@ void prepare_vecs(int level) {
      psi(odd)  = kappa * A_odd^{-1} * Dslash * psi(even)
      p(even) = M * psi(even)
      p(odd)  = kappa * A_odd^{-1} * Dslash_adjoint * M * psi(even). */
-#else /* no LU */
-  dslash_w_site(F_OFFSET(psi[level]), F_OFFSET(p), PLUS, EVENANDODD);
-  mult_ldu_site(F_OFFSET(psi[level]), F_OFFSET(tmp), EVENANDODD);
-  FORALLSITES(i, s) {
-    if (level==1) {
-      scalar_mult_add_wvec(&(s->tmp), &(s->p), -kappa, &tmpvec);
-      /* that was M*psi now we need to add i*shift*gamma_5*p */
-      mult_by_gamma(&(s->psi[level]),&tmpvec2,GAMMAFIVE);
-      c_scalar_mult_add_wvec2(&tmpvec,&tmpvec2,ctmp,&(s->p));
-    }
-    else
-      scalar_mult_add_wvec(&(s->tmp), &(s->p), -kappa, &(s->p));
-
-  }
-  /* M = A - kappa * Dslash
-     psi = psi
-     p = M * psi          */
-#endif /* LU */
 }
 // -----------------------------------------------------------------
 

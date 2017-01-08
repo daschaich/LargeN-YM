@@ -61,9 +61,7 @@ http://gcc.gnu.org/onlinedocs/cpp/Stringification.html */
 #else
     printf("R algorithm\n");
 #endif
-#ifdef LU
     printf("LU preconditioning\n");
-#endif
 #ifdef SPECTRUM
     printf("With spectrum measurements\n");
 #endif
