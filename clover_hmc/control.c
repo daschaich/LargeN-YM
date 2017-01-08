@@ -96,34 +96,15 @@ int main(int argc, char *argv[]) {
     // Measure every "propinterval" trajectories
     if ((traj_done % propinterval) == (propinterval - 1)) {
       Nmeas++;
-#ifdef LU
-  #ifdef PCAC
-      // Correlators for PCAC relation
-      // t direction: Double the lattice via PBC+APBC
-      m_iters += pcac_t();
-      // x direction: PBC and PBC+APBC
-      if (nt < nx)
-        m_iters += pcac_x();
-  #endif
-#endif
 
       fixflag = NO_GAUGE_FIX;
 #ifdef SPECTRUM
-  #ifdef SCREEN
-      gaugefix(ZUP, 1.5, 500, (Real)GAUGE_FIX_TOL,
-               F_OFFSET(staple), F_OFFSET(tempmat1),
-               0, NULL, NULL, 0, NULL, NULL);
-      fixflag = COULOMB_GAUGE_FIX;
-      spect_iters = s_props_cl();
-      avspect_iters += spect_iters;
-  #else // Spectrum in time direction
       gaugefix(TUP, 1.5, 500, (Real)GAUGE_FIX_TOL,
                F_OFFSET(staple),F_OFFSET(tempmat1),
                0, NULL, NULL, 0, NULL, NULL);
       fixflag = COULOMB_GAUGE_FIX;
       spect_iters = w_spectrum_cl();
       avspect_iters += spect_iters;
-  #endif
 #endif
 
     }

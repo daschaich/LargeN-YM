@@ -3,18 +3,20 @@
 
 # Currently only one application directory and target
 # User just needs to specify NCOL, DIMF and fermion irrep
-if [ $# -lt 2 ]; then
+if [ $# -lt 3 ]; then
   echo "Try these:"
-  echo "./run_tests 3 3 fundamental"
-  echo "./run_tests 3 6 symmetric2"
-  echo "./run_tests 4 4 fundamental"
-  echo "./run_tests 4 6 antisymmetric2"
+  echo "./run_tests su3_hmc 3 3 fundamental"
+  echo "./run_tests su3_hmc_spectrum 3 3 fundamental"
+  echo "./run_tests su3_hmc 3 6 symmetric2"
+  echo "./run_tests su3_hmc 4 4 fundamental"
+  echo "./run_tests su3_hmc 4 6 antisymmetric2"
   exit 0
 fi
 
-N=$1
-DIMF=$2
-rep=$3
+target=$1
+N=$2
+DIMF=$3
+rep=$4
 
 if [[ "$rep" == "fundamental" ]] ; then
   tag='F'
@@ -27,19 +29,23 @@ else
   exit 1
 fi
 
-# Change N and rep
-# TODO: Also need different fermion_rep_*.o in clover_hmc/Make_template
+outpat=${target#su3_} # Omit 'su3_' from output file
+
+# Change N and rep in include/su3.h
 cd ../../include/
 awk -v"X=#define NCOL $N" '{sub(/^#define NCOL .*/,X);print}' su3.h > TEMP && mv TEMP su3.h
 awk -v"X=#define DIMF $DIMF" '{sub(/^#define DIMF .*/,X);print}' su3.h > TEMP && mv TEMP su3.h
 awk -v"X=#define FREP $rep" '{sub(/^#define FREP .*/,X);print}' su3.h > TEMP && mv TEMP su3.h
 
-# Compile
+# Change rep in clover_hmc/Make_template
+# TODO: Also need different fermion_rep_*.o in clover_hmc/Make_template
 cd ../clover_hmc/
-echo "Compiling su3_hmc..."
-if ! make -f Make_scalar su3_hmc >& /dev/null ; then
-  echo "ERROR: su3_hmc compilation failed"
-  make -f Make_scalar su3_hmc
+
+# Compile
+echo "Compiling $target..."
+if ! make -f Make_scalar $target >& /dev/null ; then
+  echo "ERROR: $target compilation failed"
+  make -f Make_scalar $target
   exit
 fi
 
@@ -52,17 +58,17 @@ awk -v"X=#define FREP fundamental" '{sub(/^#define FREP .*/,X);print}' su3.h > T
 
 # Run
 cd ../testsuite/
-rm -f scalar/hmc.$N$tag.out
-echo "Running su3_hmc..."
-../clover_hmc/su3_hmc < in.$N$tag.hmc > scalar/hmc.$N$tag.out
+rm -f scalar/$outpat.$N$tag.out
+echo "Running $target..."
+../clover_hmc/$target < in.$N$tag.hmc > scalar/$outpat.$N$tag.out
 
 # Check
 cd scalar/
-d="`diff -I'Time' -I'time' -I'seconds' -I'secs' -I'^start' -I'^exit:' hmc.$N$tag.ref hmc.$N$tag.out`"
+d="`diff -I'Time' -I'time' -I'seconds' -I'secs' -I'^start' -I'^exit:' $outpat.$N$tag.ref $outpat.$N$tag.out`"
 if [ -n "$d" ] ; then   # Non-zero string length
-  echo "hmc.$N$tag.ref and hmc.$N$tag.out differ:"
+  echo "$outpat.$N$tag.ref and $outpat.$N$tag.out differ:"
   echo "$d"
 else
-  echo "PASS: su3_hmc reproduces reference output for SU($N) $rep"
+  echo "PASS: $target reproduces reference output for SU($N) $rep"
 fi
 exit

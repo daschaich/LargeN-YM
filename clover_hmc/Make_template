@@ -8,10 +8,7 @@
 # Targets:
 #   su3_phi uses phi algorithm
 #   su3_hmc uses hybrid Monte Carlo algorithm
-#   su3_hmc_pcac also calculates propagators for PCAC along t direction
-#       (if nx > nt then it calculates spacelike propagators as well)
-#   su3_hmc_spectrum does spectrum measurements. NOT USED
-#   su3_hmc_screen does screening measurements.  NOT USED
+#   su3_hmc_spectrum does spectrum measurements in addition to HMC
 #  In all cases, defining "LU" causes the dynamical fermion matrix
 #  to be the LU preconditioned matrix, on even sites only.
 
@@ -201,17 +198,6 @@ su3_hmc_spectrum::
 	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" \
 	"DEFINES = ${DEFINES} -DLU -DPHI_ALGORITHM -DHMC_ALGORITHM -DSPECTRUM " \
 	"EXTRA_OBJECTS = action.o gaugefix2.o t_props_cl.o w_spectrum_cl.o "
-
-su3_hmc_screen::
-	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" \
-	"DEFINES = ${DEFINES} -DLU -DPHI_ALGORITHM -DHMC_ALGORITHM -DSPECTRUM \
-             -DSCREEN " \
-	"EXTRA_OBJECTS = action.o gaugefix2.o s_props_cl.o "
-
-su3_hmc_pcac::
-	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" \
-	"DEFINES = ${DEFINES} -DLU -DPHI_ALGORITHM -DHMC_ALGORITHM -DPCAC " \
-	"EXTRA_OBJECTS = action.o pcac_t.o pcac_x.o "
 
 clean:
 	-/bin/rm -f *.o

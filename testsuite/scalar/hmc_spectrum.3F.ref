@@ -1,0 +1,139 @@
+SU(3) with clover fermions, DIMF = 3, fermion rep = fundamental
+Microcanonical simulation with refreshing
+Machine = Scalar processor, with 1 nodes
+nHYP links, reading alpha_smear parameters from infile
+  IR_STAB = 1e-06
+  EPS_SQ = 1e-05
+NHYP_DEBUG turned on
+BETA_FREP turned on
+Hybrid Monte Carlo algorithm
+Phi algorithm
+LU preconditioning
+With spectrum measurements
+start: Sun Jan  8 16:52:54 2017
+
+type 0 for no prompts or 1 for prompts
+nflavors 2
+nx 4
+ny 4
+nz 4
+nt 4
+iseed 41
+LAYOUT = Hypercubes, options = hyper_prime,
+ON EACH NODE 4 x 4 x 4 x 4
+Mallocing 2.8 MBytes per node for lattice
+Mallocing 3.6 MBytes per node for fields
+
+
+warms 0
+trajecs 3
+traj_length 1
+number_of_PF 2
+nstep 5
+nstep 2
+nstep_gauge 5
+traj_between_meas 3
+beta 5
+beta_frep 0
+kappa 0.125
+shift 0.2
+clov_c 1
+u0 1
+alpha_hyp0 0.75
+alpha_hyp1 0.6
+alpha_hyp2 0.3
+max_cg_iterations 500
+max_cg_restarts 10
+error_per_site 1e-06
+error_for_propagator 1e-06
+reload_serial config.3F.4444
+forget
+Restored binary gauge configuration serially from file config.3F.4444
+Time stamp Fri Dec 16 00:37:45 2016
+Checksums 83567242 2efc25a5 OK
+Time to reload gauge configuration = 0.0001569 seconds
+CHECK PLAQ: 1.2754809836229895e+00 1.3359434793371250e+00
+CHECK NERSC LINKTR: -2.4656227161254187e-03 CKSUM: 0
+Reunitarized for double precision.  Max deviation 5.6e-08 changed to 5.6e-16
+Time to check unitarity = 0.0003982 seconds
+START 1.275481 1.3359435 2.6114245
+f_eps0 0.2 f_eps1 0.05 g_eps 0.005
+WARMUPS COMPLETED
+ACTION: g, rep, h, f, tot = 4337.3767 0 4040.3806 3086.8968 11464.654
+ACTION: g, rep, h, f, tot = 4368.107 0 4016.8369 3080.004 11464.948
+ACCEPT: delta S = 0.06395 start 11478.3186604 end 11478.3826129
+MONITOR_FORCE_FERMION0 0.009227 0.01221
+MONITOR_FORCE_FERMION1 0.005609 0.011
+MONITOR_FORCE_GAUGE 0.006317 0.006406
+MONITOR_JACOBI_TOTL 0
+FMES 11.547303 0.24769523 -0.47444326 -1.1447822 12.035902 0.054900647
+GMES 0.13013022 -0.098842111 1186 39 1.2638967 1.3235197 2.5099747 2.5602303
+ACTION: g, rep, h, f, tot = 4368.107 0 4159.0623 3037.6973 11564.867
+ACTION: g, rep, h, f, tot = 4392.7369 0 4113.8226 3054.7322 11561.292
+ACCEPT: delta S = -1.609 start 11578.3012365 end 11576.6924726
+MONITOR_FORCE_FERMION0 0.009471 0.013
+MONITOR_FORCE_FERMION1 0.006177 0.01369
+MONITOR_FORCE_GAUGE 0.006279 0.006349
+MONITOR_JACOBI_TOTL 0
+FMES 12.145164 0.023052464 -1.5712781 -0.61299643 12.571447 -0.079809599
+GMES -0.17068361 0.12689842 1251 40 1.2922969 1.2758774 2.4935366 2.4865803
+ACTION: g, rep, h, f, tot = 4392.7369 0 4082.1172 3006.9536 11481.808
+ACTION: g, rep, h, f, tot = 4318.6803 0 4147.8803 3016.0219 11482.582
+ACCEPT: delta S = -0.01948 start 11497.2085067 end 11497.1890279
+MONITOR_FORCE_FERMION0 0.009757 0.01296
+MONITOR_FORCE_FERMION1 0.006341 0.01008
+MONITOR_FORCE_GAUGE 0.006294 0.006405
+MONITOR_JACOBI_TOTL 0
+FMES 11.705748 -0.042777177 -0.63798231 -0.69301238 12.045376 0.18421193
+GMES 0.054348689 -0.058182961 1202 40 1.333257 1.2927741 2.5053458 2.5151041
+GFIX: Ended at step 94. Av gf action 7.65289683e-01, delta 8.956e-08
+ONE_PSEUDO2  0  1.891888e+02   0.000000e+00   -1.382276e+00   -4.770490e-17
+ONE_PSEUDO2  1  1.560570e+01   0.000000e+00   -8.436559e+00   1.816039e-17
+ONE_PSEUDO2  2  5.114821e+00   0.000000e+00   6.810627e-03   -2.276825e-18
+ONE_PSEUDO2  3  1.416386e+01   0.000000e+00   7.292215e+00   -3.632077e-18
+ONE_RHO03032  0  1.420243e+02   0.000000e+00
+ONE_RHO03032  1  7.388847e+00   0.000000e+00
+ONE_RHO03032  2  2.146641e+00   0.000000e+00
+ONE_RHO03032  3  6.939315e+00   0.000000e+00
+ONE_RHO332  0  1.622009e+02  -2.775558e-17
+ONE_RHO332  1  1.002159e+01  3.361027e-18
+ONE_RHO332  2  2.898955e+00  1.170938e-17
+ONE_RHO332  3  9.307468e+00  1.555830e-17
+DSL_PSEUDO2  0  -1.135258e+02   4.313076e-01   -9.142220e+00   -1.942214e+00
+DSL_PSEUDO2  1  5.259921e+01   -1.220957e+00   -1.372164e+01   -1.152549e+00
+DSL_PSEUDO2  2  1.048296e+01   -1.747499e-02   1.241613e-01   8.587963e-02
+DSL_PSEUDO2  3  5.044360e+01   8.071346e-01   1.138708e+01   -7.037860e-01
+DSL_RHO03032  0  -4.786572e+02   1.777548e+00
+DSL_RHO03032  1  3.366006e+01   -9.884161e-01
+DSL_RHO03032  2  3.943171e+00   -5.367310e-02
+DSL_RHO03032  3  3.436813e+01   8.818956e-01
+DSL_RHO332  0  -3.067028e+02  -1.458162e+00
+DSL_RHO332  1  3.981233e+01  -1.060646e+00
+DSL_RHO332  2  5.935377e+00  2.616620e-02
+DSL_RHO332  3  4.043633e+01  8.595400e-01
+PROTON  0  2.037039e+02
+PROTON  1  1.130764e+00
+PROTON  2  1.667955e-02
+PROTON  3  -9.260105e-01
+DELTA  0  1.999429e+02
+DELTA  1  1.046512e+00
+DELTA  2  1.096664e-02
+DELTA  3  -8.917889e-01
+DELTA_N  0  1.580858e+02
+DELTA_N  1  1.150917e+00
+DELTA_N  2  1.986713e-02
+DELTA_N  3  -9.095919e-01
+RUNNING COMPLETED
+STOP 1.333257 1.2927741 2.626031
+Average cg iters for steps: 1213
+Average cg iters for measurements: 119
+Average cg iters for spectrum: 465
+Time               = 20.79 seconds
+congrad time       = 2.585 seconds
+fermion_force time = 12.05 seconds
+block_nhyp time    = 1.549 seconds
+compute_fhb time   = 0.7279 seconds
+total_iters = 3735
+
+exit: Sun Jan  8 16:53:15 2017
+
