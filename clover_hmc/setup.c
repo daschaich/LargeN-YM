@@ -185,8 +185,8 @@ int setup()   {
 
 // -----------------------------------------------------------------
 // Read in parameters for SU(N) Monte Carlo
+// prompt=1 indicates prompts are to be given for input
 int readin(int prompt) {
-  // prompt=1 indicates prompts are to be given for input
   int status, i;
   Real x;
 
@@ -200,23 +200,29 @@ int readin(int prompt) {
     IF_OK status += get_i(stdin, prompt, "trajecs", &par_buf.trajecs);
     IF_OK status += get_f(stdin, prompt, "traj_length", &par_buf.traj_length);
 
-       // Number of pseudofermions
-        IF_OK status += get_i(stdin, prompt, "number_of_PF", &par_buf.num_masses);
-        if (par_buf.num_masses>MAX_MASSES || par_buf.num_masses<1) {
-            printf("num_masses = %d must be <= %d and >0!\n", par_buf.num_masses, MAX_MASSES);
-            status++;
-        }
-        if (par_buf.num_masses != 2)printf("WARNING: code not tested for number_of_PF !=2\n");
-        for (i=0;i<MAX_MASSES;i++)
-    IF_OK status += get_i(stdin, prompt, "nstep", &par_buf.nsteps[i]);
-        IF_OK status += get_i(stdin, prompt, "nstep_gauge", &par_buf.nsteps[MAX_MASSES]);
-    /* trajectories between propagator measurements */
+    // Number of pseudofermions
+    IF_OK status += get_i(stdin, prompt, "number_of_PF", &par_buf.num_masses);
+    if (par_buf.num_masses > MAX_MASSES || par_buf.num_masses < 1) {
+      printf("num_masses = %d must be <= %d and >0!\n",
+             par_buf.num_masses, MAX_MASSES);
+      status++;
+    }
+    if (par_buf.num_masses != 2)
+      printf("WARNING: code not tested for number_of_PF !=2\n");
+
+    // Number of fermion steps
+    for (i = 0; i < MAX_MASSES; i++)
+      IF_OK status += get_i(stdin, prompt, "nstep", &par_buf.nsteps[i]);
+
+    // Number of gauge steps
+    IF_OK status += get_i(stdin, prompt, "nstep_gauge",
+                          &par_buf.nsteps[MAX_MASSES]);
+
+    // Trajectories between propagator measurements
     IF_OK status += get_i(stdin, prompt, "traj_between_meas",
-        &par_buf.propinterval);
+                          &par_buf.propinterval);
 
-
-
-    // Get couplings beta, beta_frep, kappa and shift(s)
+    // beta, beta_frep, kappa and shift
     IF_OK status += get_f(stdin, prompt, "beta", &par_buf.beta);
     IF_OK status += get_f(stdin, prompt, "beta_frep", &par_buf.beta_frep);
     IF_OK status += get_f(stdin, prompt, "kappa", &par_buf.kappa);
@@ -248,19 +254,23 @@ int readin(int prompt) {
       par_buf.rsqprop = x * x;
     }
 
-    /* find out what kind of starting lattice to use */
+    // Find out what kind of starting lattice to use
     IF_OK status += ask_starting_lattice(stdin,  prompt, &par_buf.startflag,
-  par_buf.startfile);
+                                         par_buf.startfile);
 
-    /* find out what to do with lattice at end */
+    // Find out what to do with lattice at end
     IF_OK status += ask_ending_lattice(stdin,  prompt, &(par_buf.saveflag),
-           par_buf.savefile);
+                                       par_buf.savefile);
     IF_OK status += ask_ildg_LFN(stdin,  prompt, par_buf.saveflag,
-          par_buf.stringLFN);
+                                 par_buf.stringLFN);
 
-    if (status > 0)par_buf.stopflag=1; else par_buf.stopflag=0;
-  } /* end if (this_node==0) */
+    if (status > 0)
+      par_buf.stopflag = 1;
+    else
+      par_buf.stopflag = 0;
+  }
 
+  // Broadcast parameter buffer from node0 to all other nodes
   broadcast_bytes((char *)&par_buf, sizeof(par_buf));
   if (par_buf.stopflag != 0)
     normal_exit(0);
@@ -268,24 +278,19 @@ int readin(int prompt) {
   warms = par_buf.warms;
   trajecs = par_buf.trajecs;
   traj_length=par_buf.traj_length;
+
   num_masses = par_buf.num_masses;
   for (i = 0; i < MAX_MASSES + 1; i++)
     nsteps[i] = par_buf.nsteps[i];
-  if (num_masses > 1)
-    shift = par_buf.shift;
 
   propinterval = par_buf.propinterval;
-  startflag = par_buf.startflag;
-  saveflag = par_buf.saveflag;
-  niter = par_buf.niter;
-  nrestart = par_buf.nrestart;
-  rsqmin = par_buf.rsqmin;
-  rsqprop = par_buf.rsqprop;
 
   beta = par_buf.beta;
   beta_frep = par_buf.beta_frep;
-
   kappa = par_buf.kappa;
+  if (num_masses > 1)
+    shift = par_buf.shift;
+
   clov_c = par_buf.clov_c;
   u0 = par_buf.u0;
 
@@ -293,6 +298,13 @@ int readin(int prompt) {
   alpha_smear[1] = par_buf.alpha_hyp1;
   alpha_smear[2] = par_buf.alpha_hyp2;
 
+  niter = par_buf.niter;
+  nrestart = par_buf.nrestart;
+  rsqmin = par_buf.rsqmin;
+  rsqprop = par_buf.rsqprop;
+
+  startflag = par_buf.startflag;
+  saveflag = par_buf.saveflag;
   strcpy(startfile,par_buf.startfile);
   strcpy(savefile,par_buf.savefile);
 
@@ -310,8 +322,8 @@ int readin(int prompt) {
 
   // Do whatever is needed to get lattice
   startlat_p = reload_lattice(startflag, startfile);
-  /* generates the fermion's irrep lattice,
-     including spatially twisted b.c. for SF */
+
+  // Create DIMFxDIMF matrices 'link' from NCOLxNCOL matrices 'linkf'
   fermion_rep();
   return 0;
 }

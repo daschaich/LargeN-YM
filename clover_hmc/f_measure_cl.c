@@ -174,10 +174,9 @@ int f_measure_cl() {
   faction = pbp.real - kappa * (dslash_time + 3.0 * dslash_space);
 
   // Check that pbg5p is purely real up to machine precision
-  if (fabs(pbg5p.imag) > IMAG_TOL) {
-    node0_printf("node%d WARNING: Im(pbg5p) = %.4g > %.4g\n",
-                 pbg5p.imag, IMAG_TOL);
-  }
+  if (fabs(pbg5p.imag) > IMAG_TOL)
+    node0_printf("WARNING: Im(pbg5p) = %.4g > %.4g\n", pbg5p.imag, IMAG_TOL);
+
   // Print results
   node0_printf("FMES %.8g %.8g %.8g %.8g %.8g %.8g\n",
                (double)pbp.real, (double)pbp.imag, (double)dslash_time,

@@ -21,8 +21,8 @@
 
    The ILU decomposition results in M = L A U
 
-   M = (1            0) ( R_o  0   ) ( 1  -K/R_o D_oe )
-       (-K D_eo/R_o  1) ( 0    M_e ) ( 0     1        )
+   M = (1            0) (R_o  0   ) (1  -K/R_o D_oe )
+       (-K D_eo/R_o  1) (0    M_e ) (0     1        )
 
    where
 
@@ -35,13 +35,13 @@
 
 #include "generic_clover_includes.h"
 
-//#define CGTIME    // Uncomment if you want timing info
+//#define CGTIME    // Uncomment for timing info
 // -----------------------------------------------------------------
 
 
 
 // -----------------------------------------------------------------
-int cgilu_cl(           /* Return value is number of iterations taken */
+int cgilu_cl(            /* Return value is number of iterations taken */
     field_offset src,    /* type wilson_vector (source vector - OVERWRITTEN!)*/
     field_offset dest,   /* type wilson_vector (answer and initial guess)*/
     quark_invert_control *qic, /* parameters controlling inversion */
@@ -77,6 +77,10 @@ int cgilu_cl(           /* Return value is number of iterations taken */
 #ifdef CGTIME
   double dtime;
 #endif
+  msg_tag *tage[8], *tago[8];
+  int is_startedo, is_startede;
+
+  is_startedo = is_startede = 0;
 
     if (even_sites_on_node!=odd_sites_on_node) {
       printf("Need same number of even and odd sites on each node\n");
@@ -110,15 +114,16 @@ int cgilu_cl(           /* Return value is number of iterations taken */
 
   /* ---------  src = L^(-1)*src  ------------- */
 
-  /* (src_o) = ( 1           0 ) ( src_o )
-     (sec_e)   (-K D_eo/R_o  1 ) ( src_e )
+  /* (src_o) = (1           0 ) (src_o )
+     (sec_e)   (-K D_eo/R_o  1 ) (src_e )
 
      */
 
   /* mp_o = 1/R_o srce_e */
   mult_ldu_site(src, my_mp, ODD);
   /* mp_e = D_eo/R_o srce_e */
-  dslash_w_site(my_mp, my_mp, PLUS, EVEN);
+  dslash_w_site_special(my_mp, my_mp, PLUS, EVEN, tage, is_startede);
+  is_startede = 1;
 
   /* src_e = srce_e + K D_eo/R_o srce_e */
   /* (leaving src_o = src_o)   */
@@ -167,11 +172,13 @@ int cgilu_cl(           /* Return value is number of iterations taken */
     /* tmp_e = R_e dest_e */
     mult_ldu_site(dest, tmp, EVEN);
     /* mp_o = D_oe dest_e */
-    dslash_w_site(dest, my_mp, PLUS, ODD);
+    dslash_w_site_special(dest, my_mp, PLUS, ODD, tago, is_startedo);
+    is_startedo = 1;
     /* tmp_o = 1/R_o D_oe dest_e */
     mult_ldu_site(my_mp, tmp, ODD);
     /* mp_e = D_eo/R_o D_oe dest_e */
-    dslash_w_site(tmp, my_mp, PLUS, EVEN);
+    dslash_w_site_special(tmp, my_mp, PLUS, EVEN, tage, is_startede);
+    is_startede = 1;
     /* mp_e = R_e dest_e - K^2 D_eo/R_o D_oe dest_e = M_e dest_e */
     /* r_e = src_e - M_e dest_e */
     FOREVENSITESDOMAIN(i,s) {
@@ -195,9 +202,11 @@ int cgilu_cl(           /* Return value is number of iterations taken */
 
   /* --------- p_e = M_e_dag*r_e --------- */
   mult_ldu_site(r, tmp, EVEN);
-  dslash_w_site(r, my_mp, MINUS, ODD);
+  dslash_w_site_special(r, my_mp, MINUS, ODD, tago, is_startedo);
+  is_startedo = 1;
   mult_ldu_site(my_mp, tmp, ODD);
-  dslash_w_site(tmp, p, MINUS, EVEN);
+  dslash_w_site_special(tmp, p, MINUS, EVEN, tage, is_startede);
+  is_startede = 1;
 
   /* --------- cp = |p|^2 --------- */
   cp=0.0;
@@ -222,11 +231,13 @@ int cgilu_cl(           /* Return value is number of iterations taken */
     /* tmp_e = R_e p_e */
     mult_ldu_site(p, tmp, EVEN);
     /* mp_o = D_oe p_e */
-    dslash_w_site(p, my_mp, PLUS, ODD);
+    dslash_w_site_special(p, my_mp, PLUS, ODD, tago, is_startedo);
+    is_startedo = 1;
     /* tmp_o = 1/R_o D_oe p_e */
     mult_ldu_site(my_mp, tmp, ODD);
     /* mp_e = D_eo/R_o D_oe p_e */
-    dslash_w_site(tmp, my_mp, PLUS, EVEN);
+    dslash_w_site_special(tmp, my_mp, PLUS, EVEN, tage, is_startede);
+    is_startede = 1;
 
     /* mp_e = R_e p_e - K^2 D_eo/R_o D_oe p_e */
     d=0.0;
@@ -254,9 +265,11 @@ int cgilu_cl(           /* Return value is number of iterations taken */
     /* --------- mp_e M_e_dag*r_e --------- */
 
     mult_ldu_site(r, tmp, EVEN);
-    dslash_w_site(r, my_mp, MINUS, ODD);
+    dslash_w_site_special(r, my_mp, MINUS, ODD, tago, is_startedo);
+    is_startedo = 1;
     mult_ldu_site(my_mp, tmp, ODD);
-    dslash_w_site(tmp, my_mp, MINUS, EVEN);
+    dslash_w_site_special(tmp, my_mp, MINUS, EVEN, tage, is_startede);
+    is_startede = 1;
 
     cp=0.0;
     FOREVENSITESDOMAIN(i,s) {
@@ -309,7 +322,8 @@ int cgilu_cl(           /* Return value is number of iterations taken */
 
   /* --------- dest_o = U^(-1)_oo/R_o dest_o + U^(-1)_oe dest_e --------- */
   /* mp_o = D_oe * dest_e */
-  dslash_w_site(dest, my_mp, PLUS, ODD);
+  dslash_w_site_special(dest, my_mp, PLUS, ODD, tago, is_startedo);
+  is_startedo = 1;
   /* mp_o = dest_o + K D_oe * dest_e (remember dest_o = original src_o still)*/
   FORODDSITESDOMAIN(i,s) {
     scalar_mult_add_wvec((wilson_vector *)F_PT(s,dest),
@@ -318,6 +332,14 @@ int cgilu_cl(           /* Return value is number of iterations taken */
   }
   /* dest_o = 1/R_o dest_o + K/R_o D_oe * dest_e */
   mult_ldu_site(my_mp, dest, ODD);
+
+  for(i=XUP; i <= TUP; i++) {
+    if (is_startedo)cleanup_gather(tago[i]);
+    if (is_startedo)cleanup_gather(tago[OPP_DIR(i)]);
+    if (is_startede)cleanup_gather(tage[i]);
+    if (is_startede)cleanup_gather(tage[OPP_DIR(i)]);
+  }
+  is_startede = is_startedo = 0;
 
   free_clov();
   return N_iter;

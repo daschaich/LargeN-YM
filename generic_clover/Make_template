@@ -11,7 +11,6 @@ G_CLOVER_ALL = \
     d_cgilu_cl_lean.o \
     d_cgilu_cl_lean2.o \
     d_cgilu_cl_field.o \
-    d_mrilu_cl_lean.o \
     f_mu_nu.o \
     make_clov2.o
 
@@ -43,8 +42,6 @@ d_cgilu_cl_lean2.o: ../generic_clover/d_cgilu_cl_lean2.c
 	${CC} -c ${CFLAGS}  ../generic_clover/d_cgilu_cl_lean2.c 
 d_cgilu_cl_field.o: ../generic_clover/d_cgilu_cl_field.c
 	${CC} -c ${CFLAGS}  ../generic_clover/d_cgilu_cl_field.c 
-d_mrilu_cl_lean.o: ../generic_clover/d_mrilu_cl_lean.c
-	${CC} -c ${CFLAGS}  ../generic_clover/d_mrilu_cl_lean.c 
 f_mu_nu.o: ../generic_clover/f_mu_nu.c
 	${CC} -c ${CFLAGS}  ../generic_clover/f_mu_nu.c 
 make_clov2.o: ../generic_clover/make_clov2.c
