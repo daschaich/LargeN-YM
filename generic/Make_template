@@ -1,7 +1,5 @@
 #  Generic routines for all applications
-#  MIMD version 6
-#
-#  Generic make-include file for generic directory codes
+#  Generic make-include file
 #  This template file defines rules and macros common to all applications
 #  It is intended to be an include file for other Makefiles.
 #  Don't use it by itself!
@@ -15,7 +13,6 @@ G_ALL = \
  byterevn.o \
  check_unitarity.o \
  com_mpi.o \
- com_qmp.o \
  com_vanilla.o \
  plaquette.o \
  plaquette_lcl.o \
@@ -23,32 +20,17 @@ G_ALL = \
  gaugefix.o \
  gaugefix2.o \
  gauge_force_imp.o \
- gauge_force_symzk1_qdp.o \
- gauge_force_symzk1_qop.o \
- gauge_force_symzk1_qop_milc.o \
  gauge_stuff.o \
  hvy_pot.o \
  io_ansi.o \
  io_detect.o \
  io_helpers.o \
- io_helpers_nocheck.o \
  io_lat4.o \
  io_lat_utils.o \
  io_lat4xt.o \
  io_lat_utils.o \
  io_nonansi.o \
- io_paragon3.o \
- io_piofs.o \
- io_romio.o \
- io_scidac.o \
  layout_hyper_prime.o \
- layout_hyper_2or3.o \
- layout_timeslices.o \
- layout_squares.o \
- layout_hyper_sl32.o \
- layout_qcdoc.o \
- map_milc_to_qop.o \
- milc_to_qop_utilities.o \
  make_lattice.o \
  nersc_cksum.o \
  nr.o \
@@ -58,11 +40,6 @@ G_ALL = \
  ploop_dist.o \
  ploop_staple.o \
  project_su3_hit.o \
- qcdoc_alloc.o \
- qop_milc.o \
- qop_milc_D.o \
- qop_milc_F.o \
- qop_milc_utilities.o \
  rand_gauge.o \
  ranmom.o \
  ranstuff.o \
@@ -80,11 +57,7 @@ G_HEADERS = \
   ../include/macros.h \
   ../include/comdefs.h \
   ../include/generic.h \
-  ../include/generic_qdp.h \
-  ../include/generic_qop.h \
-  ../include/generic_schroed.h \
   ../include/int32type.h \
-  ../include/io_scidac.h \
   lattice.h
 
 G_ALL_DEPEND = \
@@ -106,8 +79,6 @@ check_unitarity.o: ../generic/check_unitarity.c
 	${CC} -c ${CFLAGS} $<
 com_mpi.o: ../generic/com_mpi.c
 	${CC} -c ${CFLAGS} $<
-com_qmp.o: ../generic/com_qmp.c
-	${CC} -c ${CFLAGS} $<
 com_vanilla.o: ../generic/com_vanilla.c
 	${CC} -c ${CFLAGS} $<
 plaquette.o: ../generic/plaquette.c
@@ -123,12 +94,6 @@ gaugefix2.o: ../generic/gaugefix2.c
 gaugefix_full.o: ../generic/gaugefix_full.c
 	${CC} -c ${CFLAGS} $<
 gauge_force_imp.o: ../generic/gauge_force_imp.c
-	${CC} -c ${CFLAGS} $<
-gauge_force_symzk1_qdp.o: ../generic/gauge_force_symzk1_qdp.c
-	${CC} -c ${CFLAGS} $<
-gauge_force_symzk1_qop.o: ../generic/gauge_force_symzk1_qop.c
-	${CC} -c ${CFLAGS} $<
-gauge_force_symzk1_qop_milc.o: ../generic/gauge_force_symzk1_qop_milc.c
 	${CC} -c ${CFLAGS} $<
 gauge_stuff.o: ../generic/gauge_stuff.c
 	${CC} -c ${CFLAGS} $<
@@ -155,31 +120,9 @@ io_lat_utils.o: ../generic/io_lat_utils.c
 	${CC} -c ${CFLAGS} $<
 io_nonansi.o: ../generic/io_nonansi.c
 	${CC} -c ${CFLAGS} $<
-io_paragon3.o: ../generic/io_paragon3.c
-	${CC} -c ${CFLAGS} $<
-io_piofs.o: ../generic/io_piofs.c
-	${CC} -c ${CFLAGS} $<
-io_romio.o: ../generic/io_romio.c
-	${CC} -c ${CFLAGS} $<
-io_scidac.o: ../generic/io_scidac.c
-	${CC} -c ${CFLAGS} $<
 layout_hyper_prime.o: ../generic/layout_hyper_prime.c
 	${CC} -c ${CFLAGS} $<
-layout_hyper_2or3.o: ../generic/layout_hyper_2or3.c
-	${CC} -c ${CFLAGS} $<
-layout_hyper_sl32.o: ../generic/layout_hyper_sl32.c
-	${CC} -c ${CFLAGS} $<
-layout_timeslices.o: ../generic/layout_timeslices.c
-	${CC} -c ${CFLAGS} $<
-layout_squares.o: ../generic/layout_squares.c
-	${CC} -c ${CFLAGS} $<
-layout_qcdoc.o: ../generic/layout_qcdoc.c
-	${CC} -c ${CFLAGS} $<
 make_lattice.o: ../generic/make_lattice.c
-	${CC} -c ${CFLAGS} $<
-map_milc_to_qop.o: ../generic/map_milc_to_qop.c
-	${CC} -c ${CFLAGS} $<
-milc_to_qop_utilities.o: ../generic/milc_to_qop_utilities.c
 	${CC} -c ${CFLAGS} $<
 nersc_cksum.o: ../generic/nersc_cksum.c
 	${CC} -c ${CFLAGS} $<
@@ -197,16 +140,6 @@ ploop_staple.o: ../generic/ploop_staple.c
 	${CC} -c ${CFLAGS} $<
 project_su3_hit.o: ../generic/project_su3_hit.c
 	${CC} -c ${CFLAGS} $<
-qcdoc_alloc.o: ../generic/qcdoc_alloc.c
-	${CC} -c ${CFLAGS} $<
-qop_milc.o: ../generic/qop_milc.c
-	${CC} -c ${CFLAGS} $<
-qop_milc_D.o: ../generic/qop_milc_D.c ../generic/qop_milc_P.c
-	${CC} -c ${CFLAGS} $<
-qop_milc_F.o: ../generic/qop_milc_F.c ../generic/qop_milc_D.c
-	${CC} -c ${CFLAGS} $<
-qop_milc_utilities.o: ../generic/qop_milc_utilities.c
-	${CC} -c ${CFLAGS} $<
 rand_gauge.o: ../generic/rand_gauge.c
 	${CC} -c ${CFLAGS} $<
 ranmom.o: ../generic/ranmom.c
@@ -223,28 +156,3 @@ reunitarize_arb.o: ../generic/reunitarize_arb.c
 	${CC} -c ${CFLAGS} $<
 show_generic_opts.o: ../generic/show_generic_opts.c
 	${CC} -c ${CFLAGS} $<
-
-ifeq ($(strip ${HAVEQDP}),true)
-
-G_ALL_QDP = \
- layout_qdp.o \
- map_milc_to_qdp_F.o \
- map_milc_to_qdp_D.o
-
-G_HEADERS_QDP = \
-  $(QDP)/include/qdp.h
-
-G_ALL_DEPEND_QDP = \
-  ${G_HEADERS_QDP} \
-  ${G_ALL_DEPEND}
-
-${G_ALL_QDP} : ${G_ALL_DEPEND_QDP}
-
-layout_qdp.o: ../generic/layout_qdp.c
-	${CC} -c ${CFLAGS} $<
-map_milc_to_qdp_F.o: ../generic/map_milc_to_qdp_F.c ../generic/map_milc_to_qdp_P.c ../generic/map_milc_to_qdp_Fd.c
-	${CC} -c ${CFLAGS} $<
-map_milc_to_qdp_D.o: ../generic/map_milc_to_qdp_D.c ../generic/map_milc_to_qdp_P.c ../generic/map_milc_to_qdp_Df.c
-	${CC} -c ${CFLAGS} $<
-
-endif

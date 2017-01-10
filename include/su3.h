@@ -18,8 +18,8 @@
 #define DIMF 3
 #define FREP fundamental
 
-// Only set up anti_hermitmat and explicit loops in libraries for N <= 4
-#if (NCOL>4)
+// Only have anti_hermitmat and explicit loops in libraries for N <= 4
+#if NCOL > 4
   #error "NCOL > 4 not yet implemented!"
 #endif
 
@@ -46,18 +46,18 @@ typedef struct { fcomplex e[DIMF][DIMF]; } fsu3_matrix;
 typedef struct { fcomplex c[NCOL]; } fsu3_vector_f;
 typedef struct { fcomplex c[DIMF]; } fsu3_vector;
 typedef struct {
-#if (NCOL==2)
+#if NCOL == 2
   fcomplex m01;
-  float m00im,m11im;
+  float m00im, m11im;
 #endif
-#if (NCOL==3)
-  fcomplex m01,m02,m12;
-  float m00im,m11im,m22im;
+#if NCOL == 3
+  fcomplex m01, m02, m12;
+  float m00im, m11im, m22im;
   float space;
 #endif
-#if (NCOL>3)
-  fcomplex m01,m02,m03,m12,m13,m23;
-  float m00im,m11im,m22im,m33im;
+#if NCOL > 3
+  fcomplex m01, m02, m03, m12, m13, m23;
+  float m00im, m11im, m22im, m33im;
 #endif
 } fanti_hermitmat;
 
@@ -66,18 +66,18 @@ typedef struct { dcomplex e[DIMF][DIMF]; } dsu3_matrix;
 typedef struct { dcomplex c[NCOL]; } dsu3_vector_f;
 typedef struct { dcomplex c[DIMF]; } dsu3_vector;
 typedef struct {
-#if (NCOL==2)
+#if NCOL == 2
   dcomplex m01;
-  double m00im,m11im;
+  double m00im, m11im;
 #endif
-#if (NCOL==3)
-  dcomplex m01,m02,m12;
-  double m00im,m11im,m22im;
+#if NCOL == 3
+  dcomplex m01, m02, m12;
+  double m00im, m11im, m22im;
   double space;
 #endif
-#if (NCOL>3)
-  dcomplex m01,m02,m03,m12,m13,m23;
-  double m00im,m11im,m22im,m33im;
+#if NCOL > 3
+  dcomplex m01, m02, m03, m12, m13, m23;
+  double m00im, m11im, m22im, m33im;
 #endif
 } danti_hermitmat;
 
@@ -120,7 +120,7 @@ typedef struct { complex e[2][2]; } su2_matrix;
    As alway, "d" denotes a Dirac index and "c" a color index.
    "1" refers to the source, "2" to the sink.
 
-   Color indices here always run to DIMF, not NCOL.  -BS
+   Color indices here always run to DIMF, not NCOL
 */
 
 typedef struct { fsu3_vector d[4]; } fwilson_vector;
@@ -137,7 +137,7 @@ typedef struct { dwilson_vector d[4]; } dspin_wilson_vector;
 typedef struct { dcolor_wilson_vector d[4]; } dwilson_matrix;
 typedef struct { dspin_wilson_vector c[DIMF]; } dwilson_propagator;
 
-#if (PRECISION==1)
+#if PRECISION == 1
 #define wilson_vector       fwilson_vector
 #define half_wilson_vector  fhalf_wilson_vector
 #define color_wilson_vector fcolor_wilson_vector

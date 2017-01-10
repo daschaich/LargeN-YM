@@ -7,16 +7,16 @@ nt 4
 iseed 41
 
 warms 0
-trajecs 300
+trajecs 3
 traj_length 1
 number_of_PF 2
-nstep 5
-nstep 2
-nstep_gauge 5
-traj_between_meas 300
+nstep 6
+nstep 12
+nstep_gauge 3
+traj_between_meas 3
 
-beta 5.0
-beta_frep 0.0
+beta 2.5
+beta_frep 0.5
 kappa 0.125
 shift 0.2
 clov_c 1.0
@@ -31,5 +31,5 @@ max_cg_restarts 10
 error_per_site 1e-6
 error_for_propagator 1e-6
 
-fresh
-save_serial config.3S.4444
+reload_serial config.3S.4444
+forget

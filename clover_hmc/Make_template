@@ -1,5 +1,4 @@
-# clover fermions with nHYP smearing
-# Wilson-clover fermions
+# Wilson-clover fermions with nHYP smearing
 # Generic make-include file
 # This template file defines rules and macros common to all architectures
 # It is intended to be an include file for other Makefiles
@@ -62,7 +61,6 @@ MY_OBJECTS = control.o          \
              apply_bc.o         \
              chain_rule_f.o     \
              d_congradm_cl_field.o
-#             chain_rule_sym_2.o
 
 # More from current directory, for improved action only
 IMP_OBJECTS = gauge_action.o \
@@ -92,11 +90,10 @@ endif
 G_WILSON_OBJECTS = boundary_flip.o   \
                    boundary_flip_x.o \
                    wilson_invert.o   \
-                   dslash_w_field.o   \
-                   dslash_w.o         \
-                   fermion_rep.o      \
+                   dslash_w_field.o  \
+                   dslash_w.o        \
+                   fermion_rep.o     \
                    fermion_rep_f.o
-#                   fermion_rep_sym_2.o
 
 # Basic set from generic_clover directory
 G_CLOVER_OBJECTS = f_mu_nu.o    \
@@ -112,18 +109,9 @@ G_NHYP_OBJECTS = block_nhyp.o \
 DEFINES = -DNHYP_JACOBI
 
 # Selection of layout
-ifeq ($(strip ${HAVEQDP}),true)
-  LAYOUT = layout_qdp.o # Required
-else
-  LAYOUT = layout_hyper_prime.o
-endif
+LAYOUT = layout_hyper_prime.o
 
-ADD_OBJECTS = ${MACHINE_DEP_IO} ${COMMPKG} ${QDP_OBJECTS} ${SCIDAC_OBJECTS}
-
-# Generic QOP objects
-ifeq ($(strip ${HAVEQOP}),true)
-  ADD_OBJECTS += ${GENERICQOP}
-endif
+ADD_OBJECTS = ${MACHINE_DEP_IO} ${COMMPKG}
 
 OBJECTS = ${MY_OBJECTS} ${G_OBJECTS} ${G_WILSON_OBJECTS} \
           ${G_CLOVER_OBJECTS} ${G_NHYP_OBJECTS}          \
@@ -148,8 +136,6 @@ ${LASTMAKE}: ${ALL_MAKES}
 # All make files used in this compilation
 ALL_MAKES = Make_template                   \
             ${MAKEFILE}                     \
-            ../Make_template_qop            \
-            ../Make_template_scidac         \
             ../generic/Make_template        \
             ../generic_nhyp/Make_template   \
             ../generic_wilson/Make_template \
@@ -157,24 +143,6 @@ ALL_MAKES = Make_template                   \
 
 # To force a remake when changing any make file, header, or target
 ${OBJECTS} : ${HEADERS} ${LASTMAKE} ${ALL_MAKES}
-
-ifeq ($(strip ${HAVEQMP}),true)
-  DHAVE_QMP = -DHAVE_QMP
-endif
-
-ifeq ($(strip ${HAVEQIO}),true)
-  DHAVE_QIO = -DHAVE_QIO
-endif
-
-ifeq ($(strip ${HAVEQDP}),true)
-  DHAVE_QDP = -DHAVE_QDP
-endif
-
-ifeq ($(strip ${HAVEQOP}),true)
-  DHAVE_QOP = -DHAVE_QOP
-endif
-
-DARCH = ${DHAVE_QMP} ${DHAVE_QIO} ${DHAVE_QDP} ${DHAVE_QOP}
 
 ##### Targets:
 # Optional DEFINES for timing:
@@ -187,7 +155,7 @@ su3_phi::
 su3_hmc::
 	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" \
 	"DEFINES = ${DEFINES} -DPHI_ALGORITHM -DHMC_ALGORITHM " \
-	"EXTRA_OBJECTS = action.o   "
+	"EXTRA_OBJECTS = action.o "
 
 su3_hmc_spectrum::
 	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" \

@@ -6,9 +6,9 @@ Features:
   HMC with three time scales (two fermion scales and gauge)
   Omelyan integrator
   Optional Hasenbusch preconditioning with one shift
-  Several SU(N) with N = 2, 3 and 4
-  Several representations: fundamental, two-index (anti-)symmetric
-  Optional higher-rep term in the gauge action
+  SU(N) with N = 2, 3 and 4
+  Several representations: fundamental, two-index (anti-)symmetric (depending on N)
+  Optional fermion-rep (smeared) plaquette term in the gauge action
 
 References:
   Omelyan tuning: hep-lat/0505020
@@ -21,6 +21,7 @@ defines.h defines Omelyan parameters, nHYP IR_STAB and EPS_SQ, as well as CG_DEB
 
 Debugging checks:
   The usual check that Delta S scales quadratically with step size
+          Passes for 3F, and unsmeared 3S, fails for 3S when smearing turned on
           (Make sure error_per_site is sufficiently small!)
   Reversibility
   Comparison with leapfrog integrator
