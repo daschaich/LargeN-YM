@@ -9,7 +9,7 @@ BETA_FREP turned on
 Hybrid Monte Carlo algorithm
 Phi algorithm
 LU preconditioning
-start: Sun Jan  8 15:32:22 2017
+start: Tue Jan 10 17:26:36 2017
 
 type 0 for no prompts or 1 for prompts
 nflavors 2
@@ -50,11 +50,11 @@ forget
 Restored binary gauge configuration serially from file config.3F.4444
 Time stamp Fri Dec 16 00:37:45 2016
 Checksums 83567242 2efc25a5 OK
-Time to reload gauge configuration = 0.0002 seconds
+Time to reload gauge configuration = 0.0001981 seconds
 CHECK PLAQ: 1.2754809836229895e+00 1.3359434793371250e+00
 CHECK NERSC LINKTR: -2.4656227161254187e-03 CKSUM: 0
 Reunitarized for double precision.  Max deviation 5.6e-08 changed to 5.6e-16
-Time to check unitarity = 0.0004351 seconds
+Time to check unitarity = 0.0004418 seconds
 START 1.275481 1.3359435 2.6114245
 f_eps0 0.2 f_eps1 0.05 g_eps 0.005
 WARMUPS COMPLETED
@@ -78,7 +78,7 @@ FMES 12.145164 0.023052464 -1.5712781 -0.61299643 12.571447 -0.079809599
 GMES -0.17068361 0.12689842 1251 40 1.2922969 1.2758774 2.4935366 2.4865803
 ACTION: g, rep, h, f, tot = 4392.7369 0 4082.1172 3006.9536 11481.808
 ACTION: g, rep, h, f, tot = 4318.6803 0 4147.8803 3016.0219 11482.582
-ACCEPT: delta S = -0.01948 start 11497.2085067 end 11497.1890279
+ACCEPT: delta S = -0.01948 start 11497.2085067 end 11497.1890278
 MONITOR_FORCE_FERMION0 0.009757 0.01296
 MONITOR_FORCE_FERMION1 0.006341 0.01008
 MONITOR_FORCE_GAUGE 0.006294 0.006405
@@ -89,12 +89,12 @@ RUNNING COMPLETED
 STOP 1.333257 1.2927741 2.626031
 Average cg iters for steps: 1213
 Average cg iters for measurements: 119
-Time               = 21.06 seconds
-congrad time       = 2.644 seconds
-fermion_force time = 12.5 seconds
-block_nhyp time    = 1.573 seconds
-compute_fhb time   = 0.7442 seconds
+Time               = 20.08 seconds
+congrad time       = 2.544 seconds
+fermion_force time = 11.85 seconds
+block_nhyp time    = 1.523 seconds
+compute_fhb time   = 0.7128 seconds
 total_iters = 3735
 
-exit: Sun Jan  8 15:32:43 2017
+exit: Tue Jan 10 17:26:56 2017
 

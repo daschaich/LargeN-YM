@@ -1,10 +1,6 @@
-/************************ generic_clover_includes.h *********************
-*									*
-*  This header is included in all codes in this directory               *
-*  MIMD version 6 							*
-*									*
-*/
-#include "../include/config.h"  /* Keep this first */
+// -----------------------------------------------------------------
+// Header included in all codes in this directory
+#include "../include/config.h"  // Keep this first
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -19,3 +15,4 @@
 #include "../include/generic_clover.h"
 #include "../include/field_alloc.h"
 #include <lattice.h>
+// -----------------------------------------------------------------

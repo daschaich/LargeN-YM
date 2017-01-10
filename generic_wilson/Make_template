@@ -10,12 +10,6 @@
 G_WILSON_ALL =  \
     bj_to_weyl.o \
     boundary_flip.o \
-    boundary_flip_x.o \
-    boundary_flip_z3.o \
-    canopy2weyl_rot.o \
-    copy_site_wilson_vector.o \
-    d_congrad2.o \
-    d_w_meson.o \
     dslash_w.o \
     dslash_w_field.o \
     fermion_rep.o \
@@ -24,18 +18,7 @@ G_WILSON_ALL =  \
     fermion_rep_f.o \
     fermion_rep_sym_2.o \
     fermion_rep_sym_3.o \
-    io_helpers_w.o \
-    io_scidac_w.o \
-    io_prop_w.o \
-    meson_cont.o \
-    io_prop_w_fm.o \
-    w_baryon.o \
-    w_baryon_hl.o \
-    w_meson.o \
-    w_source.o \
-    w_source_h.o \
-    wilson_invert.o \
-    wilson_invert_lean.o
+    wilson_invert.o
 
 # Must list our headers in generic_wilson_includes.h
 G_WILSON_HEADERS = \
@@ -62,18 +45,6 @@ bj_to_weyl.o: ../generic_wilson/bj_to_weyl.c
 	${CC} -c ${CFLAGS} $<
 boundary_flip.o: ../generic_wilson/boundary_flip.c
 	${CC} -c ${CFLAGS} $<
-boundary_flip_x.o: ../generic_wilson/boundary_flip_x.c
-	${CC} -c ${CFLAGS} $<
-boundary_flip_z3.o: ../generic_wilson/boundary_flip_z3.c
-	${CC} -c ${CFLAGS} $<
-canopy2weyl_rot.o: ../generic_wilson/canopy2weyl_rot.c
-	${CC} -c ${CFLAGS} $<
-copy_site_wilson_vector.o: ../generic_wilson/copy_site_wilson_vector.c
-	${CC} -c ${CFLAGS} $<
-d_congrad2.o: ../generic_wilson/d_congrad2.c
-	${CC} -c ${CFLAGS} $<
-d_w_meson.o: ../generic_wilson/d_w_meson.c
-	${CC} -c ${CFLAGS} $<
 dslash_w.o: ../generic_wilson/dslash_w.c
 	${CC} -c ${CFLAGS} $<
 dslash_w_field.o: ../generic_wilson/dslash_w_field.c
@@ -84,35 +55,7 @@ fermion_rep_as_2.o: ../generic_wilson/fermion_rep_as_2.c
 	${CC} -c ${CFLAGS} $<
 fermion_rep_f.o: ../generic_wilson/fermion_rep_f.c
 	${CC} -c ${CFLAGS} $<
-fermion_rep_adj.o: ../generic_wilson/fermion_rep_adj.c
-	${CC} -c ${CFLAGS} $<
 fermion_rep_sym_2.o: ../generic_wilson/fermion_rep_sym_2.c
 	${CC} -c ${CFLAGS} $<
-fermion_rep_sym_3.o: ../generic_wilson/fermion_rep_sym_3.c
-	${CC} -c ${CFLAGS} $<
-io_helpers_w.o: ../include/io_lat.h ../include/io_wprop.h
-io_helpers_w.o: ../generic_wilson/io_helpers_w.c
-	${CC} -c ${CFLAGS} $<
-io_scidac_w.o: ../generic_wilson/io_scidac_w.c
-	${CC} -c ${CFLAGS} $<
-io_prop_w.o: ../include/io_lat.h ../include/io_wprop.h
-io_prop_w.o: ../generic_wilson/io_prop_w.c
-	${CC} -c ${CFLAGS} $<
-io_prop_w_fm.o: ../generic_wilson/io_prop_w_fm.c
-	${CC} -c ${CFLAGS} $<
-meson_cont.o: ../generic_wilson/meson_cont.c
-	${CC} -c ${CFLAGS} $<
-w_baryon.o: ../generic_wilson/w_baryon.c
-	${CC} -c ${CFLAGS} $<
-w_baryon_hl.o: ../generic_wilson/w_baryon_hl.c
-	${CC} -c ${CFLAGS} $<
-w_meson.o: ../generic_wilson/w_meson.c
-	${CC} -c ${CFLAGS} $<
-w_source.o: ../generic_wilson/w_source.c
-	${CC} -c ${CFLAGS} $<
-w_source_h.o: ../generic_wilson/w_source_h.c
-	${CC} -c ${CFLAGS} $<
 wilson_invert.o: ../generic_wilson/wilson_invert.c
-	${CC} -c ${CFLAGS} $<
-wilson_invert_lean.o: ../generic_wilson/wilson_invert_lean.c
 	${CC} -c ${CFLAGS} $<

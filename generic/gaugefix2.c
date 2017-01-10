@@ -5,10 +5,10 @@
 /* Prototype...
 
    void gaugefix(int gauge_dir,Real relax_boost,int max_gauge_iter,
-	      Real gauge_fix_tol, field_offset diffmat, field_offset sumvec,
-	      int nvector, field_offset vector_offset[], int vector_parity[],
-	      int nantiherm, field_offset antiherm_offset[],
-	      int antiherm_parity[] )
+        Real gauge_fix_tol, field_offset diffmat, field_offset sumvec,
+        int nvector, field_offset vector_offset[], int vector_parity[],
+        int nantiherm, field_offset antiherm_offset[],
+        int antiherm_parity[] )
    -------------------------------------------------------------------
 
    NOTE: For staggered fermion applications, it is necessary to remove
@@ -20,7 +20,7 @@
      space in mp (su3_matrix) and chi (su3_vector):
 
    gaugefix(TUP,(Real)1.5,500,(Real)1.0e-7,
-		     F_OFFSET(mp),F_OFFSET(chi),0,NULL,NULL,0,NULL,NULL);
+         F_OFFSET(mp),F_OFFSET(chi),0,NULL,NULL,0,NULL,NULL);
 
    -------------------------------------------------------------------
    EXAMPLE:  Fixing Coulomb gauge with respect to the y direction
@@ -51,7 +51,7 @@
       TUP    for evaluating propagators in the time-like direction
       ZUP    for screening lengths.
       8      for Lorentz gauge
-   relax_boost	   Overrelaxation parameter
+   relax_boost     Overrelaxation parameter
    max_gauge_iter  Maximum number of iterations
    gauge_fix_tol   Stop if change is less than this
    diffmat         Scratch space for an su3 matrix
@@ -61,10 +61,6 @@
 
 #include "generic_includes.h"
 #define REUNIT_INTERVAL 20
-
-/*    CDIF(a,b)         a -= b						      */
-								/*  a -= b    */
-#define CDIF(a,b) { (a).real -= (b).real; (a).imag -= (b).imag; }
 
 /* Scratch space */
 
@@ -90,78 +86,78 @@ void accum_gauge_hit(int gauge_dir,int parity)
   FORSOMEPARITY(i,s,parity)
     {
       if(diffmat_offset >= 0)
-	clear_su3mat_f((su3_matrix_f *)F_PT(s,diffmat_offset));
+  clear_su3mat_f((su3_matrix_f *)F_PT(s,diffmat_offset));
       else
-	clear_su3mat_f(&diffmatp[i]);
+  clear_su3mat_f(&diffmatp[i]);
       if(sumvec_offset >= 0)
-	clearvec_f((su3_vector_f *)F_PT(s,sumvec_offset));
+  clearvec_f((su3_vector_f *)F_PT(s,sumvec_offset));
       else
-	clearvec_f(&sumvecp[i]);
+  clearvec_f(&sumvecp[i]);
     }
 
   /* Subtract upward link contributions */
 
-  FORSOMEPARITYDOMAIN(i,s,parity)
+  FORSOMEPARITY(i,s,parity)
     {
       FORALLUPDIRBUT(gauge_dir,dir)
-	{
-	  /* Upward link matrix */
-	  m1 = &(s->linkf[dir]);
-	  if(diffmat_offset >= 0)
-	    sub_su3_matrix_f((su3_matrix_f *)F_PT(s,diffmat_offset),
-			   m1, (su3_matrix_f *)F_PT(s,diffmat_offset));
-	  else
-	    sub_su3_matrix_f( &diffmatp[i], m1, &diffmatp[i]);
+  {
+    /* Upward link matrix */
+    m1 = &(s->linkf[dir]);
+    if(diffmat_offset >= 0)
+      sub_su3_matrix_f((su3_matrix_f *)F_PT(s,diffmat_offset),
+         m1, (su3_matrix_f *)F_PT(s,diffmat_offset));
+    else
+      sub_su3_matrix_f( &diffmatp[i], m1, &diffmatp[i]);
 
-	  if(sumvec_offset >= 0)
-	    {
-	      for(j=0;j<NCOL;j++)CSUM( ((su3_vector_f *)F_PT(s,sumvec_offset))->c[j],
-				    m1->e[j][j]);
-	    }
-	  else
-	    {
-	      for(j=0;j<NCOL;j++)CSUM( sumvecp[i].c[j],m1->e[j][j]);
-	    }
-	}
+    if(sumvec_offset >= 0)
+      {
+        for(j=0;j<NCOL;j++)CSUM( ((su3_vector_f *)F_PT(s,sumvec_offset))->c[j],
+            m1->e[j][j]);
+      }
+    else
+      {
+        for(j=0;j<NCOL;j++)CSUM( sumvecp[i].c[j],m1->e[j][j]);
+      }
+  }
     }
 
   /* Add downward link contributions */
 
-  FORSOMEPARITYDOMAIN(i,s,parity)
+  FORSOMEPARITY(i,s,parity)
     {
       FORALLUPDIRBUT(gauge_dir,dir)
-	{
-	  /* Downward link matrix */
-	  m2 = (su3_matrix_f *)gen_pt[dir][i];
+  {
+    /* Downward link matrix */
+    m2 = (su3_matrix_f *)gen_pt[dir][i];
 
-	  if(diffmat_offset >= 0){
-	    add_su3_matrix_f((su3_matrix_f *)F_PT(s,diffmat_offset), m2,
-			   (su3_matrix_f *)F_PT(s,diffmat_offset));
-	  }
-	  else{
-	    add_su3_matrix_f( &diffmatp[i], m2, &diffmatp[i]);
-	  }
+    if(diffmat_offset >= 0){
+      add_su3_matrix_f((su3_matrix_f *)F_PT(s,diffmat_offset), m2,
+         (su3_matrix_f *)F_PT(s,diffmat_offset));
+    }
+    else{
+      add_su3_matrix_f( &diffmatp[i], m2, &diffmatp[i]);
+    }
 
-	  if(sumvec_offset >= 0)
-	    {
-	      for(j=0;j<NCOL;j++)CSUM( ((su3_vector_f *)F_PT(s,sumvec_offset))->c[j],
-				    m2->e[j][j]);
-	    }
-	  else
-	    {
-	      for(j=0;j<NCOL;j++)CSUM( sumvecp[i].c[j], m2->e[j][j]);
-	    }
+    if(sumvec_offset >= 0)
+      {
+        for(j=0;j<NCOL;j++)CSUM( ((su3_vector_f *)F_PT(s,sumvec_offset))->c[j],
+            m2->e[j][j]);
+      }
+    else
+      {
+        for(j=0;j<NCOL;j++)CSUM( sumvecp[i].c[j], m2->e[j][j]);
+      }
 
-	  /* Add diagonal elements to sumvec  */
-	}
+    /* Add diagonal elements to sumvec  */
+  }
     }
 } /* accum_gauge_hit */
 
 
 void do_hit(int gauge_dir, int parity, int p, int q, Real relax_boost,
-	      int nvector, field_offset vector_offset[], int vector_parity[],
-	      int nantiherm, field_offset antiherm_offset[],
-	      int antiherm_parity[] )
+        int nvector, field_offset vector_offset[], int vector_parity[],
+        int nantiherm, field_offset antiherm_offset[],
+        int antiherm_parity[] )
 {
   /* Do optimum SU(2) gauge hit for p, q subspace */
 
@@ -175,7 +171,7 @@ void do_hit(int gauge_dir, int parity, int p, int q, Real relax_boost,
 
   accum_gauge_hit(gauge_dir,parity);
 
-  FORSOMEPARITYDOMAIN(i,s,parity)
+  FORSOMEPARITY(i,s,parity)
     {
       /* The SU(2) hit matrix is represented as a0 + i * Sum j (sigma j * aj)*/
       /* The locally optimum unnormalized components a0, aj are determined */
@@ -192,26 +188,26 @@ void do_hit(int gauge_dir, int parity, int p, int q, Real relax_boost,
       a3 =  s->diffmat.e[p][p].imag - s->diffmat.e[q][q].imag;
 */
       if(sumvec_offset >= 0)
-	a0 =     ((su3_vector_f *)F_PT(s,sumvec_offset))->c[p].real +
-	  ((su3_vector_f *)F_PT(s,sumvec_offset))->c[q].real;
+  a0 =     ((su3_vector_f *)F_PT(s,sumvec_offset))->c[p].real +
+    ((su3_vector_f *)F_PT(s,sumvec_offset))->c[q].real;
       else
-	a0 =     sumvecp[i].c[p].real +  sumvecp[i].c[q].real;
+  a0 =     sumvecp[i].c[p].real +  sumvecp[i].c[q].real;
 
       if(diffmat_offset >= 0)
-	{
-	  a1 =     ((su3_matrix_f *)F_PT(s,diffmat_offset))->e[q][p].imag +
-	    ((su3_matrix_f *)F_PT(s,diffmat_offset))->e[p][q].imag;
-	  a2 =    -((su3_matrix_f *)F_PT(s,diffmat_offset))->e[q][p].real +
-	    ((su3_matrix_f *)F_PT(s,diffmat_offset))->e[p][q].real;
-	  a3 =     ((su3_matrix_f *)F_PT(s,diffmat_offset))->e[p][p].imag -
-	    ((su3_matrix_f *)F_PT(s,diffmat_offset))->e[q][q].imag;
-	}
+  {
+    a1 =     ((su3_matrix_f *)F_PT(s,diffmat_offset))->e[q][p].imag +
+      ((su3_matrix_f *)F_PT(s,diffmat_offset))->e[p][q].imag;
+    a2 =    -((su3_matrix_f *)F_PT(s,diffmat_offset))->e[q][p].real +
+      ((su3_matrix_f *)F_PT(s,diffmat_offset))->e[p][q].real;
+    a3 =     ((su3_matrix_f *)F_PT(s,diffmat_offset))->e[p][p].imag -
+      ((su3_matrix_f *)F_PT(s,diffmat_offset))->e[q][q].imag;
+  }
       else
-	{
-	  a1 =     diffmatp[i].e[q][p].imag + diffmatp[i].e[p][q].imag;
-	  a2 =    -diffmatp[i].e[q][p].real + diffmatp[i].e[p][q].real;
-	  a3 =     diffmatp[i].e[p][p].imag - diffmatp[i].e[q][q].imag;
-	}
+  {
+    a1 =     diffmatp[i].e[q][p].imag + diffmatp[i].e[p][q].imag;
+    a2 =    -diffmatp[i].e[q][p].real + diffmatp[i].e[p][q].real;
+    a3 =     diffmatp[i].e[p][p].imag - diffmatp[i].e[q][q].imag;
+  }
 
       /* Over-relaxation boost */
 
@@ -238,40 +234,40 @@ void do_hit(int gauge_dir, int parity, int p, int q, Real relax_boost,
       /* Do SU(2) hit on all upward links */
 
       FORALLUPDIR(dir)
-	left_su2_hit_n_f(&u,p,q,&(s->linkf[dir]));
+  left_su2_hit_n_f(&u,p,q,&(s->linkf[dir]));
 
       /* Do SU(2) hit on all downward links */
 
       FORALLUPDIR(dir)
-	right_su2_hit_a_f(&u,p,q,(su3_matrix_f *)gen_pt[dir][i]);
+  right_su2_hit_a_f(&u,p,q,(su3_matrix_f *)gen_pt[dir][i]);
 
       /* Transform vectors and gauge momentum if requested */
 
       for(j = 0; j < nvector; j++)
 
-	/* Do SU(2) hit on specified su3 vector for specified parity */
+  /* Do SU(2) hit on specified su3 vector for specified parity */
 
-	/* vector <- u * vector */
-	if(vector_parity[j] == EVENANDODD || vector_parity[j] == parity)
-	  mult_su2_mat_vec_elem_n(&u,
-		 &((su3_vector *)F_PT(s,vector_offset[j]))->c[p],
-		 &((su3_vector *)F_PT(s,vector_offset[j]))->c[q]);
+  /* vector <- u * vector */
+  if(vector_parity[j] == EVENANDODD || vector_parity[j] == parity)
+    mult_su2_mat_vec_elem_n(&u,
+     &((su3_vector *)F_PT(s,vector_offset[j]))->c[p],
+     &((su3_vector *)F_PT(s,vector_offset[j]))->c[q]);
 
       /* Transform antihermitian matrices if requested */
 
       for(j = 0; j < nantiherm; j++)
-	/* antiherm <- u * antiherm * u^dagger */
-	if(antiherm_parity[j] == EVENANDODD || antiherm_parity[j] == parity)
-	  {
-	    uncompress_anti_hermitian(
-		     (anti_hermitmat *)F_PT(s,antiherm_offset[j]), &htemp);
-	    /* If the next 2 steps prove too time consuming, */
-	    /* they can be simplified algebraically, and sped up by ~2 */
-	    left_su2_hit_n_f(&u,p,q,&htemp);
-	    right_su2_hit_a_f(&u,p,q,&htemp);
-	    make_anti_hermitian( &htemp,
-		     (anti_hermitmat *)F_PT(s,antiherm_offset[j]));
-	  }
+  /* antiherm <- u * antiherm * u^dagger */
+  if(antiherm_parity[j] == EVENANDODD || antiherm_parity[j] == parity)
+    {
+      uncompress_anti_hermitian(
+         (anti_hermitmat *)F_PT(s,antiherm_offset[j]), &htemp);
+      /* If the next 2 steps prove too time consuming, */
+      /* they can be simplified algebraically, and sped up by ~2 */
+      left_su2_hit_n_f(&u,p,q,&htemp);
+      right_su2_hit_a_f(&u,p,q,&htemp);
+      make_anti_hermitian( &htemp,
+         (anti_hermitmat *)F_PT(s,antiherm_offset[j]));
+    }
     }
 
   /* Exit with modified downward links left in communications buffer */
@@ -292,19 +288,17 @@ double get_gauge_fix_action(int gauge_dir,int parity)
 
   gauge_fix_action = 0.0;
 
-  FORSOMEPARITYDOMAIN(i,s,parity)
-    {
-      FORALLUPDIRBUT(gauge_dir,dir)
-	{
-	  m1 = &(s->linkf[dir]);
-	  m2 = (su3_matrix_f *)gen_pt[dir][i];
+  FORSOMEPARITY(i,s,parity) {
+      FORALLUPDIRBUT(gauge_dir,dir) {
+    m1 = &(s->linkf[dir]);
+    m2 = (su3_matrix_f *)gen_pt[dir][i];
 
-	  trace = trace_su3_f(m1);
-	  gauge_fix_action += (double)trace.real;
+    trace = trace_su3_f(m1);
+    gauge_fix_action += (double)trace.real;
 
-	  trace = trace_su3_f(m2);
- 	  gauge_fix_action += (double)trace.real;
-	}
+    trace = trace_su3_f(m2);
+    gauge_fix_action += (double)trace.real;
+  }
     }
 
   /* Count number of terms to average */
@@ -318,9 +312,9 @@ double get_gauge_fix_action(int gauge_dir,int parity)
 } /* get_gauge_fix_action */
 
 void gaugefixstep(int gauge_dir,double *av_gauge_fix_action,Real relax_boost,
-	      int nvector, field_offset vector_offset[], int vector_parity[],
-	      int nantiherm, field_offset antiherm_offset[],
-	      int antiherm_parity[] )
+        int nvector, field_offset vector_offset[], int vector_parity[],
+        int nantiherm, field_offset antiherm_offset[],
+        int antiherm_parity[] )
 {
   /* Carry out one iteration in the gauge-fixing process */
 
@@ -340,17 +334,17 @@ void gaugefixstep(int gauge_dir,double *av_gauge_fix_action,Real relax_boost,
       /* Start gathers of downward links */
 
       FORALLUPDIR(dir)
-	{
-	  mtag[dir] = start_gather_site( F_OFFSET(linkf[dir]), sizeof(su3_matrix_f),
-			   OPP_DIR(dir), parity, gen_pt[dir] );
-	}
+  {
+    mtag[dir] = start_gather_site( F_OFFSET(linkf[dir]), sizeof(su3_matrix_f),
+         OPP_DIR(dir), parity, gen_pt[dir] );
+  }
 
       /* Wait for gathers */
 
       FORALLUPDIR(dir)
          {
-	  wait_gather(mtag[dir]);
-	 }
+    wait_gather(mtag[dir]);
+   }
 
       /* Total gauge fixing action for sites of this parity: Before */
       gauge_fix_action = get_gauge_fix_action(gauge_dir,parity);
@@ -364,11 +358,11 @@ void gaugefixstep(int gauge_dir,double *av_gauge_fix_action,Real relax_boost,
         c2=c1+1;
         if(c2==NCOL)c2=0;
 */
-	/* Yes! Tom says, visit NCOL*(NCOL-1)/2 SUBGROUPS */
+  /* Yes! Tom says, visit NCOL*(NCOL-1)/2 SUBGROUPS */
       for (c1=0;c1<NCOL-1;c1++)for(c2=c1+1;c2<NCOL;c2++){
         do_hit(gauge_dir,parity,c1,c2, relax_boost,
-		   nvector, vector_offset, vector_parity,
-		   nantiherm, antiherm_offset, antiherm_parity);
+       nvector, vector_offset, vector_parity,
+       nantiherm, antiherm_offset, antiherm_parity);
       }
       /* Total gauge fixing action for sites of this parity: After */
       gauge_fix_action = get_gauge_fix_action(gauge_dir,parity);
@@ -379,47 +373,47 @@ void gaugefixstep(int gauge_dir,double *av_gauge_fix_action,Real relax_boost,
       /* opposite parity */
 
       FORALLUPDIR(dir)
-	{
-	  /* Synchronize before scattering to be sure the new modified link */
-	  /* matrices are all ready to be scattered and diffmat is not */
-	  /* overwritten before it is used */
-	  g_sync();
+  {
+    /* Synchronize before scattering to be sure the new modified link */
+    /* matrices are all ready to be scattered and diffmat is not */
+    /* overwritten before it is used */
+    g_sync();
 
-	  /* First copy modified link for this dir */
-	  /* from comm buffer or node to diffmat */
+    /* First copy modified link for this dir */
+    /* from comm buffer or node to diffmat */
 
-	  FORSOMEPARITY(i,s,parity)
-	    {
-	      if(diffmat_offset >= 0)
-		su3mat_copy_f((su3_matrix_f *)(gen_pt[dir][i]),(su3_matrix_f *)F_PT(s,diffmat_offset));
-	      else
-		su3mat_copy_f((su3_matrix_f *)(gen_pt[dir][i]), &diffmatp[i]);
-	    }
+    FORSOMEPARITY(i,s,parity)
+      {
+        if(diffmat_offset >= 0)
+    su3mat_copy_f((su3_matrix_f *)(gen_pt[dir][i]),(su3_matrix_f *)F_PT(s,diffmat_offset));
+        else
+    su3mat_copy_f((su3_matrix_f *)(gen_pt[dir][i]), &diffmatp[i]);
+      }
 
-	  /* Now we are finished with gen_pt[dir] */
-	  cleanup_gather(mtag[dir]);
+    /* Now we are finished with gen_pt[dir] */
+    cleanup_gather(mtag[dir]);
 
-	  /* Synchronize to make sure the previous copy happens before the */
-	  /* subsequent gather below  */
-	  g_sync();
+    /* Synchronize to make sure the previous copy happens before the */
+    /* subsequent gather below  */
+    g_sync();
 
-	  /* Gather diffmat onto sites of opposite parity */
-	  if(diffmat_offset >= 0)
-	    mtag[dir] = start_gather_site( diffmat_offset, sizeof(su3_matrix_f),
-				      dir, OPP_PAR(parity), gen_pt[dir] );
-	  else
-	    mtag[dir] = start_gather_field( diffmatp, sizeof(su3_matrix_f),
-				      dir, OPP_PAR(parity), gen_pt[dir] );
+    /* Gather diffmat onto sites of opposite parity */
+    if(diffmat_offset >= 0)
+      mtag[dir] = start_gather_site( diffmat_offset, sizeof(su3_matrix_f),
+              dir, OPP_PAR(parity), gen_pt[dir] );
+    else
+      mtag[dir] = start_gather_field( diffmatp, sizeof(su3_matrix_f),
+              dir, OPP_PAR(parity), gen_pt[dir] );
 
-	  wait_gather(mtag[dir]);
+    wait_gather(mtag[dir]);
 
          /* Copy modified matrices into proper location */
 
          FORSOMEPARITY(i,s,OPP_PAR(parity))
-	      su3mat_copy_f((su3_matrix_f *)(gen_pt[dir][i]),&(s->linkf[dir]));
+        su3mat_copy_f((su3_matrix_f *)(gen_pt[dir][i]),&(s->linkf[dir]));
 
-	  cleanup_gather(mtag[dir]);
-	}
+    cleanup_gather(mtag[dir]);
+  }
 
     }
 } /* gaugefixstep */
@@ -432,45 +426,44 @@ void gaugefixscratch(field_offset diffmat, field_offset sumvec)
     {
       diffmatp = (su3_matrix_f *)malloc(sizeof(su3_matrix_f)*sites_on_node);
       if(diffmatp == NULL)
-	{
-	  node0_printf("gaugefix: Can't malloc diffmat\n");
-	  fflush(stdout);terminate(1);
-	}
+  {
+    node0_printf("gaugefix: Can't malloc diffmat\n");
+    fflush(stdout);terminate(1);
+  }
     }
 
   sumvec_offset = sumvec;
   sumvecp = NULL;
-  if(sumvec_offset < 0)
-    {
+  if(sumvec_offset < 0) {
       sumvecp = (su3_vector_f *)malloc(sizeof(su3_vector_f)*sites_on_node);
       if(sumvecp == NULL)
-	{
-	  node0_printf("gaugefix: Can't malloc sumvec\n");
-	  fflush(stdout);terminate(1);
-	}
+  {
+    node0_printf("gaugefix: Can't malloc sumvec\n");
+    fflush(stdout);terminate(1);
+  }
     }
 } /* gaugefixscratch */
 
 void gaugefix(int gauge_dir,Real relax_boost,int max_gauge_iter,
-	      Real gauge_fix_tol, field_offset diffmat, field_offset sumvec,
-	      int nvector, field_offset vector_offset[], int vector_parity[],
-	      int nantiherm, field_offset antiherm_offset[],
-	      int antiherm_parity[] )
+        Real gauge_fix_tol, field_offset diffmat, field_offset sumvec,
+        int nvector, field_offset vector_offset[], int vector_parity[],
+        int nantiherm, field_offset antiherm_offset[],
+        int antiherm_parity[] )
 {
   int gauge_iter;
   double current_av, old_av = 0, del_av = 0;
 
 #if (NCOL != DIMF)
 /* Gauge fixing with matter fields in higher reps NOT implemented. -bqs 12/07 */
-	if(nvector>0){
-		if(this_node==0)printf("gaugefix: nvector must be zero if not in fund rep!\n"); fflush(stdout); terminate(1);}
+  if(nvector>0){
+    if(this_node==0)printf("gaugefix: nvector must be zero if not in fund rep!\n"); fflush(stdout); terminate(1);}
 #endif
 
   /* We require at least 8 gen_pt values for gauge fixing */
   if(N_POINTERS < 8)
     {
       printf("gaugefix: N_POINTERS must be at least %d.  Fix the code.\n",
-	     N_POINTERS);
+       N_POINTERS);
       fflush(stdout); terminate(1);
     }
 
@@ -484,23 +477,23 @@ void gaugefix(int gauge_dir,Real relax_boost,int max_gauge_iter,
   for (gauge_iter=0; gauge_iter < max_gauge_iter; gauge_iter++)
     {
       gaugefixstep(gauge_dir,&current_av,relax_boost,
-		   nvector, vector_offset, vector_parity,
-		   nantiherm, antiherm_offset, antiherm_parity);
+       nvector, vector_offset, vector_parity,
+       nantiherm, antiherm_offset, antiherm_parity);
 
       if(gauge_iter != 0)
-	{
-	  del_av = current_av - old_av;
-	  if (fabs(del_av) < gauge_fix_tol) break;
-	}
+  {
+    del_av = current_av - old_av;
+    if (fabs(del_av) < gauge_fix_tol) break;
+  }
       old_av = current_av;
 
       /* Reunitarize when iteration count is a multiple of REUNIT_INTERVAL */
       if((gauge_iter % REUNIT_INTERVAL) == (REUNIT_INTERVAL - 1))
-	{
-/**	  node0_printf("step %d av gf action %.8e, delta %.3e\n",
-		       gauge_iter,current_av,del_av); **/
-	  reunitarize();
-	}
+  {
+/**   node0_printf("step %d av gf action %.8e, delta %.3e\n",
+           gauge_iter,current_av,del_av); **/
+    reunitarize();
+  }
     }
   /* Reunitarize at the end, unless we just did it in the loop */
   if((gauge_iter % REUNIT_INTERVAL) != 0)
@@ -512,5 +505,5 @@ void gaugefix(int gauge_dir,Real relax_boost,int max_gauge_iter,
 
   if(this_node==0)
     printf("GFIX: Ended at step %d. Av gf action %.8e, delta %.3e\n",
-	   gauge_iter,(double)current_av,(double)del_av);
+     gauge_iter,(double)current_av,(double)del_av);
 }

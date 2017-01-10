@@ -1,11 +1,8 @@
-/************************** loop_table.c *******************************/
-/* MIMD version 6 */
-/* WE NEED TO NORMALIZE THIS PROCEDURE WITH generic/gauge_stuff.c -CD! */
+/* WE NEED TO NORMALIZE THIS PROCEDURE WITH generic/gauge_stuff.c! */
 
 #include "cl_dyn_includes.h"
 
-void make_loop_table2()
-{
+void make_loop_table2() {
 /*
 static int loop_ind[nloop][10] = {
 {0,1,7,6,0,0,0,0,0,0},
@@ -90,8 +87,7 @@ for(i=0;i<nreps;i++)for(j=0;j<nloop;j++)loop_coeff[j][i]=0.0;
 loop_coeff[0][0]= 1.0;
 
 
-/* loop action 9 Sept  
-
+/* loop action
 loop_coeff[0][0]= 5.230000e-01;
 loop_coeff[1][0]= 5.970000e-02;
 loop_coeff[0][1]= 2.109197e-03;
@@ -118,7 +114,7 @@ for(iloop=0;iloop<nloop;iloop++){
   for(perm[2]=0;perm[2]<4;perm[2]++)
   for(perm[3]=0;perm[3]<4;perm[3]++)
      {if(perm[0] != perm[1] && perm[0] != perm[2] && perm[0] != perm[3]
-         && perm[1] != perm[2] && perm[1] != perm[3] && 
+         && perm[1] != perm[2] && perm[1] != perm[3] &&
             perm[2] != perm[3] ) {
 /* reflections*/
       for(ir[0]=0;ir[0]<2;ir[0]++)
@@ -130,7 +126,7 @@ for(iloop=0;iloop<nloop;iloop++){
                            pp[7-j]=7-pp[j];}
 /* create new vector*/
          for(j=0;j<length;j++) vec[j]=pp[loop_ind[iloop][j]];
-                
+
          char_num(vec,&chr,&ch,length);
          flag=0;
 /* check if it's a new set: */
@@ -168,8 +164,7 @@ j,i,loop_coeff[j][i],loop_num[j]);}
 make_loop_term();
 }
 
-void make_loop_term()
-{
+void make_loop_term() {
 int dirs[10];
 int dir,ln,iloop,l_num,length,k,irep;
 
@@ -177,7 +172,7 @@ int dir,ln,iloop,l_num,length,k,irep;
 l_num= 0;dir=0;
 
 /*  loop over all the different contributions to plaquettes */
- 
+
    for(iloop=0;iloop<nloop;iloop++){
 /*
 if(this_node == 0) printf("iloop=%d\n",iloop);
@@ -195,22 +190,21 @@ if(this_node == 0) printf("iloop=%d\n",iloop);
                 }
 }
         for(k=0;k<length;k++)if(dirs[k]==dir) {
-		for(irep=0;irep<nreps;irep++) {
-		loop_term[l_num][irep]=loop_coeff[iloop][irep];
+    for(irep=0;irep<nreps;irep++) {
+    loop_term[l_num][irep]=loop_coeff[iloop][irep];
 /*
-	  	if(this_node == 0) printf("%d %d %e\n",l_num,irep,loop_term[l_num][irep]);
+      if(this_node == 0) printf("%d %d %e\n",l_num,irep,loop_term[l_num][irep]);
 */
-		}
- 
+    }
+
         l_num++;
         } /* k (location in path) */
         }} /* ln and iloop */
- 
+
 
 }
 
-void char_num(int dig[],int *chr,int *ch,int length)
-{
+void char_num(int dig[],int *chr,int *ch,int length) {
 int j;
 int bdig[10],tenl,newv,old;
 

@@ -36,6 +36,12 @@
 //    CMUL_J(a, b, c)     c = a * bdag
 //    CMULJ_(a, b, c)     c = adag * b
 //    CMULJJ(a, b, c)     c = (a * b)dag
+//    CMULSUM(a, b, c)    c += a * b
+//    CMULJ_SUM(a, b, c)  c += adag * b
+//    CMULDIF(a, b, c)    c =- a * b
+//    CMULJ_DIF(a, b, c)  c =- adag * b
+//    CMUL_JDIF(a, b, c)  c =- a * bdag
+//    CCOPY(a, b)         b = a
 //    CNEGATE(a, b)       b = -a
 //    CMUL_I(a, b)        b = ia
 //    CMUL_MINUS_I(a, b)  b = -ia
@@ -141,6 +147,39 @@ double_complex dce_itheta(double theta);
 #define CMULJJ(a, b, c) { \
   (c).real =  (a).real * (b).real - (a).imag * (b).imag; \
   (c).imag = -(a).real * (b).imag - (a).imag * (b).real; }
+
+// c += a * b
+#define CMULSUM(a, b, c) { \
+  (c).real += (a).real * (b).real - (a).imag * (b).imag; \
+  (c).imag += (a).real * (b).imag + (a).imag * (b).real; }
+
+// c += adag * b
+#define CMULJ_SUM(a, b, c) { \
+  (c).real += (a).real * (b).real + (a).imag * (b).imag; \
+  (c).imag += (a).real * (b).imag - (a).imag * (b).real; }
+
+// c += a * bdag
+#define CMUL_JSUM(a, b, c) { \
+  (c).real += (a).real * (b).real + (a).imag * (b).imag; \
+  (c).imag += (a).imag * (b).real - (a).real * (b).imag; }
+
+// c -= a * b
+#define CMULDIF(a, b, c) { \
+  (c).real -= (a).real * (b).real - (a).imag * (b).imag; \
+  (c).imag -= (a).real * (b).imag + (a).imag * (b).real; }
+
+// c += adag * b
+#define CMULJ_DIF(a, b, c) { \
+  (c).real -= (a).real * (b).real + (a).imag * (b).imag; \
+  (c).imag -= (a).real * (b).imag - (a).imag * (b).real; }
+
+// c -= a * bdag
+#define CMUL_JDIF(a, b, c) { \
+  (c).real -= (a).real * (b).real + (a).imag * (b).imag; \
+  (c).imag -= (a).imag * (b).real - (a).real * (b).imag; }
+
+// b = a
+#define CCOPY(a, b) { (b).real = (a).real; (b).imag = (a).imag; }
 
 // b = -a
 #define CNEGATE(a, b) { (b).real = -(a).real; (b).imag = -(a).imag; }

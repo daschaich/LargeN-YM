@@ -1,38 +1,33 @@
-/********** boundary_flip.c *************/
-/* MIMD version 7 */
+// -----------------------------------------------------------------
+// Flip the temporal boundary conditions (BCs)
+// by multiplying by -1 on the last time-slice time
+// "sign" is PLUS or MINUS and says what the BCs should become
+// Print warning  if the BCs are already set to "sign"
 
-/* Flip the time direction boundary conditions.  (Just multiply time
-   links on last time slice by -1.)
-   argument "sign" is PLUS or MINUS, says what you want the boundary
-   conditions to become.  If the boundary conditions are already set
-   to "sign", you get a warning. */
-
-/* warning:
-1. normal switching for measurement routines.
-2. called once per update, when generating link from linkf.
-correct switching ensured by calling routine(s), see fermion_rep() .
-3. declaration of current_boundary moved to lattice.h . */
-
+// This is normal switching for measurement routines
+// It is called when generating link from linkf, in fermion_rep
+// current_boundary is declared in lattice.h
 #include "generic_wilson_includes.h"
 
-void boundary_flip( int sign ) {
+void boundary_flip(int sign) {
   register int i,j,k;
   register site *s;
 
-  if(this_node==0 && sign==current_boundary)
-    printf("WARNING: you lost track of the boundary conditions!\n");
-  if(sign==current_boundary)return;
-
-
-  FORALLSITES(i,s){
-    if(s->t != nt-1)continue;	/* hit only last time slice */
-    for(j=0;j<DIMF;j++)for(k=0;k<DIMF;k++){
-      s->link[TUP].e[j][k].real *= -1.0;
-      s->link[TUP].e[j][k].imag *= -1.0;
-    }
+  if (sign == current_boundary) {
+    node0_printf("WARNING: You lost track of the boundary conditions!\n");
+    return;
   }
 
+  FORALLSITES(i, s) {
+    if (s->t != nt - 1)
+      continue;  /* hit only last time slice */
+    for (j = 0; j < DIMF; j++) {
+      for (k = 0; k < DIMF; k++) {
+        s->link[TUP].e[j][k].real *= -1.0;
+        s->link[TUP].e[j][k].imag *= -1.0;
+      }
+    }
+  }
   current_boundary = sign;
 }
-
-
+// -----------------------------------------------------------------

@@ -153,14 +153,11 @@ typedef struct { dspin_wilson_vector c[DIMF]; } dwilson_propagator;
 #define wilson_propagator   dwilson_propagator
 #endif
 
-#define GAMMAFIVE -1    /* some integer which is not a direction */
-#define PLUS 1          /* flags for selecting M or M_adjoint */
+#define GAMMAFIVE -1    // Some integer which is not a direction
+
+// Flags for selecting M or M_adjoint
+#define PLUS 1
 #define MINUS -1
-/* Macros to multiply complex numbers by +-1 and +-i */
-#define TIMESPLUSONE(a,b) { (b).real =  (a).real; (b).imag = (a).imag; }
-#define TIMESMINUSONE(a,b) { (b).real =  -(a).real; (b).imag = -(a).imag; }
-#define TIMESPLUSI(a,b) { (b).real = -(a).imag; (b).imag =  (a).real; }
-#define TIMESMINUSI(a,b) { (b).real =  (a).imag; (b).imag = -(a).real; }
 
 /*
 * ROUTINES FOR SU(3) MATRIX OPERATIONS

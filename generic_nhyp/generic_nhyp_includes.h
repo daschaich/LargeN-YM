@@ -1,10 +1,6 @@
-/************************ generic_nhyp_includes.h *********************
-*									*
-*  This header is included in all codes in this directory               *
-*  MIMD version 7 							*
-*									*
-*/
-#include "../include/config.h"  /* Keep this first */
+// -----------------------------------------------------------------
+// Header included in all codes in this directory
+#include "../include/config.h"  // Keep this first
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -17,3 +13,4 @@
 #include "../include/generic_quark_types.h"
 #include "../include/generic_nhyp.h"
 #include <lattice.h>
+// -----------------------------------------------------------------

@@ -6,17 +6,17 @@
   vector projected out.  This routine reexpands it to a four component
   object.
 
-  usage:  wp_grow(  half_wilson_vector *src, wilson_vector *dest,
-        int dir, int sign );
+  usage:  wp_grow(half_wilson_vector *src, wilson_vector *dest,
+        int dir, int sign);
 
-	If dir is one of XUP,YUP,ZUP or TUP, the projection is
-	along the eigenvectors with eigenvalue +1, which survive
-	multiplcation by (1+gamma[dir]).
-	If dir is one of XDOWN,YDOWN,ZDOWN or TDOWN, the projection is
-	along the eigenvectors with eigenvalue -1, which survive
-	multiplication by (1-gamma[OPP_DIR(dir)]).
-	If sign=MINUS reverse the roles of +1 and -1 - in other words
-	use -gamma_dir instead of gamma_dir
+  If dir is one of XUP,YUP,ZUP or TUP, the projection is
+  along the eigenvectors with eigenvalue +1, which survive
+  multiplcation by (1+gamma[dir]).
+  If dir is one of XDOWN,YDOWN,ZDOWN or TDOWN, the projection is
+  along the eigenvectors with eigenvalue -1, which survive
+  multiplication by (1-gamma[OPP_DIR(dir)]).
+  If sign=MINUS reverse the roles of +1 and -1 - in other words
+  use -gamma_dir instead of gamma_dir
 
   Here my eigenvectors are normalized to 2, so for XYZT directions
   I won't explicitely multiply by 2.  In other words, the matrix of
@@ -30,38 +30,32 @@
   in down directions differing from up directions only in the sign of
   the addition.
 
-  Note: wp_shrink( +-dir) followed by wp_grow( +-dir) amounts to multiplication
+  Note: wp_shrink(+-dir) followed by wp_grow(+-dir) amounts to multiplication
    by 1+-gamma_dir
 
- gamma(XUP) 			eigenvectors	eigenvalue
- 	    0  0  0  i		( 1, 0, 0,-i)	+1
-            0  0  i  0		( 0, 1,-i, 0)	+1
-            0 -i  0  0		( 0, 1, 0,+i)	-1
-           -i  0  0  0		( 1, 0,+i, 0)	-1
+ gamma(XUP)       eigenvectors  eigenvalue
+            0  0  0  i    (1, 0, 0,-i) +1
+            0  0  i  0    (0, 1,-i, 0) +1
+            0 -i  0  0    (0, 1, 0,+i) -1
+           -i  0  0  0    (1, 0,+i, 0) -1
 
- gamma(YUP)			eigenvectors	eigenvalue
- 	    0  0  0 -1		( 1, 0, 0,-1)	+1
-            0  0  1  0		( 0, 1, 1, 0)	+1
-            0  1  0  0		( 1, 0, 0, 1)	-1
-           -1  0  0  0		( 0, 1,-1, 0)	-1
+ gamma(YUP)     eigenvectors  eigenvalue
+            0  0  0 -1    (1, 0, 0,-1) +1
+            0  0  1  0    (0, 1, 1, 0) +1
+            0  1  0  0    (1, 0, 0, 1) -1
+           -1  0  0  0    (0, 1,-1, 0) -1
 
- gamma(ZUP)			eigenvectors	eigenvalue
- 	    0  0  i  0		( 1, 0,-i, 0)	+1
-            0  0  0 -i		( 0, 1, 0,+i)	+1
-           -i  0  0  0		( 1, 0,+i, 0)	-1
-            0  i  0  0		( 0, 1, 0,-i)	-1
+ gamma(ZUP)     eigenvectors  eigenvalue
+            0  0  i  0    (1, 0,-i, 0) +1
+            0  0  0 -i    (0, 1, 0,+i) +1
+           -i  0  0  0    (1, 0,+i, 0) -1
+            0  i  0  0    (0, 1, 0,-i) -1
 
- gamma(TUP)			eigenvectors	eigenvalue
- 	    0  0  1  0		( 1, 0, 1, 0)	+1
-            0  0  0  1		( 0, 1, 0, 1)	+1
-            1  0  0  0		( 1, 0,-1, 0)	-1
-            0  1  0  0		( 0, 1, 0,-1)	-1
-
- gamma(FIVE) 			eigenvectors	eigenvalue
- 	    1  0  0  0
-            0  1  0  0
-            0  0 -1  0
-            0  0  0 -1
+ gamma(TUP)     eigenvectors  eigenvalue
+            0  0  1  0    (1, 0, 1, 0) +1
+            0  0  0  1    (0, 1, 0, 1) +1
+            1  0  0  0    (1, 0,-1, 0) -1
+            0  1  0  0    (0, 1, 0,-1) -1
 */
 #include "../include/config.h"
 #include <stdio.h>
@@ -69,78 +63,80 @@
 #include "../include/su3.h"
 #include "../include/dirs.h"
 
-void wp_grow(  half_wilson_vector *src, wilson_vector *dest,
-        int dir, int sign ){
-  register int i; /*color*/
+void wp_grow(half_wilson_vector *src, wilson_vector *dest,
+             int dir, int sign) {
 
-  if(sign==MINUS)dir=OPP_DIR(dir);	/* two ways to get -gamma_dir ! */
-  switch(dir){
+  register int i;
+  if (sign == MINUS)
+    dir = OPP_DIR(dir);  // Two ways to get -gamma_dir!
+
+  switch(dir) {
     case XUP:
-	for(i=0;i<DIMF;i++){
-	    dest->d[0].c[i]      = src->h[0].c[i];
-	    dest->d[1].c[i]      = src->h[1].c[i];
-	    TIMESMINUSI( src->h[0].c[i], dest->d[3].c[i]);
-	    TIMESMINUSI( src->h[1].c[i], dest->d[2].c[i]);
-	}
-	break;
+      for(i = 0; i < DIMF; i++) {
+        dest->d[0].c[i] = src->h[0].c[i];
+        dest->d[1].c[i] = src->h[1].c[i];
+        CMUL_MINUS_I(src->h[0].c[i], dest->d[3].c[i]);
+        CMUL_MINUS_I(src->h[1].c[i], dest->d[2].c[i]);
+      }
+      break;
     case XDOWN:
-	for(i=0;i<DIMF;i++){
-	    dest->d[0].c[i]      = src->h[0].c[i];
-	    dest->d[1].c[i]      = src->h[1].c[i];
-	    TIMESPLUSI( src->h[0].c[i], dest->d[3].c[i]);
-	    TIMESPLUSI( src->h[1].c[i], dest->d[2].c[i]);
-	}
-	break;
+      for(i = 0; i < DIMF; i++) {
+        dest->d[0].c[i] = src->h[0].c[i];
+        dest->d[1].c[i] = src->h[1].c[i];
+        CMUL_I(src->h[0].c[i], dest->d[3].c[i]);
+        CMUL_I(src->h[1].c[i], dest->d[2].c[i]);
+      }
+      break;
     case YUP:
-	for(i=0;i<DIMF;i++){
-	    dest->d[0].c[i]      = src->h[0].c[i];
-	    dest->d[1].c[i]      = src->h[1].c[i];
-	    TIMESMINUSONE( src->h[0].c[i], dest->d[3].c[i] );
-	    TIMESPLUSONE(  src->h[1].c[i], dest->d[2].c[i] );
-	}
-	break;
+      for(i = 0; i < DIMF; i++) {
+        dest->d[0].c[i] = src->h[0].c[i];
+        dest->d[1].c[i] = src->h[1].c[i];
+        CNEGATE(src->h[0].c[i], dest->d[3].c[i]);
+        CCOPY(src->h[1].c[i], dest->d[2].c[i]);
+      }
+      break;
     case YDOWN:
-	for(i=0;i<DIMF;i++){
-	    dest->d[0].c[i]      = src->h[0].c[i];
-	    dest->d[1].c[i]      = src->h[1].c[i];
-	    TIMESPLUSONE(  src->h[0].c[i], dest->d[3].c[i] );
-	    TIMESMINUSONE( src->h[1].c[i], dest->d[2].c[i] );
-	}
-	break;
+      for(i = 0; i < DIMF; i++) {
+        dest->d[0].c[i] = src->h[0].c[i];
+        dest->d[1].c[i] = src->h[1].c[i];
+        CCOPY(src->h[0].c[i], dest->d[3].c[i]);
+        CNEGATE(src->h[1].c[i], dest->d[2].c[i]);
+      }
+      break;
     case ZUP:
-	for(i=0;i<DIMF;i++){
-	    dest->d[0].c[i]      = src->h[0].c[i];
-	    dest->d[1].c[i]      = src->h[1].c[i];
-	    TIMESMINUSI( src->h[0].c[i], dest->d[2].c[i] );
-	    TIMESPLUSI(  src->h[1].c[i], dest->d[3].c[i] );
-	}
-	break;
+      for(i = 0; i < DIMF; i++) {
+        dest->d[0].c[i] = src->h[0].c[i];
+        dest->d[1].c[i] = src->h[1].c[i];
+        CMUL_MINUS_I(src->h[0].c[i], dest->d[2].c[i]);
+        CMUL_I(src->h[1].c[i], dest->d[3].c[i]);
+      }
+      break;
     case ZDOWN:
-	for(i=0;i<DIMF;i++){
-	    dest->d[0].c[i]      = src->h[0].c[i];
-	    dest->d[1].c[i]      = src->h[1].c[i];
-	    TIMESPLUSI(  src->h[0].c[i], dest->d[2].c[i] );
-	    TIMESMINUSI( src->h[1].c[i], dest->d[3].c[i] );
-	}
-	break;
+      for(i = 0; i < DIMF; i++) {
+        dest->d[0].c[i] = src->h[0].c[i];
+        dest->d[1].c[i] = src->h[1].c[i];
+        CMUL_I(src->h[0].c[i], dest->d[2].c[i]);
+        CMUL_MINUS_I(src->h[1].c[i], dest->d[3].c[i]);
+      }
+      break;
     case TUP:
-	for(i=0;i<DIMF;i++){
-	    dest->d[0].c[i]      = src->h[0].c[i];
-	    dest->d[1].c[i]      = src->h[1].c[i];
-	    dest->d[2].c[i]      = src->h[0].c[i];
-	    dest->d[3].c[i]      = src->h[1].c[i];
-	}
-	break;
+      for(i = 0; i < DIMF; i++) {
+        dest->d[0].c[i] = src->h[0].c[i];
+        dest->d[1].c[i] = src->h[1].c[i];
+        dest->d[2].c[i] = src->h[0].c[i];
+        dest->d[3].c[i] = src->h[1].c[i];
+      }
+      break;
     case TDOWN:
-	for(i=0;i<DIMF;i++){
-	    dest->d[0].c[i]      = src->h[0].c[i];
-	    dest->d[1].c[i]      = src->h[1].c[i];
-	    TIMESMINUSONE( src->h[0].c[i], dest->d[2].c[i] );
-	    TIMESMINUSONE( src->h[1].c[i], dest->d[3].c[i] );
-	}
-	break;
+      for(i = 0; i < DIMF; i++) {
+        dest->d[0].c[i] = src->h[0].c[i];
+        dest->d[1].c[i] = src->h[1].c[i];
+        CNEGATE(src->h[0].c[i], dest->d[2].c[i]);
+        CNEGATE(src->h[1].c[i], dest->d[3].c[i]);
+      }
+      break;
     default:
-	printf("BAD CALL TO WP_GROW()\n");
+      printf("BAD CALL TO WP_GROW()\n");
   }
 }
 

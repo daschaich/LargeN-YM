@@ -1,7 +1,3 @@
-/************************* force_nhyp.c ***********************************/
-/* MIMD version 7       */
-/* adapted YS Sept 2008 */
-
 /* Reference:
 * Hypercubic smeared links for dynamical fermions.
 * By Anna Hasenfratz, Roland Hoffmann, Stefan Schaefer.

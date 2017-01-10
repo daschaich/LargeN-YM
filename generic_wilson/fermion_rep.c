@@ -1,5 +1,5 @@
 // -----------------------------------------------------------------
-// Wrapper for creating DIMFxDIMF matrices 'link' from NCOLxNCOL matrices 'linkf'
+// Wrapper for creating DIMFxDIMF link matrices from NCOLxNCOL linkf matrices
 // Handles boundary condition stuff
 // Calls irrep-specific routines to perform the actual translation.
 #include "generic_wilson_includes.h"
@@ -26,9 +26,8 @@ void fermion_rep() {
   block_nhyp();
 
   FORALLUPDIR(mu) {
-    FORALLSITES(i, s) {
+    FORALLSITES(i, s)
       make_fermion_rep_matrix(gauge_field[mu] + i, &(s->link[mu]));
-    }
   }
   // Anti-periodic BCs in time direction
   current_boundary = PLUS;

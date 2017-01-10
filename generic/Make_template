@@ -9,7 +9,6 @@
 G_ALL = \
  ape_smear.o \
  ax_gauge.o \
- bsd_sum.o \
  byterevn.o \
  check_unitarity.o \
  com_mpi.o \
@@ -17,17 +16,13 @@ G_ALL = \
  plaquette.o \
  plaquette_lcl.o \
  field_strength.o \
- gaugefix.o \
  gaugefix2.o \
- gauge_force_imp.o \
- gauge_stuff.o \
  hvy_pot.o \
  io_ansi.o \
  io_detect.o \
  io_helpers.o \
  io_lat4.o \
  io_lat_utils.o \
- io_lat4xt.o \
  io_lat_utils.o \
  io_nonansi.o \
  layout_hyper_prime.o \
@@ -44,10 +39,8 @@ G_ALL = \
  ranmom.o \
  ranstuff.o \
  remap_stdio_from_args.o \
- restrict_fourier.o \
  reunitarize_arb.o \
- reunitarize2.o \
- show_generic_opts.o
+ reunitarize2.o
 
 # Must match our headers in generic_includes.h
 G_HEADERS = \
@@ -73,8 +66,6 @@ ape_smear.o: ../generic/ape_smear.c
 	${CC} -c ${CFLAGS} $<
 ax_gauge.o: ../generic/ax_gauge.c
 	${CC} -c ${CFLAGS} $<
-bsd_sum.o: ../generic/bsd_sum.c
-	${CC} -c ${CFLAGS} $<
 check_unitarity.o: ../generic/check_unitarity.c
 	${CC} -c ${CFLAGS} $<
 com_mpi.o: ../generic/com_mpi.c
@@ -85,35 +76,17 @@ plaquette.o: ../generic/plaquette.c
 	${CC} -c ${CFLAGS} $<
 plaquette_lcl.o: ../generic/plaquette_lcl.c
 	${CC} -c ${CFLAGS} $<
-field_strength.o: ../generic/field_strength.c
-	${CC} -c ${CFLAGS} $<
-gaugefix.o: ../generic/gaugefix.c
-	${CC} -c ${CFLAGS} $<
 gaugefix2.o: ../generic/gaugefix2.c
 	${CC} -c ${CFLAGS} $<
 gaugefix_full.o: ../generic/gaugefix_full.c
 	${CC} -c ${CFLAGS} $<
-gauge_force_imp.o: ../generic/gauge_force_imp.c
-	${CC} -c ${CFLAGS} $<
-gauge_stuff.o: ../generic/gauge_stuff.c
-	${CC} -c ${CFLAGS} $<
-hvy_pot.o: ../generic/hvy_pot.c
-	${CC} -c ${CFLAGS} $<
 io_ansi.o: ../generic/io_ansi.c
-	${CC} -c ${CFLAGS} $<
-io_detect.o: ../include/file_types.h
-io_detect.o: ../generic/io_detect.c
 	${CC} -c ${CFLAGS} $<
 io_helpers.o: ../include/io_lat.h
 io_helpers.o: ../generic/io_helpers.c
 	${CC} -c ${CFLAGS} $<
-io_helpers_nocheck.o: ../include/io_lat.h
-io_helpers_nocheck.o: ../generic/io_helpers_nocheck.c
-	${CC} -c ${CFLAGS} $<
 io_lat4.o: ../include/io_lat.h
 io_lat4.o: ../generic/io_lat4.c
-	${CC} -c ${CFLAGS} $<
-io_lat4xt.o: ../generic/io_lat4xt.c
 	${CC} -c ${CFLAGS} $<
 io_lat_utils.o: ../include/io_lat.h
 io_lat_utils.o: ../generic/io_lat_utils.c
@@ -126,21 +99,9 @@ make_lattice.o: ../generic/make_lattice.c
 	${CC} -c ${CFLAGS} $<
 nersc_cksum.o: ../generic/nersc_cksum.c
 	${CC} -c ${CFLAGS} $<
-nr.o: ../generic/nr.c
-	${CC} -c ${CFLAGS} $<
 path_product.o: ../generic/path_product.c
 	${CC} -c ${CFLAGS} $<
-ploop2.o: ../generic/ploop2.c
-	${CC} -c ${CFLAGS} $<
-ploop3.o: ../generic/ploop3.c
-	${CC} -c ${CFLAGS} $<
 ploop_dist.o: ../generic/ploop_dist.c
-	${CC} -c ${CFLAGS} $<
-ploop_staple.o: ../generic/ploop_staple.c
-	${CC} -c ${CFLAGS} $<
-project_su3_hit.o: ../generic/project_su3_hit.c
-	${CC} -c ${CFLAGS} $<
-rand_gauge.o: ../generic/rand_gauge.c
 	${CC} -c ${CFLAGS} $<
 ranmom.o: ../generic/ranmom.c
 	${CC} -c ${CFLAGS} $<
@@ -148,11 +109,7 @@ ranstuff.o: ../generic/ranstuff.c
 	${CC} -c ${CFLAGS} $<
 remap_stdio_from_args.o: ../generic/remap_stdio_from_args.c
 	${CC} -c ${CFLAGS} $<
-restrict_fourier.o: ../generic/restrict_fourier.c
-	${CC} -c ${CFLAGS} $<
 reunitarize2.o: ../generic/reunitarize2.c
 	${CC} -c ${CFLAGS} $<
 reunitarize_arb.o: ../generic/reunitarize_arb.c
-	${CC} -c ${CFLAGS} $<
-show_generic_opts.o: ../generic/show_generic_opts.c
 	${CC} -c ${CFLAGS} $<
