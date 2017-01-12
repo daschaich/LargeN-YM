@@ -31,7 +31,7 @@ void plaquette(double *ss_plaq, double *st_plaq) {
                                 dir2, EVENANDODD, gen_pt[1]);
 
       // tempmat = Udag_b(x) U_a(x)
-      FORALLSITES(i,s) {
+      FORALLSITES(i, s) {
         m1 = &(s->linkf[dir]);
         m4 = &(s->linkf[dir2]);
         mult_su3_an_f(m4, m1, &tempmat[i]);
@@ -40,7 +40,7 @@ void plaquette(double *ss_plaq, double *st_plaq) {
       wait_gather(mtag1);
 
       // Compute tr[Udag_a(x+b) Udag_b(x) U_a(x) U_b(x+a)]
-      FORALLSITES(i,s) {
+      FORALLSITES(i, s) {
         m1 = (su3_matrix_f *)(gen_pt[0][i]);
         m4 = (su3_matrix_f *)(gen_pt[1][i]);
         mult_su3_nn_f(&(tempmat[i]), m1, &tmat);

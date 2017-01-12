@@ -23,7 +23,7 @@ CFLAGS = ${OPT} ${OCFLAGS} ${CODETYPE}
 
 # Compile prefetching with no optimization
 prefetch.o: prefetch.c
-	${CC} ${OCFLAGS} -c prefetch.c
+	${CC} -g ${OCFLAGS} -c prefetch.c
 
 include Make_template
 # ------------------------------------------------------------------

@@ -411,25 +411,25 @@ dtime, (double)(5584.0*volume/(1.0e6*dtime*numnodes())));**/
 void prepare_vecs(int level) {
   register int i;
   register site *s;
-  complex ctmp;
-  wilson_vector tmpvec, tmpvec2;
+  complex tc;
+  wilson_vector tvec, tvec2;
 
-  if (level!=0)
-    ctmp = cmplx(0, shift);
+  if (level != 0)
+    tc = cmplx(0, shift);
 
   dslash_w_site(F_OFFSET(psi[level]), F_OFFSET(tmp), PLUS, ODD);
   mult_ldu_site(F_OFFSET(tmp), F_OFFSET(psi[level]), ODD);
-  FORODDSITES(i, s) {
+  FORODDSITES(i, s)
     scalar_mult_wvec(&(s->psi[level]), kappa, &(s->psi[level]));
-  }
+
   dslash_w_site(F_OFFSET(psi[level]), F_OFFSET(p), PLUS, EVEN);
   mult_ldu_site(F_OFFSET(psi[level]), F_OFFSET(tmp), EVEN);
   FOREVENSITES(i, s) {
     if (level == 1) {
-      scalar_mult_add_wvec(&(s->tmp), &(s->p), -kappa, &tmpvec);
+      scalar_mult_add_wvec(&(s->tmp), &(s->p), -kappa, &tvec);
       /* that was M*psi now we need to add i*shift*gamma_5*p */
-      mult_by_gamma(&(s->psi[level]), &tmpvec2, GAMMAFIVE);
-      c_scalar_mult_add_wvec2(&tmpvec, &tmpvec2, ctmp, &(s->p));
+      mult_by_gamma(&(s->psi[level]), &tvec2, GAMMAFIVE);
+      c_scalar_mult_add_wvec(&tvec, &tvec2, &tc, &(s->p));
     }
     else
       scalar_mult_add_wvec(&(s->tmp), &(s->p), -kappa, &(s->p));

@@ -1,5 +1,5 @@
 // -----------------------------------------------------------------
-// Compute sum over spins of outer product
+// Compute sum over spins of wilson_vector outer product
 // c_ij <- sum(a_i * bdag_j)
 #include "../include/config.h"
 #include "../include/complex.h"
@@ -8,7 +8,6 @@
 void su3_projector_w(wilson_vector *a, wilson_vector *b, su3_matrix *c) {
   register int i, j, k;
 #ifndef FAST
-  register complex cc;
   for (i = 0; i < DIMF; i++) {
     for (j = 0; j < DIMF; j++) {
       CMUL_J(a->d[0].c[i], b->d[0].c[j], c->e[i][j]);

@@ -1,5 +1,6 @@
 // -----------------------------------------------------------------
-// Return squared magnitude of SUN vector
+// Return squared magnitude of irrep vector
+// ReTr[adag.a]
 #include "../include/config.h"
 #include "../include/complex.h"
 #include "../include/su3.h"

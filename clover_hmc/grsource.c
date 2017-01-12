@@ -16,11 +16,12 @@ are the fast (shifted) pseudofermions */
 */
 
 void grsource_w() {
-  register int i,j,k;
+  register int i, j, k;
   register site *s;
   int kind1, iters = 0;
-  double rr;
-  wilson_vector tmpvec, tmpvec2;
+  double rr = 0.0, kappaSq = -kappa * kappa;
+  complex ishift = cmplx(0.0, shift), mishift = cmplx(0.0, -shift);
+  wilson_vector tvec, tvec2;
   Real final_rsq;
 
   /* First the original field or the simply shifted one in the 2PF case */
@@ -29,93 +30,92 @@ void grsource_w() {
   else
     kind1 = 1;
 
-
-  rr=0.0;
-  FOREVENSITESDOMAIN(i,s) {
-    for(k=0;k<4;k++)for(j=0;j<DIMF;j++) {
+  FOREVENSITES(i, s) {
+    for (k = 0; k < 4; k++) {
+      for (j = 0; j < DIMF; j++) {
 #ifdef SITERAND
-      s->g_rand.d[k].c[j].real = gaussian_rand_no(&(s->site_prn));
-      s->g_rand.d[k].c[j].imag = gaussian_rand_no(&(s->site_prn));
+        s->g_rand.d[k].c[j].real = gaussian_rand_no(&(s->site_prn));
+        s->g_rand.d[k].c[j].imag = gaussian_rand_no(&(s->site_prn));
 #else
-      s->g_rand.d[k].c[j].real = gaussian_rand_no(&node_prn);
-      s->g_rand.d[k].c[j].imag = gaussian_rand_no(&node_prn);
+        s->g_rand.d[k].c[j].real = gaussian_rand_no(&node_prn);
+        s->g_rand.d[k].c[j].imag = gaussian_rand_no(&node_prn);
 #endif
-      s->psi[kind1].d[k].c[j] = cmplx(0.0,0.0);
+        s->psi[kind1].d[k].c[j] = cmplx(0.0, 0.0);
+      }
     }
-    rr += (double)wvec_rdot(&(s->g_rand),&(s->g_rand));
+    rr += (double)wvec_rdot(&(s->g_rand), &(s->g_rand));
   }
 
-
   /*  chi <- M^dagger g_rand  */
-  mult_ldu_site(F_OFFSET(g_rand), F_OFFSET(tmp), EVEN );
+  mult_ldu_site(F_OFFSET(g_rand), F_OFFSET(tmp), EVEN);
   dslash_w_site(F_OFFSET(g_rand), F_OFFSET(tmp), MINUS, ODD);
-  mult_ldu_site(F_OFFSET(tmp), F_OFFSET(g_rand), ODD );
+  mult_ldu_site(F_OFFSET(tmp), F_OFFSET(g_rand), ODD);
   dslash_w_site(F_OFFSET(g_rand), F_OFFSET(chi[kind1]), MINUS, EVEN);
-  FOREVENSITESDOMAIN(i,s) {
-    if (num_masses==2) {
-      scalar_mult_add_wvec(&(s->tmp), &(s->chi[kind1]), -kappa*kappa,
-          &tmpvec );
+  FOREVENSITES(i, s) {
+    if (num_masses == 2) {
+      scalar_mult_add_wvec(&(s->tmp), &(s->chi[kind1]), kappaSq, &tvec);
       /* That was Mdagger, now we need to subtract -i*shift*gamma5*p */
-      mult_by_gamma(&(s->g_rand), &tmpvec2, GAMMAFIVE );
-      c_scalar_mult_add_wvec2(&tmpvec, &tmpvec2, cmplx(0.0,-shift), &(s->chi[kind1]) );
+      mult_by_gamma(&(s->g_rand), &tvec2, GAMMAFIVE);
+      c_scalar_mult_add_wvec(&tvec, &tvec2, &mishift, &(s->chi[kind1]));
     }
     else {
-      scalar_mult_add_wvec(&(s->tmp), &(s->chi[kind1]), -kappa*kappa,
-          &(s->chi[kind1]) );
+      scalar_mult_add_wvec(&(s->tmp), &(s->chi[kind1]), kappaSq,
+                           &(s->chi[kind1]));
     }
   }
 
   /* Now the slightly more fancy case of the 2nd PF field: chi[0] and psi[0] */
-  if (num_masses==2) {
+  if (num_masses == 2) {
     /*
        node0_printf("CALL 2nd PF\n");
        */
     /* The first contribution is just the random number itself
        so we might as well generate it in chi[0] directly */
-    FOREVENSITESDOMAIN(i,s) {
-      for(k=0;k<4;k++)for(j=0;j<DIMF;j++) {
-        /* Comment these lines out, set s->chi[0].d[k].c[j] = cmplx(1.0,0.0);
-           and set ``step=0.0'' in the input file and the 1 and 2 PF codes should produce
-           identical results */
+    FOREVENSITES(i, s) {
+      for (k = 0; k < 4; k++) {
+        for (j = 0; j < DIMF; j++) {
+          /* Comment these lines out, set s->chi[0].d[k].c[j] = cmplx(1.0, 0.0);
+             and set ``step=0.0'' in the input file and the 1 and 2 PF codes should produce
+             identical results */
 #ifdef SITERAND
-        s->chi[0].d[k].c[j].real = gaussian_rand_no(&(s->site_prn));
-        s->chi[0].d[k].c[j].imag = gaussian_rand_no(&(s->site_prn));
+          s->chi[0].d[k].c[j].real = gaussian_rand_no(&(s->site_prn));
+          s->chi[0].d[k].c[j].imag = gaussian_rand_no(&(s->site_prn));
 #else
-        s->chi[0].d[k].c[j].real = gaussian_rand_no(&node_prn);
-        s->chi[0].d[k].c[j].imag = gaussian_rand_no(&node_prn);
+          s->chi[0].d[k].c[j].real = gaussian_rand_no(&node_prn);
+          s->chi[0].d[k].c[j].imag = gaussian_rand_no(&node_prn);
 #endif
-
-        s->psi[0].d[k].c[j] = cmplx(0.0,0.0);
+          s->psi[0].d[k].c[j] = cmplx(0.0, 0.0);
+        }
       }
-      rr += (double)wvec_rdot(&(s->chi[0]),&(s->chi[0]));
+      rr += (double)wvec_rdot(&(s->chi[0]), &(s->chi[0]));
     }
 
     /* But now something fancy has to happen. First we invert with the shift
        and write the result into old_psi[0] */
-    iters+=congrad_cl_m(niter,rsqmin,&final_rsq, F_OFFSET(chi[0]), F_OFFSET(old_psi[0]), shift);
+    iters += congrad_cl_m(niter, rsqmin, &final_rsq,
+                          F_OFFSET(chi[0]), F_OFFSET(old_psi[0]), shift);
 
-    /*  chi <- Mtilde old_psi1  */
-    /*  chi <- M^dagger chi[0]  */
-    mult_ldu_site(F_OFFSET(old_psi[0]), F_OFFSET(tmp), EVEN );
+    // chi <- Mtilde old_psi1
+    // chi <- M^dagger chi[0]
+    mult_ldu_site(F_OFFSET(old_psi[0]), F_OFFSET(tmp), EVEN);
     dslash_w_site(F_OFFSET(old_psi[0]), F_OFFSET(tmp), PLUS, ODD);
-    mult_ldu_site(F_OFFSET(tmp), F_OFFSET(old_psi[0]), ODD );
+    mult_ldu_site(F_OFFSET(tmp), F_OFFSET(old_psi[0]), ODD);
     dslash_w_site(F_OFFSET(old_psi[0]), F_OFFSET(p), PLUS, EVEN);
-    FOREVENSITESDOMAIN(i,s) {
-      scalar_mult_add_wvec(&(s->tmp), &(s->p), -kappa*kappa, &tmpvec);
+    FOREVENSITES(i, s) {
+      scalar_mult_add_wvec(&(s->tmp), &(s->p), kappaSq, &tvec);
 
       /* That was M, now we need to add i*shift*gamma5*p */
-      mult_by_gamma(&(s->old_psi[0]), &tmpvec2, GAMMAFIVE );
-      c_scalar_mult_add_wvec2(&tmpvec, &tmpvec2, cmplx(0.0,shift), &tmpvec );
-      /* And the final step is to multiply by i*shift*gamma5*
+      mult_by_gamma(&(s->old_psi[0]), &tvec2, GAMMAFIVE);
+      c_scalar_mult_add_wvec(&tvec, &tvec2, &ishift, &tvec);
+      /* And the final step is to multiply by i*shift*gamma5
          before adding it to chi[0] */
-      mult_by_gamma(&tmpvec, &tmpvec2, GAMMAFIVE );
-      c_scalar_mult_add_wvec2(&(s->chi[0]), &tmpvec2, cmplx(0.0,shift), &(s->chi[0]));
+      mult_by_gamma(&tvec, &tvec2, GAMMAFIVE);
+      c_scalar_mult_add_wvec(&(s->chi[0]), &tvec2, &ishift, &(s->chi[0]));
     }
   }
-
   g_doublesum(&rr);
   /*
-     node0_printf("rr %e\n",rr);
+     node0_printf("rr %e\n", rr);
      */
 }
 
@@ -128,43 +128,44 @@ void checkmul(field_offset chi, field_offset psi, Real mshift) {
   Real kappaSq = -kappa * kappa, MSq = mshift * mshift;
   wilson_vector wvec;
 
-  printf("CHECKMUL: starting %e\n",mshift);
+  printf("CHECKMUL: starting %e\n", mshift);
   /* multiply by M_adjoint*M */
-  mult_ldu_site(psi, F_OFFSET(tmp), EVEN );
-  dslash_w_site(psi, psi, PLUS, ODD );
-  mult_ldu_site(psi, F_OFFSET(mp),ODD );
+  mult_ldu_site(psi, F_OFFSET(tmp), EVEN);
+  dslash_w_site(psi, psi, PLUS, ODD);
+  mult_ldu_site(psi, F_OFFSET(mp), ODD);
   dslash_w_site(F_OFFSET(mp), F_OFFSET(mp), PLUS, EVEN);
-  FOREVENSITESDOMAIN(i, s)
-    scalar_mult_add_wvec(&(s->tmp), &(s->mp), kappaSq, &(s->mp) );
+  FOREVENSITES(i, s)
+    scalar_mult_add_wvec(&(s->tmp), &(s->mp), kappaSq, &(s->mp));
   mult_ldu_site(F_OFFSET(mp), F_OFFSET(tmp), EVEN);
-  dslash_w_site(F_OFFSET(mp), F_OFFSET(mp), MINUS, ODD );
+  dslash_w_site(F_OFFSET(mp), F_OFFSET(mp), MINUS, ODD);
   mult_ldu_site(F_OFFSET(mp), F_OFFSET(tmp), ODD);
   dslash_w_site(F_OFFSET(tmp), F_OFFSET(p) , MINUS, EVEN);
-  FOREVENSITESDOMAIN(i, s) {
+  FOREVENSITES(i, s) {
     scalar_mult_add_wvec(&(s->tmp), &(s->p), kappaSq, &(s->p));
-    scalar_mult_add_wvec(&(s->p), (wilson_vector *)F_PT(s,psi), MSq, &(s->p));
+    scalar_mult_add_wvec(&(s->p), (wilson_vector *)F_PT(s, psi), MSq, &(s->p));
   }
 
   /* Compare to source */
-  FOREVENSITESDOMAIN(i, s) {
-    /**printf("Site %d %d %d %d\n",s->x,s->y,s->z,s->t);**/
-    copy_wvec((wilson_vector *)F_PT(s,chi), &wvec);
-    for(k=0;k<4;k++)for(j=0;j<DIMF;j++) {
-
-      if (fabs((double)(wvec.d[k].c[j].real  -(double)s->p.d[k].c[j].real) > IMAG_TOL)) {
-        printf("%d %d %d\t%e\t%e\t%e\n",i,k,j,
-            (double)(wvec.d[k].c[j].real),
-            (double)s->p.d[k].c[j].real,
-            (double)(wvec.d[k].c[j].real) - (double)s->p.d[k].c[j].real);
-        if (fabs((double)(wvec.d[k].c[j].imag)-(double)s->p.d[k].c[j].imag) > IMAG_TOL)
-          printf("%d %d %d\t%e\t%e\t%e\n",i,k,j,
-              (double)(wvec.d[k].c[j].imag),
-              (double)s->p.d[k].c[j].imag,
-              (double)(wvec.d[k].c[j].imag) -  (double)s->p.d[k].c[j].imag);
+  FOREVENSITES(i, s) {
+    /**printf("Site %d %d %d %d\n", s->x, s->y, s->z, s->t);**/
+    copy_wvec((wilson_vector *)F_PT(s, chi), &wvec);
+    for (k=0;k<4;k++) {
+      for (j=0;j<DIMF;j++) {
+        if (fabs((double)(wvec.d[k].c[j].real - (double)s->p.d[k].c[j].real) > IMAG_TOL)) {
+          printf("%d %d %d\t%e\t%e\t%e\n", i, k, j,
+              (double)(wvec.d[k].c[j].real),
+              (double)s->p.d[k].c[j].real,
+              (double)(wvec.d[k].c[j].real) - (double)s->p.d[k].c[j].real);
+          if (fabs((double)(wvec.d[k].c[j].imag)-(double)s->p.d[k].c[j].imag) > IMAG_TOL)
+            printf("%d %d %d\t%e\t%e\t%e\n", i, k, j,
+                (double)(wvec.d[k].c[j].imag),
+                (double)s->p.d[k].c[j].imag,
+                (double)(wvec.d[k].c[j].imag) - (double)s->p.d[k].c[j].imag);
+        }
+        /*
+           printf("\n");
+           */
       }
-      /*
-         printf("\n");
-         */
     }
   }
 }
