@@ -1,0 +1,93 @@
+#!/bin/bash
+# This script needs to be run from the testsuite/mpi directory
+
+# Customization for the HET cluster at the University of Colorado
+makefile=Make_mpi
+run="/usr/local/mpich2-1.4.1p1/bin/mpirun -np 2"
+
+# Currently only one application directory and target
+# User just needs to specify NCOL, DIMF and fermion irrep
+if [ $# -lt 4 ]; then
+  echo "Try these:"
+  echo "./run_tests su3_hmc 3 3 fundamental"
+  echo "./run_tests su3_hmc_spectrum 3 3 fundamental"
+  echo "./run_tests su3_hmc 3 6 symmetric2"
+  echo "./run_tests su3_hmc 4 4 fundamental"
+  echo "./run_tests su3_hmc 4 6 antisymmetric2"
+  exit 0
+fi
+
+target=$1
+N=$2
+DIMF=$3
+rep=$4
+
+if [[ "$rep" == "fundamental" ]] ; then
+  tag='F'
+elif [[ "$rep" == "symmetric2" ]] ; then
+  tag='S'
+elif [[ "$rep" == "antisymmetric2" ]] ; then
+  tag='A'
+else
+  echo "Error: Unrecognized rep $rep"
+  exit 1
+fi
+
+outpat=${target#su3_} # Omit 'su3_' from output file
+
+# Change N and rep in include/su3.h
+cd ../../include/
+awk -v"X=#define NCOL $N" '{sub(/^#define NCOL .*/,X);print}' su3.h > TEMP && mv TEMP su3.h
+awk -v"X=#define DIMF $DIMF" '{sub(/^#define DIMF .*/,X);print}' su3.h > TEMP && mv TEMP su3.h
+awk -v"X=#define FREP $rep" '{sub(/^#define FREP .*/,X);print}' su3.h > TEMP && mv TEMP su3.h
+
+# Change rep in clover_hmc/Make_template
+cd ../clover_hmc/
+if [[ "$rep" == "symmetric2" ]] ; then
+  awk -v"X=chain_rule_sym_2" '{sub(/chain_rule_f/,X);print}' Make_template > TEMP && mv TEMP Make_template
+  awk -v"X=fermion_rep_sym_2" '{sub(/fermion_rep_f/,X);print}' Make_template > TEMP && mv TEMP Make_template
+elif [[ "$rep" == "antisymmetric2" ]] ; then
+  awk -v"X=chain_rule_as_2" '{sub(/chain_rule_f/,X);print}' Make_template > TEMP && mv TEMP Make_template
+  awk -v"X=fermion_rep_as_2" '{sub(/fermion_rep_f/,X);print}' Make_template > TEMP && mv TEMP Make_template
+fi
+
+# Compile
+echo "Compiling $target..."
+if ! make -f $makefile $target >& /dev/null ; then
+  echo "ERROR: $target compilation failed"
+  make -f $makefile $target
+  exit
+fi
+
+# Reset N and rep to SU(3) fundamental
+cd ../include/
+awk -v"X=#define NCOL 3" '{sub(/^#define NCOL .*/,X);print}' su3.h > TEMP && mv TEMP su3.h
+awk -v"X=#define DIMF 3" '{sub(/^#define DIMF .*/,X);print}' su3.h > TEMP && mv TEMP su3.h
+awk -v"X=#define FREP fundamental" '{sub(/^#define FREP .*/,X);print}' su3.h > TEMP && mv TEMP su3.h
+
+# Reset fundamental rep in clover_hmc/Make_template
+cd ../clover_hmc/
+if [[ "$rep" == "symmetric2" ]] ; then
+  awk -v"X=chain_rule_f" '{sub(/chain_rule_sym_2/,X);print}' Make_template > TEMP && mv TEMP Make_template
+  awk -v"X=fermion_rep_f" '{sub(/fermion_rep_sym_2/,X);print}' Make_template > TEMP && mv TEMP Make_template
+elif [[ "$rep" == "antisymmetric2" ]] ; then
+  awk -v"X=chain_rule_f" '{sub(/chain_rule_as_2/,X);print}' Make_template > TEMP && mv TEMP Make_template
+  awk -v"X=fermion_rep_f" '{sub(/fermion_rep_as_2/,X);print}' Make_template > TEMP && mv TEMP Make_template
+fi
+
+# Run
+cd ../testsuite/
+rm -f mpi/$outpat.$N$tag.out
+echo "Running $target..."
+$run ../clover_hmc/$target < in.$N$tag.hmc > mpi/$outpat.$N$tag.out
+
+# Check
+cd mpi/
+d="`diff -I'Time' -I'time' -I'seconds' -I'secs' -I'^start' -I'^exit:' $outpat.$N$tag.ref $outpat.$N$tag.out`"
+if [ -n "$d" ] ; then   # Non-zero string length
+  echo "$outpat.$N$tag.ref and $outpat.$N$tag.out differ:"
+  echo "$d"
+else
+  echo "PASS: $target reproduces reference output for SU($N) $rep"
+fi
+exit

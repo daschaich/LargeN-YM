@@ -1,6 +1,6 @@
 SU(3) with clover fermions, DIMF = 3, fermion rep = fundamental
 Microcanonical simulation with refreshing
-Machine = Scalar processor, with 1 nodes
+Machine = MPI (portable), with 2 nodes
 nHYP links, reading alpha_smear parameters from infile
   IR_STAB = 1e-06
   EPS_SQ = 1e-05
@@ -9,7 +9,8 @@ BETA_FREP turned on
 Hybrid Monte Carlo algorithm
 Phi algorithm
 LU preconditioning
-start: Fri Jan 13 04:06:06 2017
+With spectrum measurements
+start: Fri Jan 13 04:11:12 2017
 
 type 0 for no prompts or 1 for prompts
 nflavors 2
@@ -19,9 +20,9 @@ nz 4
 nt 4
 iseed 41
 LAYOUT = Hypercubes, options = hyper_prime,
-ON EACH NODE 4 x 4 x 4 x 4
-Mallocing 1.6 MBytes per node for lattice
-Mallocing 3.6 MBytes per node for fields
+ON EACH NODE 2 x 4 x 4 x 4
+Mallocing 1.4 MBytes per node for lattice
+Mallocing 1.8 MBytes per node for fields
 
 
 warms 0
@@ -50,11 +51,11 @@ forget
 Restored binary gauge configuration serially from file config.3F.4444
 Time stamp Fri Dec 16 00:37:45 2016
 Checksums 83567242 2efc25a5 OK
-Time to reload gauge configuration = 0.002422 seconds
-CHECK PLAQ: 1.2754809836229895e+00 1.3359434793371250e+00
+Time to reload gauge configuration = 0.002635 seconds
+CHECK PLAQ: 1.2754809836229912e+00 1.3359434793371234e+00
 CHECK NERSC LINKTR: -2.4656227161254187e-03 CKSUM: 0
 Reunitarized for double precision.  Max deviation 5.6e-08 changed to 5.6e-16
-Time to check unitarity = 0.000144 seconds
+Time to check unitarity = 8.106e-05 seconds
 START 1.275481 1.3359435 2.6114245
 f_eps0 0.2 f_eps1 0.05 g_eps 0.005
 WARMUPS COMPLETED
@@ -85,16 +86,54 @@ MONITOR_FORCE_GAUGE 0.006294 0.006405
 MONITOR_JACOBI_TOTL 0
 FMES 11.705748 -0.042777177 -0.63798231 -0.69301238 12.045376 0.18421193
 GMES 0.054348689 -0.058182961 1202 40 1.333257 1.2927741 2.5053458 2.5151041
+GFIX: Ended at step 94. Av gf action 7.65289683e-01, delta 8.956e-08
+ONE_PSEUDO2 0 189.18885 0 -1.3822757 -3.989864e-17
+ONE_PSEUDO2 1 15.605704 0 -8.4365587 -7.5623102e-18
+ONE_PSEUDO2 2 5.1148206 0 0.0068106265 -1.7347235e-18
+ONE_PSEUDO2 3 14.163861 0 7.292215 -6.2341625e-19
+ONE_RHO03032 0 142.0243 0
+ONE_RHO03032 1 7.3888471 0
+ONE_RHO03032 2 2.1466408 0
+ONE_RHO03032 3 6.9393149 0
+ONE_RHO332 0 162.20091 3.469447e-18
+ONE_RHO332 1 10.021588 -2.0654051e-17
+ONE_RHO332 2 2.8989553 -2.2226145e-18
+ONE_RHO332 3 9.3074683 3.7770893e-17
+DSL_PSEUDO2 0 -113.52576 0.43130764 -9.1422196 -1.9422142
+DSL_PSEUDO2 1 52.599208 -1.2209571 -13.721644 -1.1525485
+DSL_PSEUDO2 2 10.482955 -0.017474991 0.12416128 0.085879634
+DSL_PSEUDO2 3 50.443601 0.80713463 11.387084 -0.70378599
+DSL_RHO03032 0 -478.65716 1.7775484
+DSL_RHO03032 1 33.660062 -0.98841606
+DSL_RHO03032 2 3.9431707 -0.0536731
+DSL_RHO03032 3 34.368132 0.88189556
+DSL_RHO332 0 -306.70279 -1.4581617
+DSL_RHO332 1 39.812326 -1.0606462
+DSL_RHO332 2 5.9353766 0.026166198
+DSL_RHO332 3 40.436334 0.85954002
+PROTON 0 203.70385
+PROTON 1 1.1307645
+PROTON 2 0.016679554
+PROTON 3 -0.92601049
+DELTA 0 199.94293
+DELTA 1 1.0465117
+DELTA 2 0.010966645
+DELTA 3 -0.89178893
+DELTA_N 0 158.08584
+DELTA_N 1 1.1509168
+DELTA_N 2 0.019867125
+DELTA_N 3 -0.90959188
 RUNNING COMPLETED
 STOP 1.333257 1.2927741 2.626031
 Average cg iters for steps: 1213
 Average cg iters for measurements: 119
-Time               = 6.718 seconds
-congrad time       = 0.9596 seconds
-fermion_force time = 3.847 seconds
-block_nhyp time    = 0.552 seconds
-compute_fhb time   = 0.3848 seconds
+Average cg iters for spectrum: 465
+Time               = 3.808 seconds
+congrad time       = 0.5507 seconds
+fermion_force time = 2.132 seconds
+block_nhyp time    = 0.2973 seconds
+compute_fhb time   = 0.1951 seconds
 total_iters = 3735
 
-exit: Fri Jan 13 04:06:13 2017
+exit: Fri Jan 13 04:11:15 2017
 
