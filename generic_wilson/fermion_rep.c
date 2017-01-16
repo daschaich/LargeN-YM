@@ -15,14 +15,12 @@ void fermion_rep() {
 #ifdef TIMING
   TIC(2);
 #endif
-  /*  block_nhyp looks for the thin link in gauge_field_thin[mu],
-      and puts the smeared link in gauge_field[mu].
-      */
+  // block_nhyp looks for the thin link in gauge_field_thin[mu],
+  // and puts the smeared link in gauge_field[mu]
   FORALLUPDIR(mu) {
     FORALLSITES(i, s)
       su3mat_copy_f(&(s->linkf[mu]), gauge_field_thin[mu] + i);
   }
-
   block_nhyp();
 
   FORALLUPDIR(mu) {
@@ -31,7 +29,6 @@ void fermion_rep() {
   }
   // Anti-periodic BCs in time direction
   current_boundary = PLUS;
-  current_boundary_x = PLUS;
   boundary_flip(MINUS);
 
 #ifdef TIMING

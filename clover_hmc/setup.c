@@ -22,14 +22,14 @@ http://gcc.gnu.org/onlinedocs/cpp/Stringification.html */
 #define STR(s) #s
     /* end kludge */
     printf("SU(%d) with clover fermions, DIMF = %d, fermion rep = "
-        XSTR(FREP) "\n",NCOL,DIMF);
+        XSTR(FREP) "\n", NCOL, DIMF);
     printf("Microcanonical simulation with refreshing\n");
     printf("Machine = %s, with %d nodes\n", machine_type(), numnodes());
 #if SMEAR_LEVEL == 3
     printf("nHYP links, reading alpha_smear parameters from infile\n");
 #elif SMEAR_LEVEL < 3
     printf("Smearing with %d levels (last %d unused)\n",
-        3 - SMEAR_LEVEL);
+           SMEAR_LEVEL, 3 - SMEAR_LEVEL);
 #endif
     printf("  IR_STAB = %.4g\n", (Real)IR_STAB);
 #if NCOL == 3
@@ -76,20 +76,20 @@ http://gcc.gnu.org/onlinedocs/cpp/Stringification.html */
       terminate(-1);
     }
 #endif
-
     IF_OK status += get_i(stdin, prompt, "nx", &par_buf.nx);
     IF_OK status += get_i(stdin, prompt, "ny", &par_buf.ny);
     IF_OK status += get_i(stdin, prompt, "nz", &par_buf.nz);
     IF_OK status += get_i(stdin, prompt, "nt", &par_buf.nt);
-
     IF_OK status += get_i(stdin, prompt, "iseed", &par_buf.iseed);
 
-    if (status>0) par_buf.stopflag=1; else par_buf.stopflag=0;
-  } /* end if (mynode()==0) */
+    if (status > 0)
+      par_buf.stopflag = 1;
+    else
+      par_buf.stopflag = 0;
+  }
 
-  /* Node 0 broadcasts parameter buffer to all other nodes */
+  // Broadcast parameter buffer from node 0 to all other nodes
   broadcast_bytes((char *)&par_buf, sizeof(par_buf));
-
   if (par_buf.stopflag != 0)
     normal_exit(0);
 
@@ -291,6 +291,7 @@ int readin(int prompt) {
 
   clov_c = par_buf.clov_c;
   u0 = par_buf.u0;
+  CKU0 = kappa * clov_c / (u0 * u0 * u0);
 
   alpha_smear[0] = par_buf.alpha_hyp0;
   alpha_smear[1] = par_buf.alpha_hyp1;

@@ -9,6 +9,7 @@ run="/usr/local/mpich2-1.4.1p1/bin/mpirun -np 2"
 # User just needs to specify NCOL, DIMF and fermion irrep
 if [ $# -lt 4 ]; then
   echo "Try these:"
+  echo "./run_tests su3_hmc 2 2 fundamental"
   echo "./run_tests su3_hmc 3 3 fundamental"
   echo "./run_tests su3_hmc_spectrum 3 3 fundamental"
   echo "./run_tests su3_hmc 3 6 symmetric2"

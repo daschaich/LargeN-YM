@@ -68,7 +68,7 @@ Real ahmat_mag_sq(anti_hermitmat *pt) {
 // -----------------------------------------------------------------
 // Gauge momentum contribution to the action
 double hmom_action() {
-  register int i,dir;
+  register int i, dir;
   register site *s;
   double sum = 0.0;
 
@@ -85,7 +85,7 @@ double hmom_action() {
 
 // -----------------------------------------------------------------
 double action() {
-  double ssplaq, g_act = 0, g_frep = 0, h_act = 0, f_act = 0, tot;
+  double ssplaq, g_act, g_frep = 0.0, h_act, f_act, tot;
 #ifndef IMP
   double stplaq, ssplaq_frep, stplaq_frep;
 #endif
@@ -121,8 +121,7 @@ double action() {
 
 
 // -----------------------------------------------------------------
-// Copy NCOLxNCOL and DIMFxDIMF gauge fields
-// as four-component arrays of su3_matrix_f and su3_matrix, respectively
+// Copy fundamental gauge field as an array of four su3_matrix_f
 void gauge_field_copy_f(field_offset src, field_offset dest) {
   register int i, dir, src2, dest2;
   register site *s;
@@ -135,22 +134,6 @@ void gauge_field_copy_f(field_offset src, field_offset dest) {
                     (su3_matrix_f *)F_PT(s, dest2));
       src2 += sizeof(su3_matrix_f);
       dest2 += sizeof(su3_matrix_f);
-    }
-  }
-}
-
-void gauge_field_copy(field_offset src, field_offset dest) {
-  register int i, dir,src2,dest2;
-  register site *s;
-
-  FORALLSITES(i, s) {
-    src2 = src;
-    dest2 = dest;
-    FORALLUPDIR(dir) {
-      su3mat_copy((su3_matrix *)F_PT(s, src2),
-                  (su3_matrix *)F_PT(s, dest2));
-      src2 += sizeof(su3_matrix);
-      dest2 += sizeof(su3_matrix);
     }
   }
 }

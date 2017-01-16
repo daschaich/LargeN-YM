@@ -26,7 +26,6 @@
 #define SAVE_PARTITION_SCIDAC 52
 #define SAVE_PARALLEL         53
 #define SAVE_MULTIDUMP        54
-#define SAVE_SERIAL_ARCHIVE   55
 
 // Helps global variable definitions
 #ifdef CONTROL
@@ -295,8 +294,6 @@ gauge_file *save_serial(char *filename);
 gauge_file *restore_parallel(char *filename);
 gauge_file *save_parallel(char *filename);
 gauge_file *save_checkpoint(char *filename);
-gauge_file *save_serial_archive(char *filename);
-gauge_file *save_parallel_archive(char *filename);
 int write_gauge_info_item( FILE *fpout, /* ascii file pointer */
            char *keyword,   /* keyword */
            char *fmt,       /* output format -

@@ -9,7 +9,6 @@ void mult_su3_an(su3_matrix *a, su3_matrix *b, su3_matrix *c) {
   register int j;
 #ifndef FAST
   register int i, k;
-  register complex x;
 
   for (i = 0; i < DIMF; i++) {
     for (j = 0; j < DIMF; j++) {

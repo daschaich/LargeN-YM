@@ -36,9 +36,6 @@ gauge_file *save_lattice(int flag, char *filename, char *stringLFN) {
     case SAVE_CHECKPOINT:
       gf = save_checkpoint(filename);
       break;
-    case SAVE_SERIAL_ARCHIVE:
-      gf = save_serial_archive(filename);
-      break;
     default:
       node0_printf("\nsave_lattice: ERROR: unknown type for saving lattice\n");
       terminate(1);
@@ -247,7 +244,7 @@ int ask_ending_lattice(FILE *fp, int prompt, int *flag, char *filename) {
   int status;
 
   if (prompt != 0)
-    printf("'forget' lattice at end,  'save_ascii', 'save_serial', 'save_parallel', 'save_checkpoint' or 'save_serial_archive'\n");
+    printf("'forget' lattice at end,  'save_ascii', 'save_serial', 'save_parallel' or 'save_checkpoint'\n");
 
   status = fscanf(fp, "%s", savebuf);
   if (status != 1) {
@@ -263,9 +260,6 @@ int ask_ending_lattice(FILE *fp, int prompt, int *flag, char *filename) {
     *flag = SAVE_PARALLEL;
   else if (strcmp("save_checkpoint", savebuf) == 0)
     *flag = SAVE_CHECKPOINT;
-  else if (strcmp("save_serial_archive", savebuf) == 0) {
-    *flag = SAVE_SERIAL_ARCHIVE;
-  }
   else if (strcmp("forget", savebuf) == 0) {
     *flag = FORGET;
     printf("\n");

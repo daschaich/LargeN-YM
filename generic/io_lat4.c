@@ -61,12 +61,6 @@
 #define MAX_LINE_LENGTH 1024
 #define MAX_TOKENS 512
 
-/* For NERSC archive format */
-typedef float INPUT_TYPE;
-typedef float OUTPUT_TYPE;
-
-/* Version: 1.0 */
-#define OLDHEADERSIZE 0
 #define TOL 0.0000001
 /* tolerance for floating point checks */
 /* For checksums we want a 32 bit unsigned int, for which      */
@@ -524,14 +518,9 @@ void r_serial(gauge_file *gf) {
 
   if (this_node == 0) {
     /* Compute offset for reading gauge configuration */
-
-    /* (1996 gauge configuration files had a 32-bit unused checksum
-       record before the gauge link data) */
     if (gh->magic_number == GAUGE_VERSION_NUMBER)
       gauge_check_size = sizeof(gf->check.sum29) +
         sizeof(gf->check.sum31);
-    else if (gh->magic_number == GAUGE_VERSION_NUMBER_1996)
-      gauge_check_size =  4;
     else
       gauge_check_size = 0;
 
@@ -690,171 +679,6 @@ void r_serial(gauge_file *gf) {
 
 } /* r_serial */
 
-/*----------------------------------------------------------------------*/
-
-void r_serial_arch(gauge_file *gf) {
-  /* gf  = gauge configuration file structure */
-
-  FILE *fp;
-  /* gauge_header *gh; */
-  char *filename;
-  /* int byterevflag; */
-
-  /* off_t gauge_check_size;*/   /* Size of gauge configuration checksum record */
-  int rcv_rank, rcv_coords;
-  int destnode;
-  int i,k;
-  int x,y,z,t;
-  gauge_check test_gc;
-  u_int32type *val;
-  int rank29,rank31;
-  fsu3_matrix_f tmpsu3[4];
-  char myname[] = "r_serial_arch";
-
-  int mu,a,b,p;
-  float *uin = NULL, *q;
-  int big_end = 0;
-  float U[4][18];
-  u_int32type chksum;
-
-  fp = gf->fp;
-  /* gh = gf->header; */
-  filename = gf->filename;
-  /* byterevflag = gf->byterevflag; */
-
-  if (this_node == 0) {
-    /* gauge_check_size = 0; */
-
-    if (gf->parallel)
-      printf("%s: Attempting serial read from parallel file \n",myname);
-
-    big_end = big_endian();
-    /* printf("big_end is %d\n", big_end); */
-    uin = (float *) malloc(nx*ny*nz*16*NCOL*sizeof(float));
-    if (uin == NULL) {
-      printf("%s: Node %d can't malloc uin buffer to read timeslice\n",
-          myname,this_node);
-      printf("recompile with smaller read buffers: uin\n");
-      fflush(stdout);
-      terminate(1);
-    }
-  }
-
-  /* Initialize checksums */
-  chksum = 0;
-  test_gc.sum29 = 0;
-  test_gc.sum31 = 0;
-  /* counts 32-bit words mod 29 and mod 31 in order of appearance
-     on file */
-  /* Here all nodes see the same sequence because we read serially */
-  rank29 = 0;
-  rank31 = 0;
-
-  g_sync();
-
-  /* Node 0 reads and deals out the values */
-  for (rcv_rank=0; rcv_rank<volume; rcv_rank++) {
-    rcv_coords = rcv_rank;
-
-    x = rcv_coords % nx;   rcv_coords /= nx;
-    y = rcv_coords % ny;   rcv_coords /= ny;
-    z = rcv_coords % nz;   rcv_coords /= nz;
-    t = rcv_coords % nt;
-
-    /* The node that gets the next set of gauge links */
-    destnode=node_number(x,y,z,t);
-
-    if (this_node == 0) {
-      if ((int)fread(uin,16*NCOL*sizeof(float),1,fp) != 1) {
-        printf("%s: node %d gauge configuration read error %d file %s\n",
-            myname,this_node,errno,filename);
-        fflush(stdout); terminate(1);
-      }
-
-      if (!big_end) byterevn((int32type *)uin,16*NCOL);
-      q = uin;
-      for (mu=0;mu<4;mu++) {
-        for (p=0;p<4*NCOL;p++) {
-          chksum += *(u_int32type *) q;
-          U[mu][p] = (float) *(q++);
-        }
-        complete_U(U[mu]);
-
-        for (a=0; a<NCOL; a++) for (b=0; b<NCOL; b++) {
-          tmpsu3[mu].e[a][b].real = U[mu][2*(NCOL*a+b)];
-          /*     printf("real: p=%d, mu=%d, e=%f\n", p,mu,U[mu][2*(NCOL*a+b)]); */
-          tmpsu3[mu].e[a][b].imag = U[mu][2*(NCOL*a+b)+1];
-          /*     printf("imag: p=%d, mu=%d, e=%f\n", p,mu,U[mu][2*(NCOL*a+b)+1]); */
-        }
-      }
-
-      if (destnode == 0) {
-        /* just copy links */
-        i = node_index(x,y,z,t);
-        /*   printf("lattice node_index = %d, mu = %d\n", i, mu); */
-        /* Copy from tmpsu3 to site structure, converting to double */
-        f2d_4mat(tmpsu3,&lattice[i].linkf[0]);
-      } else {
-        /* send to correct node */
-        send_field((char *)tmpsu3, 4*sizeof(fsu3_matrix_f),destnode);
-      }
-    }
-    /* The node which contains this site reads message */
-    else {
-      /* for all nodes other than node 0 */
-      if (this_node==destnode) {
-        i = node_index(x,y,z,t);
-        get_field((char *)tmpsu3,4*sizeof(fsu3_matrix_f), 0);
-        /* Store in site structure, converting to generic precision */
-        f2d_4mat(tmpsu3,&lattice[i].linkf[0]);
-      }
-    }
-
-    /* Any needed byte reversing was already done. Compute MILC
-       checksums. At this point tmpsu3 on destnode contains the link
-       matrices we just read */
-
-    if (this_node==destnode) {
-      /* Accumulate checksums */
-      for (k = 0, val = (u_int32type *)tmpsu3;
-          k < 4*(int)sizeof(fsu3_matrix_f)/(int)sizeof(int32type); k++, val++) {
-        test_gc.sum29 ^= (*val)<<rank29 | (*val)>>(32-rank29);
-        test_gc.sum31 ^= (*val)<<rank31 | (*val)>>(32-rank31);
-        rank29++; if (rank29 >= 29)rank29 = 0;
-        rank31++; if (rank31 >= 31)rank31 = 0;
-      }
-    }
-    else {
-      rank29 += 4*sizeof(fsu3_matrix_f)/sizeof(int32type);
-      rank31 += 4*sizeof(fsu3_matrix_f)/sizeof(int32type);
-      rank29 %= 29;
-      rank31 %= 31;
-    }
-  }
-
-  /* Combine node checksum contributions with global exclusive or */
-  g_xor32(&test_gc.sum29);
-  g_xor32(&test_gc.sum31);
-
-  if (this_node == 0) {
-    /* Read and verify checksum */
-
-    printf("Restored archive gauge configuration serially from file %s\n",
-        filename);
-    if (chksum != gf->check.sum31) {
-      printf("Archive style checksum violation: computed %x, read %x\n",
-          chksum, gf->check.sum31);
-    }
-    else
-      printf("Archive style checksum = %x OK\n", chksum);
-    fflush(stdout);
-    free(uin);
-
-    /* Store MILC style checksums */
-    gf->check.sum29 = test_gc.sum29;
-    gf->check.sum31 = test_gc.sum31;
-  }
-}
 
 /*---------------------------------------------------------------------------*/
 /* Write parallel gauge configuration in coordinate natural order */
@@ -1221,14 +1045,9 @@ void r_parallel(gauge_file *gf) {
   }
 
   gauge_node_size = sites_on_node * 4 * sizeof(fsu3_matrix_f);
-
-  /* (1996 gauge configuration files had a 32-bit unused checksum
-     record before the gauge link data) */
   if (gh->magic_number == GAUGE_VERSION_NUMBER)
     gauge_check_size = sizeof(gf->check.sum29) +
       sizeof(gf->check.sum31);
-  else if (gh->magic_number == GAUGE_VERSION_NUMBER_1996)
-    gauge_check_size =  4;
   else
     gauge_check_size = 0;
 
@@ -1641,21 +1460,13 @@ gauge_file *save_ascii(char *filename) {
 gauge_file *restore_serial(char *filename) {
   gauge_file *gf;
   gf = r_serial_i(filename);
-  if (gf->header->magic_number == GAUGE_VERSION_NUMBER_ARCHIVE) {
-    r_serial_arch(gf);
-    r_serial_f(gf);
-  }
-  else if (gf->header->magic_number == LIME_MAGIC_NO) {
+  if (gf->header->magic_number == LIME_MAGIC_NO) {
     r_serial_f(gf);
     /* Close this reader and reread to get the header */
     free(gf->header);
     free(gf);
-#ifdef HAVE_QIO
-    gf = restore_serial_scidac(filename);
-#else
     node0_printf("Looks like a SciDAC file.  Recompile with QIO.\n");
     terminate(1);
-#endif
   }
   else {
     r_serial(gf);
@@ -1734,157 +1545,5 @@ gauge_file *save_checkpoint(char *filename) {
   w_checkpoint(gf);
   w_parallel_f(gf);
 
-  return gf;
-}
-
-/*---------------------------------------------------------------------------*/
-/* Single node writes in archive file format */
-gauge_file *save_serial_archive(char *filename) {
-  int currentnode,newnode;
-  int i,j,x,y,z,dir;
-  su3_matrix_f lbuf[4];
-  gauge_file *gf;
-  gauge_header *gh;
-
-  FILE *outfile = NULL;
-  site *s;
-  u_int32type chksum;
-  char sums[30];
-  OUTPUT_TYPE *uout = NULL;
-  int big_end_p;
-  double ssplaq, stplaq, avgtrace, avgplaq;
-  double_complex linktr;
-  int mu,a,b,vol3=0,tslice;
-
-  /* Check which end is up */
-  big_end_p = big_endian();
-
-  /* Set up gauge file and gauge header structures and load header values */
-  gf = setup_output_gauge_file();
-  gh = gf->header;
-
-  // Compute plaquette, trace and checksum
-  plaquette(&ssplaq, &stplaq);
-  avgplaq = (ssplaq + stplaq) / 6.0;
-  linktrsum(&linktr);
-  avgtrace = linktr.real / (Real)NCOL;
-  chksum = nersc_cksum();
-
-  // Node 0 does all the writing
-  if (this_node == 0) {
-    printf("trace = %f\n", avgtrace);
-    printf("chksum_x = %x\n", chksum);
-    printf("chksum_u = %12u\n", chksum);
-    printf("plaquette = %f\n", avgplaq);
-
-    printf("Writing archive format lattice to %s\n", filename);
-    // Create output file
-    outfile = fopen(filename, "w");
-    if (outfile == NULL) {
-      printf("error opening output file: %s\n", filename);
-      terminate(1);
-    }
-
-    fprintf(outfile,"BEGIN_HEADER\n");
-    fprintf(outfile,"DATATYPE = 4D_SU3_GAUGE\n");
-    fprintf(outfile,"DIMENSION_1 = %d\n",nx);
-    fprintf(outfile,"DIMENSION_2 = %d\n",ny);
-    fprintf(outfile,"DIMENSION_3 = %d\n",nz);
-    fprintf(outfile,"DIMENSION_4 = %d\n",nt);
-    fprintf(outfile,"CHECKSUM = %x\n",chksum);
-    fprintf(outfile,"LINK_TRACE = %.10f\n",avgtrace);
-    fprintf(outfile,"PLAQUETTE = %.10f\n",avgplaq);
-    fprintf(outfile,"ENSEMBLE_ID = %s\n", ensemble_id);
-    fprintf(outfile,"SEQUENCE_NUMBER = %d\n",sequence_number);
-    /* write Milc info section */
-    fprintf(outfile,"MILC_INFO = -------BEGIN-------\n");
-    write_gauge_info_item(outfile,"time_stamp","\"%s\"",gh->time_stamp, 0, 0);
-    sprintf(sums,"%x %x",gf->check.sum29,gf->check.sum31);
-    write_gauge_info_item(outfile,"checksums","\"%s\"",sums, 0, 0);
-    write_gauge_info_item(outfile,"nx","%d",(char *)&nx, 0, 0);
-    write_gauge_info_item(outfile,"ny","%d",(char *)&ny, 0, 0);
-    write_gauge_info_item(outfile,"nz","%d",(char *)&nz, 0, 0);
-    write_gauge_info_item(outfile,"nt","%d",(char *)&nt, 0, 0);
-    write_appl_gauge_info(outfile);
-    fprintf(outfile,"MILC_INFO = --------END--------\n");
-    fprintf(outfile,"END_HEADER\n");
-
-    vol3 = nx*ny*nz;
-    uout = (OUTPUT_TYPE *) malloc(16*NCOL*vol3*sizeof(OUTPUT_TYPE));
-    if (uout == NULL) {
-      printf("can\'t malloc uout timeslice\n"); terminate(1);
-    }
-  }
-
-  /* Write gauge field */
-  g_sync();
-  currentnode = 0;
-
-  for (tslice = 0; tslice < nt; ++tslice) {
-    j = 0;
-    for (z=0; z<nz; ++z) for (y=0; y<ny; ++y) for (x=0; x<nx; ++x) {
-      newnode = node_number(x, y, z, tslice);
-      if (newnode != currentnode) { /* switch to another node */
-        /* tell newnode it's OK to send */
-        if (this_node == 0 && newnode != 0)
-          send_field((char *)lbuf, 4, newnode);
-        if (this_node == newnode && newnode != 0)
-          get_field((char *)lbuf, 4, 0);
-        currentnode = newnode;
-      }
-
-      if (this_node == 0) {
-        if (currentnode == 0) {
-          s = &lattice[node_index(x,y,z,tslice)];
-          for (mu=0; mu<4; ++mu) {
-            for (a=0; a<2; ++a) {
-              for (b=0; b<NCOL; ++b) {
-                uout[2*(b+NCOL*a)+4*NCOL*mu+16*NCOL*j]
-                  = (OUTPUT_TYPE) s->linkf[mu].e[a][b].real;
-                uout[1+2*(b+NCOL*a)+4*NCOL*mu+16*NCOL*j]
-                  = (OUTPUT_TYPE) s->linkf[mu].e[a][b].imag;
-              }
-            }
-          }
-        }
-        else{
-          get_field((char *)lbuf,4*sizeof(su3_matrix_f),currentnode);
-          for (mu=0; mu<4; ++mu) {
-            for (a=0; a<2; ++a) {
-              for (b=0; b<NCOL; ++b) {
-                uout[2*(b+NCOL*a)+4*NCOL*mu+16*NCOL*j]
-                  = (OUTPUT_TYPE) lbuf[mu].e[a][b].real;
-                uout[1+2*(b+NCOL*a)+4*NCOL*mu+16*NCOL*j]
-                  = (OUTPUT_TYPE) lbuf[mu].e[a][b].imag;
-              }
-            }
-          }
-        }
-        ++j;
-      }
-      else {  /* for nodes other than 0 */
-        if (this_node == currentnode) {
-          i = node_index(x, y, z, tslice);
-          for (dir=XUP;dir<=TUP;dir++)lbuf[dir]=lattice[i].linkf[dir];
-          send_field((char *)lbuf, 4 * sizeof(su3_matrix_f), 0);
-        }
-      }
-    }
-
-    if (this_node == 0) {
-      if (!big_end_p) byterevn((int32type *)uout,16*NCOL*vol3);
-      if (fwrite(uout,16*NCOL*vol3*sizeof(OUTPUT_TYPE),1,outfile) != 1)
-        printf("fwrite bombed...\n");
-      fflush(outfile);
-    }
-  }
-
-  if (this_node == 0) {
-    fclose(outfile);
-    printf("Wrote archive gauge file %s\n",filename);
-    free(uout);
-  }
-
-  g_sync();
   return gf;
 }

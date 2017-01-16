@@ -12,7 +12,7 @@ typedef struct {
    sizes and counts */
 #ifndef HAVE_QIO
 #define LIME_MAGIC_NO                0x456789ab /* decimal 1164413355
-						   see lime_defs.h */
+               see lime_defs.h */
 #endif
 
 /* FNAL (all files) */
@@ -22,11 +22,7 @@ typedef struct {
 
 /* Gauge configuration file types */
 
-#define GAUGE_VERSION_NUMBER_V1      0xe7da  /* decimal 59354 Versions 1-4 */
 #define GAUGE_VERSION_NUMBER         0x4e87  /* decimal 20103 Versions 5-7 */
-#define GAUGE_VERSION_NUMBER_1996    0xd12a  /* decimal 53546 */
-#define GAUGE_VERSION_NUMBER_FNAL    IO_UNI_MAGIC
-#define GAUGE_VERSION_NUMBER_ARCHIVE 0x42454749  /* 1111836489 decimal */
 
 /* Wilson propagator file types */
 
@@ -42,16 +38,10 @@ typedef struct {
 
 /* Tables */
 
-#define FILE_TYPE_GAUGE_V1       0
-#define FILE_TYPE_GAUGE_V5       1
-#define FILE_TYPE_GAUGE_1996     2
-#define FILE_TYPE_GAUGE_FNAL     3
-#define FILE_TYPE_GAUGE_ARCHIVE  4
 #define FILE_TYPE_GAUGE_SCIDAC   5
 #define N_GAUGE_TYPES            6
 
 #define FILE_TYPE_W_PROP       0
-#define FILE_TYPE_W_PROP_1996  1
 #define FILE_TYPE_W_FMPROP     2
 #define FILE_TYPE_W_QIOPROP    3
 #define N_WPROP_TYPES          4

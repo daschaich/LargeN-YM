@@ -9,7 +9,6 @@ void mult_su3_an_f(su3_matrix_f *a, su3_matrix_f *b, su3_matrix_f *c) {
   register int j;
 #ifndef FAST
   register int i, k;
-  register complex x;
 
   for (i = 0; i < NCOL; i++) {
     for (j = 0; j < NCOL; j++) {

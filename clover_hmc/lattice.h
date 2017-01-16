@@ -51,8 +51,6 @@ typedef struct {
   wilson_vector mp;       // CG temporary vector
   wilson_vector r;        // CG residual vector
   wilson_vector tmp;      /* another temporary CG vector */
-  wilson_vector invp;     /* used in paca_[tx] */
-  wilson_vector inva;     /* used in paca_[tx] */
 
   /* wilson half vector (temporary used in dslash_w_site) */
   half_wilson_vector htmp[8];
@@ -62,9 +60,7 @@ typedef struct {
 
 #ifdef SPECTRUM
   wilson_matrix quark_propagator;
-      /* For four source spins, three source colors */
-  wilson_matrix rotated_propagator;
-      /* For clover-rotated operators */
+  wilson_matrix rotated_propagator;   // For clover-rotated operators
 #endif
 
   // Temporary vectors and matrices
@@ -97,10 +93,10 @@ EXTERN float traj_length;
 EXTERN int num_masses;      // Maximum number of masses, <= MAX_MASSES
 EXTERN Real shift;
 EXTERN int nsteps[MAX_MASSES + 1];
-EXTERN Real max_gf, max_ff[2];
+EXTERN Real gnorm, fnorm[2], max_gf, max_ff[2];
 
 // Global action and evolution variables
-EXTERN Real rsqmin, rsqprop, beta, beta_frep, kappa, clov_c, u0;
+EXTERN Real rsqmin, rsqprop, beta, beta_frep, kappa, clov_c, u0, CKU0;
 EXTERN Real epsilon;
 EXTERN char startfile[MAXFILENAME], savefile[MAXFILENAME];
 EXTERN double g_ssplaq, g_stplaq;
@@ -111,8 +107,8 @@ EXTERN int startflag;  /* beginning lattice: CONTINUE, RELOAD, FRESH */
 EXTERN int fixflag;  /* gauge fix: COULOMB_GAUGE_FIX, NO_GAUGE_FIX */
 EXTERN int saveflag; /* do with lattice: 1=save; */
 EXTERN int total_iters;
-/* boundary-flip switches, made consistent for higher-rep code */
-EXTERN int current_boundary, current_boundary_x;
+/* boundary-flip switch, made consistent for higher-rep code */
+EXTERN int current_boundary;
 
 /* Some of these global variables are node dependent */
 /* They are set in "make_lattice()"                  */

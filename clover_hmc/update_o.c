@@ -99,8 +99,7 @@ int update_step(Real *old_cg_time, Real *cg_time, Real *next_cg_time,
                 double *fnorm, double *gnorm)  {
 
   int iters = 0, outer, inner, level;
-  Real CKU0 = kappa * clov_c / (u0 * u0 * u0), final_rsq;
-  Real f_eps0, f_eps1, g_eps, mshift, tr;
+  Real final_rsq, f_eps0, f_eps1, g_eps, mshift, tr;
 
   f_eps0 = traj_length / (Real)nsteps[0];
   f_eps1 = f_eps0 / (2.0 * (Real)nsteps[1]);
@@ -262,14 +261,13 @@ int update_step(Real *old_cg_time, Real *cg_time, Real *next_cg_time,
 // -----------------------------------------------------------------
 int update() {
   int iters = 0;
-  Real final_rsq, CKU0 = kappa * clov_c / (u0 * u0 * u0);
-  Real cg_time[2], old_cg_time[2], next_cg_time[2];
+  Real final_rsq, cg_time[2], old_cg_time[2], next_cg_time[2];
   double starttrlogA = 0.0;
 #ifdef HMC_ALGORITHM
-  double startaction = 0, endaction, endtrlogA, change;
   Real xrandom;
+  double startaction, endaction, endtrlogA, change;
 #endif
-  double gnorm = 0.0, fnorm[2];
+  gnorm = 0.0;
   fnorm[0] = 0.0;
   fnorm[1] = 0.0;
   max_gf = 0.0;

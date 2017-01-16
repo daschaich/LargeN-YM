@@ -3,20 +3,14 @@
 #ifndef _DEFINES_H
 #define _DEFINES_H
 
-#define SITERAND            // Use site-based random number generators
-#define GAUGE_FIX_TOL 1e-7  /* For gauge fixing */
+#define SITERAND              // Use site-based random number generators
+#define GAUGE_FIX_TOL 1.0e-7  // For gauge fixing
 
 #define TIMING
 //#define CG_DEBUG
 
 /* number of CG restarts during update                              */
 #define CONGRAD_RESTART 10
-
-// Flags for pcac_x                                                 */
-// Measure everything also with PBC+APBC                            */
-#define D_TOO
-// Measure <V1(0)V1(x)>                                             */
-#define V_TOO
 // -----------------------------------------------------------------
 
 
