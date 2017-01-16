@@ -13,13 +13,6 @@
 // This routine begins at "integral" time
 // with H and U evaluated at same time
 #include "cl_dyn_includes.h"
-
-// Local function prototypes
-void predict_next_psi(Real *oldtime, Real *newtime,
-                      Real *nexttime, int level);
-int update_step(Real *oldtime, Real *newtime, Real *nexttime,
-                double *fnorm, double *gnorm);
-double returntrlogA;
 // -----------------------------------------------------------------
 
 
@@ -80,10 +73,10 @@ void predict_next_psi(Real *oldtime, Real *newtime, Real *nexttime,
       s->old_psi[level] = s->psi[level];
   }
   else  {
-    FOREVENSITES(i,s) {
+    FOREVENSITES(i, s) {
       sub_wilson_vector(&(s->psi[level]), &(s->old_psi[level]), &tvec);
       s->old_psi[level] = s->psi[level];
-      scalar_mult_add_wvec(&(s->psi[level]), &tvec,x, &(s->psi[level]));
+      scalar_mult_add_wvec(&(s->psi[level]), &tvec, x, &(s->psi[level]));
     }
   }
   oldtime[level] = newtime[level];
@@ -95,9 +88,7 @@ void predict_next_psi(Real *oldtime, Real *newtime, Real *nexttime,
 
 // -----------------------------------------------------------------
 // Three-level Omelyan integrator for Hasenbusch-preconditioned code
-int update_step(Real *old_cg_time, Real *cg_time, Real *next_cg_time,
-                double *fnorm, double *gnorm)  {
-
+int update_step(Real *old_cg_time, Real *cg_time, Real *next_cg_time) {
   int iters = 0, outer, inner, level;
   Real final_rsq, f_eps0, f_eps1, g_eps, mshift, tr;
 
@@ -126,7 +117,7 @@ int update_step(Real *old_cg_time, Real *cg_time, Real *next_cg_time,
   for (outer = 1; outer <= nsteps[0]; outer++) {
     for (inner = 1; inner <= nsteps[1]; inner++) {
       tr = update_gauge_step(g_eps);
-      *gnorm += tr;
+      gnorm += tr;
       if (tr > max_gf)
         max_gf = tr;
 
@@ -145,7 +136,7 @@ int update_step(Real *old_cg_time, Real *cg_time, Real *next_cg_time,
         max_ff[1] = tr;
 
       tr = update_gauge_step(g_eps);
-      *gnorm += tr;
+      gnorm += tr;
       if (tr > max_gf)
         max_gf = tr;
 
@@ -168,7 +159,7 @@ int update_step(Real *old_cg_time, Real *cg_time, Real *next_cg_time,
 
     // (1 - 2lambda) outer force update step
     next_cg_time[level] = cg_time[level] + f_eps1;
-    predict_next_psi(old_cg_time, cg_time, next_cg_time,level);
+    predict_next_psi(old_cg_time, cg_time, next_cg_time, level);
     free_clov();
     make_clov(CKU0);
     returntrlogA = make_clovinv(ODD);
@@ -190,7 +181,7 @@ int update_step(Real *old_cg_time, Real *cg_time, Real *next_cg_time,
     // Initial lambda update step done above
     for (inner = 1; inner <= nsteps[1]; inner++) {
       tr = update_gauge_step(g_eps);
-      *gnorm += tr;
+      gnorm += tr;
       if (tr > max_gf)
         max_gf = tr;
 
@@ -208,7 +199,7 @@ int update_step(Real *old_cg_time, Real *cg_time, Real *next_cg_time,
         max_ff[1] = tr;
 
       tr = update_gauge_step(g_eps);
-      *gnorm += tr;
+      gnorm += tr;
       if (tr > max_gf)
         max_gf = tr;
 
@@ -219,8 +210,8 @@ int update_step(Real *old_cg_time, Real *cg_time, Real *next_cg_time,
         free_clov();
         make_clov(CKU0);
         returntrlogA = make_clovinv(ODD);
-        iters += congrad_cl_m(niter,rsqmin,&final_rsq,F_OFFSET(chi[level]),
-            F_OFFSET(psi[level]),mshift);
+        iters += congrad_cl_m(niter, rsqmin, &final_rsq, F_OFFSET(chi[level]),
+                              F_OFFSET(psi[level]), mshift);
         tr = fermion_force(f_eps1 * TWO_LAMBDA, 0.0);
         fnorm[1] += tr;
         if (tr > max_ff[1])
@@ -239,7 +230,7 @@ int update_step(Real *old_cg_time, Real *cg_time, Real *next_cg_time,
                           F_OFFSET(psi[level]), mshift);
     if (num_masses == 2) {
       next_cg_time[0] = cg_time[0] + f_eps0;
-      predict_next_psi(old_cg_time,cg_time,next_cg_time,0);
+      predict_next_psi(old_cg_time, cg_time, next_cg_time, 0);
       iters += congrad_cl_m(niter, rsqmin, &final_rsq, F_OFFSET(chi[0]),
                             F_OFFSET(psi[0]), 0.0);
     }
@@ -328,7 +319,7 @@ int update() {
 #endif
 
   // Do microcanonical updating
-  iters += update_step(old_cg_time, cg_time, next_cg_time, fnorm, &gnorm);
+  iters += update_step(old_cg_time, cg_time, next_cg_time);
 
 #ifdef HMC_ALGORITHM    // Find action, then accept or reject
   // update_step() provides returntrlogA for us to reuse
@@ -343,7 +334,7 @@ int update() {
   }
 
   endaction = action();
-  endaction -= (double)2.0 * endtrlogA;
+  endaction -= 2.0 * endtrlogA;
 #ifdef CG_DEBUG
   node0_printf("endaction = %g\n", endaction);
 #endif

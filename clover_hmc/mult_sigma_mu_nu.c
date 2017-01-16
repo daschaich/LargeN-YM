@@ -20,32 +20,32 @@ and sigma(nu,mu) = -sigma(mu,nu)
 void mult_sigma_mu_nu(wilson_vector *src, wilson_vector *dest,
                       int mu, int nu) {
 
-  register int c2;
+  register int i;
   switch(mu) {
     case XUP:
       switch(nu) {
         case YUP:
-          for(c2=0;c2<DIMF;c2++) {
-            CMUL_MINUS_I(src->d[0].c[c2], dest->d[0].c[c2]);
-            CMUL_I(src->d[1].c[c2], dest->d[1].c[c2]);
-            CMUL_MINUS_I(src->d[2].c[c2], dest->d[2].c[c2]);
-            CMUL_I(src->d[3].c[c2], dest->d[3].c[c2]);
+          for (i = 0; i < DIMF; i++) {
+            CMUL_MINUS_I(src->d[0].c[i], dest->d[0].c[i]);
+            CMUL_I(src->d[1].c[i], dest->d[1].c[i]);
+            CMUL_MINUS_I(src->d[2].c[i], dest->d[2].c[i]);
+            CMUL_I(src->d[3].c[i], dest->d[3].c[i]);
           }
           break;
         case ZUP:
-          for(c2=0;c2<DIMF;c2++) {
-            CNEGATE(src->d[1].c[c2], dest->d[0].c[c2]);
-            CCOPY(src->d[0].c[c2], dest->d[1].c[c2]);
-            CNEGATE(src->d[3].c[c2], dest->d[2].c[c2]);
-            CCOPY(src->d[2].c[c2], dest->d[3].c[c2]);
+          for (i = 0; i < DIMF; i++) {
+            CNEGATE(src->d[1].c[i], dest->d[0].c[i]);
+            CCOPY(src->d[0].c[i], dest->d[1].c[i]);
+            CNEGATE(src->d[3].c[i], dest->d[2].c[i]);
+            CCOPY(src->d[2].c[i], dest->d[3].c[i]);
           }
           break;
         case TUP:
-          for(c2=0;c2<DIMF;c2++) {
-            CMUL_I(src->d[1].c[c2], dest->d[0].c[c2]);
-            CMUL_I(src->d[0].c[c2], dest->d[1].c[c2]);
-            CMUL_MINUS_I(src->d[3].c[c2], dest->d[2].c[c2]);
-            CMUL_MINUS_I(src->d[2].c[c2], dest->d[3].c[c2]);
+          for (i = 0; i < DIMF; i++) {
+            CMUL_I(src->d[1].c[i], dest->d[0].c[i]);
+            CMUL_I(src->d[0].c[i], dest->d[1].c[i]);
+            CMUL_MINUS_I(src->d[3].c[i], dest->d[2].c[i]);
+            CMUL_MINUS_I(src->d[2].c[i], dest->d[3].c[i]);
           }
           break;
         default:
@@ -55,27 +55,27 @@ void mult_sigma_mu_nu(wilson_vector *src, wilson_vector *dest,
     case YUP:
       switch(nu) {
         case XUP:
-          for(c2=0;c2<DIMF;c2++) {
-            CMUL_I(src->d[0].c[c2], dest->d[0].c[c2]);
-            CMUL_MINUS_I(src->d[1].c[c2], dest->d[1].c[c2]);
-            CMUL_I(src->d[2].c[c2], dest->d[2].c[c2]);
-            CMUL_MINUS_I(src->d[3].c[c2], dest->d[3].c[c2]);
+          for (i = 0; i < DIMF; i++) {
+            CMUL_I(src->d[0].c[i], dest->d[0].c[i]);
+            CMUL_MINUS_I(src->d[1].c[i], dest->d[1].c[i]);
+            CMUL_I(src->d[2].c[i], dest->d[2].c[i]);
+            CMUL_MINUS_I(src->d[3].c[i], dest->d[3].c[i]);
           }
           break;
         case ZUP:
-          for(c2=0;c2<DIMF;c2++) {
-            CMUL_MINUS_I(src->d[1].c[c2], dest->d[0].c[c2]);
-            CMUL_MINUS_I(src->d[0].c[c2], dest->d[1].c[c2]);
-            CMUL_MINUS_I(src->d[3].c[c2], dest->d[2].c[c2]);
-            CMUL_MINUS_I(src->d[2].c[c2], dest->d[3].c[c2]);
+          for (i = 0; i < DIMF; i++) {
+            CMUL_MINUS_I(src->d[1].c[i], dest->d[0].c[i]);
+            CMUL_MINUS_I(src->d[0].c[i], dest->d[1].c[i]);
+            CMUL_MINUS_I(src->d[3].c[i], dest->d[2].c[i]);
+            CMUL_MINUS_I(src->d[2].c[i], dest->d[3].c[i]);
           }
           break;
         case TUP:
-          for(c2=0;c2<DIMF;c2++) {
-            CNEGATE(src->d[1].c[c2], dest->d[0].c[c2]);
-            CCOPY(src->d[0].c[c2], dest->d[1].c[c2]);
-            CCOPY(src->d[3].c[c2], dest->d[2].c[c2]);
-            CNEGATE(src->d[2].c[c2], dest->d[3].c[c2]);
+          for (i = 0; i < DIMF; i++) {
+            CNEGATE(src->d[1].c[i], dest->d[0].c[i]);
+            CCOPY(src->d[0].c[i], dest->d[1].c[i]);
+            CCOPY(src->d[3].c[i], dest->d[2].c[i]);
+            CNEGATE(src->d[2].c[i], dest->d[3].c[i]);
           }
           break;
         default:
@@ -85,27 +85,27 @@ void mult_sigma_mu_nu(wilson_vector *src, wilson_vector *dest,
     case ZUP:
       switch(nu) {
         case XUP:
-          for(c2=0;c2<DIMF;c2++) {
-            CCOPY(src->d[1].c[c2], dest->d[0].c[c2]);
-            CNEGATE(src->d[0].c[c2], dest->d[1].c[c2]);
-            CCOPY(src->d[3].c[c2], dest->d[2].c[c2]);
-            CNEGATE(src->d[2].c[c2], dest->d[3].c[c2]);
+          for (i = 0; i < DIMF; i++) {
+            CCOPY(src->d[1].c[i], dest->d[0].c[i]);
+            CNEGATE(src->d[0].c[i], dest->d[1].c[i]);
+            CCOPY(src->d[3].c[i], dest->d[2].c[i]);
+            CNEGATE(src->d[2].c[i], dest->d[3].c[i]);
           }
           break;
         case YUP:
-          for(c2=0;c2<DIMF;c2++) {
-            CMUL_I(src->d[1].c[c2], dest->d[0].c[c2]);
-            CMUL_I(src->d[0].c[c2], dest->d[1].c[c2]);
-            CMUL_I(src->d[3].c[c2], dest->d[2].c[c2]);
-            CMUL_I(src->d[2].c[c2], dest->d[3].c[c2]);
+          for (i = 0; i < DIMF; i++) {
+            CMUL_I(src->d[1].c[i], dest->d[0].c[i]);
+            CMUL_I(src->d[0].c[i], dest->d[1].c[i]);
+            CMUL_I(src->d[3].c[i], dest->d[2].c[i]);
+            CMUL_I(src->d[2].c[i], dest->d[3].c[i]);
           }
           break;
         case TUP:
-          for(c2=0;c2<DIMF;c2++) {
-            CMUL_I(src->d[0].c[c2], dest->d[0].c[c2]);
-            CMUL_MINUS_I(src->d[1].c[c2], dest->d[1].c[c2]);
-            CMUL_MINUS_I(src->d[2].c[c2], dest->d[2].c[c2]);
-            CMUL_I(src->d[3].c[c2], dest->d[3].c[c2]);
+          for (i = 0; i < DIMF; i++) {
+            CMUL_I(src->d[0].c[i], dest->d[0].c[i]);
+            CMUL_MINUS_I(src->d[1].c[i], dest->d[1].c[i]);
+            CMUL_MINUS_I(src->d[2].c[i], dest->d[2].c[i]);
+            CMUL_I(src->d[3].c[i], dest->d[3].c[i]);
           }
           break;
         default:
@@ -115,27 +115,27 @@ void mult_sigma_mu_nu(wilson_vector *src, wilson_vector *dest,
     case TUP:
       switch(nu) {
         case XUP:
-          for(c2=0;c2<DIMF;c2++) {
-            CMUL_MINUS_I(src->d[1].c[c2], dest->d[0].c[c2]);
-            CMUL_MINUS_I(src->d[0].c[c2], dest->d[1].c[c2]);
-            CMUL_I(src->d[3].c[c2], dest->d[2].c[c2]);
-            CMUL_I(src->d[2].c[c2], dest->d[3].c[c2]);
+          for (i = 0; i < DIMF; i++) {
+            CMUL_MINUS_I(src->d[1].c[i], dest->d[0].c[i]);
+            CMUL_MINUS_I(src->d[0].c[i], dest->d[1].c[i]);
+            CMUL_I(src->d[3].c[i], dest->d[2].c[i]);
+            CMUL_I(src->d[2].c[i], dest->d[3].c[i]);
           }
           break;
         case YUP:
-          for(c2=0;c2<DIMF;c2++) {
-            CCOPY(src->d[1].c[c2], dest->d[0].c[c2]);
-            CNEGATE(src->d[0].c[c2], dest->d[1].c[c2]);
-            CNEGATE(src->d[3].c[c2], dest->d[2].c[c2]);
-            CCOPY(src->d[2].c[c2], dest->d[3].c[c2]);
+          for (i = 0; i < DIMF; i++) {
+            CCOPY(src->d[1].c[i], dest->d[0].c[i]);
+            CNEGATE(src->d[0].c[i], dest->d[1].c[i]);
+            CNEGATE(src->d[3].c[i], dest->d[2].c[i]);
+            CCOPY(src->d[2].c[i], dest->d[3].c[i]);
           }
           break;
         case ZUP:
-          for(c2=0;c2<DIMF;c2++) {
-            CMUL_MINUS_I(src->d[0].c[c2], dest->d[0].c[c2]);
-            CMUL_I(src->d[1].c[c2], dest->d[1].c[c2]);
-            CMUL_I(src->d[2].c[c2], dest->d[2].c[c2]);
-            CMUL_MINUS_I(src->d[3].c[c2], dest->d[3].c[c2]);
+          for (i = 0; i < DIMF; i++) {
+            CMUL_MINUS_I(src->d[0].c[i], dest->d[0].c[i]);
+            CMUL_I(src->d[1].c[i], dest->d[1].c[i]);
+            CMUL_I(src->d[2].c[i], dest->d[2].c[i]);
+            CMUL_MINUS_I(src->d[3].c[i], dest->d[3].c[i]);
           }
           break;
         default:

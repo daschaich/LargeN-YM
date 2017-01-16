@@ -41,7 +41,7 @@ void free_this_clov(clover *my_clov);
 /* make_clov.c routines for single clover term */
 void make_clov(Real Clov_c);
 double make_clovinv(int parity);
-void tr_sigma_ldu_mu_nu_site( field_offset mat, int mu, int nu );
+void tr_sigma_ldu_mu_nu_site(int mu, int nu );
 void free_clov();
 void mult_ldu_site(
   field_offset src,   /* type wilson_vector RECAST AS wilson_block_vector */

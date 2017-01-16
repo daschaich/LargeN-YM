@@ -1,5 +1,7 @@
 // -----------------------------------------------------------------
 // Add irrep matrices -- unlike CSUM, output is always last
+// c <-- c + b
+// c <-- a + b
 #include "../include/config.h"
 #include "../include/complex.h"
 #include "../include/su3.h"

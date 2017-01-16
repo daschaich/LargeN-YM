@@ -4,7 +4,7 @@
 
 void gauge_action(double *result) {
   /* double sum_tr; */
-  register int i,k;
+  register int i, k;
   register site *s;
   int rep, dirs[10], sign[10], length, ln, iloop;
   double g_action = 0.0, action, act2, total_action;
@@ -13,7 +13,7 @@ void gauge_action(double *result) {
   for (iloop = 0; iloop < nloop; iloop++) {
     length = loop_length[iloop];
     /* loop over rotations and reflections */
-    for (ln = 0;ln<loop_num[iloop];ln++) {
+    for (ln = 0; ln < loop_num[iloop]; ln++) {
       /* set up dirs and sign */
       for (k = 0;k<length;k++) {
         if (loop_table[iloop][ln][k] < 4) {
@@ -26,11 +26,10 @@ void gauge_action(double *result) {
         }
       }
 
-      path(dirs,sign,length);
+      path(dirs, sign, length);   // Puts result in tempmatf
 
-
-      FORALLSITES(i,s) {
-        trace = trace_su3_f((su3_matrix_f *)&s->tempmat1);
+      FORALLSITES(i, s) {
+        trace = trace_su3_f(&(tempmatf[i]));
         action = (Real)NCOL - (double)trace.real;
         total_action = (double)loop_coeff[iloop][0]*action;
         act2 = action;

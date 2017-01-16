@@ -28,7 +28,6 @@ int congrad_cl_m(int niter, Real rsqmin, Real *final_rsq_ptr,
   Real a = 0.0, b, kappaSq = -kappa * kappa, MSq = mshift * mshift;
   double rsqstop = 0.0, rsq = 0.0, oldrsq = 0.0, dtime = -dclock();
   double source_norm = 0.0, pkp = 0.0;      // pkp = p.K.p
-  wilson_vector twvec;
   msg_tag *tag[8], *tag2[8];
   void dslash_w_field_special();
 
@@ -37,8 +36,8 @@ int congrad_cl_m(int niter, Real rsqmin, Real *final_rsq_ptr,
 #endif
 
   // Allocate fields, copy source and initial guess
-  wilson_vector *psi = malloc(sites_on_node * sizeof(*psi));
   wilson_vector *chi = malloc(sites_on_node * sizeof(*chi));
+  wilson_vector *psi = malloc(sites_on_node * sizeof(*psi));
   wilson_vector *tmp = malloc(sites_on_node * sizeof(*tmp));
   wilson_vector *mp  = malloc(sites_on_node * sizeof(*mp));
   wilson_vector *p   = malloc(sites_on_node * sizeof(*p));
@@ -49,8 +48,8 @@ int congrad_cl_m(int niter, Real rsqmin, Real *final_rsq_ptr,
   }
 
 start:
-  /* mp <-  M_adjoint*M*psi
-     r, p <- chi - mp
+  /* mp <--  Mdag.M on psi
+     r, p <-- chi - mp
      rsq = |r|^2
      source_norm = |chi|^2
      */
@@ -61,8 +60,8 @@ start:
   mult_ldu_field(mp, tmp, ODD);
   dslash_w_field_special(tmp, mp, PLUS, EVEN, tag2, 0);
   FOREVENSITES(i, s) {
-    scalar_mult_wvec(mp + i, kappaSq, &twvec);
-    add_wilson_vector(&twvec, tmp + i, mp + i);
+    scalar_mult_wvec(mp + i, kappaSq, mp + i);
+    sum_wvec(tmp + i, mp + i);
   }
 
   // Above applied M on psi, now apply Mdag
@@ -71,8 +70,8 @@ start:
   mult_ldu_field(mp, tmp, ODD);
   dslash_w_field_special(tmp, mp, MINUS, EVEN, tag2, 1);
   FOREVENSITES(i, s) {
-    scalar_mult_wvec(mp + i, kappaSq, &twvec);
-    add_wilson_vector(&twvec, tmp + i, mp + i);
+    scalar_mult_wvec(mp + i, kappaSq, mp + i);
+    sum_wvec(tmp + i, mp + i);
 
     // Now mp holds Mdag.M applied to psi
     // Add mshift^2 psi

@@ -113,39 +113,46 @@ http://gcc.gnu.org/onlinedocs/cpp/Stringification.html */
 // -----------------------------------------------------------------
 // Allocate all space for fields
 void make_fields() {
-  int memfield;
+  Real size = (Real)(8.0 * sizeof(su3_matrix_f));
 
   /* move here alloc for clov? */
 
   FIELD_ALLOC_VEC(gauge_field, su3_matrix_f, 4);
   FIELD_ALLOC_VEC(gauge_field_thin, su3_matrix_f, 4);
 
+  size += (Real)(16.0 * sizeof(su3_matrix_f));
   FIELD_ALLOC_VEC(Sigma, su3_matrix_f, 4);
   FIELD_ALLOC_VEC(SigmaH, su3_matrix_f, 4);
   FIELD_ALLOC_VEC(Staple3, su3_matrix_f, 4);
   FIELD_ALLOC_VEC(LambdaU, su3_matrix_f, 4);
-  memfield = 26;
 
 #if SMEAR_LEVEL > 1
+  size += (Real)(28.0 * sizeof(su3_matrix_f));
   FIELD_ALLOC_VEC(Lambda1, su3_matrix_f, 4);
   FIELD_ALLOC_MAT_OFFDIAG(hyplink2, su3_matrix_f, 4);
   FIELD_ALLOC_MAT_OFFDIAG(Staple2, su3_matrix_f, 4);
-  memfield = 54;
 #endif
 
 #if SMEAR_LEVEL == 3
+  size += (Real)(44.0 * sizeof(su3_matrix_f));
   FIELD_ALLOC_VEC(Lambda2, su3_matrix_f, 4);
   FIELD_ALLOC_MAT_OFFDIAG(hyplink1, su3_matrix_f, 4);
   FIELD_ALLOC_MAT_OFFDIAG(Staple1, su3_matrix_f, 4);
   FIELD_ALLOC_MAT(SigmaH2, su3_matrix_f, 4, 4);
-  memfield = 98;
 #endif
 
-  FIELD_ALLOC(tempmat_nhyp1, su3_matrix_f);
-  FIELD_ALLOC(tempmat_nhyp2, su3_matrix_f);
+  size += (Real)(3.0 * sizeof(su3_matrix));
+  FIELD_ALLOC(tempmat, su3_matrix);
+  FIELD_ALLOC(tempmat2, su3_matrix);
+  FIELD_ALLOC(staple, su3_matrix);
+
+  size += (Real)(3.0 * sizeof(su3_matrix_f));
+  FIELD_ALLOC(tempmatf, su3_matrix_f);
+  FIELD_ALLOC(tempmatf2, su3_matrix_f);
+  FIELD_ALLOC(staplef, su3_matrix_f);
 
   node0_printf("Mallocing %.1f MBytes per node for fields\n",
-      (double)sites_on_node * memfield * sizeof(su3_matrix_f)/1e6);
+               (double)sites_on_node * size / 1e6);
 
 #if NCOL == 4
 #ifdef NHYP_JACOBI

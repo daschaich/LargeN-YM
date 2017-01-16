@@ -36,7 +36,7 @@ clover *create_clov(void) {
 void compute_clov(clover *my_clov, Real Clov_c) {
   register int i, j, k, jk, jk2;
   register site *s;
-  register complex ctmp;
+  register complex tc;
   triangular *clov = my_clov->clov;
   diagonal *clov_diag = my_clov->clov_diag;
   su3_matrix *f_mn = malloc(sites_on_node * sizeof(*f_mn));
@@ -178,11 +178,11 @@ void compute_clov(clover *my_clov, Real Clov_c) {
     jk2 = (j + DIMF)*(j + DIMF-1)/2 + DIMF;
     for (k = 0; k < j; k++) {
       FORALLSITES(i, s) {
-        CMUL_MINUS_I((f_mn + i)->e[j][k], ctmp);
-        CSUM(clov[i].tr[0][jk], ctmp);
-        CDIF(clov[i].tr[0][jk2], ctmp);
-        CDIF(clov[i].tr[1][jk], ctmp);
-        CSUM(clov[i].tr[1][jk2], ctmp);
+        CMUL_MINUS_I((f_mn + i)->e[j][k], tc);
+        CSUM(clov[i].tr[0][jk], tc);
+        CDIF(clov[i].tr[0][jk2], tc);
+        CDIF(clov[i].tr[1][jk], tc);
+        CSUM(clov[i].tr[1][jk2], tc);
       }
       jk++;
       jk2++;
@@ -214,9 +214,9 @@ void compute_clov(clover *my_clov, Real Clov_c) {
     jk = (j + DIMF)*(j + DIMF-1)/2;
     for (k = 0; k < DIMF; k++) {
       FORALLSITES(i, s) {
-        CMUL_MINUS_I((f_mn + i)->e[j][k], ctmp);
-        CSUM(clov[i].tr[0][jk], ctmp);
-        CDIF(clov[i].tr[1][jk], ctmp);
+        CMUL_MINUS_I((f_mn + i)->e[j][k], tc);
+        CSUM(clov[i].tr[0][jk], tc);
+        CDIF(clov[i].tr[1][jk], tc);
       }
       jk++;
     }
@@ -267,7 +267,7 @@ double compute_clovinv(clover *my_clov, int parity) {
   register site *s;
   Real f_diag[2 * DIMF];
   double trlogA = 0.0;
-  complex v1[2 * DIMF], ctmp, sum;
+  complex v1[2 * DIMF], tc, sum;
 
   /* Take the inverse on the odd sublattice for each of the 2 blocks */
   FORSOMEPARITY(i, s, parity)for (b = 0; b < 2; b++) {
@@ -287,8 +287,8 @@ double compute_clovinv(clover *my_clov, int parity) {
 
       for (k = j + 1; k < 2*DIMF; k++) {
         kj = k*(k-1)/2 + j;
-        CMUL_J(clov[i].tr[b][kj], clov[i].tr[b][kj], ctmp);
-        clov_diag[i].di[b][k] -= ctmp.real;
+        CMUL_J(clov[i].tr[b][kj], clov[i].tr[b][kj], tc);
+        clov_diag[i].di[b][k] -= tc.real;
         for (l = k + 1; l < 2*DIMF; l++) {
           lj = l*(l-1)/2 + j;
           lk = l*(l-1)/2 + k;
@@ -358,7 +358,7 @@ void mult_this_ldu_site(clover *my_clov, field_offset src, field_offset dest,
                         int parity) {
 
   register int i, b, j, k, jk, kj;
-  register complex ctmp;
+  register complex tc;
   register site *s;
   triangular *clov = my_clov->clov;
   diagonal *clov_diag = my_clov->clov_diag;
@@ -372,13 +372,13 @@ void mult_this_ldu_site(clover *my_clov, field_offset src, field_offset dest,
       for (j = 0; j < 2 * DIMF; j++) {
         /* diagonal part */
         CMULREAL(((wilson_block_vector *)F_PT(s, src))->b[b][j],
-                 clov_diag[i].di[b][j], ctmp);
+                 clov_diag[i].di[b][j], tc);
 
         /* lower triangular part */
         jk = j * (j - 1) / 2;
         for (k = 0; k < j; k++) {
           CMULSUM(clov[i].tr[b][jk],
-                  ((wilson_block_vector *)F_PT(s, src))->b[b][k], ctmp);
+                  ((wilson_block_vector *)F_PT(s, src))->b[b][k], tc);
           jk++;
         }
 
@@ -386,9 +386,9 @@ void mult_this_ldu_site(clover *my_clov, field_offset src, field_offset dest,
         for (k = j + 1; k < 2*DIMF; k++) {
           kj = k*(k-1)/2 + j;
           CMULJ_SUM(clov[i].tr[b][kj],
-                    ((wilson_block_vector *)F_PT(s, src))->b[b][k], ctmp);
+                    ((wilson_block_vector *)F_PT(s, src))->b[b][k], tc);
         }
-        ((wilson_block_vector *)F_PT(s, dest))->b[b][j] = ctmp;
+        ((wilson_block_vector *)F_PT(s, dest))->b[b][j] = tc;
       }
     }
   } END_LOOP
@@ -398,7 +398,7 @@ void mult_this_ldu_field(clover *my_clov, wilson_vector *src,
                          wilson_vector *dest, int parity) {
 
   register int i, b, j, k, jk, kj;
-  register complex ctmp;
+  register complex tc;
   register site *s;
   triangular *clov = my_clov->clov;
   diagonal *clov_diag = my_clov->clov_diag;
@@ -406,29 +406,28 @@ void mult_this_ldu_field(clover *my_clov, wilson_vector *src,
   wilson_block_vector *destb = (wilson_block_vector *)dest;
 
   FORSOMEPARITY(i, s, parity) {
-    if (i < loopend-FETCH_UP) {
+    if (i < loopend - FETCH_UP) {
       prefetch_W(&srcb[i + FETCH_UP]);
       prefetch_W(&destb[i + FETCH_UP]);
     }
     for (b = 0; b < 2; b++) {
       for (j = 0; j < 2*DIMF; j++) {
-
         /* diagonal part */
-        CMULREAL(srcb[i].b[b][j], clov_diag[i].di[b][j], ctmp);
+        CMULREAL(srcb[i].b[b][j], clov_diag[i].di[b][j], tc);
 
         /* lower triangular part */
         jk = j * (j - 1) / 2;
         for (k = 0; k < j; k++) {
-          CMULSUM(clov[i].tr[b][jk], srcb[i].b[b][k], ctmp);
+          CMULSUM(clov[i].tr[b][jk], srcb[i].b[b][k], tc);
           jk++;
         }
 
         /* upper triangular part */
         for (k = j + 1; k < 2 * DIMF; k++) {
           kj = k * (k - 1) / 2 + j;
-          CMULJ_SUM(clov[i].tr[b][kj], srcb[i].b[b][k], ctmp);
+          CMULJ_SUM(clov[i].tr[b][kj], srcb[i].b[b][k], tc);
         }
-        destb[i].b[b][j] = ctmp;
+        destb[i].b[b][j] = tc;
       }
     }
   } END_LOOP
@@ -459,15 +458,16 @@ and sigma(nu, mu) = -sigma(mu, nu), and sums over the dirac indices.
 
 /* triang, diag are input & contain the color-dirac matrix
    mat is output: the resulting su3_matrix  */
-void tr_sigma_ldu_mu_nu_site(field_offset mat, int mu, int nu) {
-  triangular *clov = global_clov->clov;
-  diagonal *clov_diag = global_clov->clov_diag;
-  register site *s;
+// Put result in tempmat
+void tr_sigma_ldu_mu_nu_site(int mu, int nu) {
+  register int i, j, k, jk, jk2, kj;
   register int mm = 0, nn = 0;  /* dummy directions */
   register Real pm = 0;
-  register int i, j, k, jk, jk2, kj;
-  Real rtmp;
-  complex ctmp, ctmp1;
+  register site *s;
+  Real tr;
+  complex tc, tc2;
+  triangular *clov = global_clov->clov;
+  diagonal *clov_diag = global_clov->clov_diag;
   char myname[] = "tr_sigma_ldu_mu_nu_site";
 
   /* take care of the case mu > nu by flipping them and mult. by -1 */
@@ -488,60 +488,60 @@ void tr_sigma_ldu_mu_nu_site(field_offset mat, int mu, int nu) {
     case(XUP):
       switch(nn) {
         case(YUP):
-          FORODDSITESDOMAIN(i, s) {
+          FORODDSITES(i, s) {
             /* diagonal part */
             for (j = 0; j < DIMF; j++) {
-              rtmp = clov_diag[i].di[0][j + DIMF] - clov_diag[i].di[0][j];
-              rtmp -= clov_diag[i].di[1][j];
-              rtmp += clov_diag[i].di[1][j + DIMF];
-              ((su3_matrix *)F_PT(s, mat))->e[j][j].real = 0.0;
-              ((su3_matrix *)F_PT(s, mat))->e[j][j].imag = rtmp;
+              tr = clov_diag[i].di[0][j + DIMF] - clov_diag[i].di[0][j];
+              tr -= clov_diag[i].di[1][j];
+              tr += clov_diag[i].di[1][j + DIMF];
+              tempmat[i].e[j][j].real = 0.0;
+              tempmat[i].e[j][j].imag = tr;
             }
             /* triangular part */
             jk = 0;
             for (j = 1; j < DIMF; j++) {
               jk2 = (j + DIMF) * (j + DIMF - 1) / 2 + DIMF;
               for (k = 0; k < j; k++) {
-                CSUB(clov[i].tr[0][jk2], clov[i].tr[0][jk], ctmp);
-                CDIF(ctmp, clov[i].tr[1][jk]);
-                CSUM(ctmp, clov[i].tr[1][jk2]);
-                CMUL_I(ctmp, ((su3_matrix *)F_PT(s, mat))->e[j][k]);
-                CONJG(ctmp, ctmp);
-                CMUL_I(ctmp, ((su3_matrix *)F_PT(s, mat))->e[k][j]);
-                jk++; jk2++;
+                CSUB(clov[i].tr[0][jk2], clov[i].tr[0][jk], tc);
+                CDIF(tc, clov[i].tr[1][jk]);
+                CSUM(tc, clov[i].tr[1][jk2]);
+                CMUL_I(tc, tempmat[i].e[j][k]);
+                CONJG(tc, tc);
+                CMUL_I(tc, tempmat[i].e[k][j]);
+                jk++;
+                jk2++;
               }
             }
           }
           break;
         case(ZUP):
-          FORODDSITESDOMAIN(i, s) {
+          FORODDSITES(i, s) {
             for (j = 0; j < DIMF; j++) {
               jk = (j + DIMF)*(j + DIMF-1)/2;
               for (k = 0; k < DIMF; k++) {
                 kj = (k + DIMF)*(k + DIMF-1)/2 + j;
-                CONJG(clov[i].tr[0][kj], ctmp);
-                CDIF(ctmp, clov[i].tr[0][jk]);
-                CONJG(clov[i].tr[1][kj], ctmp1);
-                CSUM(ctmp, ctmp1);
-                CSUB(ctmp, clov[i].tr[1][jk],
-                    ((su3_matrix *)F_PT(s, mat))->e[j][k]);
+                CONJG(clov[i].tr[0][kj], tc);
+                CDIF(tc, clov[i].tr[0][jk]);
+                CONJG(clov[i].tr[1][kj], tc2);
+                CSUM(tc, tc2);
+                CSUB(tc, clov[i].tr[1][jk], tempmat[i].e[j][k]);
                 jk++;
               }
             }
           }
           break;
         case(TUP):
-          FORODDSITESDOMAIN(i, s) {
+          FORODDSITES(i, s) {
             for (j = 0; j < DIMF; j++) {
               jk = (j + DIMF)*(j + DIMF-1)/2;
               for (k = 0; k < DIMF; k++) {
                 kj = (k + DIMF)*(k + DIMF-1)/2 + j;
-                CONJG(clov[i].tr[0][kj], ctmp);
-                CSUM(ctmp, clov[i].tr[0][jk]);
-                CONJG(clov[i].tr[1][kj], ctmp1);
-                CSUB(ctmp, ctmp1, ctmp);
-                CDIF(ctmp, clov[i].tr[1][jk]);
-                CMUL_I(ctmp, ((su3_matrix *)F_PT(s, mat))->e[j][k]);
+                CONJG(clov[i].tr[0][kj], tc);
+                CSUM(tc, clov[i].tr[0][jk]);
+                CONJG(clov[i].tr[1][kj], tc2);
+                CDIF(tc, tc2);
+                CDIF(tc, clov[i].tr[1][jk]);
+                CMUL_I(tc, tempmat[i].e[j][k]);
                 jk++;
               }
             }
@@ -554,34 +554,33 @@ void tr_sigma_ldu_mu_nu_site(field_offset mat, int mu, int nu) {
     case(YUP):
       switch(nn) {
         case(ZUP):
-          FORODDSITESDOMAIN(i, s) {
+          FORODDSITES(i, s) {
             for (j = 0; j < DIMF; j++) {
               jk = (j + DIMF)*(j + DIMF-1)/2;
               for (k = 0; k < DIMF; k++) {
                 kj = (k + DIMF)*(k + DIMF-1)/2 + j;
-                CONJG(clov[i].tr[0][kj], ctmp);
-                CSUM(ctmp, clov[i].tr[0][jk]);
-                CONJG(clov[i].tr[1][kj], ctmp1);
-                CADD(ctmp, ctmp1, ctmp);
-                CSUM(ctmp, clov[i].tr[1][jk]);
-                CMUL_MINUS_I(ctmp, ((su3_matrix *)F_PT(s, mat))->e[j][k]);
+                CONJG(clov[i].tr[0][kj], tc);
+                CSUM(tc, clov[i].tr[0][jk]);
+                CONJG(clov[i].tr[1][kj], tc2);
+                CSUM(tc, tc2);
+                CSUM(tc, clov[i].tr[1][jk]);
+                CMUL_MINUS_I(tc, tempmat[i].e[j][k]);
                 jk++;
               }
             }
           }
           break;
         case(TUP):
-          FORODDSITESDOMAIN(i, s) {
+          FORODDSITES(i, s) {
             for (j = 0; j < DIMF; j++) {
               jk = (j + DIMF)*(j + DIMF-1)/2;
               for (k = 0; k < DIMF; k++) {
                 kj = (k + DIMF)*(k + DIMF-1)/2 + j;
-                CONJG(clov[i].tr[0][kj], ctmp);
-                CDIF(ctmp, clov[i].tr[0][jk]);
-                CONJG(clov[i].tr[1][kj], ctmp1);
-                CDIF(ctmp, ctmp1);
-                CADD(ctmp, clov[i].tr[1][jk],
-                     ((su3_matrix *)F_PT(s, mat))->e[j][k]);
+                CONJG(clov[i].tr[0][kj], tc);
+                CDIF(tc, clov[i].tr[0][jk]);
+                CONJG(clov[i].tr[1][kj], tc2);
+                CDIF(tc, tc2);
+                CADD(tc, clov[i].tr[1][jk], tempmat[i].e[j][k]);
                 jk++;
               }
             }
@@ -594,26 +593,26 @@ void tr_sigma_ldu_mu_nu_site(field_offset mat, int mu, int nu) {
     case(ZUP):
       switch(nn) {
         case(TUP):
-          FORODDSITESDOMAIN(i, s) {
+          FORODDSITES(i, s) {
             /* diagonal part */
             for (j = 0; j < DIMF; j++) {
-              rtmp = clov_diag[i].di[0][j] - clov_diag[i].di[0][j + DIMF];
-              rtmp -= clov_diag[i].di[1][j];
-              rtmp += clov_diag[i].di[1][j + DIMF];
-              ((su3_matrix *)F_PT(s, mat))->e[j][j].real = 0.0;
-              ((su3_matrix *)F_PT(s, mat))->e[j][j].imag = rtmp;
+              tr = clov_diag[i].di[0][j] - clov_diag[i].di[0][j + DIMF];
+              tr -= clov_diag[i].di[1][j];
+              tr += clov_diag[i].di[1][j + DIMF];
+              tempmat[i].e[j][j].real = 0.0;
+              tempmat[i].e[j][j].imag = tr;
             }
             /* triangular part */
             jk = 0;
             for (j = 1; j < DIMF; j++) {
               jk2 = (j + DIMF)*(j + DIMF-1)/2 + DIMF;
               for (k = 0; k < j; k++) {
-                CSUB(clov[i].tr[0][jk], clov[i].tr[0][jk2], ctmp);
-                CDIF(ctmp, clov[i].tr[1][jk]);
-                CSUM(ctmp, clov[i].tr[1][jk2]);
-                CMUL_I(ctmp, ((su3_matrix *)F_PT(s, mat))->e[j][k]);
-                CONJG(ctmp, ctmp);
-                CMUL_I(ctmp, ((su3_matrix *)F_PT(s, mat))->e[k][j]);
+                CSUB(clov[i].tr[0][jk], clov[i].tr[0][jk2], tc);
+                CDIF(tc, clov[i].tr[1][jk]);
+                CSUM(tc, clov[i].tr[1][jk2]);
+                CMUL_I(tc, tempmat[i].e[j][k]);
+                CONJG(tc, tc);
+                CMUL_I(tc, tempmat[i].e[k][j]);
                 jk++;
                 jk2++;
               }
@@ -630,14 +629,14 @@ void tr_sigma_ldu_mu_nu_site(field_offset mat, int mu, int nu) {
 
   // Multiply by pm = +/- 1
   if (pm < 0) {
-    FORODDSITESDOMAIN(i, s) {
-      for (j = 0; j < DIMF; j++) for (k = 0; k < DIMF; k++) {
-        CNEGATE(((su3_matrix *)F_PT(s, mat))->e[j][k],
-                ((su3_matrix *)F_PT(s, mat))->e[j][k]);
+    FORODDSITES(i, s) {
+      for (j = 0; j < DIMF; j++) {
+        for (k = 0; k < DIMF; k++)
+          CNEGATE(tempmat[i].e[j][k], tempmat[i].e[j][k]);
       }
     }
   }
-} /* tr_sigma_ldu */
+}
 // -----------------------------------------------------------------
 
 

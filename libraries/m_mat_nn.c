@@ -1,29 +1,49 @@
 // -----------------------------------------------------------------
 // Irrep matrix multiplication with no adjoints
+// c <-- c - a * b
 // c <-- a * b
 #include "../include/config.h"
 #include "../include/complex.h"
 #include "../include/su3.h"
 
+void mult_su3_nn_dif(su3_matrix *a, su3_matrix *b, su3_matrix *c) {
+  register int i, j, k;
+
+  for (i = 0; i < DIMF; i++) {
+    for (j = 0; j < DIMF; j++) {
+      for (k = 0; k < DIMF; k++) {
+        c->e[i][j].real -= a->e[i][k].real * b->e[k][j].real
+                         - a->e[i][k].imag * b->e[k][j].imag;
+        c->e[i][j].imag -= a->e[i][k].imag * b->e[k][j].real
+                         + a->e[i][k].real * b->e[k][j].imag;
+      }
+    }
+  }
+}
+
 void mult_su3_nn(su3_matrix *a, su3_matrix *b, su3_matrix *c) {
   register int i, j;
 #ifndef FAST
   register int k;
-  register complex x;
 
   for (i = 0; i < DIMF; i++) {
-    for (j = 0; j < DIMF; j++){
-      CMUL(a->e[i][0], b->e[0][j], x);
-      for (k = 1; k < DIMF; k++)
-        CMULSUM(a->e[i][k], b->e[k][j], x);
-
-      c->e[i][j] = x;
+    for (j = 0; j < DIMF; j++) {
+      // Initialize
+      c->e[i][j].real = a->e[i][0].real * b->e[0][j].real
+                      - a->e[i][0].imag * b->e[0][j].imag;
+      c->e[i][j].imag = a->e[i][0].imag * b->e[0][j].real
+                      + a->e[i][0].real * b->e[0][j].imag;
+      for (k = 1; k < DIMF; k++) {
+        c->e[i][j].real += a->e[i][k].real * b->e[k][j].real
+                         - a->e[i][k].imag * b->e[k][j].imag;
+        c->e[i][j].imag += a->e[i][k].imag * b->e[k][j].real
+                         + a->e[i][k].real * b->e[k][j].imag;
+      }
     }
   }
 
 #else   // FAST version for NCOL = DIMF = 3
   register Real t, ar, ai, br, bi, cr, ci;
-
   for (i = 0; i < 3; i++) {
     for (j = 0; j < 3; j++) {
       ar = a->e[i][0].real; ai = a->e[i][0].imag;

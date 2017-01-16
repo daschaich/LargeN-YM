@@ -9,15 +9,20 @@ void mult_su3_nn_f(su3_matrix_f *a, su3_matrix_f *b, su3_matrix_f *c) {
   register int i, j;
 #ifndef FAST
   register int k;
-  register complex x;
 
   for (i = 0; i < NCOL; i++) {
     for (j = 0; j < NCOL; j++) {
-      CMUL(a->e[i][0], b->e[0][j], x);
-      for (k = 1; k < NCOL; k++)
-        CMULSUM(a->e[i][k], b->e[k][j], x);
-
-      c->e[i][j] = x;
+      // Initialize
+      c->e[i][j].real = a->e[i][0].real * b->e[0][j].real
+                      - a->e[i][0].imag * b->e[0][j].imag;
+      c->e[i][j].imag = a->e[i][0].imag * b->e[0][j].real
+                      + a->e[i][0].real * b->e[0][j].imag;
+      for (k = 1; k < NCOL; k++) {
+        c->e[i][j].real += a->e[i][k].real * b->e[k][j].real
+                         - a->e[i][k].imag * b->e[k][j].imag;
+        c->e[i][j].imag += a->e[i][k].imag * b->e[k][j].real
+                         + a->e[i][k].real * b->e[k][j].imag;
+      }
     }
   }
 

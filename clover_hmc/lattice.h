@@ -63,11 +63,6 @@ typedef struct {
   wilson_matrix rotated_propagator;   // For clover-rotated operators
 #endif
 
-  // Temporary vectors and matrices
-  su3_matrix tempmat1, tempmat2, staple; /* sometimes these will be
-            cast to su3_matrix_f as
-            needed for scratch space */
-
   // A bit wasteful of space
   su3_matrix Force[4];
 } site;
@@ -98,10 +93,10 @@ EXTERN Real gnorm, fnorm[2], max_gf, max_ff[2];
 // Global action and evolution variables
 EXTERN Real rsqmin, rsqprop, beta, beta_frep, kappa, clov_c, u0, CKU0;
 EXTERN Real epsilon;
-EXTERN char startfile[MAXFILENAME], savefile[MAXFILENAME];
-EXTERN double g_ssplaq, g_stplaq;
+EXTERN double returntrlogA, g_ssplaq, g_stplaq;
 EXTERN double_complex linktr;
 EXTERN u_int32type nersc_checksum;
+EXTERN char startfile[MAXFILENAME], savefile[MAXFILENAME];
 EXTERN char stringLFN[MAXFILENAME];  /** ILDG LFN if applicable **/
 EXTERN int startflag;  /* beginning lattice: CONTINUE, RELOAD, FRESH */
 EXTERN int fixflag;  /* gauge fix: COULOMB_GAUGE_FIX, NO_GAUGE_FIX */
@@ -175,10 +170,9 @@ EXTERN su3_matrix_f *LambdaU[4];
 EXTERN su3_matrix_f *Lambda1[4];
 EXTERN su3_matrix_f *Lambda2[4];
 
-/* renamed from tempmat1, for force_nhyp
-   also used to compute gauge action */
-EXTERN su3_matrix_f *tempmat_nhyp1;
-EXTERN su3_matrix_f *tempmat_nhyp2;
+// Temporary fundamental and irrep matrices
+EXTERN su3_matrix *tempmat, *tempmat2, *staple;
+EXTERN su3_matrix_f *tempmatf, *tempmatf2, *staplef;
 
 #ifdef NHYP_JACOBI
 EXTERN Matrix Qj, Vj;

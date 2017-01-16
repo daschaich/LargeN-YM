@@ -25,13 +25,13 @@ double gauge_force(Real eps) {
   register Real eb3 = eps * beta / (Real)NCOL;
   double norm = 0.0;
   msg_tag *tag0, *tag1, *tag2;
-  su3_matrix_f tmat, tmat2;
+  su3_matrix_f tmatf;
 
   // Loop over directions, update mom[dir]
   FORALLUPDIR(dir) {
-    // Initialize staple, recast to su3_matrix_f
+    // Initialize fundamental staple
     FORALLSITES(i, s)
-      clear_su3mat_f((su3_matrix_f *)&(s->staple));
+      clear_su3mat_f(&(staplef[i]));
 
     /* Loop over other directions, computing force from plaquettes in
        the dir, dir2 plane */
@@ -51,14 +51,13 @@ double gauge_force(Real eps) {
          later gather the intermediate result "to the home point" */
       wait_gather(tag0);
       FORALLSITES(i, s) {
-        mult_su3_an_f(&(s->linkf[dir2]), &(s->linkf[dir]), &tmat);
-        mult_su3_nn_f(&tmat, (su3_matrix_f *)gen_pt[0][i],
-                      (su3_matrix_f *)&(s->tempmat1));
+        mult_su3_an_f(&(s->linkf[dir2]), &(s->linkf[dir]), &tmatf);
+        mult_su3_nn_f(&tmatf, (su3_matrix_f *)gen_pt[0][i], &(tempmatf[i]));
       }
 
       /* Gather lower staple "up to home site" */
-      tag1 = start_gather_site(F_OFFSET(tempmat1), sizeof(su3_matrix_f),
-                               OPP_DIR(dir2), EVENANDODD, gen_pt[1]);
+      tag1 = start_gather_field(tempmatf, sizeof(su3_matrix_f),
+                                OPP_DIR(dir2), EVENANDODD, gen_pt[1]);
 
       /*  The "upper" staple.  Note that
           one of the links has already been gathered, since it
@@ -67,17 +66,14 @@ double gauge_force(Real eps) {
       wait_gather(tag2);
       FORALLSITES(i, s) {
         mult_su3_nn_f(&(s->linkf[dir2]), (su3_matrix_f *)gen_pt[2][i],
-                      &tmat);
-        mult_su3_na_f(&tmat, (su3_matrix_f *)gen_pt[0][i], &tmat2);
-        sum_su3_matrix_f(&tmat2, (su3_matrix_f *)&(s->staple));
+                      &tmatf);
+        mult_su3_na_sum_f(&tmatf, (su3_matrix_f *)gen_pt[0][i], &(staplef[i]));
       }
 
       wait_gather(tag1);
+      FORALLSITES(i, s)
+        sum_su3_matrix_f((su3_matrix_f *)gen_pt[1][i], &(staplef[i]));
 
-      FORALLSITES(i, s) {
-        sum_su3_matrix_f((su3_matrix_f *)gen_pt[1][i],
-                         (su3_matrix_f *)&(s->staple));
-      }
       cleanup_gather(tag0);
       cleanup_gather(tag1);
       cleanup_gather(tag2);
@@ -85,9 +81,9 @@ double gauge_force(Real eps) {
 
     // Now multiply the staple sum by the link, then update momentum
     FORALLSITES(i, s) {
-      mult_su3_na_f(&(s->linkf[dir]), (su3_matrix_f *)&(s->staple), &tmat);
-      update_anti_hermitian(s, dir, eb3, &tmat);
-      norm += (double)realtrace_su3_f(&tmat, &tmat);
+      mult_su3_na_f(&(s->linkf[dir]), &(staplef[i]), &tmatf);
+      update_anti_hermitian(s, dir, eb3, &tmatf);
+      norm += (double)realtrace_su3_f(&tmatf, &tmatf);
     }
   }
   g_doublesum(&norm);
@@ -103,7 +99,7 @@ void delta(field_offset psi, field_offset p) {
   register int i, mu, nu;
   register site *s;
   Real tCKU0 = -CKU0 / 8.0;
-  su3_matrix tmat, tmat2;
+  su3_matrix tmat;
   half_wilson_vector hvec;
   wilson_vector tvec, tvec2;
   msg_tag *tag0,*tag1;
@@ -114,7 +110,7 @@ void delta(field_offset psi, field_offset p) {
 #endif
 
     FORALLSITES(i, s) {
-      clear_su3mat(&(s->tempmat1));
+      clear_su3mat(&(tempmat[i]));
       wp_shrink((wilson_vector *)F_PT(s, psi), &(s->htmp[0]), mu, PLUS);
       wp_shrink((wilson_vector *)F_PT(s, p), &(s->htmp[1]), mu, MINUS);
     }
@@ -140,10 +136,10 @@ void delta(field_offset psi, field_offset p) {
       /* i even => tvec2 = (1-gamma_mu)*U*Aodd^(-1)*D_adj*M*psi,
          i odd  => tvec2 = (1-gamma_mu)*U*M*psi */
 
-      su3_projector_w(&tvec, (wilson_vector *)F_PT(s, p), &(s->tempmat1));
+      su3_projector_w(&tvec, (wilson_vector *)F_PT(s, p), &(tempmat[i]));
       su3_projector_w(&tvec2, (wilson_vector *)F_PT(s, psi), &tmat);
-      sum_su3_matrix(&tmat, &(s->tempmat1));
-      scalar_mult_su3_matrix(&(s->tempmat1), -kappa, &(s->tempmat1));
+      sum_su3_matrix(&tmat, &(tempmat[i]));
+      scalar_mult_su3_matrix(&(tempmat[i]), -kappa, &(tempmat[i]));
     }
     cleanup_gather(tag0);
     cleanup_gather(tag1);
@@ -154,17 +150,17 @@ void delta(field_offset psi, field_offset p) {
         continue;
 
       // U dA/dU from U dM/dU
-      udadu_mu_nu(p, psi, F_OFFSET(tempmat2), mu, nu, EVENANDODD);
+      udadu_mu_nu(p, psi, mu, nu);        // Result in tempmat2
       FORALLSITES(i, s)
-        scalar_mult_sum_su3_matrix(&(s->tempmat2), tCKU0, &(s->tempmat1));
+        scalar_mult_sum_su3_matrix(&(tempmat2[i]), tCKU0, &(tempmat[i]));
 
       // U dA/dU from U dM^dagger/dU
-      udadu_mu_nu(psi, p, F_OFFSET(tempmat2), mu, nu, EVENANDODD);
+      udadu_mu_nu(psi, p, mu, nu);        // Result in tempmat2
       FORALLSITES(i, s)
-        scalar_mult_sum_su3_matrix(&(s->tempmat2), tCKU0, &(s->tempmat1));
+        scalar_mult_sum_su3_matrix(&(tempmat2[i]), tCKU0, &(tempmat[i]));
     }
     FORALLSITES(i, s)
-      sum_su3_matrix(&(s->tempmat1), &(s->Force[mu]));
+      sum_su3_matrix(&(tempmat[i]), &(s->Force[mu]));
   }
 }
 // -----------------------------------------------------------------
@@ -173,47 +169,42 @@ void delta(field_offset psi, field_offset p) {
 
 // -----------------------------------------------------------------
 // Gauge force from fermion irrep plaquette term
-void gauge_force_frep(field_offset scratch1, field_offset scratch2,
-                      field_offset forcemat, int dir1) {
-
+void gauge_force_frep(int dir) {
   register int i, dir2;
   register site *s;
+  Real bfrep_force;
   msg_tag *tag0,*tag1, *tag2;
-  su3_matrix tmat, tmat2;
-  /* divide by nflavors=2 to compensate for
-     ferm_epsilon = nflavors*eps = 2*eps
-     */
-  Real bfrep_force = beta_frep/(Real)DIMF/(Real)nflavors;
+  su3_matrix tmat;
 
-  /* Loop over directions for updating mom[dir1] is in the calling routine.
+  // Divide by nflavors to compensate for ferm_epsilon = nflavors * eps
+  bfrep_force = beta_frep / (Real)(DIMF * nflavors);
+
+  /* Loop over directions for updating mom[dir] is in the calling routine.
      Here, we loop over other directions, computing force from frep plaquettes
-     in the dir1, dir2 plane
+     in the dir, dir2 plane
      */
-  /* initialize staple */
-  FORALLSITES(i, s)
-    clear_su3mat((su3_matrix *)F_PT(s, scratch1));
-
-  for (dir2=XUP;dir2<=TUP;dir2++)if (dir2 != dir1) {
-    /* get link[dir2] from direction dir1 */
+  FORALLUPDIR(dir2) {
+    if (dir2 == dir)
+      continue;
+    /* get link[dir2] from direction dir */
     tag0 = start_gather_site(F_OFFSET(link[dir2]), sizeof(su3_matrix),
-                             dir1, EVENANDODD, gen_pt[0]);
+                             dir, EVENANDODD, gen_pt[0]);
 
     /* Start gather for the "upper staple" */
-    tag2 = start_gather_site(F_OFFSET(link[dir1]), sizeof(su3_matrix),
+    tag2 = start_gather_site(F_OFFSET(link[dir]), sizeof(su3_matrix),
                              dir2, EVENANDODD, gen_pt[2]);
 
     /* begin the computation "at the dir2DOWN point", we will
        later gather the intermediate result "to the home point" */
-
+    // Initialize tempmat2
     wait_gather(tag0);
     FORALLSITES(i, s) {
-      mult_su3_an(&(s->link[dir2]), &(s->link[dir1]), &tmat);
-      mult_su3_nn(&tmat, (su3_matrix *)gen_pt[0][i],
-                  ((su3_matrix *)F_PT(s, scratch2)));
+      mult_su3_an(&(s->link[dir2]), &(s->link[dir]), &tmat);
+      mult_su3_nn(&tmat, (su3_matrix *)gen_pt[0][i], &(tempmat2[i]));
     }
 
     /* Gather lower staple "up to home site" */
-    tag1 = start_gather_site(scratch2, sizeof(su3_matrix),
+    tag1 = start_gather_field(tempmat2, sizeof(su3_matrix),
                              OPP_DIR(dir2), EVENANDODD, gen_pt[1]);
 
     /*  The "upper" staple.  Note that
@@ -223,15 +214,14 @@ void gauge_force_frep(field_offset scratch1, field_offset scratch2,
     wait_gather(tag2);
     FORALLSITES(i, s) {
       mult_su3_nn(&(s->link[dir2]), (su3_matrix *)gen_pt[2][i], &tmat);
-      mult_su3_na(&tmat, (su3_matrix *)gen_pt[0][i],  &tmat2);
-      sum_su3_matrix(&tmat2, ((su3_matrix *)F_PT(s, scratch1)));
+      mult_su3_na_sum(&tmat, (su3_matrix *)gen_pt[0][i], &(staple[i]));
     }
 
+    // Initialize staple
     wait_gather(tag1);
-    FORALLSITES(i, s) {
-      sum_su3_matrix((su3_matrix *)gen_pt[1][i],
-                     (su3_matrix *)F_PT(s, scratch1));
-    }
+    FORALLSITES(i, s)
+      sum_su3_matrix((su3_matrix *)gen_pt[1][i], &(staple[i]));
+
     cleanup_gather(tag0);
     cleanup_gather(tag1);
     cleanup_gather(tag2);
@@ -239,9 +229,8 @@ void gauge_force_frep(field_offset scratch1, field_offset scratch2,
 
   // Now multiply the staple sum by the link, then add to force
   FORALLSITES(i, s) {
-    mult_su3_na(&(s->link[dir1]), (su3_matrix *)F_PT(s, scratch1), &tmat);
-    scalar_mult_sum_su3_matrix(&tmat, bfrep_force,
-                               (su3_matrix *)F_PT(s, forcemat));
+    mult_su3_na(&(s->link[dir]), &(staple[i]), &tmat);
+    scalar_mult_sum_su3_matrix(&tmat, bfrep_force, &(s->Force[dir]));
   }
 }
 // -----------------------------------------------------------------
@@ -328,18 +317,15 @@ TIC(1)
     FORALLUPDIR(nu) {
       if (nu == mu)
         continue;
-      // Use staple as a temporary su3_matrix
-      tr_sigma_ldu_mu_nu_site(F_OFFSET(staple), mu, nu);
-      udadu_mat_mu_nu(F_OFFSET(staple), F_OFFSET(tempmat2), mu, nu);
+      tr_sigma_ldu_mu_nu_site(mu, nu);          // Result in tempmat
+      udadu_mat_mu_nu(mu, nu);                  // Result in tempmat2
       FORALLSITES(i, s)
-        scalar_mult_sum_su3_matrix(&(s->tempmat2), tCKU0, &(s->Force[mu]));
+        scalar_mult_sum_su3_matrix(&(tempmat2[i]), tCKU0, &(s->Force[mu]));
     }
   }
 
-  FORALLUPDIR(mu) {
-    gauge_force_frep(F_OFFSET(staple), F_OFFSET(tempmat2),
-                     F_OFFSET(Force[mu]), mu);
-  }
+  FORALLUPDIR(mu)
+    gauge_force_frep(mu);
 
   if (num_masses == 1)
     level = 0;
@@ -409,7 +395,7 @@ TIC(1)
   FORALLUPDIR(mu) {
     FORALLSITES(i, s) {
       // First multiply back U*dH/dU^T
-      mult_su3_nn_f(&(s->linkf[mu]), Sigma[mu]+i, &tmatf);
+      mult_su3_nn_f(&(s->linkf[mu]), Sigma[mu] + i, &tmatf);
       // Now update
       update_anti_hermitian(s, mu, ferm_epsilon, &tmatf);
       tmpnorm = (double)realtrace_su3_f(&tmatf, &tmatf);

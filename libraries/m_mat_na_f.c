@@ -1,49 +1,83 @@
-/****************  m_mat_na_f.c  (in su3.a) *******************************
-*                 *
-* void mult_su3_na_f( su3_matrix_f *a,*b,*c )       *
-* matrix multiply, second matrix is adjoint         *
-* C  <-  A*B_adjoint              *
-*/
+// -----------------------------------------------------------------
+// Fundamental matrix multiplication with adjoint of second matrix
+// c <-- c + a * bdag
+// c <-- a * bdag
 #include "../include/config.h"
 #include "../include/complex.h"
 #include "../include/su3.h"
 
-void mult_su3_na_f(  su3_matrix_f *a, su3_matrix_f *b, su3_matrix_f *c ){
-#ifndef FAST
-register int i,j,k;
-register complex x,y;
-    for(i=0;i<NCOL;i++)for(j=0;j<NCOL;j++){
-  x.real=x.imag=0.0;
-  for(k=0;k<NCOL;k++){
-      CMUL_J( a->e[i][k] , b->e[j][k] , y );
-      CSUM( x , y );
+void mult_su3_na_sum_f(su3_matrix_f *a, su3_matrix_f *b, su3_matrix_f *c) {
+  register int i, j, k;
+
+  for (i = 0; i < NCOL; i++) {
+    for (j = 0; j < NCOL; j++) {
+      for (k = 0; k < NCOL; k++) {
+        c->e[i][j].real += a->e[i][k].real * b->e[j][k].real
+                         + a->e[i][k].imag * b->e[j][k].imag;
+        c->e[i][j].imag += a->e[i][k].imag * b->e[j][k].real
+                         - a->e[i][k].real * b->e[j][k].imag;
+      }
+    }
   }
-  c->e[i][j] = x;
+}
+
+void mult_su3_na_f(su3_matrix_f *a, su3_matrix_f *b, su3_matrix_f *c) {
+  register int i, j;
+#ifndef FAST
+  register int k;
+
+  for (i = 0; i < NCOL; i++) {
+    for (j = 0; j < NCOL; j++) {
+      // Initialize
+      c->e[i][j].real = a->e[i][0].real * b->e[j][0].real
+                      + a->e[i][0].imag * b->e[j][0].imag;
+      c->e[i][j].imag = a->e[i][0].imag * b->e[j][0].real
+                      - a->e[i][0].real * b->e[j][0].imag;
+      for (k = 1; k < NCOL; k++) {
+        c->e[i][j].real += a->e[i][k].real * b->e[j][k].real
+                         + a->e[i][k].imag * b->e[j][k].imag;
+        c->e[i][j].imag += a->e[i][k].imag * b->e[j][k].real
+                         - a->e[i][k].real * b->e[j][k].imag;
+      }
     }
+  }
 
-#else
+#else   // FAST version for NCOL = DIMF = 3
+  register Real t, ar, ai, br, bi, cr, ci;
 
-int i,j;
-register Real t,ar,ai,br,bi,cr,ci;
-    for(i=0;i<3;i++)for(j=0;j<3;j++){
+  for (i = 0; i < 3; i++) {
+    for (j = 0; j < 3; j++) {
+      ar = a->e[i][0].real;
+      ai = a->e[i][0].imag;
+      br = b->e[j][0].real;
+      bi = b->e[j][0].imag;
+      cr = ar * br;
+      t = ai * bi; cr += t;
+      ci = ai * br;
+      t = ar * bi; ci -= t;
 
-  ar=a->e[i][0].real; ai=a->e[i][0].imag;
-  br=b->e[j][0].real; bi=b->e[j][0].imag;
-  cr=ar*br; t=ai*bi; cr += t;
-  ci=ai*br; t=ar*bi; ci -= t;
+      ar = a->e[i][1].real;
+      ai = a->e[i][1].imag;
+      br = b->e[j][1].real;
+      bi = b->e[j][1].imag;
+      t = ar * br; cr += t;
+      t = ai * bi; cr += t;
+      t = ar * bi; ci -= t;
+      t = ai * br; ci += t;
 
-  ar=a->e[i][1].real; ai=a->e[i][1].imag;
-  br=b->e[j][1].real; bi=b->e[j][1].imag;
-  t=ar*br; cr += t; t=ai*bi; cr += t;
-  t=ar*bi; ci -= t; t=ai*br; ci += t;
+      ar = a->e[i][2].real;
+      ai = a->e[i][2].imag;
+      br = b->e[j][2].real;
+      bi = b->e[j][2].imag;
+      t = ar * br; cr += t;
+      t = ai * bi; cr += t;
+      t = ar * bi; ci -= t;
+      t = ai * br; ci += t;
 
-  ar=a->e[i][2].real; ai=a->e[i][2].imag;
-  br=b->e[j][2].real; bi=b->e[j][2].imag;
-  t=ar*br; cr += t; t=ai*bi; cr += t;
-  t=ar*bi; ci -= t; t=ai*br; ci += t;
-
-  c->e[i][j].real=cr;
-  c->e[i][j].imag=ci;
+      c->e[i][j].real = cr;
+      c->e[i][j].imag = ci;
     }
+  }
 #endif
 }
+// -----------------------------------------------------------------

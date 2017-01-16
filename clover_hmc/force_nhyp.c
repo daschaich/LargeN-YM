@@ -159,76 +159,71 @@ void compute_sigma23(su3_matrix_f *sig, su3_matrix_f *lnk1, su3_matrix_f *lnk2,
                      int dir1, int dir2) {
 
   register int i;
-  register site *st;
+  register site *s;
   msg_tag *tag0, *tag1, *tag2, *tag3, *tag4;
-  su3_matrix_f tmat, tmat2;
+  su3_matrix_f tmat;
 
   // There are six terms: two staples each times three links
 
   /* get link[dir2] from direction dir1   */
   tag0 = start_gather_field(lnk2, sizeof(su3_matrix_f), dir1,
-      EVENANDODD, gen_pt[0]);
+                            EVENANDODD, gen_pt[0]);
 
   /* get Lambda[dir2] from direction dir1 */
   tag2 = start_gather_field(lambda2, sizeof(su3_matrix_f), dir1,
-      EVENANDODD, gen_pt[2]);
+                            EVENANDODD, gen_pt[2]);
 
   wait_gather(tag0);
   wait_gather(tag2);
 
   /* get link[dir1] from direction dir2   */
   tag1 = start_gather_field(lnk1, sizeof(su3_matrix_f), dir2,
-      EVENANDODD, gen_pt[1]);
+                            EVENANDODD, gen_pt[1]);
 
   /* get Lambda[dir1] from direction dir2 */
   tag3 = start_gather_field(lambda1, sizeof(su3_matrix_f), dir2,
-      EVENANDODD, gen_pt[3]);
+                            EVENANDODD, gen_pt[3]);
 
-  // Prepare lower staple at x - dir2, store it in tempmat_nhyp2
+  // Prepare lower staple at x - dir2, store it in tempmatf2
   // and gather it to x
-  FORALLSITES(i, st) {
+  FORALLSITES(i, s) {
     /* "term2" */
-    mult_su3_nn_f(lambda1+i, (su3_matrix_f *)gen_pt[0][i], &tmat);
-    mult_su3_an_f(&tmat, lnk2+i, tempmat_nhyp2+i);
+    mult_su3_nn_f(lambda1 + i, (su3_matrix_f *)gen_pt[0][i], &tmat);
+    mult_su3_an_f(&tmat, lnk2 + i, tempmatf2 + i);
     /* "term3" */
-    mult_su3_nn_f(lnk1+i, (su3_matrix_f *)gen_pt[2][i], &tmat);
-    mult_su3_an_f(&tmat, lnk2+i, &tmat2);
-    add_su3_matrix_f(tempmat_nhyp2 + i, &tmat2, tempmat_nhyp2 + i);
+    mult_su3_nn_f(lnk1 + i, (su3_matrix_f *)gen_pt[2][i], &tmat);
+    mult_su3_an_sum_f(&tmat, lnk2 + i, tempmatf2 + i);
     /* "term4" */
     mult_su3_nn_f(lnk1 + i, (su3_matrix_f *)gen_pt[0][i], &tmat);
-    mult_su3_an_f(&tmat, lambda2 + i, &tmat2);
-    add_su3_matrix_f(tempmat_nhyp2 + i, &tmat2, tempmat_nhyp2 + i);
+    mult_su3_an_sum_f(&tmat, lambda2 + i, tempmatf2 + i);
   }
 
   /* gather staple from direction -dir2 to "home" site */
-  tag4 = start_gather_field(tempmat_nhyp2, sizeof(su3_matrix_f),
-      OPP_DIR(dir2), EVENANDODD, gen_pt[4]);
+  tag4 = start_gather_field(tempmatf2, sizeof(su3_matrix_f),
+                            OPP_DIR(dir2), EVENANDODD, gen_pt[4]);
 
   wait_gather(tag1);
   wait_gather(tag3);
 
   /* Upper staple */
-  FORALLSITES(i, st) {
+  FORALLSITES(i, s) {
     /* "term1" */
-    mult_su3_nn_f(lambda2+i, (su3_matrix_f *)gen_pt[1][i], &tmat);
-    mult_su3_na_f((su3_matrix_f *)gen_pt[0][i], &tmat, sig+i);
+    mult_su3_nn_f(lambda2 + i, (su3_matrix_f *)gen_pt[1][i], &tmat);
+    mult_su3_na_f((su3_matrix_f *)gen_pt[0][i], &tmat, sig + i);
     /* "term5" */
     mult_su3_na_f((su3_matrix_f *)gen_pt[2][i],
-        (su3_matrix_f *)gen_pt[1][i], &tmat);
-    mult_su3_na_f(&tmat, lnk2+i, &tmat2);
-    add_su3_matrix_f(sig+i, &tmat2, sig+i);
+                  (su3_matrix_f *)gen_pt[1][i], &tmat);
+    mult_su3_na_sum_f(&tmat, lnk2 + i, sig + i);
     /* "term6" */
     mult_su3_na_f((su3_matrix_f *)gen_pt[0][i],
-        (su3_matrix_f *)gen_pt[3][i], &tmat);
-    mult_su3_na_f(&tmat, lnk2+i, &tmat2);
-    add_su3_matrix_f(sig+i, &tmat2, sig+i);
+                  (su3_matrix_f *)gen_pt[3][i], &tmat);
+    mult_su3_na_sum_f(&tmat, lnk2 + i, sig + i);
   }
 
   /* finally add the lower staple. */
   wait_gather(tag4);
-
-  FORALLSITES(i, st)
-    add_su3_matrix_f(sig+i, (su3_matrix_f *)gen_pt[4][i], sig+i);
+  FORALLSITES(i, s)
+    sum_su3_matrix_f((su3_matrix_f *)gen_pt[4][i], sig + i);
 
   cleanup_gather(tag0);
   cleanup_gather(tag1);
@@ -264,11 +259,11 @@ void nhyp_force3(int dir3, int dir2) {
     FORALLUPDIR(dir1) {
       if (dir1 == dir || dir1 == dir2 || dir1 == dir3)
         continue;
-      compute_sigma23(tempmat_nhyp1, gauge_field_thin[dir],
+      compute_sigma23(tempmatf, gauge_field_thin[dir],
                       gauge_field_thin[dir1], Lambda2[dir], Lambda2[dir1],
                       dir, dir1);
       FORALLSITES(i, s)
-        sum_su3_matrix_f(tempmat_nhyp1 + i, Sigma[dir] + i);
+        sum_su3_matrix_f(tempmatf + i, Sigma[dir] + i);
     }
   }
 }

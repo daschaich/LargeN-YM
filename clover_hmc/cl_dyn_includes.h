@@ -39,18 +39,15 @@ int w_spectrum_cl();
 int t_props_cl();
 void make_loop_table2();
 void path(int *dir, int *sign, int length);
-void single_action(int dir, Real *coeff);
-void udadu_mu_nu(field_offset lsrc, field_offset rsrc, field_offset mat,
-                 int mu, int nu, int parity);
-void udadu_mat_mu_nu(field_offset matsrc, field_offset matdest,
-                     int mu, int nu);
+void udadu_mu_nu(field_offset lsrc, field_offset rsrc, int mu, int nu);
+void udadu_mat_mu_nu(int mu, int nu);
 void checkmul(field_offset chi, field_offset psi, Real mshift);
 
 void chain_rule(su3_matrix_f *sigmaf, su3_matrix *sigma,
                 su3_matrix_f *gaugelinkf);
 void apply_bc(su3_matrix_f *sigmaf, int dir, int t);
 void mult_sigma_mu_nu(wilson_vector *src, wilson_vector *dest,
-          int mu, int nu);
+                      int mu, int nu);
 
 // Evolution stuff
 void grsource_w();

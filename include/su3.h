@@ -436,8 +436,6 @@ Real realtrace_su3(su3_matrix *a, su3_matrix *b);
 complex trace_su3(su3_matrix *a);
 complex complextrace_su3(su3_matrix *a, su3_matrix *b);
 complex det_su3(su3_matrix *a);
-void sub_su3_matrix(su3_matrix *a, su3_matrix *b, su3_matrix *c);
-void sub_su3_matrix_f(su3_matrix_f *a, su3_matrix_f *b, su3_matrix_f *c);
 void scalar_mult_su3_matrix(su3_matrix *src, Real scalar, su3_matrix *dest);
 void scalar_mult_su3_matrix_f(su3_matrix_f *src, Real scalar, su3_matrix_f *dest);
 void su3_adjoint(su3_matrix *a, su3_matrix *b);
@@ -533,22 +531,23 @@ Real gaussian_rand_no(double_prn *prn_pt);
 void byterevn(int32type w[], int n);
 void byterevn64(int32type w[], int n);
 
-// c <-- c + b, in addmat.c
+// In file addmat.c
 void sum_su3_matrix(su3_matrix *b, su3_matrix *c);
-
-// c <-- a + b, in addmat.c
 void add_su3_matrix(su3_matrix *a, su3_matrix *b, su3_matrix *c);
 
-// c <-- c + b, in addmat_f.c
-void sum_su3_matrix_f(su3_matrix_f *b, su3_matrix_f *c);
+// In file submat.c
+void dif_su3_matrix(su3_matrix *b, su3_matrix *c);
+void sub_su3_matrix(su3_matrix *a, su3_matrix *b, su3_matrix *c);
 
-// c <-- a + b, in addmat_f.c
+// In file addmat_f.c
+void sum_su3_matrix_f(su3_matrix_f *b, su3_matrix_f *c);
 void add_su3_matrix_f(su3_matrix_f *a, su3_matrix_f *b, su3_matrix_f *c);
 
-// c <-- c + b, in addvec.c
-void sum_su3_vector(su3_vector *b, su3_vector *c);
+// In file submat_f.c
+void sub_su3_matrix_f(su3_matrix_f *a, su3_matrix_f *b, su3_matrix_f *c);
 
-// c <-- a + b, in addvec.c
+// In file addvec.c
+void sum_su3_vector(su3_vector *b, su3_vector *c);
 void add_su3_vector(su3_vector *a, su3_vector *b, su3_vector *c);
 
 void grow_add_four_wvecs(wilson_vector *a, half_wilson_vector *b1,
@@ -557,17 +556,28 @@ void grow_add_four_wvecs(wilson_vector *a, half_wilson_vector *b1,
 
 Real magsq_su3vec(su3_vector *a);
 
-void mult_su3_nn (su3_matrix *a, su3_matrix *b, su3_matrix *c);
+// In file m_mat_nn.c
+void mult_su3_nn_dif(su3_matrix *a, su3_matrix *b, su3_matrix *c);
+void mult_su3_nn(su3_matrix *a, su3_matrix *b, su3_matrix *c);
 
-void mult_su3_na (su3_matrix *a, su3_matrix *b, su3_matrix *c);
+// In file m_mat_na.c
+void mult_su3_na_sum(su3_matrix *a, su3_matrix *b, su3_matrix *c);
+void mult_su3_na_dif(su3_matrix *a, su3_matrix *b, su3_matrix *c);
+void mult_su3_na(su3_matrix *a, su3_matrix *b, su3_matrix *c);
 
-void mult_su3_an (su3_matrix *a, su3_matrix *b, su3_matrix *c);
+// In file m_mat_an.c
+void mult_su3_an(su3_matrix *a, su3_matrix *b, su3_matrix *c);
 
-void mult_su3_nn_f (su3_matrix_f *a, su3_matrix_f *b, su3_matrix_f *c);
+// In file m_mat_nn_f.c
+void mult_su3_nn_f(su3_matrix_f *a, su3_matrix_f *b, su3_matrix_f *c);
 
-void mult_su3_na_f (su3_matrix_f *a, su3_matrix_f *b, su3_matrix_f *c);
+// In file m_mat_na_f.c
+void mult_su3_na_sum_f(su3_matrix_f *a, su3_matrix_f *b, su3_matrix_f *c);
+void mult_su3_na_f(su3_matrix_f *a, su3_matrix_f *b, su3_matrix_f *c);
 
-void mult_su3_an_f (su3_matrix_f *a, su3_matrix_f *b, su3_matrix_f *c);
+// In file m_mat_an_f.c
+void mult_su3_an_sum_f(su3_matrix_f *a, su3_matrix_f *b, su3_matrix_f *c);
+void mult_su3_an_f(su3_matrix_f *a, su3_matrix_f *b, su3_matrix_f *c);
 
 void mult_su3_mat_vec(su3_matrix *a, su3_vector *b, su3_vector *c);
 
@@ -578,6 +588,9 @@ void mult_adj_su3_mat_hwvec(su3_matrix *mat, half_wilson_vector *src,
 
 void mult_su3_mat_hwvec(su3_matrix *mat, half_wilson_vector *src,
   half_wilson_vector *dest);
+
+// c <-- c + s * b, in s_m_a_mat.c
+void scalar_mult_sum_su3_matrix(su3_matrix *b, Real s, su3_matrix *c);
 
 // c <-- a + s * b, in s_m_a_mat.c
 void scalar_mult_add_su3_matrix(su3_matrix *a, su3_matrix *b, Real s,

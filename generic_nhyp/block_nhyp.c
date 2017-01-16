@@ -21,9 +21,9 @@ void staple_nhyp(int dir, int dir2, su3_matrix_f *lnk1, su3_matrix_f *lnk2,
                  su3_matrix_f *stp) {
 
     register int i;
-    register site *st;
+    register site *s;
     msg_tag *tag0, *tag1, *tag2;
-    su3_matrix_f tmat1, tmat2;
+    su3_matrix_f tmat;
 
     // dir is the direction of the original link
     // dir2 is the other direction that defines the staple
@@ -38,31 +38,29 @@ void staple_nhyp(int dir, int dir2, su3_matrix_f *lnk1, su3_matrix_f *lnk2,
     // Start working on the lower staple while we wait for the gathers
     // The lower staple is prepared at x-dir2, stored in tempmat_nhyp1
     // and then gathered to x
-    FORALLSITES(i, st)
-      mult_su3_an_f(lnk2 + i, lnk1 + i, tempmat_nhyp1 + i);
-
+    FORALLSITES(i, s)
+      mult_su3_an_f(lnk2 + i, lnk1 + i, tempmatf + i);
 
     // Finish and gather lower staple from direction -dir2
     wait_gather(tag0);
     wait_gather(tag1);
-    FORALLSITES(i, st) {
-      mult_su3_nn_f(tempmat_nhyp1 + i, (su3_matrix_f *)gen_pt[0][i], &tmat1);
-      su3mat_copy_f(&tmat1, tempmat_nhyp1 + i);
+    FORALLSITES(i, s) {
+      mult_su3_nn_f(tempmatf + i, (su3_matrix_f *)gen_pt[0][i], &tmat);
+      su3mat_copy_f(&tmat, tempmatf + i);
     }
 
-    tag2 = start_gather_field(tempmat_nhyp1, sizeof(su3_matrix_f),
+    tag2 = start_gather_field(tempmatf, sizeof(su3_matrix_f),
                               OPP_DIR(dir2), EVENANDODD, gen_pt[2]);
 
     // Calculate and add upper staple while gather runs
-    FORALLSITES(i, st) {
-      mult_su3_nn_f(lnk2 + i, (su3_matrix_f *)gen_pt[1][i], &tmat1);
-      mult_su3_na_f(&tmat1, (su3_matrix_f *)gen_pt[0][i], &tmat2);
-      add_su3_matrix_f(stp + i, &tmat2, stp + i);
+    FORALLSITES(i, s) {
+      mult_su3_nn_f(lnk2 + i, (su3_matrix_f *)gen_pt[1][i], &tmat);
+      mult_su3_na_sum_f(&tmat, (su3_matrix_f *)gen_pt[0][i], stp + i);
     }
 
     // Finally add the lower staple
     wait_gather(tag2);
-    FORALLSITES(i, st)
+    FORALLSITES(i, s)
       add_su3_matrix_f(stp + i, (su3_matrix_f *)gen_pt[2][i], stp + i);
 
     cleanup_gather(tag0);
