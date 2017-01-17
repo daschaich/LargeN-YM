@@ -27,7 +27,6 @@
 
 void write_appl_gauge_info(FILE *fp) {
   char sums[20];
-  Real gauge_fix_tol = GAUGE_FIX_TOL;
 
   /* Note that the file has already been opened and
      the required magic number, time stamp, and lattice
@@ -37,17 +36,18 @@ void write_appl_gauge_info(FILE *fp) {
   if (startlat_p != NULL) {
     /* To retain some info about the original (or previous) configuration */
     write_gauge_info_item(fp, "gauge.previous.filename", "\"%s\"",
-        startlat_p->filename,0,0);
+        startlat_p->filename, 0, 0);
     write_gauge_info_item(fp, "gauge.previous.time_stamp", "\"%s\"",
-        startlat_p->header->time_stamp,0,0);
-    sprintf(sums, "%x %x",startlat_p->check.sum29,startlat_p->check.sum31);
-    write_gauge_info_item(fp, "gauge.previous.checksums", "\"%s\"",sums,0,0);
+        startlat_p->header->time_stamp, 0, 0);
+    sprintf(sums, "%x %x", startlat_p->check.sum29, startlat_p->check.sum31);
+    write_gauge_info_item(fp, "gauge.previous.checksums", "\"%s\"", sums, 0, 0);
   }
   if (fixflag == COULOMB_GAUGE_FIX) {
+    Real gfix_tol = GAUGE_FIX_TOL;
     write_gauge_info_item(fp, "gauge.fix.description", "%s",
-        "\"Coulomb\"",0,0);
+        "\"Coulomb\"", 0, 0);
     write_gauge_info_item(fp, "gauge.fix.tolerance", "%g",
-        (char *)&gauge_fix_tol,0,0);
+        (char *)&gfix_tol, 0, 0);
   }
 }
 
@@ -64,19 +64,19 @@ char *create_QCDML() {
   Real myssplaq = g_ssplaq;  /* Precision conversion */
   Real mystplaq = g_stplaq;  /* Precision conversion */
   Real nersc_linktr = linktr.real / (Real)NCOL;  /* Convention and precision */
-  Real gauge_fix_tol = GAUGE_FIX_TOL;
+  Real gfix_tol = GAUGE_FIX_TOL;
   char sums[20];
 
-  snprintf(info+bytes, max-bytes, "%s",begin);
+  snprintf(info+bytes, max-bytes, "%s", begin);
   bytes = strlen(info);
 
   snprintf(info+bytes, max-bytes, "<plaq>%e</plaq>",(myssplaq+mystplaq)/6.);
   bytes = strlen(info);
 
-  snprintf(info+bytes, max-bytes, "<linktr>%e</linktr>",nersc_linktr);
+  snprintf(info+bytes, max-bytes, "<linktr>%e</linktr>", nersc_linktr);
   bytes = strlen(info);
 
-  snprintf(info+bytes, max-bytes, "%s",begin_info);
+  snprintf(info+bytes, max-bytes, "%s", begin_info);
   bytes = strlen(info);
 
   /* The rest are optional */
@@ -85,23 +85,23 @@ char *create_QCDML() {
        configuration */
     bytes = strlen(info);
     sprint_gauge_info_item(info+bytes, max-bytes, "gauge.previous.filename",
-        "%s", startlat_p->filename,0,0);
+        "%s", startlat_p->filename, 0, 0);
     bytes = strlen(info);
     sprint_gauge_info_item(info+bytes, max-bytes, "gauge.previous.time_stamp",
-        "%s", startlat_p->header->time_stamp,0,0);
-    sprintf(sums, "%x %x",startlat_p->check.sum29,startlat_p->check.sum31);
+        "%s", startlat_p->header->time_stamp, 0, 0);
+    sprintf(sums, "%x %x", startlat_p->check.sum29, startlat_p->check.sum31);
     bytes = strlen(info);
     sprint_gauge_info_item(info+bytes, max-bytes, "gauge.previous.checksums",
-        "%s", sums,0,0);
+        "%s", sums, 0, 0);
   }
 
   if (fixflag == COULOMB_GAUGE_FIX) {
     bytes = strlen(info);
-    sprint_gauge_info_item(info+bytes, max-bytes, "gauge.fix.description",
-        "%s", "Coulomb",0,0);
+    sprint_gauge_info_item(info + bytes, max - bytes, "gauge.fix.description",
+        "%s", "Coulomb", 0, 0);
     bytes = strlen(info);
-    sprint_gauge_info_item(info+bytes, max-bytes, "gauge.fix.tolerance",
-        "%g", (char *)&gauge_fix_tol, 0, 0);
+    sprint_gauge_info_item(info + bytes, max - bytes, "gauge.fix.tolerance",
+        "%g", (char *)&gfix_tol, 0, 0);
   }
 
   snprintf(info + bytes, max - bytes, "%s", end_info);

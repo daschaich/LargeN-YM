@@ -16,13 +16,18 @@ int initial_set() {
   int prompt, status;
   if (mynode() == 0) {
     // Print banner
-    /* stringification kludge from gnu preprocessor manual
-http://gcc.gnu.org/onlinedocs/cpp/Stringification.html */
-#define XSTR(s) STR(s)
-#define STR(s) #s
-    /* end kludge */
-    printf("SU(%d) with clover fermions, DIMF = %d, fermion rep = "
-        XSTR(FREP) "\n", NCOL, DIMF);
+    printf("SU(%d) with clover fermions, DIMF = %d, fermion rep = ",
+           NCOL, DIMF);
+#if FREP == fundamental
+    printf("fundamental\n");
+#elif FREP == symmetric2
+    printf("two-index symmetric\n");
+#elif FREP == antisymmetric2
+    printf("two-index antisymmetric\n");
+#else
+    printf("unrecognized... shutting down\n");
+    terminate(1);
+#endif
     printf("Microcanonical simulation with refreshing\n");
     printf("Machine = %s, with %d nodes\n", machine_type(), numnodes());
 #if SMEAR_LEVEL == 3
@@ -102,6 +107,7 @@ http://gcc.gnu.org/onlinedocs/cpp/Stringification.html */
 
   this_node = mynode();
   number_of_nodes = numnodes();
+  one_ov_N = 1.0 / (Real)NCOL;
   volume = nx * ny * nz * nt;
   total_iters = 0;
   return prompt;
@@ -310,6 +316,11 @@ int readin(int prompt) {
   rsqprop = par_buf.rsqprop;
 
   startflag = par_buf.startflag;
+#ifdef SPECTRUM
+  fixflag = COULOMB_GAUGE_FIX;
+#else
+  fixflag = NO_GAUGE_FIX;
+#endif
   saveflag = par_buf.saveflag;
   strcpy(startfile,par_buf.startfile);
   strcpy(savefile,par_buf.savefile);

@@ -13,7 +13,7 @@
 
 
 // -----------------------------------------------------------------
-// FREP can take the values: fundamental, symmetric2, antisymmetric2, 3/2
+// FREP can take the values: fundamental, symmetric2, antisymmetric2
 #define NCOL 3
 #define DIMF 3
 #define FREP fundamental
@@ -43,7 +43,7 @@ typedef struct {
   float m00im, m11im, m22im;
   float space;
 #endif
-#if NCOL > 3
+#if NCOL == 4
   fcomplex m01, m02, m03, m12, m13, m23;
   float m00im, m11im, m22im, m33im;
 #endif
@@ -63,13 +63,13 @@ typedef struct {
   double m00im, m11im, m22im;
   double space;
 #endif
-#if NCOL > 3
+#if NCOL == 4
   dcomplex m01, m02, m03, m12, m13, m23;
   double m00im, m11im, m22im, m33im;
 #endif
 } danti_hermitmat;
 
-#if (PRECISION==1)
+#if PRECISION == 1
 #define su3_matrix_f   fsu3_matrix_f
 #define su3_matrix     fsu3_matrix
 #define su3_vector_f   fsu3_vector_f
@@ -544,6 +544,7 @@ void sum_su3_matrix_f(su3_matrix_f *b, su3_matrix_f *c);
 void add_su3_matrix_f(su3_matrix_f *a, su3_matrix_f *b, su3_matrix_f *c);
 
 // In file submat_f.c
+void dif_su3_matrix_f(su3_matrix_f *b, su3_matrix_f *c);
 void sub_su3_matrix_f(su3_matrix_f *a, su3_matrix_f *b, su3_matrix_f *c);
 
 // In file addvec.c

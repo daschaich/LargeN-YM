@@ -1,10 +1,10 @@
 #include "cl_dyn_includes.h"
 
-/* two-mass version. if num_masses=1, then usual code. If 2, then
+/* two-mass version. if num_masses = 1, then usual code. If 2, then
 chi[0] and psi[0] are the ``slow'' (no-shift) inverter and chi[1] and psi[1]
 are the fast (shifted) pseudofermions */
 
-/* construct a gaussian random vector, g_rand, and chi=M(dagger)*g_rand  */
+/* construct a gaussian random vector, g_rand, and chi = M(dagger)*g_rand  */
 /* also clear psi, since zero is our best guess for the solution with a
    new random chi field. */
 
@@ -25,7 +25,7 @@ void grsource_w() {
   Real final_rsq;
 
   /* First the original field or the simply shifted one in the 2PF case */
-  if (num_masses==1)
+  if (num_masses == 1)
     kind1 = 0;
   else
     kind1 = 1;
@@ -54,28 +54,28 @@ void grsource_w() {
   FOREVENSITES(i, s) {
     if (num_masses == 2) {
       scalar_mult_add_wvec(&(s->tmp), &(s->chi[kind1]), kappaSq, &tvec);
-      /* That was Mdagger, now we need to subtract -i*shift*gamma5*p */
+      /* That was Mdag, now we need to subtract -i*shift*gamma5*p */
       mult_by_gamma(&(s->g_rand), &tvec2, GAMMAFIVE);
       c_scalar_mult_add_wvec(&tvec, &tvec2, &mishift, &(s->chi[kind1]));
     }
     else {
-      scalar_mult_add_wvec(&(s->tmp), &(s->chi[kind1]), kappaSq,
-                           &(s->chi[kind1]));
+      scalar_mult_wvec(&(s->chi[kind1]), kappaSq, &(s->chi[kind1]));
+      sum_wvec(&(s->tmp), &(s->chi[kind1]));
     }
   }
 
   /* Now the slightly more fancy case of the 2nd PF field: chi[0] and psi[0] */
   if (num_masses == 2) {
-    /*
-       node0_printf("CALL 2nd PF\n");
-       */
+#ifdef DEBUG_CHECK
+    node0_printf("CALL 2nd PF\n");
+#endif
     /* The first contribution is just the random number itself
        so we might as well generate it in chi[0] directly */
     FOREVENSITES(i, s) {
       for (k = 0; k < 4; k++) {
         for (j = 0; j < DIMF; j++) {
           /* Comment these lines out, set s->chi[0].d[k].c[j] = cmplx(1.0, 0.0);
-             and set ``step=0.0'' in the input file and the 1 and 2 PF codes should produce
+             and set ``step = 0.0'' in the input file and the 1 and 2 PF codes should produce
              identical results */
 #ifdef SITERAND
           s->chi[0].d[k].c[j].real = gaussian_rand_no(&(s->site_prn));
@@ -114,57 +114,57 @@ void grsource_w() {
     }
   }
   g_doublesum(&rr);
-  /*
-     node0_printf("rr %e\n", rr);
-     */
+#ifdef DEBUG_CHECK
+  node0_printf("rr %.4g\n", rr);
+#endif
 }
 
 
-/* Check congrad by multiplying psi by Madj*M, compare result to chi */
-/* Before calling checkmul() you should call  congrad_w() */
-void checkmul(field_offset chi, field_offset psi, Real mshift) {
+/* Check congrad by multiplying sol by Mdag.M, compare result to src */
+// Must run CG before calling
+void checkmul(field_offset src, field_offset sol, Real mshift) {
   register int i, j, k;
   register site *s;
-  Real kappaSq = -kappa * kappa, MSq = mshift * mshift;
+  Real kappaSq = -kappa * kappa, MSq = mshift * mshift, tr;
   wilson_vector wvec;
 
-  printf("CHECKMUL: starting %e\n", mshift);
-  /* multiply by M_adjoint*M */
-  mult_ldu_site(psi, F_OFFSET(tmp), EVEN);
-  dslash_w_site(psi, psi, PLUS, ODD);
-  mult_ldu_site(psi, F_OFFSET(mp), ODD);
+#ifdef DEBUG_CHECK
+  printf("CHECKMUL: starting with mshift %.4g\n", mshift);
+#endif
+  // multiply by Mdag.M
+  mult_ldu_site(sol, F_OFFSET(tmp), EVEN);
+  dslash_w_site(sol, sol, PLUS, ODD);
+  mult_ldu_site(sol, F_OFFSET(mp), ODD);
   dslash_w_site(F_OFFSET(mp), F_OFFSET(mp), PLUS, EVEN);
   FOREVENSITES(i, s)
     scalar_mult_add_wvec(&(s->tmp), &(s->mp), kappaSq, &(s->mp));
   mult_ldu_site(F_OFFSET(mp), F_OFFSET(tmp), EVEN);
   dslash_w_site(F_OFFSET(mp), F_OFFSET(mp), MINUS, ODD);
   mult_ldu_site(F_OFFSET(mp), F_OFFSET(tmp), ODD);
-  dslash_w_site(F_OFFSET(tmp), F_OFFSET(p) , MINUS, EVEN);
+  dslash_w_site(F_OFFSET(tmp), F_OFFSET(p), MINUS, EVEN);
   FOREVENSITES(i, s) {
     scalar_mult_add_wvec(&(s->tmp), &(s->p), kappaSq, &(s->p));
-    scalar_mult_add_wvec(&(s->p), (wilson_vector *)F_PT(s, psi), MSq, &(s->p));
+    scalar_mult_add_wvec(&(s->p), (wilson_vector *)F_PT(s, sol), MSq, &(s->p));
   }
 
-  /* Compare to source */
+  // Compare to source
   FOREVENSITES(i, s) {
-    /**printf("Site %d %d %d %d\n", s->x, s->y, s->z, s->t);**/
-    copy_wvec((wilson_vector *)F_PT(s, chi), &wvec);
-    for (k=0;k<4;k++) {
-      for (j=0;j<DIMF;j++) {
-        if (fabs((double)(wvec.d[k].c[j].real - (double)s->p.d[k].c[j].real) > IMAG_TOL)) {
-          printf("%d %d %d\t%e\t%e\t%e\n", i, k, j,
-              (double)(wvec.d[k].c[j].real),
-              (double)s->p.d[k].c[j].real,
-              (double)(wvec.d[k].c[j].real) - (double)s->p.d[k].c[j].real);
-          if (fabs((double)(wvec.d[k].c[j].imag)-(double)s->p.d[k].c[j].imag) > IMAG_TOL)
-            printf("%d %d %d\t%e\t%e\t%e\n", i, k, j,
-                (double)(wvec.d[k].c[j].imag),
-                (double)s->p.d[k].c[j].imag,
-                (double)(wvec.d[k].c[j].imag) - (double)s->p.d[k].c[j].imag);
+#ifdef DEBUG_CHECK
+    printf("Site %d %d %d %d\n", s->x, s->y, s->z, s->t);
+#endif
+    copy_wvec((wilson_vector *)F_PT(s, src), &wvec);
+    for (k = 0; k < 4; k++) {
+      for (j = 0; j < DIMF; j++) {
+        tr = wvec.d[k].c[j].real - s->p.d[k].c[j].real;
+        if (fabs(tr) > IMAG_TOL) {
+          printf("real %d %d %d: %.4g - %.4g = %.4g > %.4g\n", i, k, j,
+                 wvec.d[k].c[j].real, s->p.d[k].c[j].real, tr, IMAG_TOL);
         }
-        /*
-           printf("\n");
-           */
+        tr = wvec.d[k].c[j].imag - s->p.d[k].c[j].imag;
+        if (fabs(tr) > IMAG_TOL) {
+            printf("imag %d %d %d: %.4g - %.4g = %.4g > %.4g\n", i, k, j,
+                   wvec.d[k].c[j].imag, s->p.d[k].c[j].imag, tr, IMAG_TOL);
+        }
       }
     }
   }

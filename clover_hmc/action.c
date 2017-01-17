@@ -117,24 +117,3 @@ double action() {
   return tot;
 }
 // -----------------------------------------------------------------
-
-
-
-// -----------------------------------------------------------------
-// Copy fundamental gauge field as an array of four su3_matrix_f
-void gauge_field_copy_f(field_offset src, field_offset dest) {
-  register int i, dir, src2, dest2;
-  register site *s;
-
-  FORALLSITES(i, s) {
-    src2 = src;
-    dest2 = dest;
-    FORALLUPDIR(dir) {
-      su3mat_copy_f((su3_matrix_f *)F_PT(s, src2),
-                    (su3_matrix_f *)F_PT(s, dest2));
-      src2 += sizeof(su3_matrix_f);
-      dest2 += sizeof(su3_matrix_f);
-    }
-  }
-}
-// -----------------------------------------------------------------

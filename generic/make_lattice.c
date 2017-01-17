@@ -12,7 +12,7 @@ void make_lattice() {
 
   // Allocate space for lattice
   node0_printf("Mallocing %.1f MBytes per node for lattice\n",
-               (double)sites_on_node * sizeof(site)/1e6);
+               (double)sites_on_node * sizeof(site) / 1e6);
   lattice = malloc(sites_on_node * sizeof(*lattice));
   if (lattice == NULL) {
     printf("node%d: no room for lattice\n", this_node);

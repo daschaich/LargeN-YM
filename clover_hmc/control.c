@@ -24,9 +24,6 @@ int main(int argc, char *argv[]) {
     terminate(1);
 
   initialize_machine(&argc, &argv);
-#ifdef HAVE_QDP
-  QDP_initialize(&argc, &argv);
-#endif
   g_sync();
   prompt = setup();
 
@@ -96,17 +93,11 @@ int main(int argc, char *argv[]) {
     // Measure every "propinterval" trajectories
     if ((traj_done % propinterval) == (propinterval - 1)) {
       Nmeas++;
-
-      fixflag = NO_GAUGE_FIX;
 #ifdef SPECTRUM
-      gaugefix(TUP, 1.5, 500, (Real)GAUGE_FIX_TOL,
-               F_OFFSET(staple),F_OFFSET(tempmat1),
-               0, NULL, NULL, 0, NULL, NULL);
-      fixflag = COULOMB_GAUGE_FIX;
+      gaugefix(TUP, 1.5, 500, GAUGE_FIX_TOL, -1, -1);
       spect_iters = w_spectrum_cl();
       avspect_iters += spect_iters;
 #endif
-
     }
     fflush(stdout);
   }

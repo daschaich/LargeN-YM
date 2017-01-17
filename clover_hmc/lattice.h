@@ -85,43 +85,40 @@ EXTERN int warms, trajecs, niter, nrestart, propinterval, nflavors;
 EXTERN float traj_length;
 
 // Global Hasenbusch variables
-EXTERN int num_masses;      // Maximum number of masses, <= MAX_MASSES
+EXTERN int num_masses;    // Maximum number of masses, <= MAX_MASSES
 EXTERN Real shift;
 EXTERN int nsteps[MAX_MASSES + 1];
 EXTERN Real gnorm, fnorm[2], max_gf, max_ff[2];
 
 // Global action and evolution variables
 EXTERN Real rsqmin, rsqprop, beta, beta_frep, kappa, clov_c, u0, CKU0;
-EXTERN Real epsilon;
+EXTERN Real one_ov_N;
 EXTERN double returntrlogA, g_ssplaq, g_stplaq;
 EXTERN double_complex linktr;
 EXTERN u_int32type nersc_checksum;
+EXTERN char stringLFN[MAXFILENAME];   // ILDG LFN if applicable
 EXTERN char startfile[MAXFILENAME], savefile[MAXFILENAME];
-EXTERN char stringLFN[MAXFILENAME];  /** ILDG LFN if applicable **/
-EXTERN int startflag;  /* beginning lattice: CONTINUE, RELOAD, FRESH */
-EXTERN int fixflag;  /* gauge fix: COULOMB_GAUGE_FIX, NO_GAUGE_FIX */
-EXTERN int saveflag; /* do with lattice: 1=save; */
+EXTERN int startflag; // Beginning lattice: CONTINUE, RELOAD, FRESH
+EXTERN int fixflag;   // Either NO_GAUGE_FIX or COULOMB_GAUGE_FIX
+EXTERN int saveflag;  // 1 if we will save the lattice
 EXTERN int total_iters;
 /* boundary-flip switch, made consistent for higher-rep code */
 EXTERN int current_boundary;
 
-/* Some of these global variables are node dependent */
-/* They are set in "make_lattice()"                  */
-EXTERN int sites_on_node;    /* number of sites on this node */
-EXTERN int even_sites_on_node; /* number of even sites on this node */
-EXTERN int odd_sites_on_node;  /* number of odd sites on this node */
-EXTERN int number_of_nodes;  /* number of nodes in use */
-EXTERN int this_node;    /* node number of this node */
+// Some of these global variables are node dependent
+// They are set in "make_lattice()"
+EXTERN int sites_on_node;       // Number of sites on this node
+EXTERN int even_sites_on_node;  // Number of even sites on this node
+EXTERN int odd_sites_on_node;   // Number of odd sites on this node
+EXTERN int number_of_nodes;     // Number of nodes in use
+EXTERN int this_node;           // Node number of this node
 
-EXTERN int debugflag;
+// Each node maintains a structure with the pseudorandom number
+// generator state
+EXTERN double_prn node_prn;
 
-/* Each node maintains a structure with the pseudorandom number
-   generator state */
-EXTERN double_prn node_prn ;
-
-/* improved action stuff */
 #ifdef IMP
-
+// Improved action stuff
 #define nloop 1
 #define nreps 1
 #define max_num 400
@@ -133,7 +130,7 @@ EXTERN Real loop_coeff[nloop][nreps];
 EXTERN int loop_ch[nloop][max_num], ch;
 
 EXTERN Real loop_term[48][nreps];
-#endif /* IMP */
+#endif
 
 EXTERN quark_invert_control qic;
 EXTERN dirac_clover_param dcp;
@@ -141,22 +138,22 @@ EXTERN dirac_clover_param dcp;
 EXTERN gauge_file *startlat_p;
 EXTERN gauge_file *savelat_p;
 
-/* The lattice is a single global variable - (actually this is the
-   part of the lattice on this node) */
+// The lattice is a single global variable
+// (actually this is the part of the lattice on this node)
 EXTERN site *lattice;
 
-/* Vectors for addressing */
-/* Generic pointers, for gather routines */
-#define N_POINTERS 8  /* Number of generic pointers */
-/* NEED 8 WHEN GAUGEFIXING; 10 in original nhyp code */
-EXTERN char ** gen_pt[N_POINTERS];
+// Vectors for addressing
+// Generic pointers, for gather routines
+// We need 8 mostly (since force_nhyp is streamlined)
+#define N_POINTERS 8
+EXTERN char **gen_pt[N_POINTERS];
 
 EXTERN su3_matrix_f *gauge_field[4];
 EXTERN su3_matrix_f *gauge_field_thin[4];
 
 // nHYP stuff
 EXTERN Real alpha_smear[3];
-EXTERN su3_matrix_f *hyplink1[4][4]; /* Needed for other stuff, too */
+EXTERN su3_matrix_f *hyplink1[4][4];
 EXTERN su3_matrix_f *hyplink2[4][4];
 EXTERN su3_matrix_f *Sigma[4];
 EXTERN su3_matrix_f *SigmaH[4];

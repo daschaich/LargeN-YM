@@ -2,7 +2,7 @@
 # Scalar processor compilation for library routines
 # Should work for all architectures with a suitable CFLAGS and CC
 
-# The "fast" variants of the code explicitly unroll loops and inline
+# The FAST variants of the code explicitly unroll loops and inline
 
 MAKEFILE = Make_vanilla
 

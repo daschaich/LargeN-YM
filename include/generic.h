@@ -106,12 +106,9 @@ void make_field_strength(
           for the resulting field strength */
   );
 
-/* gaugefix2.c */
-void gaugefix(int gauge_dir,Real relax_boost,int max_gauge_iter,
-        Real gauge_fix_tol, field_offset diffmat, field_offset sumvec,
-        int nvector, field_offset vector_offset[], int vector_parity[],
-        int nantiherm, field_offset antiherm_offset[],
-        int antiherm_parity[] );
+// gaugefix2.c
+void gaugefix(int gauge_dir, Real relax_boost, int max_gauge_iter,
+              Real gfix_tol, field_offset diffmat, field_offset sumvec);
 
 /* io_helpers.c */
 gauge_file *save_lattice(int flag, char *filename, char *stringLFN );
@@ -132,8 +129,8 @@ int get_prompt(FILE *fp, int *value );
 
 /* layout_hyper_prime.c */
 void setup_layout();
-int node_number(int x,int y,int z,int t);
-int node_index(int x,int y,int z,int t);
+int node_number(int x, int y, int z, int t);
+int node_index(int x, int y, int z, int t);
 size_t num_sites(int node);
 const int *get_logical_dimensions();
 const int *get_logical_coordinate();
@@ -154,7 +151,7 @@ void path_prod_subl(const int *dir, const int length, const int subl,
         su3_matrix *tempmat1);
 
 /* plaquette4.c */
-void plaquette(Real *ss_plaq,Real *st_plaq);
+void plaquette(Real *ss_plaq, Real *st_plaq);
 
 /* ploop_dist.c */
 complex ploop();
@@ -171,9 +168,5 @@ Real myrand(double_prn *prn_pt);
 
 /* reunitarize2.c */
 void reunitarize();
-/* int reunit_su3(su3_matrix *c); [now declared only in source file generic/reunitarize2.c] */
-
-/* show_generic_opts.c */
-void show_generic_opts();
 #endif
 // -----------------------------------------------------------------

@@ -295,7 +295,8 @@ double fermion_force(Real eps1, Real eps2) {
   register int i, mu, nu;
   register site *s;
   int level;
-  Real tCKU0 = -CKU0 / 4.0, ferm_epsilon = nflavors * eps1, tr;
+  Real tCKU0 = -CKU0 / 4.0, ferm_epsilon = nflavors * eps1;
+  Real MSq = shift * shift * eps2 / eps1;
   double tmpnorm, maxnorm = 0.0, norm = 0.0;
   su3_matrix tmat;
   su3_matrix_f tmatf;
@@ -359,9 +360,8 @@ TIC(1)
        p(odd)  = kappa * A_odd^{-1} * Dslash_adjoint * M * psi(even). */
 
     /* And the overall factor of shift^2, here we also adjust the stepsize */
-    tr = shift * shift * eps2 / eps1;
     FORALLSITES(i, s)
-      scalar_mult_wvec(&(s->p), tr, &(s->p));
+      scalar_mult_wvec(&(s->p), MSq, &(s->p));
 
     delta(F_OFFSET(psi[0]), F_OFFSET(p));
   }
@@ -384,7 +384,7 @@ TIC(1)
       apply_bc(&tmatf, mu, s->t);
 
       // Not done yet.  For now, save dH/dV^T
-      su3mat_copy_f(&tmatf, Sigma[mu]+i);
+      su3mat_copy_f(&tmatf, Sigma[mu] + i);
     }
   }
 

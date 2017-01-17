@@ -26,8 +26,6 @@
 int setup();
 int readin(int prompt);
 
-void gauge_field_copy_f(field_offset src, field_offset dest);
-
 // CG stuff
 int congrad_cl_m(int niter, Real rsqmin, Real *final_rsq_ptr,
                  field_offset src, field_offset dest, Real mshift);
