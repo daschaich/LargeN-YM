@@ -87,13 +87,14 @@ start:
   g_doublesum(&rsq);
   iteration++ ;         // Count number of Mdag.M multiplications
   total_iters++;
+
+  rsqstop = rsqmin * source_norm;
 #ifdef CG_DEBUG
-  node0_printf("CG source_norm = %.4g\n", source_norm);
+  node0_printf("CG source_norm = %.4g ", source_norm);
+  node0_printf("--> rsqstop = %.4g\n", rsqstop);
   node0_printf("CG iter %d, rsq %.4g, pkp %.4g, a %.4g\n",
                iteration, rsq, pkp, a);
 #endif
-
-  rsqstop = rsqmin * source_norm;
   if (rsq <= rsqstop) {
     *final_rsq_ptr = (Real)rsq;
     FORALLUPDIR(i) {

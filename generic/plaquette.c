@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------
 // Measure average space--space and space--time plaquettes,
-// mallocing the temporary su3_matrix
+// Uses tempmatf or tempmat depending on rep
 #include "generic_includes.h"
 // -----------------------------------------------------------------
 
@@ -13,13 +13,7 @@ void plaquette(double *ss_plaq, double *st_plaq) {
   register su3_matrix_f *m1, *m4;
   double ss_sum = 0.0, st_sum = 0.0;
   msg_tag *mtag0, *mtag1;
-  su3_matrix_f tmat, *tempmat = malloc(sites_on_node * sizeof(*tempmat));
-
-  if (tempmat == NULL) {
-    printf("plaquette: can't malloc tempmat\n");
-    fflush(stdout);
-    terminate(1);
-  }
+  su3_matrix_f tmat;
 
   // We can exploit a symmetry under dir<-->dir2
   for (dir = YUP; dir <= TUP; dir++) {
@@ -30,11 +24,11 @@ void plaquette(double *ss_plaq, double *st_plaq) {
       mtag1 = start_gather_site(F_OFFSET(linkf[dir]), sizeof(su3_matrix_f),
                                 dir2, EVENANDODD, gen_pt[1]);
 
-      // tempmat = Udag_b(x) U_a(x)
+      // tempmatf(x) = Udag_b(x) U_a(x)
       FORALLSITES(i, s) {
         m1 = &(s->linkf[dir]);
         m4 = &(s->linkf[dir2]);
-        mult_su3_an_f(m4, m1, &tempmat[i]);
+        mult_su3_an_f(m4, m1, &(tempmatf[i]));
       }
       wait_gather(mtag0);
       wait_gather(mtag1);
@@ -43,7 +37,7 @@ void plaquette(double *ss_plaq, double *st_plaq) {
       FORALLSITES(i, s) {
         m1 = (su3_matrix_f *)(gen_pt[0][i]);
         m4 = (su3_matrix_f *)(gen_pt[1][i]);
-        mult_su3_nn_f(&(tempmat[i]), m1, &tmat);
+        mult_su3_nn_f(&(tempmatf[i]), m1, &tmat);
 
         if (dir == TUP)
           st_sum += (double)realtrace_su3_f(m4, &tmat);
@@ -61,7 +55,6 @@ void plaquette(double *ss_plaq, double *st_plaq) {
   // and three that do not
   *ss_plaq = ss_sum / (double)(3.0 * volume);
   *st_plaq = st_sum / (double)(3.0 * volume);
-  free(tempmat);
 }
 // -----------------------------------------------------------------
 
@@ -76,13 +69,7 @@ void plaquette_frep(double *ss_plaq_frep, double *st_plaq_frep) {
   register su3_matrix *m1, *m4;
   double ss_sum = 0.0, st_sum = 0.0;
   msg_tag *mtag0, *mtag1;
-  su3_matrix tmat, *tempmat = malloc(sites_on_node * sizeof(*tempmat));
-
-  if (tempmat == NULL) {
-    printf("plaquette_frep: can't malloc tempmat\n");
-    fflush(stdout);
-    terminate(1);
-  }
+  su3_matrix tmat;
 
   // We can exploit a symmetry under dir<-->dir2
   for (dir = YUP; dir <= TUP; dir++) {
@@ -124,7 +111,6 @@ void plaquette_frep(double *ss_plaq_frep, double *st_plaq_frep) {
   // and three that do not
   *ss_plaq_frep = ss_sum / (double)(3.0 * volume);
   *st_plaq_frep = st_sum / (double)(3.0 * volume);
-  free(tempmat);
 }
 #endif
 // -----------------------------------------------------------------

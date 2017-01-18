@@ -25,7 +25,6 @@ int wilson_invert(     // Return value is number of iterations taken
 
 void boundary_flip(int sign);
 
-void bj_to_weyl(wilson_vector *src, wilson_vector *dest);
 void dslash_w_site(field_offset src,field_offset dest,
                    int isign, int parity);
 void dslash_w_site_special(field_offset src,field_offset dest,
