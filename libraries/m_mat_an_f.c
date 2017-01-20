@@ -8,7 +8,6 @@
 
 void mult_su3_an_sum_f(su3_matrix_f *a, su3_matrix_f *b, su3_matrix_f *c) {
   register int i, j, k;
-
   for (i = 0; i < NCOL; i++) {
     for (j = 0; j < NCOL; j++) {
       for (k = 0; k < NCOL; k++) {
@@ -25,7 +24,6 @@ void mult_su3_an_f(su3_matrix_f *a, su3_matrix_f *b, su3_matrix_f *c) {
   register int j;
 #ifndef FAST
   register int i, k;
-
   for (i = 0; i < NCOL; i++) {
     for (j = 0; j < NCOL; j++) {
       // Initialize
@@ -45,7 +43,6 @@ void mult_su3_an_f(su3_matrix_f *a, su3_matrix_f *b, su3_matrix_f *c) {
 #else   // FAST version for NCOL = DIMF = 3
   register Real a0r, a0i, a1r, a1i, a2r, a2i;
   register Real b0r, b0i, b1r, b1i, b2r, b2i;
-
   for (j = 0; j < 3; j++) {
     a0r = a->e[0][0].real; a0i = a->e[0][0].imag;
     b0r = b->e[0][j].real; b0i = b->e[0][j].imag;

@@ -9,7 +9,6 @@
 
 void mult_su3_na_sum(su3_matrix *a, su3_matrix *b, su3_matrix *c) {
   register int i, j, k;
-
   for (i = 0; i < DIMF; i++) {
     for (j = 0; j < DIMF; j++) {
       for (k = 0; k < DIMF; k++) {
@@ -24,7 +23,6 @@ void mult_su3_na_sum(su3_matrix *a, su3_matrix *b, su3_matrix *c) {
 
 void mult_su3_na_dif(su3_matrix *a, su3_matrix *b, su3_matrix *c) {
   register int i, j, k;
-
   for (i = 0; i < DIMF; i++) {
     for (j = 0; j < DIMF; j++) {
       for (k = 0; k < DIMF; k++) {
@@ -41,7 +39,6 @@ void mult_su3_na(su3_matrix *a, su3_matrix *b, su3_matrix *c) {
   register int i, j;
 #ifndef FAST
   register int k;
-
   for (i = 0; i < DIMF; i++) {
     for (j = 0; j < DIMF; j++) {
       // Initialize
@@ -60,7 +57,6 @@ void mult_su3_na(su3_matrix *a, su3_matrix *b, su3_matrix *c) {
 
 #else   // FAST version for NCOL = DIMF = 3
   register Real t, ar, ai, br, bi, cr, ci;
-
   for (i = 0; i < 3; i++) {
     for (j = 0; j < 3; j++) {
       ar = a->e[i][0].real;

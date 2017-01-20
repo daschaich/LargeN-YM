@@ -1,5 +1,5 @@
 // -----------------------------------------------------------------
-// Irrep matrix--vector multiplication
+// Irrep matrix multiplying vector
 // c <- a.b
 #include "../include/config.h"
 #include "../include/complex.h"

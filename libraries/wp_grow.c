@@ -1,10 +1,9 @@
-/***************** wp_grow.c  (in su3.a) **************************/
 /* 
   Expand the "Wilson projection" of a Wilson fermion vector.
   (1 +- gamma_j) is a projection operator, and we are given a
   half_wilson_vector which contains the two components of a Wilson
   vector projected out.  This routine reexpands it to a four component
-  object.
+  object, optionally accumulating a running sum.
 
   usage:  wp_grow(half_wilson_vector *src, wilson_vector *dest,
         int dir, int sign);
@@ -57,8 +56,8 @@
             1  0  0  0    (1, 0,-1, 0) -1
             0  1  0  0    (0, 1, 0,-1) -1
 */
-#include "../include/config.h"
 #include <stdio.h>
+#include "../include/config.h"
 #include "../include/complex.h"
 #include "../include/su3.h"
 #include "../include/dirs.h"
@@ -67,12 +66,13 @@ void wp_grow(half_wilson_vector *src, wilson_vector *dest,
              int dir, int sign) {
 
   register int i;
+
   if (sign == MINUS)
     dir = OPP_DIR(dir);  // Two ways to get -gamma_dir!
 
   switch(dir) {
     case XUP:
-      for(i = 0; i < DIMF; i++) {
+      for (i = 0; i < DIMF; i++) {
         dest->d[0].c[i] = src->h[0].c[i];
         dest->d[1].c[i] = src->h[1].c[i];
         CMUL_MINUS_I(src->h[0].c[i], dest->d[3].c[i]);
@@ -80,7 +80,7 @@ void wp_grow(half_wilson_vector *src, wilson_vector *dest,
       }
       break;
     case XDOWN:
-      for(i = 0; i < DIMF; i++) {
+      for (i = 0; i < DIMF; i++) {
         dest->d[0].c[i] = src->h[0].c[i];
         dest->d[1].c[i] = src->h[1].c[i];
         CMUL_I(src->h[0].c[i], dest->d[3].c[i]);
@@ -88,7 +88,7 @@ void wp_grow(half_wilson_vector *src, wilson_vector *dest,
       }
       break;
     case YUP:
-      for(i = 0; i < DIMF; i++) {
+      for (i = 0; i < DIMF; i++) {
         dest->d[0].c[i] = src->h[0].c[i];
         dest->d[1].c[i] = src->h[1].c[i];
         CNEGATE(src->h[0].c[i], dest->d[3].c[i]);
@@ -96,7 +96,7 @@ void wp_grow(half_wilson_vector *src, wilson_vector *dest,
       }
       break;
     case YDOWN:
-      for(i = 0; i < DIMF; i++) {
+      for (i = 0; i < DIMF; i++) {
         dest->d[0].c[i] = src->h[0].c[i];
         dest->d[1].c[i] = src->h[1].c[i];
         CCOPY(src->h[0].c[i], dest->d[3].c[i]);
@@ -104,7 +104,7 @@ void wp_grow(half_wilson_vector *src, wilson_vector *dest,
       }
       break;
     case ZUP:
-      for(i = 0; i < DIMF; i++) {
+      for (i = 0; i < DIMF; i++) {
         dest->d[0].c[i] = src->h[0].c[i];
         dest->d[1].c[i] = src->h[1].c[i];
         CMUL_MINUS_I(src->h[0].c[i], dest->d[2].c[i]);
@@ -112,7 +112,7 @@ void wp_grow(half_wilson_vector *src, wilson_vector *dest,
       }
       break;
     case ZDOWN:
-      for(i = 0; i < DIMF; i++) {
+      for (i = 0; i < DIMF; i++) {
         dest->d[0].c[i] = src->h[0].c[i];
         dest->d[1].c[i] = src->h[1].c[i];
         CMUL_I(src->h[0].c[i], dest->d[2].c[i]);
@@ -120,7 +120,7 @@ void wp_grow(half_wilson_vector *src, wilson_vector *dest,
       }
       break;
     case TUP:
-      for(i = 0; i < DIMF; i++) {
+      for (i = 0; i < DIMF; i++) {
         dest->d[0].c[i] = src->h[0].c[i];
         dest->d[1].c[i] = src->h[1].c[i];
         dest->d[2].c[i] = src->h[0].c[i];
@@ -128,7 +128,7 @@ void wp_grow(half_wilson_vector *src, wilson_vector *dest,
       }
       break;
     case TDOWN:
-      for(i = 0; i < DIMF; i++) {
+      for (i = 0; i < DIMF; i++) {
         dest->d[0].c[i] = src->h[0].c[i];
         dest->d[1].c[i] = src->h[1].c[i];
         CNEGATE(src->h[0].c[i], dest->d[2].c[i]);
@@ -140,3 +140,80 @@ void wp_grow(half_wilson_vector *src, wilson_vector *dest,
   }
 }
 
+void wp_grow_sum(half_wilson_vector *src, wilson_vector *dest,
+                 int dir, int sign) {
+
+  register int i;
+
+  if (sign == MINUS)
+    dir = OPP_DIR(dir);  // Two ways to get -gamma_dir!
+
+  switch(dir) {
+    case XUP:
+      for (i = 0; i < DIMF; i++) {
+        CSUM(dest->d[0].c[i], src->h[0].c[i]);
+        CSUM(dest->d[1].c[i], src->h[1].c[i]);
+        CSUM_TMI(dest->d[2].c[i], src->h[1].c[i]);
+        CSUM_TMI(dest->d[3].c[i], src->h[0].c[i]);
+      }
+      break;
+    case XDOWN:
+      for (i = 0; i < DIMF; i++) {
+        CSUM(dest->d[0].c[i], src->h[0].c[i]);
+        CSUM(dest->d[1].c[i], src->h[1].c[i]);
+        CSUM_TPI(dest->d[2].c[i], src->h[1].c[i]);
+        CSUM_TPI(dest->d[3].c[i], src->h[0].c[i]);
+      }
+      break;
+    case YUP:
+      for (i = 0; i < DIMF; i++) {
+        CSUM(dest->d[0].c[i], src->h[0].c[i]);
+        CSUM(dest->d[1].c[i], src->h[1].c[i]);
+        CSUM(dest->d[2].c[i], src->h[1].c[i]);
+        CDIF(dest->d[3].c[i], src->h[0].c[i]);
+      }
+      break;
+    case YDOWN:
+      for (i = 0; i < DIMF; i++) {
+        CSUM(dest->d[0].c[i], src->h[0].c[i]);
+        CSUM(dest->d[1].c[i], src->h[1].c[i]);
+        CDIF(dest->d[2].c[i], src->h[1].c[i]);
+        CSUM(dest->d[3].c[i], src->h[0].c[i]);
+      }
+      break;
+    case ZUP:
+      for (i = 0; i < DIMF; i++) {
+        CSUM(dest->d[0].c[i], src->h[0].c[i]);
+        CSUM(dest->d[1].c[i], src->h[1].c[i]);
+        CSUM_TMI(dest->d[2].c[i], src->h[0].c[i]);
+        CSUM_TPI(dest->d[3].c[i], src->h[1].c[i]);
+      }
+      break;
+    case ZDOWN:
+      for (i = 0; i < DIMF; i++) {
+        CSUM(dest->d[0].c[i], src->h[0].c[i]);
+        CSUM(dest->d[1].c[i], src->h[1].c[i]);
+        CSUM_TPI(dest->d[2].c[i], src->h[0].c[i]);
+        CSUM_TMI(dest->d[3].c[i], src->h[1].c[i]);
+      }
+      break;
+    case TUP:
+      for (i = 0; i < DIMF; i++) {
+        CSUM(dest->d[0].c[i], src->h[0].c[i]);
+        CSUM(dest->d[1].c[i], src->h[1].c[i]);
+        CSUM(dest->d[2].c[i], src->h[0].c[i]);
+        CSUM(dest->d[3].c[i], src->h[1].c[i]);
+      }
+      break;
+    case TDOWN:
+      for (i = 0; i < DIMF; i++) {
+        CSUM(dest->d[0].c[i], src->h[0].c[i]);
+        CSUM(dest->d[1].c[i], src->h[1].c[i]);
+        CDIF(dest->d[2].c[i], src->h[0].c[i]);
+        CDIF(dest->d[3].c[i], src->h[1].c[i]);
+      }
+      break;
+    default:
+      printf("BAD CALL TO WP_GROW()\n");
+  }
+}

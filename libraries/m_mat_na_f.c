@@ -8,7 +8,6 @@
 
 void mult_su3_na_sum_f(su3_matrix_f *a, su3_matrix_f *b, su3_matrix_f *c) {
   register int i, j, k;
-
   for (i = 0; i < NCOL; i++) {
     for (j = 0; j < NCOL; j++) {
       for (k = 0; k < NCOL; k++) {
@@ -25,7 +24,6 @@ void mult_su3_na_f(su3_matrix_f *a, su3_matrix_f *b, su3_matrix_f *c) {
   register int i, j;
 #ifndef FAST
   register int k;
-
   for (i = 0; i < NCOL; i++) {
     for (j = 0; j < NCOL; j++) {
       // Initialize

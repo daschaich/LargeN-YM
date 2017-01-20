@@ -8,7 +8,6 @@
 
 void mult_su3_nn_dif(su3_matrix *a, su3_matrix *b, su3_matrix *c) {
   register int i, j, k;
-
   for (i = 0; i < DIMF; i++) {
     for (j = 0; j < DIMF; j++) {
       for (k = 0; k < DIMF; k++) {
@@ -25,7 +24,6 @@ void mult_su3_nn(su3_matrix *a, su3_matrix *b, su3_matrix *c) {
   register int i, j;
 #ifndef FAST
   register int k;
-
   for (i = 0; i < DIMF; i++) {
     for (j = 0; j < DIMF; j++) {
       // Initialize

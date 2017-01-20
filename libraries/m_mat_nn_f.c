@@ -9,7 +9,6 @@ void mult_su3_nn_f(su3_matrix_f *a, su3_matrix_f *b, su3_matrix_f *c) {
   register int i, j;
 #ifndef FAST
   register int k;
-
   for (i = 0; i < NCOL; i++) {
     for (j = 0; j < NCOL; j++) {
       // Initialize
@@ -28,7 +27,6 @@ void mult_su3_nn_f(su3_matrix_f *a, su3_matrix_f *b, su3_matrix_f *c) {
 
 #else   // FAST version for NCOL = DIMF = 3
   register Real t, ar, ai, br, bi, cr, ci;
-
   for (i = 0; i < 3; i++) {
     for (j = 0; j < 3; j++) {
       ar = a->e[i][0].real; ai = a->e[i][0].imag;

@@ -82,7 +82,7 @@ void dslash_w_site(field_offset src, field_offset dest, int isign,
     mult_su3_mat_hwvec(&(s->link[TUP]),
         (half_wilson_vector * )(gen_pt[TUP][i]), &hwvt );
     grow_add_four_wvecs((wilson_vector *)F_PT(s,dest),
-        &hwvx, &hwvy, &hwvz, &hwvt, isign, 0 ); /* "0" is NOSUM */
+        &hwvx, &hwvy, &hwvz, &hwvt, isign);
   }
   FORALLUPDIR(dir)
     cleanup_gather(tag[dir]);
@@ -93,12 +93,12 @@ void dslash_w_site(field_offset src, field_offset dest, int isign,
     wait_gather(tag[OPP_DIR(dir)]);
 
   FORSOMEPARITYDOMAIN(i,s,parity){
-    grow_add_four_wvecs((wilson_vector *)F_PT(s,dest),
+    grow_sum_four_wvecs((wilson_vector *)F_PT(s,dest),
         (half_wilson_vector *)(gen_pt[XDOWN][i]),
         (half_wilson_vector *)(gen_pt[YDOWN][i]),
         (half_wilson_vector *)(gen_pt[ZDOWN][i]),
         (half_wilson_vector *)(gen_pt[TDOWN][i]),
-        -isign, 1 );  /* "1" SUMs in current dest */
+        -isign);
   }
   FORALLUPDIR(dir)
     cleanup_gather(tag[OPP_DIR(dir)]);
@@ -201,7 +201,7 @@ void dslash_w_site_special(field_offset src,field_offset dest,
     mult_su3_mat_hwvec(&(s->link[TUP]),
         (half_wilson_vector * )(gen_pt[TUP][i]), &hwvt );
     grow_add_four_wvecs((wilson_vector *)F_PT(s,dest),
-        &hwvx, &hwvy, &hwvz, &hwvt, isign, 0 ); /* "0" is NOSUM */
+        &hwvx, &hwvy, &hwvz, &hwvt, isign);
   }
 
   /* Take Wilson projection for src displaced in down direction,
@@ -210,12 +210,12 @@ void dslash_w_site_special(field_offset src,field_offset dest,
     wait_gather(tag[OPP_DIR(dir)]);
 
   FORSOMEPARITYDOMAIN(i, s, parity) {
-    grow_add_four_wvecs((wilson_vector *)F_PT(s,dest),
+    grow_sum_four_wvecs((wilson_vector *)F_PT(s,dest),
         (half_wilson_vector *)(gen_pt[XDOWN][i]),
         (half_wilson_vector *)(gen_pt[YDOWN][i]),
         (half_wilson_vector *)(gen_pt[ZDOWN][i]),
         (half_wilson_vector *)(gen_pt[TDOWN][i]),
-        -isign, 1 );  /* "1" SUMs in current dest */
+        -isign);
   }
 }
 // -----------------------------------------------------------------
