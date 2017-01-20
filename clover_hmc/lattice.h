@@ -151,6 +151,9 @@ EXTERN char **gen_pt[N_POINTERS];
 EXTERN su3_matrix_f *gauge_field[4];
 EXTERN su3_matrix_f *gauge_field_thin[4];
 
+// CG stuff
+EXTERN wilson_vector *tempwvec;         // Another temporary CG vector
+
 // nHYP stuff
 EXTERN Real alpha_smear[3];
 EXTERN su3_matrix_f *hyplink1[4][4];

@@ -19,8 +19,7 @@ void grsource_w() {
   register int i, j, k;
   register site *s;
   int kind1, iters = 0;
-  Real final_rsq;
-  double kappaSq = -kappa * kappa;
+  Real mkappaSq = -kappa * kappa;
   complex ishift = cmplx(0.0, shift), mishift = cmplx(0.0, -shift);
   wilson_vector twvec, twvec2;
 #ifdef DEBUG_CHECK
@@ -62,13 +61,13 @@ void grsource_w() {
   dslash_w_site(F_OFFSET(g_rand), F_OFFSET(chi[kind1]), MINUS, EVEN);
   FOREVENSITES(i, s) {
     if (num_masses == 2) {
-      scalar_mult_add_wvec(&(s->tmp), &(s->chi[kind1]), kappaSq, &twvec);
+      scalar_mult_add_wvec(&(s->tmp), &(s->chi[kind1]), mkappaSq, &twvec);
       /* That was Mdag, now we need to subtract -i*shift*gamma5*p */
       mult_by_gamma(&(s->g_rand), &twvec2, GAMMAFIVE);
       c_scalar_mult_add_wvec(&twvec, &twvec2, &mishift, &(s->chi[kind1]));
     }
     else {
-      scalar_mult_wvec(&(s->chi[kind1]), kappaSq, &(s->chi[kind1]));
+      scalar_mult_wvec(&(s->chi[kind1]), mkappaSq, &(s->chi[kind1]));
       sum_wvec(&(s->tmp), &(s->chi[kind1]));
     }
   }
@@ -108,7 +107,7 @@ void grsource_w() {
 
     /* But now something fancy has to happen. First we invert with the shift
        and write the result into psi[0] */
-    iters += congrad(niter, rsqmin, &final_rsq, 0, shift);
+    iters += congrad(niter, rsqmin, 0, shift);
 
     // chi <-- Mtilde psi1
     // chi <-- Mdag chi[0]
@@ -117,7 +116,7 @@ void grsource_w() {
     mult_ldu_site(F_OFFSET(tmp), F_OFFSET(psi[0]), ODD);
     dslash_w_site(F_OFFSET(psi[0]), F_OFFSET(p), PLUS, EVEN);
     FOREVENSITES(i, s) {
-      scalar_mult_add_wvec(&(s->tmp), &(s->p), kappaSq, &twvec);
+      scalar_mult_add_wvec(&(s->tmp), &(s->p), mkappaSq, &twvec);
 
       /* That was M, now we need to add i*shift*gamma5*p */
       mult_by_gamma(&(s->psi[0]), &twvec2, GAMMAFIVE);
@@ -136,7 +135,7 @@ void grsource_w() {
 void checkmul(field_offset src, field_offset sol, Real mshift) {
   register int i, j, k;
   register site *s;
-  Real kappaSq = -kappa * kappa, MSq = mshift * mshift, tr;
+  Real mkappaSq = -kappa * kappa, MSq = mshift * mshift, tr;
   wilson_vector wvec;
 
 #ifdef DEBUG_CHECK
@@ -148,7 +147,7 @@ void checkmul(field_offset src, field_offset sol, Real mshift) {
   mult_ldu_site(sol, F_OFFSET(mp), ODD);
   dslash_w_site(F_OFFSET(mp), F_OFFSET(mp), PLUS, EVEN);
   FOREVENSITES(i, s) {
-    scalar_mult_wvec(&(s->mp), kappaSq, &(s->mp));
+    scalar_mult_wvec(&(s->mp), mkappaSq, &(s->mp));
     sum_wvec(&(s->tmp), &(s->mp));
   }
   mult_ldu_site(F_OFFSET(mp), F_OFFSET(tmp), EVEN);
@@ -156,7 +155,7 @@ void checkmul(field_offset src, field_offset sol, Real mshift) {
   mult_ldu_site(F_OFFSET(mp), F_OFFSET(tmp), ODD);
   dslash_w_site(F_OFFSET(tmp), F_OFFSET(p), MINUS, EVEN);
   FOREVENSITES(i, s) {
-    scalar_mult_wvec(&(s->p), kappaSq, &(s->p));
+    scalar_mult_wvec(&(s->p), mkappaSq, &(s->p));
     sum_wvec(&(s->tmp), &(s->p));
     scalar_mult_sum_wvec((wilson_vector *)F_PT(s, sol), MSq, &(s->p));
   }

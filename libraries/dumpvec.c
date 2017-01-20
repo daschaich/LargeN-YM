@@ -1,16 +1,13 @@
-/*******************  dumpvec.c  (in su3.a) *****************************
-*									*
-*  void dumpvec( su3_vector *vec )					*
-*  print out a 3 element complex vector					*
-*/
+// -----------------------------------------------------------------
+// Print the given irrep vector
 #include "../include/config.h"
 #include <stdio.h>
 #include "../include/complex.h"
 #include "../include/su3.h"
 
-void dumpvec( su3_vector *v ){
-int j;
-    for(j=0;j<DIMF;j++)printf("(%e,%e)\t",
-	v->c[j].real,v->c[j].imag);
-    printf("\n");
+void dump_vec(su3_vector *v) {
+  register int j;
+  for (j = 0; j < DIMF; j++)
+    printf("  (%.4g, %.4g)", v->c[j].real, v->c[j].imag);
 }
+// -----------------------------------------------------------------

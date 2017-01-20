@@ -335,15 +335,6 @@ void gaugefix(int gauge_dir, Real relax_boost, int max_gauge_iter,
   int gauge_iter;
   double current_av, old_av = 0.0, del_av = 0.0;
 
-#if NCOL != DIMF
-  // Gauge fixing with matter fields in higher reps not yet implemented
-  if (nvector > 0) {
-    node0_printf("gaugefix: nvector must be zero if not in fund rep\n");
-    fflush(stdout);
-    terminate(1);
-  }
-#endif
-
   // Require at least 8 gen_pt values for gauge fixing
   if (N_POINTERS < 8) {
     node0_printf("gaugefix: N_POINTERS must be at least 8\n");

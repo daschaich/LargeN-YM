@@ -18,9 +18,7 @@
 // rsqmin = desired rsq, quit when we reach rsq = rsqmin*source_norm.
 #include "cl_dyn_includes.h"
 
-int congrad(int niter, Real rsqmin, Real *final_rsq_ptr,
-            int level, Real mshift) {
-
+int congrad(int niter, Real rsqmin, int level, Real mshift) {
   register int i;
   register site *s;
   int iteration = 0;
@@ -36,7 +34,6 @@ int congrad(int niter, Real rsqmin, Real *final_rsq_ptr,
   // Allocate fields, copy source and initial guess
   wilson_vector *chi = malloc(sites_on_node * sizeof(*chi));
   wilson_vector *psi = malloc(sites_on_node * sizeof(*psi));
-  wilson_vector *tmp = malloc(sites_on_node * sizeof(*tmp));
   wilson_vector *mp  = malloc(sites_on_node * sizeof(*mp));
   wilson_vector *p   = malloc(sites_on_node * sizeof(*p));
   wilson_vector *r   = malloc(sites_on_node * sizeof(*r));
@@ -44,6 +41,14 @@ int congrad(int niter, Real rsqmin, Real *final_rsq_ptr,
     copy_wvec(&(s->chi[level]), &(chi[i]));
     copy_wvec(&(s->psi[level]), &(psi[i]));
   }
+
+#ifdef DEBUG_CHECK
+  printf("Dumping source...\n");
+  FORALLSITES(i, s) {
+    printf("chi(%d, %d, %d, %d):\n", s->x, s->y, s->z, s->t);
+    dump_wvec(&(chi[i]));
+  }
+#endif
 
 start:
   /* mp <-- Mdag.M on psi
@@ -53,23 +58,23 @@ start:
      */
   rsq = 0.0;
   source_norm = 0.0;
-  mult_ldu_field(psi, tmp, EVEN);
+  mult_ldu_field(psi, tempwvec, EVEN);
   dslash_w_field_special(psi, mp, PLUS, ODD, tag, 0);
-  mult_ldu_field(mp, tmp, ODD);
-  dslash_w_field_special(tmp, mp, PLUS, EVEN, tag2, 0);
+  mult_ldu_field(mp, tempwvec, ODD);
+  dslash_w_field_special(tempwvec, mp, PLUS, EVEN, tag2, 0);
   FOREVENSITES(i, s) {
     scalar_mult_wvec(&(mp[i]), kappaSq, &(mp[i]));
-    sum_wvec(&(tmp[i]), &(mp[i]));
+    sum_wvec(&(tempwvec[i]), &(mp[i]));
   }
 
   // Above applied M on psi, now apply Mdag
-  mult_ldu_field(mp, tmp, EVEN);
+  mult_ldu_field(mp, tempwvec, EVEN);
   dslash_w_field_special(mp, mp, MINUS, ODD, tag, 1);
-  mult_ldu_field(mp, tmp, ODD);
-  dslash_w_field_special(tmp, mp, MINUS, EVEN, tag2, 1);
+  mult_ldu_field(mp, tempwvec, ODD);
+  dslash_w_field_special(tempwvec, mp, MINUS, EVEN, tag2, 1);
   FOREVENSITES(i, s) {
     scalar_mult_wvec(&(mp[i]), kappaSq, &(mp[i]));
-    sum_wvec(&(tmp[i]), &(mp[i]));
+    sum_wvec(&(tempwvec[i]), &(mp[i]));
 
     // Now mp holds Mdag.M applied to psi
     // Add mshift^2 psi
@@ -95,7 +100,6 @@ start:
                iteration, rsq, pkp, a);
 #endif
   if (rsq <= rsqstop) {
-    *final_rsq_ptr = (Real)rsq;
     FORALLUPDIR(i) {
       cleanup_gather(tag[i]);
       cleanup_gather(tag2[i]);
@@ -111,7 +115,6 @@ start:
 
     free(psi);
     free(chi);
-    free(tmp);
     free(mp);
     free(p);
     free(r);
@@ -138,22 +141,22 @@ start:
   do {
     oldrsq = rsq;
     pkp = 0.0;
-    mult_ldu_field(p, tmp, EVEN);
+    mult_ldu_field(p, tempwvec, EVEN);
     dslash_w_field_special(p, mp, PLUS, ODD, tag, 1);
-    mult_ldu_field(mp, tmp, ODD);
-    dslash_w_field_special(tmp, mp, PLUS, EVEN, tag2, 1);
+    mult_ldu_field(mp, tempwvec, ODD);
+    dslash_w_field_special(tempwvec, mp, PLUS, EVEN, tag2, 1);
     FOREVENSITES(i, s) {
       scalar_mult_wvec(&(mp[i]), kappaSq, &(mp[i]));
-      sum_wvec(&(tmp[i]), &(mp[i]));
+      sum_wvec(&(tempwvec[i]), &(mp[i]));
     }
 
-    mult_ldu_field(mp, tmp, EVEN);
+    mult_ldu_field(mp, tempwvec, EVEN);
     dslash_w_field_special(mp, mp, MINUS, ODD, tag, 1);
-    mult_ldu_field(mp, tmp, ODD);
-    dslash_w_field_special(tmp, mp, MINUS, EVEN, tag2, 1);
+    mult_ldu_field(mp, tempwvec, ODD);
+    dslash_w_field_special(tempwvec, mp, MINUS, EVEN, tag2, 1);
     FOREVENSITES(i, s) {
       scalar_mult_wvec(&(mp[i]), kappaSq, &(mp[i]));
-      sum_wvec(&(tmp[i]), &(mp[i]));
+      sum_wvec(&(tempwvec[i]), &(mp[i]));
 
       // Add mshift^2 psi
       if (mshift > 0.0)
@@ -178,7 +181,6 @@ start:
 #endif
 
     if (rsq <= rsqstop) {
-      *final_rsq_ptr = (Real)rsq;
       FORALLUPDIR(i) {
         cleanup_gather(tag[i]);
         cleanup_gather(tag2[i]);
@@ -199,7 +201,6 @@ start:
         copy_wvec(&(psi[i]), &(s->psi[level]));
       free(psi);
       free(chi);
-      free(tmp);
       free(mp);
       free(p);
       free(r);
@@ -228,7 +229,6 @@ start:
   // Hard-coded number of restarts in defines.h
   if (iteration < CONGRAD_RESTART * niter)
     goto start;
-  *final_rsq_ptr = rsq;
   if (rsq > rsqstop) {
     node0_printf("WARNING: CG did not converge, size_r = %.2g\n",
                  sqrt(rsq / source_norm));
@@ -242,7 +242,6 @@ start:
 
   free(psi);
   free(chi);
-  free(tmp);
   free(mp);
   free(p);
   free(r);

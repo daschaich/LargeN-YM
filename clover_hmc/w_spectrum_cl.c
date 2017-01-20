@@ -21,7 +21,9 @@ void w_source_cd(field_offset src, int color, int spin, int source,
   short my_x, my_y, my_z;
   Real rx, ry, rz, radius2;
 
-  /* node0_printf("WSOURCE: source = %d\n", source); */
+#ifdef DEBUG_CHECK
+  node0_printf("w_source_cd is making source %d\n", source);
+#endif
 
   // Clear source
   FORALLSITES(i, s)
@@ -35,7 +37,7 @@ void w_source_cd(field_offset src, int color, int spin, int source,
     }
   }
   else if (source == WALL) {
-    // Gaussian fixed to timeslice t0, centered on (x0, y0, z0) timeslice t0 */
+    // Gaussian fixed to timeslice t0, centered on (x0, y0, z0)
 
     FORALLSITES(i, s) {
       if (s->t != t0)
@@ -440,22 +442,23 @@ int w_spectrum_cl() {
   int iters = 0, spin, color;
 
   for (spin = 0; spin < 4; spin++) {
-    for (color = 0; color < 3; color++) {
+    for (color = 0; color < NCOL; color++) {
       /*node0_printf("source spin = %d, color = %d\n", spin, color);*/
-      w_source_cd(F_OFFSET(chi[0]), color, spin, WALL, 0, 0, 0, 0, (Real)0.25);
+      w_source_cd(F_OFFSET(chi[0]), color, spin, WALL, 0, 0, 0, 0, 0.25);
 
-      /* printf("DUMP source!!\n");
-         FORALLSITES(i, s) {
-         printf("i = %d,  coords %d %d %d %d\n", i, s->x, s->y, s->z, s->t);
-         dump_wvec(&(s->chi[0]));
-         }
+#ifdef DEBUG_CHECK
+      printf("Dumping source...\n");
+      FORALLSITES(i, s) {
+        printf("chi[1](%d, %d, %d, %d):\n", s->x, s->y, s->z, s->t);
+        dump_wvec(&(s->chi[1]));
+      }
 
-         printf("DUMP link[1]\n");
-         FORALLSITES(i, s) {
-         printf("i = %d,  coords %d %d %d %d\n", i, s->x, s->y, s->z, s->t);
-         dumpmat(&(s->link[1]));
-         }
-         */
+      printf("Dumping link_1...\n");
+      FORALLSITES(i, s) {
+        printf("link_1(%d, %d, %d, %d):\n", s->x, s->y, s->z, s->t);
+        dumpmat(&(s->link[1]));
+      }
+#endif
 
       // Load inversion control structure
       qic.start_flag = 0;   // Use zero initial guess for psi[0]

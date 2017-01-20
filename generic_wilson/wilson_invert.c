@@ -2,11 +2,7 @@
 // Wrapper for Wilson and Wilson-clover quark inverter
 // The source routine must be called before this inversion routine
 #include "generic_wilson_includes.h"
-// -----------------------------------------------------------------
 
-
-
-// -----------------------------------------------------------------
 // src, dest and sav are all wilson_vectors
 // dest contains first the initial guess and then the answer
 // sav is for saving the source
@@ -24,7 +20,7 @@ int wilson_invert(field_offset src, field_offset dest, field_offset sav,
 
   // Store the source for future use
   FORALLSITES(i, s)
-    copy_wvec((wilson_vector *)F_PT(s,src), (wilson_vector *)F_PT(s,sav));
+    copy_wvec((wilson_vector *)F_PT(s, src), (wilson_vector *)F_PT(s, sav));
 
   // Inversion with restart (appropriate for CG and BiCG)
   for (tot_iters = 0, irestart = 0; irestart < qic->nrestart; irestart++) {
@@ -49,7 +45,7 @@ int wilson_invert(field_offset src, field_offset dest, field_offset sav,
   if (qic->size_r > qic->resid) {
     node0_printf("wilson_invert did not converge after %d iterations, ",
                  tot_iters);
-  node0_printf("size_r = %.8g wanted %.8g\n", qic->size_r, qic->resid);
+    node0_printf("size_r = %.8g wanted %.8g\n", qic->size_r, qic->resid);
   }
 
   // Restore minimum

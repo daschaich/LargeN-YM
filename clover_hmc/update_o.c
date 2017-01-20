@@ -90,7 +90,7 @@ void predict_next_psi(Real *oldtime, Real *newtime, Real *nexttime,
 // Three-level Omelyan integrator for Hasenbusch-preconditioned code
 int update_step(Real *old_cg_time, Real *cg_time, Real *next_cg_time) {
   int iters = 0, outer, inner, level;
-  Real final_rsq, f_eps0, f_eps1, g_eps, mshift, tr;
+  Real f_eps0, f_eps1, g_eps, mshift, tr;
 
   f_eps0 = traj_length / (Real)nsteps[0];
   f_eps1 = f_eps0 / (2.0 * (Real)nsteps[1]);
@@ -127,7 +127,7 @@ int update_step(Real *old_cg_time, Real *cg_time, Real *next_cg_time) {
       free_clov();
       make_clov(CKU0);
       returntrlogA = make_clovinv(ODD);
-      iters += congrad(niter, rsqmin, &final_rsq, level, mshift);
+      iters += congrad(niter, rsqmin, level, mshift);
 
       tr = fermion_force(f_eps1 * LAMBDA_MID, 0.0);
       fnorm[1] += tr;
@@ -147,7 +147,7 @@ int update_step(Real *old_cg_time, Real *cg_time, Real *next_cg_time) {
         free_clov();
         make_clov(CKU0);
         returntrlogA = make_clovinv(ODD);
-        iters += congrad(niter, rsqmin, &final_rsq, level, mshift);
+        iters += congrad(niter, rsqmin, level, mshift);
         tr = fermion_force(f_eps1 * TWO_LAMBDA, 0.0);
         fnorm[1] += tr;
         if (tr > max_ff[1])
@@ -161,12 +161,12 @@ int update_step(Real *old_cg_time, Real *cg_time, Real *next_cg_time) {
     free_clov();
     make_clov(CKU0);
     returntrlogA = make_clovinv(ODD);
-    iters += congrad(niter, rsqmin, &final_rsq, level, mshift);
+    iters += congrad(niter, rsqmin, level, mshift);
 
     if (num_masses == 2) {
       next_cg_time[0] = cg_time[0] + f_eps0;
       predict_next_psi(old_cg_time, cg_time, next_cg_time, 0);
-      iters += congrad(niter, rsqmin, &final_rsq, 0, 0.0);
+      iters += congrad(niter, rsqmin, 0, 0.0);
     }
 
     tr = fermion_force(f_eps1 * TWO_LAMBDA, f_eps0 * LAMBDA_MID);
@@ -187,7 +187,7 @@ int update_step(Real *old_cg_time, Real *cg_time, Real *next_cg_time) {
       free_clov();
       make_clov(CKU0);
       returntrlogA = make_clovinv(ODD);
-      iters += congrad(niter, rsqmin, &final_rsq, level, mshift);
+      iters += congrad(niter, rsqmin, level, mshift);
       tr = fermion_force(f_eps1 * LAMBDA_MID, 0.0);
       fnorm[1] += tr;
       if (tr > max_ff[1])
@@ -205,7 +205,7 @@ int update_step(Real *old_cg_time, Real *cg_time, Real *next_cg_time) {
         free_clov();
         make_clov(CKU0);
         returntrlogA = make_clovinv(ODD);
-        iters += congrad(niter, rsqmin, &final_rsq, level, mshift);
+        iters += congrad(niter, rsqmin, level, mshift);
         tr = fermion_force(f_eps1 * TWO_LAMBDA, 0.0);
         fnorm[1] += tr;
         if (tr > max_ff[1])
@@ -220,11 +220,11 @@ int update_step(Real *old_cg_time, Real *cg_time, Real *next_cg_time) {
     free_clov();
     make_clov(CKU0);
     returntrlogA = make_clovinv(ODD);
-    iters += congrad(niter, rsqmin, &final_rsq, level, mshift);
+    iters += congrad(niter, rsqmin, level, mshift);
     if (num_masses == 2) {
       next_cg_time[0] = cg_time[0] + f_eps0;
       predict_next_psi(old_cg_time, cg_time, next_cg_time, 0);
-      iters += congrad(niter, rsqmin, &final_rsq, 0, 0.0);
+      iters += congrad(niter, rsqmin, 0, 0.0);
     }
 
     if (outer < nsteps[0])
@@ -268,7 +268,7 @@ void gauge_field_copy_f(field_offset src, field_offset dest) {
 // -----------------------------------------------------------------
 int update() {
   int iters = 0;
-  Real final_rsq, cg_time[2], old_cg_time[2], next_cg_time[2];
+  Real cg_time[2], old_cg_time[2], next_cg_time[2];
   double starttrlogA = 0.0;
 #ifdef HMC_ALGORITHM
   Real xrandom;
@@ -310,9 +310,9 @@ int update() {
   cg_time[1] = -1;
 
   // Do CG to get psi = (M^dag M)^(-1) chi on both levels
-  iters += congrad(niter, rsqmin, &final_rsq, 0, 0.0);
+  iters += congrad(niter, rsqmin, 0, 0.0);
   if (num_masses == 2)
-    iters += congrad(niter, rsqmin, &final_rsq, 1, shift);
+    iters += congrad(niter, rsqmin, 1, shift);
 #ifdef CG_DEBUG
   checkmul();
 #endif
@@ -339,9 +339,9 @@ int update() {
   endtrlogA = returntrlogA;
 
   // Do CG to get both psi = (M^dag M)^(-1) chi
-  iters += congrad(niter, rsqmin, &final_rsq, 0, 0.0);
+  iters += congrad(niter, rsqmin, 0, 0.0);
   if (num_masses == 2)
-    iters += congrad(niter, rsqmin, &final_rsq, 1, shift);
+    iters += congrad(niter, rsqmin, 1, shift);
 
   endaction = action();
   endaction -= 2.0 * endtrlogA;

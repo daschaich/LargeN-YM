@@ -13,7 +13,7 @@ int main(int argc, char *argv[]) {
   Real f_eps0, f_eps1, g_eps;
   double ss_plaq, st_plaq, ss_plaq_frep, st_plaq_frep, dtime;
 #ifdef SPECTRUM
-  int spect_iters, avspect_iters = 0;
+  int avspect_iters = 0;
 #endif
   complex plp = cmplx(99.0, 99.0);
 
@@ -95,8 +95,7 @@ int main(int argc, char *argv[]) {
       Nmeas++;
 #ifdef SPECTRUM
       gaugefix(TUP, 1.5, 500, GAUGE_FIX_TOL, -1, -1);
-      spect_iters = w_spectrum_cl();
-      avspect_iters += spect_iters;
+      avspect_iters += w_spectrum_cl();
 #endif
     }
     fflush(stdout);

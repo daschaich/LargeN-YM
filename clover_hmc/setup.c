@@ -120,12 +120,16 @@ int initial_set() {
 // Allocate all space for fields
 void make_fields() {
   Real size = (Real)(8.0 * sizeof(su3_matrix_f));
-
-  /* move here alloc for clov? */
-
   FIELD_ALLOC_VEC(gauge_field, su3_matrix_f, 4);
   FIELD_ALLOC_VEC(gauge_field_thin, su3_matrix_f, 4);
 
+  /* move here alloc for clov? */
+
+  // CG stuff
+  size += (Real)(sizeof(wilson_vector));
+  FIELD_ALLOC(tempwvec, wilson_vector);
+
+  // nHYP stuff
   size += (Real)(16.0 * sizeof(su3_matrix_f));
   FIELD_ALLOC_VEC(Sigma, su3_matrix_f, 4);
   FIELD_ALLOC_VEC(SigmaH, su3_matrix_f, 4);

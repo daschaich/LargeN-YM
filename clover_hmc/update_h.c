@@ -254,7 +254,8 @@ void prepare_vecs(int level) {
   mult_ldu_site(F_OFFSET(psi[level]), F_OFFSET(tmp), EVEN);
   FOREVENSITES(i, s) {
     if (level == 1) {
-      scalar_mult_add_wvec(&(s->tmp), &(s->p), -kappa, &twvec);
+      copy_wvec(&(s->tmp), &(tempwvec[i]));
+      scalar_mult_add_wvec(&(tempwvec[i]), &(s->p), -kappa, &twvec);
       /* that was M*psi now we need to add i*shift*gamma_5*p */
       mult_by_gamma(&(s->psi[level]), &twvec2, GAMMAFIVE);
       c_scalar_mult_add_wvec(&twvec, &twvec2, &tc, &(s->p));
@@ -343,7 +344,8 @@ TIC(1)
     mult_ldu_site(F_OFFSET(psi[0]), F_OFFSET(tmp), EVEN);
     FOREVENSITES(i, s) {
       scalar_mult_wvec(&(s->p), -kappa, &(s->p));
-      sum_wvec(&(s->tmp), &(s->p));
+      copy_wvec(&(s->tmp), &(tempwvec[i]));
+      sum_wvec(&(tempwvec[i]), &(s->p));
     }
 
     dslash_w_site(F_OFFSET(p), F_OFFSET(tmp), MINUS, ODD);
