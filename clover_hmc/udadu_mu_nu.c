@@ -13,10 +13,11 @@
    mat is output: the contribution to iH_dot
    Uses tmp as an internal wilson_vector.  psi, chi, p and mp are busy.
 */
-// Put result in tempmat2, can't touch tempmat
+// Put result in tempmat
 
 #include "cl_dyn_includes.h"
 
+// Output is the contribution to iH_dot, put into tempmat
 void udadu_mu_nu(field_offset lsrc, field_offset rsrc, int mu, int nu) {
   register int i;
   register site *s;
@@ -42,13 +43,13 @@ void udadu_mu_nu(field_offset lsrc, field_offset rsrc, int mu, int nu) {
   tag[2] = start_general_gather_site(lsrc, sizeof(wilson_vector),
                                      disp, EVENANDODD, gen_pt[2]);
 
-  wait_gather(tag[0]);
-  wait_gather(tag[1]);
   wait_general_gather(tag[2]);
   tag[3] = start_general_gather_site(rsrc, sizeof(wilson_vector),
                                      disp, EVENANDODD, gen_pt[3]);
 
   /* ltemp = lsrc, rtemp = plaq*rsrc */
+  wait_gather(tag[0]);
+  wait_gather(tag[1]);
   FORALLSITES(i, s) {
     mult_adj_mat_wilson_vec(&(s->link[nu]),
                             (wilson_vector *)F_PT(s, rsrc), &rtemp);
@@ -57,13 +58,12 @@ void udadu_mu_nu(field_offset lsrc, field_offset rsrc, int mu, int nu) {
     mult_mat_wilson_vec(&(s->link[mu]), &rtemp, &sittemp);
     mult_sigma_mu_nu(&sittemp, &rtemp, mu, nu);
 
-    // Initialize tempmat2
-    su3_projector_w(&rtemp, (wilson_vector *)F_PT(s, lsrc), &(tempmat2[i]));
+    // Initialize tempmat
+    su3_projector_w(&rtemp, (wilson_vector *)F_PT(s, lsrc), &(tempmat[i]));
   }
 
-  wait_general_gather(tag[3]);
-
   /* ltemp = upperleftcorner*lsrc, rtemp = lowerrightcorner*rsrc */
+  wait_general_gather(tag[3]);
   FORALLSITES(i, s) {
     mult_mat_wilson_vec((su3_matrix *)(gen_pt[1][i]),
                         (wilson_vector *)(gen_pt[2][i]), &sittemp);
@@ -75,7 +75,7 @@ void udadu_mu_nu(field_offset lsrc, field_offset rsrc, int mu, int nu) {
     mult_sigma_mu_nu(&sittemp, &rtemp, mu, nu);
 
     su3_projector_w(&rtemp, &ltemp, &tmat);
-    sum_su3_matrix(&tmat, &(tempmat2[i]));
+    sum_su3_matrix(&tmat, &(tempmat[i]));
   }
   cleanup_general_gather(tag[2]);
   cleanup_general_gather(tag[3]);
@@ -88,10 +88,9 @@ void udadu_mu_nu(field_offset lsrc, field_offset rsrc, int mu, int nu) {
   tag[5] = start_gather_site(rsrc, sizeof(wilson_vector),
                              nu, EVENANDODD, gen_pt[5]);
 
+  /* ltemp = link[nu]*lsrc, rtemp = staple*rsrc */
   wait_gather(tag[4]);
   wait_gather(tag[5]);
-
-  /* ltemp = link[nu]*lsrc, rtemp = staple*rsrc */
   FORALLSITES(i, s) {
     mult_mat_wilson_vec(&(s->link[nu]),
                         (wilson_vector *)(gen_pt[4][i]), &ltemp);
@@ -102,9 +101,8 @@ void udadu_mu_nu(field_offset lsrc, field_offset rsrc, int mu, int nu) {
     mult_mat_wilson_vec(&(s->link[mu]), &rtemp, &sittemp);
     mult_sigma_mu_nu(&sittemp, &rtemp, mu, nu);
     su3_projector_w(&rtemp, &ltemp, &tmat);
-    sum_su3_matrix(&tmat, &(tempmat2[i]));
+    sum_su3_matrix(&tmat, &(tempmat[i]));
   }
-
   cleanup_gather(tag[4]);
   cleanup_gather(tag[5]);
 
@@ -128,7 +126,7 @@ void udadu_mu_nu(field_offset lsrc, field_offset rsrc, int mu, int nu) {
     mult_sigma_mu_nu(&sittemp, &rtemp, mu, nu);
 
     su3_projector_w(&rtemp, &ltemp, &tmat);
-    sum_su3_matrix(&tmat, &(tempmat2[i]));
+    sum_su3_matrix(&tmat, &(tempmat[i]));
   }
   cleanup_gather(tag[0]);
   cleanup_gather(tag[1]);
@@ -168,7 +166,7 @@ void udadu_mu_nu(field_offset lsrc, field_offset rsrc, int mu, int nu) {
     mult_sigma_mu_nu(&sittemp, &rtemp, mu, nu);
 
     su3_projector_w(&rtemp, &ltemp, &tmat);
-    dif_su3_matrix(&tmat, &(tempmat2[i]));
+    dif_su3_matrix(&tmat, &(tempmat[i]));
   }
   cleanup_gather(tag[4]);
   cleanup_gather(tag[5]);
@@ -179,10 +177,9 @@ void udadu_mu_nu(field_offset lsrc, field_offset rsrc, int mu, int nu) {
   tag[5] = start_gather_site(rsrc, sizeof(wilson_vector),
                              OPP_DIR(nu), EVENANDODD, gen_pt[5]);
 
+  /* ltemp = staple*lsrc, rtemp = link[nu]^dagger*rsrc */
   wait_gather(tag[4]);
   wait_gather(tag[5]);
-
-  /* ltemp = staple*lsrc, rtemp = link[nu]^dagger*rsrc */
   FORALLSITES(i, s) {
     mult_adj_mat_wilson_vec((su3_matrix *)(gen_pt[1][i]),
                             (wilson_vector *)(gen_pt[4][i]), &ltemp);
@@ -194,8 +191,10 @@ void udadu_mu_nu(field_offset lsrc, field_offset rsrc, int mu, int nu) {
     mult_sigma_mu_nu(&sittemp, &rtemp, mu, nu);
 
     su3_projector_w(&rtemp, &ltemp, &tmat);
-    dif_su3_matrix(&tmat, &(tempmat2[i]));
+    dif_su3_matrix(&tmat, &(tempmat[i]));
   }
+  cleanup_gather(tag[4]);
+  cleanup_gather(tag[5]);
 
   /***** lower leaf, same parity *****/
 
@@ -218,12 +217,11 @@ void udadu_mu_nu(field_offset lsrc, field_offset rsrc, int mu, int nu) {
     mult_sigma_mu_nu(((wilson_vector *)F_PT(s, rsrc)), &rtemp, mu, nu);
 
     su3_projector_w(&rtemp, &ltemp, &tmat);
-    dif_su3_matrix(&tmat, &(tempmat2[i]));
+    dif_su3_matrix(&tmat, &(tempmat[i]));
   }
 
-  wait_general_gather(tag[3]);
-
   /* ltemp = upperrightcorner*lsrc, rtemp = lowerleftcorner*rsrc */
+  wait_general_gather(tag[3]);
   FORALLSITES(i, s) {
     mult_adj_mat_wilson_vec((su3_matrix *)(gen_pt[6][i]),
                             (wilson_vector *)(gen_pt[2][i]), &sittemp);
@@ -235,15 +233,12 @@ void udadu_mu_nu(field_offset lsrc, field_offset rsrc, int mu, int nu) {
     mult_sigma_mu_nu(&sittemp, &rtemp, mu, nu);
 
     su3_projector_w(&rtemp, &ltemp, &tmat);
-    dif_su3_matrix(&tmat, &(tempmat2[i]));
+    dif_su3_matrix(&tmat, &(tempmat[i]));
   }
-
   cleanup_gather(tag[0]);
   cleanup_gather(tag[1]);
   cleanup_general_gather(tag[2]);
   cleanup_general_gather(tag[3]);
-  cleanup_gather(tag[4]);
-  cleanup_gather(tag[5]);
   cleanup_general_gather(tag[6]);
 }
 // -----------------------------------------------------------------

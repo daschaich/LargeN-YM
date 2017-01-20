@@ -17,7 +17,7 @@ void su3_projector_w(wilson_vector *a, wilson_vector *b, su3_matrix *c) {
   }
 
 #else  // FAST version for NCOL = DIMF = 3
-  register Real tmp_r,tmp_i,tmp2;
+  register Real tmp_r, tmp_i, tmp2;
   for (i = 0; i < 3; i++) {
     for (j = 0; j < 3; j++) {
       tmp_r = a->d[0].c[i].real * b->d[0].c[j].real;

@@ -27,12 +27,13 @@ int setup();
 int readin(int prompt);
 
 // CG stuff
-int congrad_cl_m(int niter, Real rsqmin, Real *final_rsq_ptr,
-                 field_offset src, field_offset dest, Real mshift);
+void dslash_w_field_special();
+int congrad(int niter, Real rsqmin, Real *final_rsq_ptr,
+            field_offset src, field_offset dest, Real mshift);
 
 void gauge_action(double *result);
 double action();
-int f_measure_cl();
+int f_meas();
 int w_spectrum_cl();
 int t_props_cl();
 void make_loop_table2();

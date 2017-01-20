@@ -48,6 +48,7 @@ HEADERS = ${GLOBAL_HEADERS} ${MY_HEADERS} ${INLINE_HEADERS}
 MY_OBJECTS = control.o          \
              setup.o            \
              gauge_info.o       \
+             congrad.o          \
              grsource.o         \
              mult_sigma_mu_nu.o \
              udadu_mat_mu_nu.o  \
@@ -55,10 +56,9 @@ MY_OBJECTS = control.o          \
              update_h.o         \
              update_o.o         \
              update_u.o         \
-             f_measure_cl.o     \
+             f_meas.o           \
              apply_bc.o         \
-             chain_rule_f.o     \
-             d_congradm_cl_field.o
+             chain_rule_f.o
 
 # More from current directory, for improved action only
 IMP_OBJECTS = gauge_action.o \

@@ -100,8 +100,8 @@ void delta(field_offset psi, field_offset p) {
   register site *s;
   Real tCKU0 = -CKU0 / 8.0;
   su3_matrix tmat;
-  half_wilson_vector hvec;
-  wilson_vector tvec, tvec2;
+  half_wilson_vector thvec;
+  wilson_vector twvec, twvec2;
   msg_tag *tag0,*tag1;
 
   FORALLUPDIR(mu) {
@@ -110,7 +110,6 @@ void delta(field_offset psi, field_offset p) {
 #endif
 
     FORALLSITES(i, s) {
-      clear_su3mat(&(tempmat[i]));
       wp_shrink((wilson_vector *)F_PT(s, psi), &(s->htmp[0]), mu, PLUS);
       wp_shrink((wilson_vector *)F_PT(s, p), &(s->htmp[1]), mu, MINUS);
     }
@@ -125,21 +124,22 @@ void delta(field_offset psi, field_offset p) {
     FORALLSITES(i, s) {
       /* psi and p parallel transported in from positive directions */
       mult_su3_mat_hwvec(&(s->link[mu]), (half_wilson_vector *)gen_pt[0][i],
-                         &hvec);
-      wp_grow(&hvec, &tvec, mu, PLUS);
-      /* i even => tvec = (1+gamma_mu)*U*Aodd^(-1)*D*psi,
-         i odd  => tvec = (1+gamma_mu)*U*psi */
+                         &thvec);
+      wp_grow(&thvec, &twvec, mu, PLUS);
+      /* i even => twvec = (1+gamma_mu)*U*Aodd^(-1)*D*psi,
+         i odd  => twvec = (1+gamma_mu)*U*psi */
 
       mult_su3_mat_hwvec(&(s->link[mu]), (half_wilson_vector *)gen_pt[1][i],
-                         &hvec);
-      wp_grow(&hvec, &tvec2, mu, MINUS);
-      /* i even => tvec2 = (1-gamma_mu)*U*Aodd^(-1)*D_adj*M*psi,
-         i odd  => tvec2 = (1-gamma_mu)*U*M*psi */
+                         &thvec);
+      wp_grow(&thvec, &twvec2, mu, MINUS);
+      /* i even => twvec2 = (1-gamma_mu)*U*Aodd^(-1)*D_adj*M*psi,
+         i odd  => twvec2 = (1-gamma_mu)*U*M*psi */
 
-      su3_projector_w(&tvec, (wilson_vector *)F_PT(s, p), &(tempmat[i]));
-      su3_projector_w(&tvec2, (wilson_vector *)F_PT(s, psi), &tmat);
+      su3_projector_w(&twvec, (wilson_vector *)F_PT(s, p), &(tempmat[i]));
+      su3_projector_w(&twvec2, (wilson_vector *)F_PT(s, psi), &tmat);
       sum_su3_matrix(&tmat, &(tempmat[i]));
       scalar_mult_su3_matrix(&(tempmat[i]), -kappa, &(tempmat[i]));
+      sum_su3_matrix(&(tempmat[i]), &(s->Force[mu]));
     }
     cleanup_gather(tag0);
     cleanup_gather(tag1);
@@ -150,17 +150,15 @@ void delta(field_offset psi, field_offset p) {
         continue;
 
       // U dA/dU from U dM/dU
-      udadu_mu_nu(p, psi, mu, nu);        // Result in tempmat2
+      udadu_mu_nu(p, psi, mu, nu);        // Result in tempmat
       FORALLSITES(i, s)
-        scalar_mult_sum_su3_matrix(&(tempmat2[i]), tCKU0, &(tempmat[i]));
+        scalar_mult_sum_su3_matrix(&(tempmat[i]), tCKU0, &(s->Force[mu]));
 
       // U dA/dU from U dM^dagger/dU
-      udadu_mu_nu(psi, p, mu, nu);        // Result in tempmat2
+      udadu_mu_nu(psi, p, mu, nu);        // Result in tempmat
       FORALLSITES(i, s)
-        scalar_mult_sum_su3_matrix(&(tempmat2[i]), tCKU0, &(tempmat[i]));
+        scalar_mult_sum_su3_matrix(&(tempmat[i]), tCKU0, &(s->Force[mu]));
     }
-    FORALLSITES(i, s)
-      sum_su3_matrix(&(tempmat[i]), &(s->Force[mu]));
   }
 }
 // -----------------------------------------------------------------
@@ -242,7 +240,7 @@ void prepare_vecs(int level) {
   register int i;
   register site *s;
   complex tc;
-  wilson_vector tvec, tvec2;
+  wilson_vector twvec, twvec2;
 
   if (level != 0)
     tc = cmplx(0, shift);
@@ -256,10 +254,10 @@ void prepare_vecs(int level) {
   mult_ldu_site(F_OFFSET(psi[level]), F_OFFSET(tmp), EVEN);
   FOREVENSITES(i, s) {
     if (level == 1) {
-      scalar_mult_add_wvec(&(s->tmp), &(s->p), -kappa, &tvec);
+      scalar_mult_add_wvec(&(s->tmp), &(s->p), -kappa, &twvec);
       /* that was M*psi now we need to add i*shift*gamma_5*p */
-      mult_by_gamma(&(s->psi[level]), &tvec2, GAMMAFIVE);
-      c_scalar_mult_add_wvec(&tvec, &tvec2, &tc, &(s->p));
+      mult_by_gamma(&(s->psi[level]), &twvec2, GAMMAFIVE);
+      c_scalar_mult_add_wvec(&twvec, &twvec2, &tc, &(s->p));
     }
     else
       scalar_mult_add_wvec(&(s->tmp), &(s->p), -kappa, &(s->p));
@@ -297,7 +295,7 @@ double fermion_force(Real eps1, Real eps2) {
   int level;
   Real tCKU0 = -CKU0 / 4.0, ferm_epsilon = nflavors * eps1;
   Real MSq = shift * shift * eps2 / eps1;
-  double tmpnorm, maxnorm = 0.0, norm = 0.0;
+  double maxnorm = 0.0, norm = 0.0, tr;
   su3_matrix tmat;
   su3_matrix_f tmatf;
 
@@ -384,7 +382,7 @@ TIC(1)
       apply_bc(&tmatf, mu, s->t);
 
       // Not done yet.  For now, save dH/dV^T
-      su3mat_copy_f(&tmatf, Sigma[mu] + i);
+      su3mat_copy_f(&tmatf, &(Sigma[mu][i]));
     }
   }
 
@@ -395,13 +393,13 @@ TIC(1)
   FORALLUPDIR(mu) {
     FORALLSITES(i, s) {
       // First multiply back U*dH/dU^T
-      mult_su3_nn_f(&(s->linkf[mu]), Sigma[mu] + i, &tmatf);
+      mult_su3_nn_f(&(s->linkf[mu]), &(Sigma[mu][i]), &tmatf);
       // Now update
       update_anti_hermitian(s, mu, ferm_epsilon, &tmatf);
-      tmpnorm = (double)realtrace_su3_f(&tmatf, &tmatf);
-      norm += tmpnorm;
-      if (tmpnorm > maxnorm)
-        maxnorm = tmpnorm;
+      tr = (double)realtrace_su3_f(&tmatf, &tmatf);
+      norm += tr;
+      if (tr > maxnorm)
+        maxnorm = tr;
     }
   }
   g_doublesum(&norm);

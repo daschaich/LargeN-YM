@@ -8,9 +8,7 @@
    M = A_e - kappa^2 * Dslash_eo * (A_o)^{-1} * Dslash_oe
 */
 
-/* adapted to "field" instead of "site" */
-
-// This version looks at the initial vector every "niter" passes
+// This version looks at the initial vector every niter passes
 // "chi" is the source vector
 // "psi" is the initial guess and answer
 // "r" is the residual vector
@@ -19,8 +17,8 @@
 // rsqmin = desired rsq, quit when we reach rsq = rsqmin*source_norm.
 #include "cl_dyn_includes.h"
 
-int congrad_cl_m(int niter, Real rsqmin, Real *final_rsq_ptr,
-                 field_offset src, field_offset dest, Real mshift) {
+int congrad(int niter, Real rsqmin, Real *final_rsq_ptr,
+            field_offset src, field_offset dest, Real mshift) {
 
   register int i;
   register site *s;
@@ -29,7 +27,6 @@ int congrad_cl_m(int niter, Real rsqmin, Real *final_rsq_ptr,
   double rsqstop = 0.0, rsq = 0.0, oldrsq = 0.0, dtime = -dclock();
   double source_norm = 0.0, pkp = 0.0;      // pkp = p.K.p
   msg_tag *tag[8], *tag2[8];
-  void dslash_w_field_special();
 
 #ifdef TIMING
   TIC(0)
@@ -48,7 +45,7 @@ int congrad_cl_m(int niter, Real rsqmin, Real *final_rsq_ptr,
   }
 
 start:
-  /* mp <--  Mdag.M on psi
+  /* mp <-- Mdag.M on psi
      r, p <-- chi - mp
      rsq = |r|^2
      source_norm = |chi|^2
@@ -126,15 +123,15 @@ start:
 
   // Main loop -- do until convergence or time to restart
   /*
-     oldrsq <- rsq
-     mp <- M_adjoint*M*p
-     pkp <- p.M_adjoint*M.p
-     a <- rsq/pkp
-     psi <- psi + a*p
-     r <- r - a*mp
-     rsq <- |r|^2
-     b <- rsq/oldrsq
-     p <- r + b*p
+     oldrsq <-- rsq
+     mp <-- Mdag.M p
+     pkp <-- p Mdag.M p
+     a <-- rsq / pkp
+     psi <-- psi + a * p
+     r <-- r - a * mp
+     rsq <-- |r|^2
+     b <-- rsq / oldrsq
+     p <-- r + b * p
      */
   do {
     oldrsq = rsq;

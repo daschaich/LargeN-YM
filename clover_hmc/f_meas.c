@@ -28,7 +28,7 @@
    4 = number of Dirac components
    3 = number of colors
 
-   psi-bar-psi = (nflavors/2) * 4 * kappa * $2
+   pbp = (nflavors/2) * 4 * kappa * $2
    entropy = (nflavors/2) * 2 * kappa * (-$4 + $5)
    energy = (nflavors/2) * 2 * kappa * (-$4 + (4*3 - $2)*tderiv)
    pressure = (nflavors/2) * 2 * kappa * ($5 - (4*3 - $2)*3*sderiv)
@@ -38,31 +38,28 @@
    These are the entropy, etc. summed over color and flavor.
 */
 #include "cl_dyn_includes.h"
-// -----------------------------------------------------------------
 
-
-
-// -----------------------------------------------------------------
-int f_measure_cl() {
+int f_meas() {
   register int i, j, k, dir, iters;
   register site *s;
-  Real faction, dslash_time, dslash_space;
-  register complex cc;
-  complex pbp, pbg5p;
-  half_wilson_vector hwv0,hwv1;
+  double faction = 0.0, dslash_time = 0.0, dslash_space = 0.0;
+  double_complex pbp = cmplx(0.0, 0.0), pbg5p = cmplx(0.0, 0.0);
+  half_wilson_vector hwv0, hwv1;
   wilson_vector wv0;
-  msg_tag *tag0,*tag1;
+  msg_tag *tag0, *tag1;
 
   // Gaussian random vector
   FORALLSITES(i, s) {
-    for(k=0;k<4;k++)for(j=0;j<DIMF;j++){
+    for (k = 0; k < 4; k++) {
+      for (j = 0; j < DIMF; j++) {
 #ifdef SITERAND
-      s->g_rand.d[k].c[j].real = gaussian_rand_no(&(s->site_prn));
-      s->g_rand.d[k].c[j].imag = gaussian_rand_no(&(s->site_prn));
+        s->g_rand.d[k].c[j].real = gaussian_rand_no(&(s->site_prn));
+        s->g_rand.d[k].c[j].imag = gaussian_rand_no(&(s->site_prn));
 #else
-      s->g_rand.d[k].c[j].real = gaussian_rand_no(&node_prn);
-      s->g_rand.d[k].c[j].imag = gaussian_rand_no(&node_prn);
+        s->g_rand.d[k].c[j].real = gaussian_rand_no(&node_prn);
+        s->g_rand.d[k].c[j].imag = gaussian_rand_no(&node_prn);
 #endif
+      }
     }
   }
 
@@ -81,75 +78,75 @@ int f_measure_cl() {
   iters = wilson_invert(F_OFFSET(chi[0]), F_OFFSET(psi[0]), F_OFFSET(r),
                         cgilu_cl, &qic, (void *)&dcp);
 
-  // DEBUG CHECK:
-  /* Multiply by M and see if I get g_rand back */
-  /* use dir as flag*/
-  /*
-     dslash_w_site(F_OFFSET(psi[0]), F_OFFSET(mp), PLUS, EVENANDODD);
-     FORALLSITES(i, s)scalar_mult_add_wvec(&(s->psi[0]), &(s->mp), -kappa, &(s->mp));
-     FORALLSITES(i, s){
-     for(dir=0,j=0;j<4;j++)for(k=0;k<3;k++){
-     if(s->g_rand.d[j].c[k].real - s->mp.d[j].c[k].real > 2e-5)dir=1;
-     if(s->g_rand.d[j].c[k].imag - s->mp.d[j].c[k].imag > 2e-5)dir=1;
-     if(dir)printf("%d %d %d  (%.4e , %.4e)  ( %.4e , %.4e)\n",
-     i,j,k,s->g_rand.d[j].c[k].real,s->g_rand.d[j].c[k].imag,
-     s->mp.d[j].c[k].real,s->mp.d[j].c[k].imag);
-     }
-     }
-     */
-
-  pbp = cmplx(0.0, 0.0);
-  pbg5p = cmplx(0.0, 0.0);
-  faction = dslash_time = dslash_space = 0.0;
-
-  /* psi-bar-psi = g_rand.psi */
-  /* psi-bar-gamma-5 psi = g_rand. gamma-5 psi */
+#ifdef DEBUG_CHECK
+  // Multiply by M and see if g_rand is restored
+  dslash_w_site(psi[0], mp, PLUS, EVENANDODD);
   FORALLSITES(i, s) {
-    cc = wvec_dot(&(s->g_rand), &(s->psi[0]));
-    CSUM(pbp,cc);
+    scalar_mult_wvec(&(mp[i]), -kappa, &(mp[i]));
+    sum_wvec(&(psi[0][i]), &(s->mp[i]));
+  }
+  FORALLSITES(i, s) {
+    for (j = 0; j < 4; j++) {
+      for (k = 0; k < 3; k++) {
+        tr = g_rand[i].d[j].c[k].real - mp[i].d[j].c[k].real;
+        if (fabs(tr) > IMAG_TOL) {
+          printf("real %d %d %d: %.4g - %.4g = %.4g > %.4g\n", i, j, k,
+                 g_rand[i].d[k].c[j].real, mp[i].d[k].c[j].real,
+                 tr, IMAG_TOL);
+        }
+        tr = g_rand[i].d[j].c[k].imag - mp[i].d[j].c[k].imag;
+        if (fabs(tr) > IMAG_TOL) {
+          printf("imag %d %d %d: %.4g - %.4g = %.4g > %.4g\n", i, j, k,
+                 g_rand[i].d[j].c[k].imag, mp[i].d[j].c[k].imag,
+                 tr, IMAG_TOL);
+        }
+      }
+    }
+  }
+#endif
+
+  // pbp = g_rand.psi
+  // pbg5p = g_rand.gamma5.psi
+  FORALLSITES(i, s) {
+    wvec_dot_sum(&(s->g_rand), &(s->psi[0]), &pbp);
     mult_by_gamma(&(s->psi[0]), &wv0, GAMMAFIVE);
-    cc = wvec_dot(&(s->g_rand), &wv0);
-    CSUM(pbg5p, cc);
+    wvec_dot_sum(&(s->g_rand), &wv0, &pbg5p);
   }
 
   /* fermion energy and pressure */
   FORALLUPDIR(dir) {
-    /* multiply g_rand by one component of Dslash_adjoint, result in p.
-       dot product with psi */
-
     /* multiply g_rand by one component of Dslash_adjoint, result in p */
-    FORALLSITES(i,s){
+    FORALLSITES(i, s) {
       wp_shrink(&(s->g_rand), &(s->htmp[0]), dir, MINUS);
       wp_shrink(&(s->g_rand), &hwv1, dir, PLUS);
       mult_adj_su3_mat_hwvec(&(s->link[dir]), &hwv1, &(s->htmp[1]));
     }
     tag0 = start_gather_site(F_OFFSET(htmp[0]), sizeof(half_wilson_vector),
-        dir, EVENANDODD, gen_pt[0]);
+                             dir, EVENANDODD, gen_pt[0]);
     tag1 = start_gather_site(F_OFFSET(htmp[1]), sizeof(half_wilson_vector),
-        OPP_DIR(dir), EVENANDODD, gen_pt[1]);
+                             OPP_DIR(dir), EVENANDODD, gen_pt[1]);
     wait_gather(tag0);
     wait_gather(tag1);
-    FORALLSITESDOMAIN(i,s){
-      mult_su3_mat_hwvec(&(s->link[dir]),
-          (half_wilson_vector *)(gen_pt[0][i]), &hwv0);
+    FORALLSITES(i, s) {
+      mult_su3_mat_hwvec(&(s->link[dir]), (half_wilson_vector *)(gen_pt[0][i]),
+                         &hwv0);
       wp_grow(&hwv0, &(s->p), dir, MINUS);
       wp_grow((half_wilson_vector *)(gen_pt[1][i]), &wv0, dir, PLUS);
-      add_wilson_vector(&wv0, &(s->p), &(s->p));
+      sum_wvec(&wv0, &(s->p));
     }
     cleanup_gather(tag0);
     cleanup_gather(tag1);
 
     /* dot product with psi, result into energy or pressure */
-    FORALLSITESDOMAIN(i,s) {
-      cc = wvec_dot(&(s->psi[0]), &(s->p));
-      if (dir==TUP)
-        dslash_time += cc.real;
+    FORALLSITES(i, s) {
+      if (dir == TUP)
+        wvec_rdot_sum(&(s->psi[0]), &(s->p), &dslash_time);
       else
-        dslash_space += cc.real;
+        wvec_rdot_sum(&(s->psi[0]), &(s->p), &dslash_space);
     }
   }
-  g_floatsum(&dslash_time);
-  g_floatsum(&dslash_space);
+  g_doublesum(&dslash_time);
+  g_doublesum(&dslash_space);
   g_complexsum(&pbp);
   g_complexsum(&pbg5p);
 
@@ -164,9 +161,8 @@ int f_measure_cl() {
     node0_printf("WARNING: Im(pbg5p) = %.4g > %.4g\n", pbg5p.imag, IMAG_TOL);
 
   // Print results
-  node0_printf("FMES %.8g %.8g %.8g %.8g %.8g %.8g\n",
-               (double)pbp.real, (double)pbp.imag, (double)dslash_time,
-               (double)dslash_space, (double)faction, (double)pbg5p.real);
+  node0_printf("FMES %.8g %.8g %.8g %.8g %.8g %.8g\n", pbp.real, pbp.imag,
+               dslash_time, dslash_space, faction, pbg5p.real);
   fflush(stdout);
   return iters;
 }

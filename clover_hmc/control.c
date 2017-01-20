@@ -78,7 +78,7 @@ int main(int argc, char *argv[]) {
 #endif
 
     // Measure fermionic observables: psi-bar-psi, fermion action, etc.
-    m_iters = f_measure_cl();
+    m_iters = f_meas();
     avm_iters += m_iters;
 
     // Measure and print Polyakov loop and plaquette
