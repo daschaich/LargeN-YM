@@ -54,6 +54,7 @@ double av_deviation;
   (*matrix).e[2][2].imag = -ti; \
 }
 
+#if NCOL == 4
 /* calculate row 3 of SU(4) matrix from other 3 rows, assumed to be already
    orthonormal    */
 void fixsu4(su3_matrix_f *c) {
@@ -88,6 +89,7 @@ void fixsu4(su3_matrix_f *c) {
     is=-is;
   }
 }
+#endif
 
 int check_deviation(Real deviation) {
   if (max_deviation < deviation)

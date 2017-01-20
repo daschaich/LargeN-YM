@@ -27,7 +27,7 @@ void make_2hermitian_f(su3_matrix_f *A) {
 
 // -----------------------------------------------------------------
 // Compute Gamma
-void Sigma_update1(const int dir, su3_matrix_f* sigma_off, su3_matrix_f *stp,
+void Sigma_update1(const int dir, su3_matrix_f *sigma_off, su3_matrix_f *stp,
                    su3_matrix_f **lambda, const Real alpha1,
                    const Real alpha2, const int sigfresh) {
 
@@ -75,8 +75,8 @@ void Sigma_update1(const int dir, su3_matrix_f* sigma_off, su3_matrix_f *stp,
     scalar_add_diag_su3_f(&Qisqrt, f[0]);
 #endif
 
-    // We'll need Sigma*Omega a few times
-    mult_su3_nn_f(sigma_off + i, &Omega, &SigmaOmega);
+    // We'll need Sigma.Omega a few times
+    mult_su3_nn_f(&(sigma_off[i]), &Omega, &SigmaOmega);
 
     /* now the B matrices and their traces with Sigma*Omega*/
     tc=trace_su3_f(&SigmaOmega);
@@ -130,19 +130,19 @@ void Sigma_update1(const int dir, su3_matrix_f* sigma_off, su3_matrix_f *stp,
     make_2hermitian_f(&Gamma);
     mult_su3_na_f(&Gamma, &Omega, &tmat);
 
-    mult_su3_nn_f(&Qisqrt, sigma_off + i, &Gamma);
+    mult_su3_nn_f(&Qisqrt, &(sigma_off[i]), &Gamma);
     sum_su3_matrix_f(&tmat, &Gamma);
     scalar_mult_su3_matrix_f(&Gamma, alpha2, &tmat);
-    su3_adjoint_f(&tmat, lambda[dir] + i);
+    su3_adjoint_f(&tmat, &(lambda[dir][i]));
 
     /* the derivative which contributes to the globaln to the new global Sigma
        If this is the first level, then Sigma has to be initiallized. On later
        levels, we accumulate the respecive contributions
        */
     if (sigfresh == 0)
-      scalar_mult_su3_matrix_f(&Gamma, alpha1, Sigma[dir] + i);
+      scalar_mult_su3_matrix_f(&Gamma, alpha1, &(Sigma[dir][i]));
     else
-      scalar_mult_sum_su3_matrix_f(&Gamma, alpha1, Sigma[dir] + i);
+      scalar_mult_sum_su3_matrix_f(&Gamma, alpha1, &(Sigma[dir][i]));
   }
 }
 // -----------------------------------------------------------------
@@ -188,14 +188,14 @@ void compute_sigma23(su3_matrix_f *sig, su3_matrix_f *lnk1, su3_matrix_f *lnk2,
   // and gather it to x
   FORALLSITES(i, s) {
     /* "term2" */
-    mult_su3_nn_f(lambda1 + i, (su3_matrix_f *)gen_pt[0][i], &tmat);
-    mult_su3_an_f(&tmat, lnk2 + i, tempmatf2 + i);
+    mult_su3_nn_f(&(lambda1[i]), (su3_matrix_f *)gen_pt[0][i], &tmat);
+    mult_su3_an_f(&tmat, &(lnk2[i]), &(tempmatf2[i]));
     /* "term3" */
-    mult_su3_nn_f(lnk1 + i, (su3_matrix_f *)gen_pt[2][i], &tmat);
-    mult_su3_an_sum_f(&tmat, lnk2 + i, tempmatf2 + i);
+    mult_su3_nn_f(&(lnk1[i]), (su3_matrix_f *)gen_pt[2][i], &tmat);
+    mult_su3_an_sum_f(&tmat, &(lnk2[i]), &(tempmatf2[i]));
     /* "term4" */
-    mult_su3_nn_f(lnk1 + i, (su3_matrix_f *)gen_pt[0][i], &tmat);
-    mult_su3_an_sum_f(&tmat, lambda2 + i, tempmatf2 + i);
+    mult_su3_nn_f(&(lnk1[i]), (su3_matrix_f *)gen_pt[0][i], &tmat);
+    mult_su3_an_sum_f(&tmat, &(lambda2[i]), &(tempmatf2[i]));
   }
 
   /* gather staple from direction -dir2 to "home" site */
@@ -208,27 +208,27 @@ void compute_sigma23(su3_matrix_f *sig, su3_matrix_f *lnk1, su3_matrix_f *lnk2,
   /* Upper staple */
   FORALLSITES(i, s) {
     /* "term1" */
-    mult_su3_nn_f(lambda2 + i, (su3_matrix_f *)gen_pt[1][i], &tmat);
-    mult_su3_na_f((su3_matrix_f *)gen_pt[0][i], &tmat, sig + i);
+    mult_su3_nn_f(&(lambda2[i]), (su3_matrix_f *)gen_pt[1][i], &tmat);
+    mult_su3_na_f((su3_matrix_f *)gen_pt[0][i], &tmat, &(sig[i]));
     /* "term5" */
     mult_su3_na_f((su3_matrix_f *)gen_pt[2][i],
                   (su3_matrix_f *)gen_pt[1][i], &tmat);
-    mult_su3_na_sum_f(&tmat, lnk2 + i, sig + i);
+    mult_su3_na_sum_f(&tmat, &(lnk2[i]), &(sig[i]));
     /* "term6" */
     mult_su3_na_f((su3_matrix_f *)gen_pt[0][i],
                   (su3_matrix_f *)gen_pt[3][i], &tmat);
-    mult_su3_na_sum_f(&tmat, lnk2 + i, sig + i);
+    mult_su3_na_sum_f(&tmat, &(lnk2[i]), &(sig[i]));
   }
-
-  /* finally add the lower staple. */
-  wait_gather(tag4);
-  FORALLSITES(i, s)
-    sum_su3_matrix_f((su3_matrix_f *)gen_pt[4][i], sig + i);
-
   cleanup_gather(tag0);
   cleanup_gather(tag1);
   cleanup_gather(tag2);
   cleanup_gather(tag3);
+
+  /* finally add the lower staple */
+  wait_gather(tag4);
+  FORALLSITES(i, s)
+    sum_su3_matrix_f((su3_matrix_f *)gen_pt[4][i], &(sig[i]));
+
   cleanup_gather(tag4);
 }
 // -----------------------------------------------------------------
@@ -246,11 +246,11 @@ void nhyp_force3(int dir3, int dir2) {
     if (dir == dir2 || dir == dir3)
       continue;
     FORALLUPDIR(dir4) {
-      if (dir4 != dir && dir4 != dir3 && dir4 != dir2)
-        break;
+      if (dir4 == dir || dir4 == dir3 || dir4 == dir2)
+        continue;
+      Sigma_update1(dir, SigmaH[dir], Staple1[dir4][dir], Lambda2,
+                    1.0 - alpha_smear[2], alpha_smear[2] / 2.0, 1);
     }
-    Sigma_update1(dir, SigmaH[dir], Staple1[dir4][dir], Lambda2,
-                  1.0 - alpha_smear[2], alpha_smear[2] / 2.0, 1);
   }
 
   FORALLUPDIR(dir) {
@@ -263,7 +263,7 @@ void nhyp_force3(int dir3, int dir2) {
                       gauge_field_thin[dir1], Lambda2[dir], Lambda2[dir1],
                       dir, dir1);
       FORALLSITES(i, s)
-        sum_su3_matrix_f(tempmatf + i, Sigma[dir] + i);
+        sum_su3_matrix_f(&(tempmatf[i]), &(Sigma[dir][i]));
     }
   }
 }
@@ -313,7 +313,7 @@ void nhyp_force2(int dir2) {
                       dir, dir3);
 
       FORALLSITES(i, s)
-        sum_su3_matrix_f(SigmaH[dir] + i, Sigma[dir] + i);
+        sum_su3_matrix_f(&(SigmaH[dir][i]), &(Sigma[dir][i]));
 #endif
     }
 
@@ -329,13 +329,13 @@ void nhyp_force2(int dir2) {
     if (dir2 < dir3) {
       FORALLSITES(i, s) {
         FORALLUPDIR(dir)
-          su3mat_copy_f(SigmaH[dir] + i, SigmaH2[iimap][dir] + i);
+          su3mat_copy_f(&(SigmaH[dir][i]), &(SigmaH2[iimap][dir][i]));
       }
     }
     else {
       FORALLSITES(i, s) {
         FORALLUPDIR(dir)
-          sum_su3_matrix_f(SigmaH2[iimap][dir] + i, SigmaH[dir] + i);
+          sum_su3_matrix_f(&(SigmaH2[iimap][dir][i]), &(SigmaH[dir][i]));
       }
       nhyp_force3(dir2, dir3);
     }
@@ -380,7 +380,7 @@ void nhyp_force1() {
                       dir, dir2);
 
       FORALLSITES(i, s)
-        sum_su3_matrix_f(SigmaH[dir] + i, Sigma[dir] + i);
+        sum_su3_matrix_f(&(SigmaH[dir][i]), &(Sigma[dir][i]));
 #endif
     }
 #if SMEAR_LEVEL > 1
