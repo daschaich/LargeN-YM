@@ -37,9 +37,9 @@ int w_spectrum_cl();
 int t_props_cl();
 void make_loop_table2();
 void path(int *dir, int *sign, int length);
-void udadu_mu_nu(field_offset lsrc, field_offset rsrc, int mu, int nu);
+void udadu_mu_nu(wilson_vector *lsrc, wilson_vector *rsrc, int mu, int nu);
 void udadu_mat_mu_nu(int mu, int nu);
-void checkmul(field_offset chi, field_offset psi, Real mshift);
+void checkmul(wilson_vector *chi, wilson_vector *psi, Real mshift);
 
 void chain_rule(su3_matrix_f *sigmaf, su3_matrix *sigma,
                 su3_matrix_f *gaugelinkf);

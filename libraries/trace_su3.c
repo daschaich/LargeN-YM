@@ -7,21 +7,18 @@
 complex trace(su3_matrix *a) {
   register complex tc;
   CADD(a->e[0][0], a->e[1][1], tc);
-#if (NCOL > 2)
+#if (DIMF > 2)
   CSUM(tc, a->e[2][2]);
-#if (NCOL > 3)
+#if (DIMF > 3)
   CSUM(tc, a->e[3][3]);
-#if (NCOL > 4)
+#if (DIMF > 4)
   CSUM(tc, a->e[4][4]);
-#if (NCOL > 5)
+#if (DIMF > 5)
   CSUM(tc, a->e[5][5]);
-#if (NCOL > 6)
-  CSUM(tc, a->e[6][6]);
-#if (NCOL > 7)
+#if (DIMF > 6)
   register int i;
-  for (i = 7; i < NCOL; i++)
+  for (i = 6; i < DIMF; i++)
     CSUM(tc, a->e[i][i]);
-#endif
 #endif
 #endif
 #endif

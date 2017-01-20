@@ -31,35 +31,25 @@ int congrad(int niter, Real rsqmin, int level, Real mshift) {
   TIC(0)
 #endif
 
-  // Allocate fields, copy source and initial guess
-  wilson_vector *chi = malloc(sites_on_node * sizeof(*chi));
-  wilson_vector *psi = malloc(sites_on_node * sizeof(*psi));
-  wilson_vector *mp  = malloc(sites_on_node * sizeof(*mp));
-  wilson_vector *p   = malloc(sites_on_node * sizeof(*p));
-  wilson_vector *r   = malloc(sites_on_node * sizeof(*r));
-  FORALLSITES(i, s) {
-    copy_wvec(&(s->chi[level]), &(chi[i]));
-    copy_wvec(&(s->psi[level]), &(psi[i]));
-  }
-
 #ifdef DEBUG_CHECK
   printf("Dumping source...\n");
   FORALLSITES(i, s) {
-    printf("chi(%d, %d, %d, %d):\n", s->x, s->y, s->z, s->t);
-    dump_wvec(&(chi[i]));
+    printf("chi[%d](%d, %d, %d, %d):\n", level, s->x, s->y, s->z, s->t);
+    dump_wvec(&(chi[level][i]));
   }
 #endif
 
 start:
-  /* mp <-- Mdag.M on psi
-     r, p <-- chi - mp
-     rsq = |r|^2
-     source_norm = |chi|^2
-     */
+  // 1) mp <-- Mdag.M on psi[level]
+  // 2) r, p <-- chi[level] - mp
+  // 3) rsq = |r|^2
+  // 4) source_norm = |chi[level]|^2
   rsq = 0.0;
   source_norm = 0.0;
-  mult_ldu_field(psi, tempwvec, EVEN);
-  dslash_w_field_special(psi, mp, PLUS, ODD, tag, 0);
+
+  // 1) mp <-- Mdag.M on psi[level]
+  mult_ldu_field(psi[level], tempwvec, EVEN);
+  dslash_w_field_special(psi[level], mp, PLUS, ODD, tag, 0);
   mult_ldu_field(mp, tempwvec, ODD);
   dslash_w_field_special(tempwvec, mp, PLUS, EVEN, tag2, 0);
   FOREVENSITES(i, s) {
@@ -67,7 +57,7 @@ start:
     sum_wvec(&(tempwvec[i]), &(mp[i]));
   }
 
-  // Above applied M on psi, now apply Mdag
+  // Above applied M on psi[level], now apply Mdag
   mult_ldu_field(mp, tempwvec, EVEN);
   dslash_w_field_special(mp, mp, MINUS, ODD, tag, 1);
   mult_ldu_field(mp, tempwvec, ODD);
@@ -76,15 +66,19 @@ start:
     scalar_mult_wvec(&(mp[i]), kappaSq, &(mp[i]));
     sum_wvec(&(tempwvec[i]), &(mp[i]));
 
-    // Now mp holds Mdag.M applied to psi
-    // Add mshift^2 psi
+    // Add mshift^2 psi[level] to complete Mdag.M on psi[level]
     if (mshift > 0.0)
-      scalar_mult_sum_wvec(&(psi[i]), MSq, &(mp[i]));
+      scalar_mult_sum_wvec(&(psi[level][i]), MSq, &(mp[i]));
 
-    sub_wilson_vector(&(chi[i]), &(mp[i]), &(r[i]));
-    p[i] = r[i];
-    magsq_wvec_sum(&(chi[i]), &source_norm);
+    // 2) r, p <-- chi[level] - mp
+    sub_wilson_vector(&(chi[level][i]), &(mp[i]), &(r[i]));
+    copy_wvec(&(r[i]), &(p[i]));
+
+    // 3) rsq = |r|^2
     magsq_wvec_sum(&(r[i]), &rsq);
+
+    // 4) source_norm = |chi[level]|^2
+    magsq_wvec_sum(&(chi[level][i]), &source_norm);
   }
   g_doublesum(&source_norm);
   g_doublesum(&rsq);
@@ -107,18 +101,6 @@ start:
       cleanup_gather(tag2[OPP_DIR(i)]);
     }
 
-    cleanup_dslash_temps();
-    cleanup_tmp_links();
-
-    FORALLSITES(i, s)
-      copy_wvec(&(psi[i]), &(s->psi[level]));
-
-    free(psi);
-    free(chi);
-    free(mp);
-    free(p);
-    free(r);
-
 #ifdef TIMING
     TOC(0, time_dcongrad)
 #endif
@@ -132,7 +114,7 @@ start:
      mp <-- Mdag.M p
      pkp <-- p Mdag.M p
      a <-- rsq / pkp
-     psi <-- psi + a * p
+     psi[level] <-- psi[level] + a * p
      r <-- r - a * mp
      rsq <-- |r|^2
      b <-- rsq / oldrsq
@@ -158,7 +140,7 @@ start:
       scalar_mult_wvec(&(mp[i]), kappaSq, &(mp[i]));
       sum_wvec(&(tempwvec[i]), &(mp[i]));
 
-      // Add mshift^2 psi
+      // Add mshift^2 psi[level]
       if (mshift > 0.0)
         scalar_mult_sum_wvec(&(p[i]), MSq, &(mp[i]));
       wvec_rdot_sum(&(p[i]), &(mp[i]), &pkp);
@@ -170,7 +152,7 @@ start:
     a = (Real)(rsq / pkp);
     rsq = 0.0;
     FOREVENSITES(i, s) {
-      scalar_mult_sum_wvec(&(p[i]), a, &(psi[i]));
+      scalar_mult_sum_wvec(&(p[i]), a, &(psi[level][i]));
       scalar_mult_dif_wvec(&(mp[i]), a, &(r[i]));
       magsq_wvec_sum(&(r[i]), &rsq);
     }
@@ -194,16 +176,6 @@ start:
       node0_printf("CG time = %.4g iters = %d mflops = %.4g\n",
                    dtime, iteration, mflops);
 #endif
-      cleanup_dslash_temps();
-      cleanup_tmp_links();
-
-      FORALLSITES(i, s)
-        copy_wvec(&(psi[i]), &(s->psi[level]));
-      free(psi);
-      free(chi);
-      free(mp);
-      free(p);
-      free(r);
 
 #ifdef TIMING
       TOC(0, time_dcongrad)
@@ -233,18 +205,6 @@ start:
     node0_printf("WARNING: CG did not converge, size_r = %.2g\n",
                  sqrt(rsq / source_norm));
   }
-
-  cleanup_dslash_temps();
-  cleanup_tmp_links();
-
-  FORALLSITES(i, s)
-    copy_wvec(&(psi[i]), &(s->psi[level]));
-
-  free(psi);
-  free(chi);
-  free(mp);
-  free(p);
-  free(r);
 
 #ifdef TIMING
   TOC(0, time_dcongrad)

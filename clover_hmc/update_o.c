@@ -70,13 +70,13 @@ void predict_next_psi(Real *oldtime, Real *newtime, Real *nexttime,
 
   if (oldtime[level] < 0.0) {
     FOREVENSITES(i, s)
-      copy_wvec(&(s->psi[level]), &(s->old_psi[level]));
+      copy_wvec(&(psi[level][i]), &(old_psi[level][i]));
   }
   else  {
     FOREVENSITES(i, s) {
-      sub_wilson_vector(&(s->psi[level]), &(s->old_psi[level]), &twvec);
-      copy_wvec(&(s->psi[level]), &(s->old_psi[level]));
-      scalar_mult_add_wvec(&(s->psi[level]), &twvec, x, &(s->psi[level]));
+      sub_wilson_vector(&(psi[level][i]), &(old_psi[level][i]), &twvec);
+      copy_wvec(&(psi[level][i]), &(old_psi[level][i]));
+      scalar_mult_add_wvec(&(psi[level][i]), &twvec, x, &(psi[level][i]));
     }
   }
   oldtime[level] = newtime[level];

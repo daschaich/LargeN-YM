@@ -43,20 +43,8 @@ typedef struct {
   // Antihermitian momentum matrices in each direction
   anti_hermitmat mom[4];
 
-  // Wilson complex vectors
-  wilson_vector g_rand;   // Gaussian random vector
-  wilson_vector chi[MAX_MASSES];  // Gaussian random source vector
-  wilson_vector psi[MAX_MASSES];  // Solution vector = Minverse * chi
-  wilson_vector p;        // CG change vector
-  wilson_vector mp;       // CG temporary vector
-  wilson_vector r;        // CG residual vector
-  wilson_vector tmp;      /* another temporary CG vector */
-
-  /* wilson half vector (temporary used in dslash_w_site) */
+  // Temporary half_wilson_vectors for dslash_w_site and update_h
   half_wilson_vector htmp[8];
-#ifdef PHI_ALGORITHM
-  wilson_vector old_psi[MAX_MASSES];  // For predicting next psi
-#endif
 
 #ifdef SPECTRUM
   wilson_matrix quark_propagator;
@@ -91,8 +79,8 @@ EXTERN int nsteps[MAX_MASSES + 1];
 EXTERN Real gnorm, fnorm[2], max_gf, max_ff[2];
 
 // Global action and evolution variables
-EXTERN Real rsqmin, rsqprop, beta, beta_frep, kappa, clov_c, u0, CKU0;
-EXTERN Real one_ov_N;
+EXTERN Real beta, beta_frep, kappa, mkappa, clov_c, u0, CKU0;
+EXTERN Real rsqmin, rsqprop, one_ov_N;
 EXTERN double returntrlogA, g_ssplaq, g_stplaq;
 EXTERN double_complex linktr;
 EXTERN u_int32type nersc_checksum;
@@ -152,7 +140,17 @@ EXTERN su3_matrix_f *gauge_field[4];
 EXTERN su3_matrix_f *gauge_field_thin[4];
 
 // CG stuff
+EXTERN wilson_vector *g_rand;           // Gaussian random vector
+EXTERN wilson_vector *chi[MAX_MASSES];  // Gaussian random source vector
+EXTERN wilson_vector *psi[MAX_MASSES];  // Solution vector = Minverse * chi
+EXTERN wilson_vector *p;                // CG change vector
+EXTERN wilson_vector *mp;               // CG temporary vector
+EXTERN wilson_vector *r;                // CG residual vector
 EXTERN wilson_vector *tempwvec;         // Another temporary CG vector
+#ifdef PHI_ALGORITHM
+EXTERN wilson_vector *old_psi[MAX_MASSES];  // For predicting next psi
+#endif
+EXTERN half_wilson_vector *htmp[8];     // Temporaries for dslash_w_field
 
 // nHYP stuff
 EXTERN Real alpha_smear[3];

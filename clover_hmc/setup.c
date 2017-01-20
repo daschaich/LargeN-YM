@@ -126,8 +126,21 @@ void make_fields() {
   /* move here alloc for clov? */
 
   // CG stuff
-  size += (Real)(sizeof(wilson_vector));
+  size += (Real)((5.0 + 2.0 * MAX_MASSES) * sizeof(wilson_vector));
+  FIELD_ALLOC(g_rand, wilson_vector);
+  FIELD_ALLOC_VEC(chi, wilson_vector, MAX_MASSES);
+  FIELD_ALLOC_VEC(psi, wilson_vector, MAX_MASSES);
+  FIELD_ALLOC(p, wilson_vector);
+  FIELD_ALLOC(mp, wilson_vector);
+  FIELD_ALLOC(r, wilson_vector);
   FIELD_ALLOC(tempwvec, wilson_vector);
+#ifdef PHI_ALGORITHM
+  size += (Real)(MAX_MASSES * sizeof(wilson_vector));
+  FIELD_ALLOC_VEC(old_psi, wilson_vector, MAX_MASSES);
+#endif
+
+  size += (Real)(8.0 * sizeof(half_wilson_vector));
+  FIELD_ALLOC_VEC(htmp, half_wilson_vector, 8);
 
   // nHYP stuff
   size += (Real)(16.0 * sizeof(su3_matrix_f));
@@ -303,6 +316,7 @@ int readin(int prompt) {
   beta = par_buf.beta;
   beta_frep = par_buf.beta_frep;
   kappa = par_buf.kappa;
+  mkappa = -kappa;
   if (num_masses > 1)
     shift = par_buf.shift;
 

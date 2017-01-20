@@ -95,7 +95,7 @@ double gauge_force(Real eps) {
 
 // -----------------------------------------------------------------
 // Fermion force from hopping and clover terms
-void delta(field_offset psi, field_offset p) {
+void delta(int level) {
   register int i, mu, nu;
   register site *s;
   Real tCKU0 = -CKU0 / 8.0;
@@ -110,8 +110,8 @@ void delta(field_offset psi, field_offset p) {
 #endif
 
     FORALLSITES(i, s) {
-      wp_shrink((wilson_vector *)F_PT(s, psi), &(s->htmp[0]), mu, PLUS);
-      wp_shrink((wilson_vector *)F_PT(s, p), &(s->htmp[1]), mu, MINUS);
+      wp_shrink(&(psi[level][i]), &(s->htmp[0]), mu, PLUS);
+      wp_shrink(&(p[i]), &(s->htmp[1]), mu, MINUS);
     }
     tag0 = start_gather_site(F_OFFSET(htmp[0]), sizeof(half_wilson_vector),
                              mu, EVENANDODD, gen_pt[0]);
@@ -135,10 +135,10 @@ void delta(field_offset psi, field_offset p) {
       /* i even => twvec2 = (1-gamma_mu)*U*Aodd^(-1)*D_adj*M*psi,
          i odd  => twvec2 = (1-gamma_mu)*U*M*psi */
 
-      su3_projector_w(&twvec, (wilson_vector *)F_PT(s, p), &(tempmat[i]));
-      su3_projector_w(&twvec2, (wilson_vector *)F_PT(s, psi), &tmat);
+      su3_projector_w(&twvec, &(p[i]), &(tempmat[i]));
+      su3_projector_w(&twvec2, &(psi[level][i]), &tmat);
       sum_su3_matrix(&tmat, &(tempmat[i]));
-      scalar_mult_su3_matrix(&(tempmat[i]), -kappa, &(tempmat[i]));
+      scalar_mult_su3_matrix(&(tempmat[i]), mkappa, &(tempmat[i]));
       sum_su3_matrix(&(tempmat[i]), &(s->Force[mu]));
     }
     cleanup_gather(tag0);
@@ -150,12 +150,12 @@ void delta(field_offset psi, field_offset p) {
         continue;
 
       // U dA/dU from U dM/dU
-      udadu_mu_nu(p, psi, mu, nu);        // Result in tempmat
+      udadu_mu_nu(p, psi[level], mu, nu);        // Result in tempmat
       FORALLSITES(i, s)
         scalar_mult_sum_su3_matrix(&(tempmat[i]), tCKU0, &(s->Force[mu]));
 
       // U dA/dU from U dM^dagger/dU
-      udadu_mu_nu(psi, p, mu, nu);        // Result in tempmat
+      udadu_mu_nu(psi[level], p, mu, nu);        // Result in tempmat
       FORALLSITES(i, s)
         scalar_mult_sum_su3_matrix(&(tempmat[i]), tCKU0, &(s->Force[mu]));
     }
@@ -171,7 +171,7 @@ void gauge_force_frep(int dir) {
   register int i, dir2;
   register site *s;
   Real bfrep_force;
-  msg_tag *tag0,*tag1, *tag2;
+  msg_tag *tag0, *tag1, *tag2;
   su3_matrix tmat;
 
   // Divide by nflavors to compensate for ferm_epsilon = nflavors * eps
@@ -242,31 +242,31 @@ void prepare_vecs(int level) {
   complex tc;
   wilson_vector twvec, twvec2;
 
-  if (level != 0)
+  if (level == 1)
     tc = cmplx(0, shift);
 
-  dslash_w_site(F_OFFSET(psi[level]), F_OFFSET(tmp), PLUS, ODD);
-  mult_ldu_site(F_OFFSET(tmp), F_OFFSET(psi[level]), ODD);
+  dslash_w_field(psi[level], tempwvec, PLUS, ODD);
+  mult_ldu_field(tempwvec, psi[level], ODD);
   FORODDSITES(i, s)
-    scalar_mult_wvec(&(s->psi[level]), kappa, &(s->psi[level]));
+    scalar_mult_wvec(&(psi[level][i]), kappa, &(psi[level][i]));
 
-  dslash_w_site(F_OFFSET(psi[level]), F_OFFSET(p), PLUS, EVEN);
-  mult_ldu_site(F_OFFSET(psi[level]), F_OFFSET(tmp), EVEN);
+  dslash_w_field(psi[level], p, PLUS, EVEN);
+  mult_ldu_field(psi[level], tempwvec, EVEN);
   FOREVENSITES(i, s) {
     if (level == 1) {
-      copy_wvec(&(s->tmp), &(tempwvec[i]));
-      scalar_mult_add_wvec(&(tempwvec[i]), &(s->p), -kappa, &twvec);
+      scalar_mult_add_wvec(&(tempwvec[i]), &(p[i]), mkappa, &twvec);
+
       /* that was M*psi now we need to add i*shift*gamma_5*p */
-      mult_by_gamma(&(s->psi[level]), &twvec2, GAMMAFIVE);
-      c_scalar_mult_add_wvec(&twvec, &twvec2, &tc, &(s->p));
+      mult_by_gamma(&(psi[level][i]), &twvec2, GAMMAFIVE);
+      c_scalar_mult_add_wvec(&twvec, &twvec2, &tc, &(p[i]));
     }
-    else
-      scalar_mult_add_wvec(&(s->tmp), &(s->p), -kappa, &(s->p));
+    else    // TODO: Split...
+      scalar_mult_add_wvec(&(tempwvec[i]), &(p[i]), mkappa, &(p[i]));
   }
-  dslash_w_site(F_OFFSET(p), F_OFFSET(tmp), MINUS, ODD);
-  mult_ldu_site(F_OFFSET(tmp), F_OFFSET(p), ODD);
+  dslash_w_field(p, tempwvec, MINUS, ODD);
+  mult_ldu_field(tempwvec, p, ODD);
   FORODDSITES(i, s)
-    scalar_mult_wvec(&(s->p), kappa, &(s->p));
+    scalar_mult_wvec(&(p[i]), kappa, &(p[i]));
 
   /* M = A_even - kappa^2 * Dslash * A_odd^{-1} * Dslash
      psi(even) = psi(even)
@@ -332,26 +332,25 @@ TIC(1)
   else
     level = 1;
   prepare_vecs(level);
-  delta(F_OFFSET(psi[level]), F_OFFSET(p));
+  delta(level);
 
   if (eps2 > 0.0 && num_masses == 2) {
-    dslash_w_site(F_OFFSET(psi[0]), F_OFFSET(tmp), PLUS, ODD);
-    mult_ldu_site(F_OFFSET(tmp), F_OFFSET(psi[0]), ODD);
+    dslash_w_field(psi[0], tempwvec, PLUS, ODD);
+    mult_ldu_field(tempwvec, psi[0], ODD);
     FORODDSITES(i, s)
-      scalar_mult_wvec(&(s->psi[0]), kappa, &(s->psi[0]));
+      scalar_mult_wvec(&(psi[0][i]), kappa, &(psi[0][i]));
 
-    dslash_w_site(F_OFFSET(psi[0]), F_OFFSET(p), PLUS, EVEN);
-    mult_ldu_site(F_OFFSET(psi[0]), F_OFFSET(tmp), EVEN);
+    dslash_w_field(psi[0], p, PLUS, EVEN);
+    mult_ldu_field(psi[0], tempwvec, EVEN);
     FOREVENSITES(i, s) {
-      scalar_mult_wvec(&(s->p), -kappa, &(s->p));
-      copy_wvec(&(s->tmp), &(tempwvec[i]));
-      sum_wvec(&(tempwvec[i]), &(s->p));
+      scalar_mult_wvec(&(p[i]), mkappa, &(p[i]));
+      sum_wvec(&(tempwvec[i]), &(p[i]));
     }
 
-    dslash_w_site(F_OFFSET(p), F_OFFSET(tmp), MINUS, ODD);
-    mult_ldu_site(F_OFFSET(tmp), F_OFFSET(p), ODD);
+    dslash_w_field(p, tempwvec, MINUS, ODD);
+    mult_ldu_field(tempwvec, p, ODD);
     FORODDSITES(i, s)
-      scalar_mult_wvec(&(s->p), kappa, &(s->p));
+      scalar_mult_wvec(&(p[i]), kappa, &(p[i]));
 
     /* M = A_even - kappa^2 * Dslash * A_odd^{-1} * Dslash
        psi(even) = psi(even)
@@ -361,9 +360,9 @@ TIC(1)
 
     /* And the overall factor of shift^2, here we also adjust the stepsize */
     FORALLSITES(i, s)
-      scalar_mult_wvec(&(s->p), MSq, &(s->p));
+      scalar_mult_wvec(&(p[i]), MSq, &(p[i]));
 
-    delta(F_OFFSET(psi[0]), F_OFFSET(p));
+    delta(0);
   }
 
   FORALLUPDIR(mu) {

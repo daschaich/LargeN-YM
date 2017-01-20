@@ -6,65 +6,11 @@ Compute SUM_dirs (
 */
 
 #include "generic_wilson_includes.h"
-/* Temporary work space for dslash_w_field and dslash_w_field_special */
-static half_wilson_vector *htmp[8];
+// -----------------------------------------------------------------
 
-/* Flag indicating if temp is allocated               */
-static int temp_not_allocated=1;
 
-/* Temporary work space for gauge links */
-static su3_matrix *t_links;
 
-/* Flag indicating if temp is allocated               */
-static int tmp_links_not_set = 1;
-
-void malloc_dslash_temps() {
-  int j;
-
-  if (!temp_not_allocated)return;
-  for (j = 0; j < 8; j++) {
-    htmp[j] =(half_wilson_vector *)malloc(sites_on_node*sizeof(half_wilson_vector));
-    if (htmp[j] == NULL) {
-      printf("node %d can't malloc htmp[%d]\n", this_node, j);
-      terminate(1);
-    }
-  }
-  temp_not_allocated = 0;
-}
-
-void cleanup_dslash_temps() {
-  register int i;
-  if (!temp_not_allocated) {
-    for (i = 0; i < 8; i++)
-      free(htmp[i]);
-  }
-  temp_not_allocated = 1;
-}
-
-void setup_tmp_links() {
-  register int i, dir;
-  register site *s;
-
-  if (!tmp_links_not_set)
-    return;
-  t_links = malloc(4 * sites_on_node * sizeof(su3_matrix));
-  if (t_links == NULL) {
-    printf("node %d can't malloc t_links\n", this_node);
-    terminate(1);
-  }
-  FORALLSITES(i, s) {
-    FORALLUPDIR(dir)
-      t_links[4*i+dir] = lattice[i].link[dir];
-  }
-  tmp_links_not_set = 0;
-}
-
-void cleanup_tmp_links() {
-  if (!tmp_links_not_set)
-      free(t_links);
-  tmp_links_not_set = 1;
-}
-
+// -----------------------------------------------------------------
 void dslash_w_field(wilson_vector *src, wilson_vector *dest,
                     int isign, int parity) {
 
@@ -72,16 +18,11 @@ void dslash_w_field(wilson_vector *src, wilson_vector *dest,
   register site *s;
   half_wilson_vector hwvx, hwvy, hwvz, hwvt;
   msg_tag *tag[8];
-  su3_matrix *linkx, *linky, *linkz, *linkt;
-
-  /* The calling program must clean up the temps! */
-  malloc_dslash_temps();
-  setup_tmp_links();
 
   switch(parity) {
-    case EVEN:      otherparity=ODD; break;
-    case ODD:       otherparity=EVEN; break;
-    case EVENANDODD:        otherparity=EVENANDODD; break;
+    case EVEN:       otherparity = ODD;        break;
+    case ODD:        otherparity = EVEN;       break;
+    case EVENANDODD: otherparity = EVENANDODD; break;
   }
 
   if (N_POINTERS < 8) {
@@ -104,15 +45,10 @@ void dslash_w_field(wilson_vector *src, wilson_vector *dest,
      multiply it by adjoint link matrix, gather it "up" */
   FORSOMEPARITY(i, s, otherparity) {
     wp_shrink_4dir(&(src[i]), &hwvx, &hwvy, &hwvz, &hwvt, -isign);
-
-    linkx = &t_links[4 * i + XUP];
-    linky = &t_links[4 * i + YUP];
-    linkz = &t_links[4 * i + ZUP];
-    linkt = &t_links[4 * i + TUP];
-    mult_adj_su3_mat_hwvec(linkx, &hwvx, &(htmp[XDOWN][i]));
-    mult_adj_su3_mat_hwvec(linky, &hwvy, &(htmp[YDOWN][i]));
-    mult_adj_su3_mat_hwvec(linkz, &hwvz, &(htmp[ZDOWN][i]));
-    mult_adj_su3_mat_hwvec(linkt, &hwvt, &(htmp[TDOWN][i]));
+    mult_adj_su3_mat_hwvec(&(s->link[XUP]), &hwvx, &(htmp[XDOWN][i]));
+    mult_adj_su3_mat_hwvec(&(s->link[YUP]), &hwvy, &(htmp[YDOWN][i]));
+    mult_adj_su3_mat_hwvec(&(s->link[ZUP]), &hwvz, &(htmp[ZDOWN][i]));
+    mult_adj_su3_mat_hwvec(&(s->link[TUP]), &hwvt, &(htmp[TDOWN][i]));
   }
 
   FORALLUPDIR(dir) {
@@ -129,30 +65,24 @@ void dslash_w_field(wilson_vector *src, wilson_vector *dest,
     wait_gather(tag[dir]);
 
   FORSOMEPARITY(i, s, parity) {
-    linkx = &t_links[4 * i + XUP];
-    linky = &t_links[4 * i + YUP];
-    linkz = &t_links[4 * i + ZUP];
-    linkt = &t_links[4 * i + TUP];
-    mult_su3_mat_hwvec(linkx,
+    mult_su3_mat_hwvec(&(s->link[XUP]),
         (half_wilson_vector *)(gen_pt[XUP][i]), &hwvx);
-    mult_su3_mat_hwvec(linky,
+    mult_su3_mat_hwvec(&(s->link[YUP]),
         (half_wilson_vector *)(gen_pt[YUP][i]), &hwvy);
-    mult_su3_mat_hwvec(linkz,
+    mult_su3_mat_hwvec(&(s->link[ZUP]),
         (half_wilson_vector *)(gen_pt[ZUP][i]), &hwvz);
-    mult_su3_mat_hwvec(linkt,
+    mult_su3_mat_hwvec(&(s->link[TUP]),
         (half_wilson_vector *)(gen_pt[TUP][i]), &hwvt);
     grow_add_four_wvecs(&(dest[i]),
         &hwvx, &hwvy, &hwvz, &hwvt, isign);
   }
-  for (dir=XUP; dir <= TUP; dir++) {
+  FORALLUPDIR(dir)
     cleanup_gather(tag[dir]);
-  }
 
   /* Take Wilson projection for src displaced in down direction,
      expand it, and add to dest */
-  for (dir=XUP; dir <= TUP; dir++) {
+  FORALLUPDIR(dir)
     wait_gather(tag[OPP_DIR(dir)]);
-  }
 
   FORSOMEPARITY(i, s, parity) {
     grow_sum_four_wvecs(&(dest[i]),
@@ -165,11 +95,14 @@ void dslash_w_field(wilson_vector *src, wilson_vector *dest,
   FORALLUPDIR(dir)
     cleanup_gather(tag[OPP_DIR(dir)]);
 }
+// -----------------------------------------------------------------
 
 
+
+// -----------------------------------------------------------------
 /* Special dslash for use by congrad.  Uses restart_gather_temp() when
   possible. Last argument is an integer, which will tell if
-  gathers have been started.  If is_started=0, use
+  gathers have been started.  If is_started = 0, use
   start_gather_field, otherwise use restart_gather_field.
   Argument "tag" is a vector of a msg_tag *'s to use for
   the gathers.
@@ -180,13 +113,8 @@ void dslash_w_field_special(wilson_vector *src, wilson_vector *dest,
 
   register int i;
   register site *s;
-  register int dir, otherparity=0;
+  register int dir, otherparity = 0;
   half_wilson_vector hwvx, hwvy, hwvz, hwvt;
-  su3_matrix *linkx,*linky,*linkz,*linkt;
-  /* allocate temporary work space only if not already allocated */
-  /* The calling program must clean up this space */
-  malloc_dslash_temps();
-  setup_tmp_links();
 
   switch(parity) {
     case EVEN:       otherparity = ODD;        break;
@@ -207,7 +135,8 @@ void dslash_w_field_special(wilson_vector *src, wilson_vector *dest,
   }
 
   FORALLUPDIR(dir) {
-    if (is_started==0)tag[dir]=start_gather_field(htmp[dir],
+    if (is_started == 0)
+      tag[dir] = start_gather_field(htmp[dir],
         sizeof(half_wilson_vector), dir, parity, gen_pt[dir]);
     else restart_gather_field(htmp[dir],
         sizeof(half_wilson_vector), dir, parity, gen_pt[dir],
@@ -217,15 +146,11 @@ void dslash_w_field_special(wilson_vector *src, wilson_vector *dest,
   /* Take Wilson projection for src displaced in down direction,
      multiply it by adjoint link matrix, gather it "up" */
   FORSOMEPARITY(i, s, otherparity) {
-    linkx = &t_links[4 * i + XUP];
-    linky = &t_links[4 * i + YUP];
-    linkz = &t_links[4 * i + ZUP];
-    linkt = &t_links[4 * i + TUP];
     wp_shrink_4dir(&(src[i]), &hwvx, &hwvy, &hwvz, &hwvt, -isign);
-    mult_adj_su3_mat_hwvec(linkx, &hwvx, &(htmp[XDOWN][i]));
-    mult_adj_su3_mat_hwvec(linky, &hwvy, &(htmp[YDOWN][i]));
-    mult_adj_su3_mat_hwvec(linkz, &hwvz, &(htmp[ZDOWN][i]));
-    mult_adj_su3_mat_hwvec(linkt, &hwvt, &(htmp[TDOWN][i]));
+    mult_adj_su3_mat_hwvec(&(s->link[XUP]), &hwvx, &(htmp[XDOWN][i]));
+    mult_adj_su3_mat_hwvec(&(s->link[YUP]), &hwvy, &(htmp[YDOWN][i]));
+    mult_adj_su3_mat_hwvec(&(s->link[ZUP]), &hwvz, &(htmp[ZDOWN][i]));
+    mult_adj_su3_mat_hwvec(&(s->link[TUP]), &hwvt, &(htmp[TDOWN][i]));
   }
 
   FORALLUPDIR(dir) {
@@ -248,17 +173,13 @@ void dslash_w_field_special(wilson_vector *src, wilson_vector *dest,
     wait_gather(tag[dir]);
 
   FORSOMEPARITY(i, s, parity) {
-    linkx = &t_links[4*i+XUP];
-    linky = &t_links[4*i+YUP];
-    linkz = &t_links[4*i+ZUP];
-    linkt = &t_links[4*i+TUP];
-    mult_su3_mat_hwvec(linkx,
+    mult_su3_mat_hwvec(&(s->link[XUP]),
         (half_wilson_vector *)(gen_pt[XUP][i]), &hwvx);
-    mult_su3_mat_hwvec(linky,
+    mult_su3_mat_hwvec(&(s->link[YUP]),
         (half_wilson_vector *)(gen_pt[YUP][i]), &hwvy);
-    mult_su3_mat_hwvec(linkz,
+    mult_su3_mat_hwvec(&(s->link[ZUP]),
         (half_wilson_vector *)(gen_pt[ZUP][i]), &hwvz);
-    mult_su3_mat_hwvec(linkt,
+    mult_su3_mat_hwvec(&(s->link[TUP]),
         (half_wilson_vector *)(gen_pt[TUP][i]), &hwvt);
     grow_add_four_wvecs(&(dest[i]),
         &hwvx, &hwvy, &hwvz, &hwvt, isign);
@@ -278,3 +199,4 @@ void dslash_w_field_special(wilson_vector *src, wilson_vector *dest,
         -isign);
   }
 }
+// -----------------------------------------------------------------

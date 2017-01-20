@@ -18,13 +18,13 @@ double fermion_action() {
 
   FOREVENSITES(i, s) {
     if (num_masses == 1)
-      sum += (double)wvec_rdot(&(s->psi[0]), &(s->chi[0]));
-    else{
+      wvec_rdot_sum(&(psi[0][i]), &(chi[0][i]), &sum);
+    else {
       // Level 0 is the slow invert
       // Level 1 is the fast (shifted) invert
-      sum += (double)wvec_rdot(&(s->chi[0]), &(s->chi[0]));
-      sum += shiftSq * (double)wvec_rdot(&(s->psi[0]), &(s->chi[0]));
-      sum += (double)wvec_rdot(&(s->psi[1]), &(s->chi[1]));
+      wvec_rdot_sum(&(chi[0][i]), &(chi[0][i]), &sum);
+      sum += shiftSq * (double)wvec_rdot(&(psi[0][i]), &(chi[0][i]));
+      wvec_rdot_sum(&(psi[1][i]), &(chi[1][i]), &sum);
     }
   }
   g_doublesum(&sum);
