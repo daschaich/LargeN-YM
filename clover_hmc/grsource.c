@@ -108,8 +108,7 @@ void grsource_w() {
 
     /* But now something fancy has to happen. First we invert with the shift
        and write the result into psi[0] */
-    iters += congrad(niter, rsqmin, &final_rsq,
-                     F_OFFSET(chi[0]), F_OFFSET(psi[0]), shift);
+    iters += congrad(niter, rsqmin, &final_rsq, 0, shift);
 
     // chi <-- Mtilde psi1
     // chi <-- Mdag chi[0]

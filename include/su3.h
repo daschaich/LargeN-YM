@@ -517,7 +517,9 @@ void mult_mat_wilson_vec(su3_matrix *mat, wilson_vector *src,
 void mult_adj_mat_wilson_vec(su3_matrix *mat, wilson_vector *src,
                              wilson_vector *dest);
 
+// In file msq_wvec.c
 Real magsq_wvec(wilson_vector *src);
+void magsq_wvec_sum(wilson_vector *src, Real *c);
 
 void wp_shrink(wilson_vector *src, half_wilson_vector *dest,
                int dir, int sign);
@@ -565,7 +567,9 @@ void dif_su3_matrix_f(su3_matrix_f *b, su3_matrix_f *c);
 void add_su3_matrix_f(su3_matrix_f *a, su3_matrix_f *b, su3_matrix_f *c);
 void sub_su3_matrix_f(su3_matrix_f *a, su3_matrix_f *b, su3_matrix_f *c);
 
+// In file msq_su3vec.c
 Real magsq_su3vec(su3_vector *a);
+void magsq_su3vec_sum(su3_vector *a, Real *c);
 
 // In file m_mat_nn.c
 void mult_su3_nn_dif(su3_matrix *a, su3_matrix *b, su3_matrix *c);

@@ -1,8 +1,7 @@
 // -----------------------------------------------------------------
 // Dot product of two wilson_vectors
-// Return real part of dot product of two wilson_vectors
-// ReTr[adag.b]
-// Tr[adag.b]
+// Return ReTr[adag.b]
+// Return Tr[adag.b]
 // c <-- c + ReTr[adag.b]
 // c <-- c + Tr[adag.b]
 #include "../include/config.h"

@@ -29,7 +29,7 @@ int readin(int prompt);
 // CG stuff
 void dslash_w_field_special();
 int congrad(int niter, Real rsqmin, Real *final_rsq_ptr,
-            field_offset src, field_offset dest, Real mshift);
+            int level, Real mshift);
 
 void gauge_action(double *result);
 double action();

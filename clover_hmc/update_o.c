@@ -127,8 +127,7 @@ int update_step(Real *old_cg_time, Real *cg_time, Real *next_cg_time) {
       free_clov();
       make_clov(CKU0);
       returntrlogA = make_clovinv(ODD);
-      iters += congrad(niter, rsqmin, &final_rsq, F_OFFSET(chi[level]),
-                       F_OFFSET(psi[level]), mshift);
+      iters += congrad(niter, rsqmin, &final_rsq, level, mshift);
 
       tr = fermion_force(f_eps1 * LAMBDA_MID, 0.0);
       fnorm[1] += tr;
@@ -148,8 +147,7 @@ int update_step(Real *old_cg_time, Real *cg_time, Real *next_cg_time) {
         free_clov();
         make_clov(CKU0);
         returntrlogA = make_clovinv(ODD);
-        iters += congrad(niter, rsqmin, &final_rsq, F_OFFSET(chi[level]),
-                         F_OFFSET(psi[level]), mshift);
+        iters += congrad(niter, rsqmin, &final_rsq, level, mshift);
         tr = fermion_force(f_eps1 * TWO_LAMBDA, 0.0);
         fnorm[1] += tr;
         if (tr > max_ff[1])
@@ -163,14 +161,12 @@ int update_step(Real *old_cg_time, Real *cg_time, Real *next_cg_time) {
     free_clov();
     make_clov(CKU0);
     returntrlogA = make_clovinv(ODD);
-    iters += congrad(niter, rsqmin, &final_rsq, F_OFFSET(chi[level]),
-                     F_OFFSET(psi[level]), mshift);
+    iters += congrad(niter, rsqmin, &final_rsq, level, mshift);
 
     if (num_masses == 2) {
       next_cg_time[0] = cg_time[0] + f_eps0;
       predict_next_psi(old_cg_time, cg_time, next_cg_time, 0);
-      iters += congrad(niter, rsqmin, &final_rsq, F_OFFSET(chi[0]),
-                       F_OFFSET(psi[0]), 0.0);
+      iters += congrad(niter, rsqmin, &final_rsq, 0, 0.0);
     }
 
     tr = fermion_force(f_eps1 * TWO_LAMBDA, f_eps0 * LAMBDA_MID);
@@ -191,8 +187,7 @@ int update_step(Real *old_cg_time, Real *cg_time, Real *next_cg_time) {
       free_clov();
       make_clov(CKU0);
       returntrlogA = make_clovinv(ODD);
-      iters += congrad(niter, rsqmin, &final_rsq, F_OFFSET(chi[level]),
-                       F_OFFSET(psi[level]), mshift);
+      iters += congrad(niter, rsqmin, &final_rsq, level, mshift);
       tr = fermion_force(f_eps1 * LAMBDA_MID, 0.0);
       fnorm[1] += tr;
       if (tr > max_ff[1])
@@ -210,8 +205,7 @@ int update_step(Real *old_cg_time, Real *cg_time, Real *next_cg_time) {
         free_clov();
         make_clov(CKU0);
         returntrlogA = make_clovinv(ODD);
-        iters += congrad(niter, rsqmin, &final_rsq, F_OFFSET(chi[level]),
-                         F_OFFSET(psi[level]), mshift);
+        iters += congrad(niter, rsqmin, &final_rsq, level, mshift);
         tr = fermion_force(f_eps1 * TWO_LAMBDA, 0.0);
         fnorm[1] += tr;
         if (tr > max_ff[1])
@@ -226,13 +220,11 @@ int update_step(Real *old_cg_time, Real *cg_time, Real *next_cg_time) {
     free_clov();
     make_clov(CKU0);
     returntrlogA = make_clovinv(ODD);
-    iters += congrad(niter, rsqmin, &final_rsq, F_OFFSET(chi[level]),
-                     F_OFFSET(psi[level]), mshift);
+    iters += congrad(niter, rsqmin, &final_rsq, level, mshift);
     if (num_masses == 2) {
       next_cg_time[0] = cg_time[0] + f_eps0;
       predict_next_psi(old_cg_time, cg_time, next_cg_time, 0);
-      iters += congrad(niter, rsqmin, &final_rsq, F_OFFSET(chi[0]),
-                       F_OFFSET(psi[0]), 0.0);
+      iters += congrad(niter, rsqmin, &final_rsq, 0, 0.0);
     }
 
     if (outer < nsteps[0])
@@ -318,12 +310,9 @@ int update() {
   cg_time[1] = -1;
 
   // Do CG to get psi = (M^dag M)^(-1) chi on both levels
-  iters += congrad(niter, rsqmin, &final_rsq,
-                   F_OFFSET(chi[0]), F_OFFSET(psi[0]), 0.0);
-  if (num_masses == 2) {
-    iters += congrad(niter, rsqmin, &final_rsq,
-                     F_OFFSET(chi[1]), F_OFFSET(psi[1]), shift);
-  }
+  iters += congrad(niter, rsqmin, &final_rsq, 0, 0.0);
+  if (num_masses == 2)
+    iters += congrad(niter, rsqmin, &final_rsq, 1, shift);
 #ifdef CG_DEBUG
   checkmul();
 #endif
@@ -350,12 +339,9 @@ int update() {
   endtrlogA = returntrlogA;
 
   // Do CG to get both psi = (M^dag M)^(-1) chi
-  iters += congrad(niter, rsqmin, &final_rsq,
-                   F_OFFSET(chi[0]), F_OFFSET(psi[0]), 0.0);
-  if (num_masses == 2) {
-    iters += congrad(niter, rsqmin, &final_rsq,
-                     F_OFFSET(chi[1]), F_OFFSET(psi[1]), shift);
-  }
+  iters += congrad(niter, rsqmin, &final_rsq, 0, 0.0);
+  if (num_masses == 2)
+    iters += congrad(niter, rsqmin, &final_rsq, 1, shift);
 
   endaction = action();
   endaction -= 2.0 * endtrlogA;
