@@ -9,7 +9,7 @@ BETA_FREP turned on
 Hybrid Monte Carlo algorithm
 Phi algorithm
 LU preconditioning
-start: Fri Jan 13 04:06:06 2017
+start: Fri Jan 20 07:18:15 2017
 
 type 0 for no prompts or 1 for prompts
 nflavors 2
@@ -20,8 +20,8 @@ nt 4
 iseed 41
 LAYOUT = Hypercubes, options = hyper_prime,
 ON EACH NODE 4 x 4 x 4 x 4
-Mallocing 1.6 MBytes per node for lattice
-Mallocing 3.6 MBytes per node for fields
+Mallocing 1.4 MBytes per node for lattice
+Mallocing 3.8 MBytes per node for fields
 
 
 warms 0
@@ -50,11 +50,11 @@ forget
 Restored binary gauge configuration serially from file config.3F.4444
 Time stamp Fri Dec 16 00:37:45 2016
 Checksums 83567242 2efc25a5 OK
-Time to reload gauge configuration = 0.002422 seconds
+Time to reload gauge configuration = 0.002216 seconds
 CHECK PLAQ: 1.2754809836229895e+00 1.3359434793371250e+00
 CHECK NERSC LINKTR: -2.4656227161254187e-03 CKSUM: 0
 Reunitarized for double precision.  Max deviation 5.6e-08 changed to 5.6e-16
-Time to check unitarity = 0.000144 seconds
+Time to check unitarity = 0.0003371 seconds
 START 1.275481 1.3359435 2.6114245
 f_eps0 0.2 f_eps1 0.05 g_eps 0.005
 WARMUPS COMPLETED
@@ -65,36 +65,36 @@ MONITOR_FORCE_FERMION0 0.009227 0.01221
 MONITOR_FORCE_FERMION1 0.005609 0.011
 MONITOR_FORCE_GAUGE 0.006317 0.006406
 MONITOR_JACOBI_TOTL 0
-FMES 11.547303 0.24769523 -0.47444326 -1.1447822 12.035902 0.054900647
-GMES 0.13013022 -0.098842111 1186 39 1.2638967 1.3235197 2.5099747 2.5602303
+FMES 11.547303 0.24769523 -0.47444325 -1.1447822 12.035902 0.054900644
+GMES 0.13013022 -0.098842112 1184 39 1.2638967 1.3235197 2.5099747 2.5602303
 ACTION: g, rep, h, f, tot = 4368.107 0 4159.0623 3037.6973 11564.867
-ACTION: g, rep, h, f, tot = 4392.7369 0 4113.8226 3054.7322 11561.292
-ACCEPT: delta S = -1.609 start 11578.3012365 end 11576.6924726
+ACTION: g, rep, h, f, tot = 4392.7369 0 4113.8226 3054.7321 11561.292
+ACCEPT: delta S = -1.609 start 11578.3012063 end 11576.6924106
 MONITOR_FORCE_FERMION0 0.009471 0.013
 MONITOR_FORCE_FERMION1 0.006177 0.01369
 MONITOR_FORCE_GAUGE 0.006279 0.006349
 MONITOR_JACOBI_TOTL 0
-FMES 12.145164 0.023052464 -1.5712781 -0.61299643 12.571447 -0.079809599
-GMES -0.17068361 0.12689842 1251 40 1.2922969 1.2758774 2.4935366 2.4865803
+FMES 12.145164 0.023052465 -1.5712781 -0.61299636 12.571447 -0.079809466
+GMES -0.17068361 0.12689843 1249 40 1.2922969 1.2758774 2.4935366 2.4865803
 ACTION: g, rep, h, f, tot = 4392.7369 0 4082.1172 3006.9536 11481.808
-ACTION: g, rep, h, f, tot = 4318.6803 0 4147.8803 3016.0219 11482.582
-ACCEPT: delta S = -0.01948 start 11497.2085067 end 11497.1890278
+ACTION: g, rep, h, f, tot = 4318.6803 0 4147.8803 3016.0218 11482.582
+ACCEPT: delta S = -0.01948 start 11497.208487 end 11497.1890083
 MONITOR_FORCE_FERMION0 0.009757 0.01296
 MONITOR_FORCE_FERMION1 0.006341 0.01008
 MONITOR_FORCE_GAUGE 0.006294 0.006405
 MONITOR_JACOBI_TOTL 0
-FMES 11.705748 -0.042777177 -0.63798231 -0.69301238 12.045376 0.18421193
-GMES 0.054348689 -0.058182961 1202 40 1.333257 1.2927741 2.5053458 2.5151041
+FMES 11.705748 -0.04277709 -0.63798253 -0.69301219 12.045376 0.18421184
+GMES 0.054348711 -0.058182943 1199 40 1.3332569 1.2927741 2.5053458 2.5151041
 RUNNING COMPLETED
-STOP 1.333257 1.2927741 2.626031
-Average cg iters for steps: 1213
+STOP 1.3332569 1.2927741 2.626031
+Average cg iters for steps: 1211
 Average cg iters for measurements: 119
-Time               = 6.718 seconds
-congrad time       = 0.9596 seconds
-fermion_force time = 3.847 seconds
-block_nhyp time    = 0.552 seconds
-compute_fhb time   = 0.3848 seconds
-total_iters = 3735
+Time               = 6.801 seconds
+congrad time       = 0.9634 seconds
+fermion_force time = 3.863 seconds
+block_nhyp time    = 0.5741 seconds
+compute_fhb time   = 0.3841 seconds
+total_iters = 3726
 
-exit: Fri Jan 13 04:06:13 2017
+exit: Fri Jan 20 07:18:22 2017
 
