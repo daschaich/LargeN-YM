@@ -523,7 +523,7 @@ int spectrum() {
     }
   }
   meson(F_OFFSET(quark_propagator), F_OFFSET(quark_propagator), "ONE_");
-  meson(F_OFFSET(quark_propagator), F_OFFSET(rotated_propagator), "DSL_");
+//  meson(F_OFFSET(quark_propagator), F_OFFSET(rotated_propagator), "DSL_");
   baryon(F_OFFSET(quark_propagator), F_OFFSET(quark_propagator),
          F_OFFSET(quark_propagator));
 

@@ -1,5 +1,5 @@
 // -----------------------------------------------------------------
-// Add result of complex scalar multiplication on wilson_vector
+// Complex scalar multiplication on wilson_vector
 // c <-- c + s * b
 // c <-- a + s * b
 #include "../include/config.h"
