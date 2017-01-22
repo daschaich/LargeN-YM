@@ -7,18 +7,13 @@
 #
 #  The paths are relative to the application directory.
 
-G_WILSON_ALL =  \
-    bj_to_weyl.o \
-    boundary_flip.o \
-    dslash_w.o \
-    dslash_w_field.o \
-    fermion_rep.o \
-    fermion_rep_as_2.o \
-    fermion_rep_adj.o \
-    fermion_rep_f.o \
-    fermion_rep_sym_2.o \
-    fermion_rep_sym_3.o \
-    wilson_invert.o
+G_WILSON_ALL = boundary_flip.o \
+               dslash.o \
+               fermion_rep.o \
+               fermion_rep_as_2.o \
+               fermion_rep_f.o \
+               fermion_rep_sym_2.o \
+               wilson_invert.o
 
 # Must list our headers in generic_wilson_includes.h
 G_WILSON_HEADERS = \
@@ -41,13 +36,9 @@ G_WILSON_ALL_DEPEND = \
 
 ${G_WILSON_ALL}: ${G_WILSON_ALL_DEPEND}
 
-bj_to_weyl.o: ../generic_wilson/bj_to_weyl.c
-	${CC} -c ${CFLAGS} $<
 boundary_flip.o: ../generic_wilson/boundary_flip.c
 	${CC} -c ${CFLAGS} $<
-dslash_w.o: ../generic_wilson/dslash_w.c
-	${CC} -c ${CFLAGS} $<
-dslash_w_field.o: ../generic_wilson/dslash_w_field.c
+dslash.o: ../generic_wilson/dslash.c
 	${CC} -c ${CFLAGS} $<
 fermion_rep.o: ../generic_wilson/fermion_rep.c
 	${CC} -c ${CFLAGS} $<

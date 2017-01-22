@@ -27,31 +27,30 @@ int setup();
 int readin(int prompt);
 
 // CG stuff
-void dslash_w_field_special();
-int congrad(int niter, Real rsqmin, int level, Real mshift);
+void fermion_op(wilson_vector *src, wilson_vector *dest,
+                int sign, int parity);
+int congrad(int level, Real mshift, int parity);
 
-void gauge_action(double *result);
+// Measurement stuff
 double action();
 int f_meas();
-int w_spectrum_cl();
-int t_props_cl();
-void make_loop_table2();
-void path(int *dir, int *sign, int length);
-void udadu_mu_nu(wilson_vector *lsrc, wilson_vector *rsrc, int mu, int nu);
-void udadu_mat_mu_nu(int mu, int nu);
-void checkmul(wilson_vector *chi, wilson_vector *psi, Real mshift);
+#ifdef SPECTRUM
+int spectrum();
+#endif
 
+// Evolution stuff
+void grsource();
+void checkmul(int level, Real mshift);
+int update();
+void update_u(Real eps);
+void update_h(Real eps);
+void udadu_mat_mu_nu(int mu, int nu);
+void udadu_mu_nu(wilson_vector *lsrc, wilson_vector *rsrc, int mu, int nu);
+void mult_sigma_mu_nu(wilson_vector *src, wilson_vector *dest,
+                      int mu, int nu);
 void chain_rule(su3_matrix_f *sigmaf, su3_matrix *sigma,
                 su3_matrix_f *gaugelinkf);
 void apply_bc(su3_matrix_f *sigmaf, int dir, int t);
-void mult_sigma_mu_nu(wilson_vector *src, wilson_vector *dest,
-                      int mu, int nu);
-
-// Evolution stuff
-void grsource_w();
-int update();
-void update_h(Real eps);
-void update_u(Real eps);
 double gauge_force(Real eps);
 double fermion_force(Real eps1, Real eps2);
 

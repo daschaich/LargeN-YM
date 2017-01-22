@@ -74,9 +74,9 @@ void predict_next_psi(Real *oldtime, Real *newtime, Real *nexttime,
   }
   else  {
     FOREVENSITES(i, s) {
-      sub_wilson_vector(&(psi[level][i]), &(old_psi[level][i]), &twvec);
+      sub_wvec(&(psi[level][i]), &(old_psi[level][i]), &twvec);
       copy_wvec(&(psi[level][i]), &(old_psi[level][i]));
-      scalar_mult_add_wvec(&(psi[level][i]), &twvec, x, &(psi[level][i]));
+      scalar_mult_sum_wvec(&twvec, x, &(psi[level][i]));
     }
   }
   oldtime[level] = newtime[level];
@@ -127,7 +127,7 @@ int update_step(Real *old_cg_time, Real *cg_time, Real *next_cg_time) {
       free_clov();
       make_clov(CKU0);
       returntrlogA = make_clovinv(ODD);
-      iters += congrad(niter, rsqmin, level, mshift);
+      iters += congrad(level, mshift, EVEN);
 
       tr = fermion_force(f_eps1 * LAMBDA_MID, 0.0);
       fnorm[1] += tr;
@@ -147,7 +147,7 @@ int update_step(Real *old_cg_time, Real *cg_time, Real *next_cg_time) {
         free_clov();
         make_clov(CKU0);
         returntrlogA = make_clovinv(ODD);
-        iters += congrad(niter, rsqmin, level, mshift);
+        iters += congrad(level, mshift, EVEN);
         tr = fermion_force(f_eps1 * TWO_LAMBDA, 0.0);
         fnorm[1] += tr;
         if (tr > max_ff[1])
@@ -161,12 +161,12 @@ int update_step(Real *old_cg_time, Real *cg_time, Real *next_cg_time) {
     free_clov();
     make_clov(CKU0);
     returntrlogA = make_clovinv(ODD);
-    iters += congrad(niter, rsqmin, level, mshift);
+    iters += congrad(level, mshift, EVEN);
 
     if (num_masses == 2) {
       next_cg_time[0] = cg_time[0] + f_eps0;
       predict_next_psi(old_cg_time, cg_time, next_cg_time, 0);
-      iters += congrad(niter, rsqmin, 0, 0.0);
+      iters += congrad(0, 0.0, EVEN);
     }
 
     tr = fermion_force(f_eps1 * TWO_LAMBDA, f_eps0 * LAMBDA_MID);
@@ -187,7 +187,7 @@ int update_step(Real *old_cg_time, Real *cg_time, Real *next_cg_time) {
       free_clov();
       make_clov(CKU0);
       returntrlogA = make_clovinv(ODD);
-      iters += congrad(niter, rsqmin, level, mshift);
+      iters += congrad(level, mshift, EVEN);
       tr = fermion_force(f_eps1 * LAMBDA_MID, 0.0);
       fnorm[1] += tr;
       if (tr > max_ff[1])
@@ -205,7 +205,7 @@ int update_step(Real *old_cg_time, Real *cg_time, Real *next_cg_time) {
         free_clov();
         make_clov(CKU0);
         returntrlogA = make_clovinv(ODD);
-        iters += congrad(niter, rsqmin, level, mshift);
+        iters += congrad(level, mshift, EVEN);
         tr = fermion_force(f_eps1 * TWO_LAMBDA, 0.0);
         fnorm[1] += tr;
         if (tr > max_ff[1])
@@ -220,11 +220,11 @@ int update_step(Real *old_cg_time, Real *cg_time, Real *next_cg_time) {
     free_clov();
     make_clov(CKU0);
     returntrlogA = make_clovinv(ODD);
-    iters += congrad(niter, rsqmin, level, mshift);
+    iters += congrad(level, mshift, EVEN);
     if (num_masses == 2) {
       next_cg_time[0] = cg_time[0] + f_eps0;
       predict_next_psi(old_cg_time, cg_time, next_cg_time, 0);
-      iters += congrad(niter, rsqmin, 0, 0.0);
+      iters += congrad(0, 0.0, EVEN);
     }
 
     if (outer < nsteps[0])
@@ -266,6 +266,9 @@ void gauge_field_copy_f(field_offset src, field_offset dest) {
 
 
 // -----------------------------------------------------------------
+// Irrep link created from fundamental linkf after each update
+// Then irrep links are switched to antiperiodic BCs in fermion_rep()
+// Initial irrep links are set in update()
 int update() {
   int iters = 0;
   Real cg_time[2], old_cg_time[2], next_cg_time[2];
@@ -295,26 +298,22 @@ int update() {
   // Refresh the momenta
   ranmom();
 
-  // DIMFxDIMF link created from NCOLxNCOL linkf after each update,
-  // then DIMF gauge field is switched to antiperiodic BCs in fermion_rep()
-  // Initial DIMF links are set in update()
-  // See also sf_make_boundary.c
-
   // Generate a pseudofermion configuration only at start
   make_clov(CKU0);
   starttrlogA = make_clovinv(ODD);
-  grsource_w();
+  grsource();
   old_cg_time[0] = -1;
   old_cg_time[1] = -1;
   cg_time[0] = -1;
   cg_time[1] = -1;
 
   // Do CG to get psi = (M^dag M)^(-1) chi on both levels
-  iters += congrad(niter, rsqmin, 0, 0.0);
+  iters += congrad(0, 0.0, EVEN);
   if (num_masses == 2)
-    iters += congrad(niter, rsqmin, 1, shift);
+    iters += congrad(1, shift, EVEN);
 #ifdef CG_DEBUG
-  checkmul();
+  checkmul(0, 0.0);
+  checkmul(1, shift);
 #endif
 
   cg_time[0] = 0.0;
@@ -339,9 +338,9 @@ int update() {
   endtrlogA = returntrlogA;
 
   // Do CG to get both psi = (M^dag M)^(-1) chi
-  iters += congrad(niter, rsqmin, 0, 0.0);
+  iters += congrad(0, 0.0, EVEN);
   if (num_masses == 2)
-    iters += congrad(niter, rsqmin, 1, shift);
+    iters += congrad(1, shift, EVEN);
 
   endaction = action();
   endaction -= 2.0 * endtrlogA;

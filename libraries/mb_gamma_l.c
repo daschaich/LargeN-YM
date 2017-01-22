@@ -36,12 +36,12 @@
 #include "../include/su3.h"
 #include "../include/dirs.h"
 
-void mult_by_gamma_left(wilson_matrix *src,  wilson_matrix *dest, int dir) {
+void mult_by_gamma_left(wilson_matrix *src, wilson_matrix *dest, int dir) {
   register int i, c2, s2;
 
   switch(dir) {
     case XUP:
-      for(i = 0; i < DIMF; i++)for(s2=0;s2<4;s2++)for(c2=0;c2<DIMF;c2++) {
+      for (i = 0; i < DIMF; i++)for (s2=0;s2<4;s2++)for (c2=0;c2<DIMF;c2++) {
         CMUL_I(src->d[3].c[i].d[s2].c[c2], dest->d[0].c[i].d[s2].c[c2]);
         CMUL_I(src->d[2].c[i].d[s2].c[c2], dest->d[1].c[i].d[s2].c[c2]);
         CMUL_MINUS_I(src->d[1].c[i].d[s2].c[c2], dest->d[2].c[i].d[s2].c[c2]);
@@ -49,7 +49,7 @@ void mult_by_gamma_left(wilson_matrix *src,  wilson_matrix *dest, int dir) {
       }
       break;
     case YUP:
-      for(i = 0; i < DIMF; i++)for(s2=0;s2<4;s2++)for(c2=0;c2<DIMF;c2++) {
+      for (i = 0; i < DIMF; i++)for (s2=0;s2<4;s2++)for (c2=0;c2<DIMF;c2++) {
         CNEGATE(src->d[3].c[i].d[s2].c[c2], dest->d[0].c[i].d[s2].c[c2]);
         CCOPY(src->d[2].c[i].d[s2].c[c2], dest->d[1].c[i].d[s2].c[c2]);
         CCOPY(src->d[1].c[i].d[s2].c[c2], dest->d[2].c[i].d[s2].c[c2]);
@@ -57,7 +57,7 @@ void mult_by_gamma_left(wilson_matrix *src,  wilson_matrix *dest, int dir) {
       }
       break;
     case ZUP:
-      for(i = 0; i < DIMF; i++)for(s2=0;s2<4;s2++)for(c2=0;c2<DIMF;c2++) {
+      for (i = 0; i < DIMF; i++)for (s2=0;s2<4;s2++)for (c2=0;c2<DIMF;c2++) {
         CMUL_I(src->d[2].c[i].d[s2].c[c2], dest->d[0].c[i].d[s2].c[c2]);
         CMUL_MINUS_I(src->d[3].c[i].d[s2].c[c2], dest->d[1].c[i].d[s2].c[c2]);
         CMUL_MINUS_I(src->d[0].c[i].d[s2].c[c2], dest->d[2].c[i].d[s2].c[c2]);
@@ -65,7 +65,7 @@ void mult_by_gamma_left(wilson_matrix *src,  wilson_matrix *dest, int dir) {
       }
       break;
     case TUP:
-      for(i = 0; i < DIMF; i++)for(s2=0;s2<4;s2++)for(c2=0;c2<DIMF;c2++) {
+      for (i = 0; i < DIMF; i++)for (s2=0;s2<4;s2++)for (c2=0;c2<DIMF;c2++) {
         CCOPY(src->d[2].c[i].d[s2].c[c2], dest->d[0].c[i].d[s2].c[c2]);
         CCOPY(src->d[3].c[i].d[s2].c[c2], dest->d[1].c[i].d[s2].c[c2]);
         CCOPY(src->d[0].c[i].d[s2].c[c2], dest->d[2].c[i].d[s2].c[c2]);
@@ -73,7 +73,7 @@ void mult_by_gamma_left(wilson_matrix *src,  wilson_matrix *dest, int dir) {
       }
       break;
     case GAMMAFIVE:
-      for(i = 0; i < DIMF; i++)for(s2=0;s2<4;s2++)for(c2=0;c2<DIMF;c2++) {
+      for (i = 0; i < DIMF; i++)for (s2=0;s2<4;s2++)for (c2=0;c2<DIMF;c2++) {
         CCOPY(src->d[0].c[i].d[s2].c[c2], dest->d[0].c[i].d[s2].c[c2]);
         CCOPY(src->d[1].c[i].d[s2].c[c2], dest->d[1].c[i].d[s2].c[c2]);
         CNEGATE(src->d[2].c[i].d[s2].c[c2], dest->d[2].c[i].d[s2].c[c2]);

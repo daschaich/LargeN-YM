@@ -110,13 +110,13 @@ void delta(int level) {
 #endif
 
     FORALLSITES(i, s) {
-      wp_shrink(&(psi[level][i]), &(s->htmp[0]), mu, PLUS);
-      wp_shrink(&(p[i]), &(s->htmp[1]), mu, MINUS);
+      wp_shrink(&(psi[level][i]), &(htmp[0][i]), mu, PLUS);
+      wp_shrink(&(p[i]), &(htmp[1][i]), mu, MINUS);
     }
-    tag0 = start_gather_site(F_OFFSET(htmp[0]), sizeof(half_wilson_vector),
-                             mu, EVENANDODD, gen_pt[0]);
-    tag1 = start_gather_site(F_OFFSET(htmp[1]), sizeof(half_wilson_vector),
-                             mu, EVENANDODD, gen_pt[1]);
+    tag0 = start_gather_field(htmp[0], sizeof(half_wilson_vector),
+                              mu, EVENANDODD, gen_pt[0]);
+    tag1 = start_gather_field(htmp[1], sizeof(half_wilson_vector),
+                              mu, EVENANDODD, gen_pt[1]);
     wait_gather(tag0);
     wait_gather(tag1);
 
@@ -245,26 +245,28 @@ void prepare_vecs(int level) {
   if (level == 1)
     tc = cmplx(0, shift);
 
-  dslash_w_field(psi[level], tempwvec, PLUS, ODD);
-  mult_ldu_field(tempwvec, psi[level], ODD);
+  dslash(psi[level], tempwvec, PLUS, ODD);
+  mult_ldu(tempwvec, psi[level], ODD);
   FORODDSITES(i, s)
     scalar_mult_wvec(&(psi[level][i]), kappa, &(psi[level][i]));
 
-  dslash_w_field(psi[level], p, PLUS, EVEN);
-  mult_ldu_field(psi[level], tempwvec, EVEN);
+  dslash(psi[level], p, PLUS, EVEN);
+  mult_ldu(psi[level], tempwvec, EVEN);
   FOREVENSITES(i, s) {
     if (level == 1) {
       scalar_mult_add_wvec(&(tempwvec[i]), &(p[i]), mkappa, &twvec);
 
-      /* that was M*psi now we need to add i*shift*gamma_5*p */
+      // Add i * shift * gamma5.p to complete M.psi
       mult_by_gamma(&(psi[level][i]), &twvec2, GAMMAFIVE);
       c_scalar_mult_add_wvec(&twvec, &twvec2, &tc, &(p[i]));
     }
-    else    // TODO: Split...
-      scalar_mult_add_wvec(&(tempwvec[i]), &(p[i]), mkappa, &(p[i]));
+    else {
+      scalar_mult_wvec(&(p[i]), mkappa, &(p[i]));
+      sum_wvec(&(tempwvec[i]), &(p[i]));
+    }
   }
-  dslash_w_field(p, tempwvec, MINUS, ODD);
-  mult_ldu_field(tempwvec, p, ODD);
+  dslash(p, tempwvec, MINUS, ODD);
+  mult_ldu(tempwvec, p, ODD);
   FORODDSITES(i, s)
     scalar_mult_wvec(&(p[i]), kappa, &(p[i]));
 
@@ -297,8 +299,11 @@ double fermion_force(Real eps1, Real eps2) {
   Real tCKU0 = -CKU0 / 4.0, ferm_epsilon = nflavors * eps1;
   Real MSq = shift * shift * eps2 / eps1;
   double maxnorm = 0.0, norm = 0.0, tr;
-  su3_matrix tmat;
   su3_matrix_f tmatf;
+  su3_matrix tmat;
+#ifdef DEBUG_CHECK
+  double dtime = -dclock(), mflops;
+#endif
 
 #ifdef TIMING
 TIC(1)
@@ -317,8 +322,8 @@ TIC(1)
     FORALLUPDIR(nu) {
       if (nu == mu)
         continue;
-      tr_sigma_ldu_mu_nu_site(mu, nu);          // Result in tempmat
-      udadu_mat_mu_nu(mu, nu);                  // Result in tempmat2
+      tr_sigma_ldu_mu_nu(mu, nu);         // Result in tempmat
+      udadu_mat_mu_nu(mu, nu);            // Result in tempmat2
       FORALLSITES(i, s)
         scalar_mult_sum_su3_matrix(&(tempmat2[i]), tCKU0, &(s->Force[mu]));
     }
@@ -335,20 +340,20 @@ TIC(1)
   delta(level);
 
   if (eps2 > 0.0 && num_masses == 2) {
-    dslash_w_field(psi[0], tempwvec, PLUS, ODD);
-    mult_ldu_field(tempwvec, psi[0], ODD);
+    dslash(psi[0], tempwvec, PLUS, ODD);
+    mult_ldu(tempwvec, psi[0], ODD);
     FORODDSITES(i, s)
       scalar_mult_wvec(&(psi[0][i]), kappa, &(psi[0][i]));
 
-    dslash_w_field(psi[0], p, PLUS, EVEN);
-    mult_ldu_field(psi[0], tempwvec, EVEN);
+    dslash(psi[0], p, PLUS, EVEN);
+    mult_ldu(psi[0], tempwvec, EVEN);
     FOREVENSITES(i, s) {
       scalar_mult_wvec(&(p[i]), mkappa, &(p[i]));
       sum_wvec(&(tempwvec[i]), &(p[i]));
     }
 
-    dslash_w_field(p, tempwvec, MINUS, ODD);
-    mult_ldu_field(tempwvec, p, ODD);
+    dslash(p, tempwvec, MINUS, ODD);
+    mult_ldu(tempwvec, p, ODD);
     FORODDSITES(i, s)
       scalar_mult_wvec(&(p[i]), kappa, &(p[i]));
 
@@ -408,9 +413,12 @@ TIC(1)
   TOC(1, time_fermion_force)
 #endif
 
-/**dtime += dclock();
-if (this_node==0)printf("F_FORCE: time = %e mflops = %e\n",
-dtime, (double)(5584.0*volume/(1.0e6*dtime*numnodes())));**/
+#ifdef DEBUG_CHECK
+  dtime += dclock();
+  mflops = (double)(5584.0 * volume / (1e6 * dtime * numnodes()));
+  node0_printf("Fermion force time = %.4g mflops = %.4g\n",
+               dtime, mflops);
+#endif
   return 2.0 * ferm_epsilon * sqrt(norm) / (double)volume;
 }
 // -----------------------------------------------------------------

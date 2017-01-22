@@ -90,7 +90,7 @@ void compute_clov(clover *my_clov, Real Clov_c) {
    Upper left block, showing blocks of SU(3) matrices
 
    [ 1 + ci(f_01 - f_23)                ci(f_12 - f_03) + c(f_02 + f_13) ]
-   [ ci(f_12 - f_03) - c(f_02 + f_13)   1 - ci(f_01 - f_23)                ]
+   [ ci(f_12 - f_03) - c(f_02 + f_13)   1 - ci(f_01 - f_23)              ]
 
    Lower right block, showing blocks of SU(3) matrices
 
@@ -103,9 +103,9 @@ void compute_clov(clover *my_clov, Real Clov_c) {
    clov_diag[site].di[0][0-5] holds the diagonals from the upper left
    clov_diag[site].di[1][0-5] holds the diagonals from the lower right
 
-   clov_diag[site].di[0][a]   = R(a0, a0) = 1 - c(Im f_01 - Im f_23)(a, a)
+   clov_diag[site].di[0][a]     = R(a0, a0) = 1 - c(Im f_01 - Im f_23)(a, a)
    clov_diag[site].di[0][a + 3] = R(a1, a1) = 1 + c(Im f_01 - Im f_23)(a, a)
-   clov_diag[site].di[1][a]   = R(a2, a2) = 1 - c(Im f_01 + Im f_23)(a, a)
+   clov_diag[site].di[1][a]     = R(a2, a2) = 1 - c(Im f_01 + Im f_23)(a, a)
    clov_diag[site].di[1][a + 3] = R(a3, a3) = 1 + c(Im f_01 + Im f_23)(a, a)
 
    clov[site].tr[0][jk]:
@@ -113,50 +113,47 @@ void compute_clov(clover *my_clov, Real Clov_c) {
       the pattern
 
         jk = ...
-
    [          |        ]      [                      |                     ]
    [  0       |        ]      [  1 + ci(f_01 - f_23) | ci(f_12 - f_03)     ]
    [  1  2    |        ]      [                      |   + c(f_02 + f_13)  ]
    ---------------------   =  ----------------------------------------------
-   [  3  4  5 |        ]      [          |               ]
+   [  3  4  5 |        ]      [                      |                     ]
    [  6  7  8 |  9     ]      [ ci(f_12 - f_03)      | 1 - ci(f_01 - f_23) ]
-   [ 10 11 12 | 13 14  ]      [    - c(f_02 + f_13)  |               ]
+   [ 10 11 12 | 13 14  ]      [    - c(f_02 + f_13)  |                     ]
 
    clov[site].tr[1][jk]:
       Holds the lower triangular elements of the lower right block in
       the pattern
 
         jk = ...
-
    [          |        ]      [                      |                     ]
    [  0       |        ]      [  1 + ci(f_01 + f_23) | ci(f_12 + f_03)     ]
    [  1  2    |        ]      [                      |   + c(f_02 - f_13)  ]
    ---------------------   =  ----------------------------------------------
-   [  3  4  5 |        ]      [          |               ]
+   [  3  4  5 |        ]      [                      |                     ]
    [  6  7  8 |  9     ]      [ ci(f_12 + f_03)      | 1 - ci(f_01 + f_23) ]
-   [ 10 11 12 | 13 14  ]      [    - c(f_02 - f_13)  |               ]
-
+   [ 10 11 12 | 13 14  ]      [    - c(f_02 - f_13)  |                     ]
    */
 
   f_mu_nu(f_mn, 0, 1);
   FORALLSITES(i, s)
-    scalar_mult_su3_matrix(f_mn + i, Clov_c, f_mn + i);
+    scalar_mult_su3_matrix(&(f_mn[i]), Clov_c, &(f_mn[i]));
 
   jk = 0;
   for (j = 0; j < DIMF; j++) {
     FORALLSITES(i, s) {
-      clov_diag[i].di[0][j] = 1.0 - (f_mn + i)->e[j][j].imag;
-      clov_diag[i].di[0][j + DIMF] = 1.0 + (f_mn + i)->e[j][j].imag;
-      clov_diag[i].di[1][j] = 1.0 - (f_mn + i)->e[j][j].imag;
-      clov_diag[i].di[1][j + DIMF] = 1.0 + (f_mn + i)->e[j][j].imag;
+      clov_diag[i].di[0][j] = 1.0 - f_mn[i].e[j][j].imag;
+      clov_diag[i].di[0][j + DIMF] = 1.0 + f_mn[i].e[j][j].imag;
+      clov_diag[i].di[1][j] = 1.0 - f_mn[i].e[j][j].imag;
+      clov_diag[i].di[1][j + DIMF] = 1.0 + f_mn[i].e[j][j].imag;
     }
     jk2 = (j + DIMF) * (j + DIMF-1)/2 + DIMF;
     for (k = 0; k < j; k++) {
       FORALLSITES(i, s) {
-        CMUL_I((f_mn + i)->e[j][k], clov[i].tr[0][jk]);
-        CMUL_MINUS_I((f_mn + i)->e[j][k], clov[i].tr[0][jk2]);
-        CMUL_I((f_mn + i)->e[j][k], clov[i].tr[1][jk]);
-        CMUL_MINUS_I((f_mn + i)->e[j][k], clov[i].tr[1][jk2]);
+        CMUL_I(f_mn[i].e[j][k], clov[i].tr[0][jk]);
+        CMUL_MINUS_I(f_mn[i].e[j][k], clov[i].tr[0][jk2]);
+        CMUL_I(f_mn[i].e[j][k], clov[i].tr[1][jk]);
+        CMUL_MINUS_I(f_mn[i].e[j][k], clov[i].tr[1][jk2]);
       }
       jk++;
       jk2++;
@@ -165,20 +162,20 @@ void compute_clov(clover *my_clov, Real Clov_c) {
 
   f_mu_nu(f_mn, 2, 3);
   FORALLSITES(i, s)
-    scalar_mult_su3_matrix((f_mn + i), Clov_c, (f_mn + i));
+    scalar_mult_su3_matrix(&(f_mn[i]), Clov_c, &(f_mn[i]));
 
   jk = 0;
   for (j = 0; j < DIMF; j++) {
     FORALLSITES(i, s) {
-      clov_diag[i].di[0][j] += (f_mn + i)->e[j][j].imag;
-      clov_diag[i].di[0][j + DIMF] -= (f_mn + i)->e[j][j].imag;
-      clov_diag[i].di[1][j] -= (f_mn + i)->e[j][j].imag;
-      clov_diag[i].di[1][j + DIMF] += (f_mn + i)->e[j][j].imag;
+      clov_diag[i].di[0][j] += f_mn[i].e[j][j].imag;
+      clov_diag[i].di[0][j + DIMF] -= f_mn[i].e[j][j].imag;
+      clov_diag[i].di[1][j] -= f_mn[i].e[j][j].imag;
+      clov_diag[i].di[1][j + DIMF] += f_mn[i].e[j][j].imag;
     }
     jk2 = (j + DIMF)*(j + DIMF-1)/2 + DIMF;
     for (k = 0; k < j; k++) {
       FORALLSITES(i, s) {
-        CMUL_MINUS_I((f_mn + i)->e[j][k], tc);
+        CMUL_MINUS_I(f_mn[i].e[j][k], tc);
         CSUM(clov[i].tr[0][jk], tc);
         CDIF(clov[i].tr[0][jk2], tc);
         CDIF(clov[i].tr[1][jk], tc);
@@ -190,31 +187,29 @@ void compute_clov(clover *my_clov, Real Clov_c) {
   }
 
   f_mu_nu(f_mn, 1, 2);
-  FORALLSITES(i, s) {
-    scalar_mult_su3_matrix((f_mn + i), Clov_c,
-        (f_mn + i));
-  }
+  FORALLSITES(i, s)
+    scalar_mult_su3_matrix(&(f_mn[i]), Clov_c, &(f_mn[i]));
+
   for (j = 0; j < DIMF; j++) {
     jk = (j + DIMF)*(j + DIMF-1)/2;
     for (k = 0; k < DIMF; k++) {
       FORALLSITES(i, s) {
-        CMUL_I((f_mn + i)->e[j][k], clov[i].tr[0][jk]);
-        CMUL_I((f_mn + i)->e[j][k], clov[i].tr[1][jk]);
+        CMUL_I(f_mn[i].e[j][k], clov[i].tr[0][jk]);
+        CMUL_I(f_mn[i].e[j][k], clov[i].tr[1][jk]);
       }
       jk++;
     }
   }
 
   f_mu_nu(f_mn, 0, 3);
-  FORALLSITES(i, s) {
-    scalar_mult_su3_matrix((f_mn + i), Clov_c,
-        (f_mn + i));
-  }
+  FORALLSITES(i, s)
+    scalar_mult_su3_matrix(&(f_mn[i]), Clov_c, &(f_mn[i]));
+
   for (j = 0; j < DIMF; j++) {
     jk = (j + DIMF)*(j + DIMF-1)/2;
     for (k = 0; k < DIMF; k++) {
       FORALLSITES(i, s) {
-        CMUL_MINUS_I((f_mn + i)->e[j][k], tc);
+        CMUL_MINUS_I(f_mn[i].e[j][k], tc);
         CSUM(clov[i].tr[0][jk], tc);
         CDIF(clov[i].tr[1][jk], tc);
       }
@@ -224,14 +219,14 @@ void compute_clov(clover *my_clov, Real Clov_c) {
 
   f_mu_nu(f_mn, 0, 2);
   FORALLSITES(i, s)
-    scalar_mult_su3_matrix((f_mn + i), Clov_c, (f_mn + i));
+    scalar_mult_su3_matrix(&(f_mn[i]), Clov_c, &(f_mn[i]));
 
   for (j = 0; j < DIMF; j++) {
     jk = (j + DIMF) * (j + DIMF - 1) / 2;
     for (k = 0; k < DIMF; k++) {
       FORALLSITES(i, s) {
-        CDIF(clov[i].tr[0][jk], (f_mn + i)->e[j][k]);
-        CDIF(clov[i].tr[1][jk], (f_mn + i)->e[j][k]);
+        CDIF(clov[i].tr[0][jk], f_mn[i].e[j][k]);
+        CDIF(clov[i].tr[1][jk], f_mn[i].e[j][k]);
       }
       jk++;
     }
@@ -239,14 +234,14 @@ void compute_clov(clover *my_clov, Real Clov_c) {
 
   f_mu_nu(f_mn, 1, 3);
   FORALLSITES(i, s)
-    scalar_mult_su3_matrix((f_mn + i), Clov_c, (f_mn + i));
+    scalar_mult_su3_matrix(&(f_mn[i]), Clov_c, &(f_mn[i]));
 
   for (j = 0; j < DIMF; j++) {
     jk = (j + DIMF)*(j + DIMF-1)/2;
     for (k = 0; k < DIMF; k++) {
       FORALLSITES(i, s) {
-        CDIF(clov[i].tr[0][jk], (f_mn + i)->e[j][k]);
-        CSUM(clov[i].tr[1][jk], (f_mn + i)->e[j][k]);
+        CDIF(clov[i].tr[0][jk], f_mn[i].e[j][k]);
+        CSUM(clov[i].tr[1][jk], f_mn[i].e[j][k]);
       }
       jk++;
     }
@@ -269,77 +264,78 @@ double compute_clovinv(clover *my_clov, int parity) {
   double trlogA = 0.0;
   complex v1[2 * DIMF], tc, sum;
 
-  /* Take the inverse on the odd sublattice for each of the 2 blocks */
-  FORSOMEPARITY(i, s, parity)for (b = 0; b < 2; b++) {
+  // Take the inverse on the specified sublattice for each of the 2 blocks
+  FORSOMEPARITY(i, s, parity) {
+    for (b = 0; b < 2; b++) {
+      // Cholesky decompose
+      // Do in place with temporary diagonal.
+      // Algorithm 4.2.2 of "Matrix Computations" (Golub & Van Loan, 1989)
+      for (j = 0; j < 2 * DIMF; j++) {
 
-    /* Cholesky decompose. This can be done in place, except that
-       we will need a temporary diagonal.
-       Uses algorithm 4.2.2 of "Matrix Computations" by Gene H. Golub
-       and Charles F. Van Loan (John Hopkins, 1989) */
-    for (j = 0; j < 2*DIMF; j++) {
+        clov_diag[i].di[b][j] = sqrt((double)(clov_diag[i].di[b][j]));
+        f_diag[j] = 1.0 / (clov_diag[i].di[b][j]);
+        for (k = j + 1; k < 2 * DIMF; k++) {
+          kj = k * (k - 1) / 2 + j;
+          CMULREAL(clov[i].tr[b][kj], f_diag[j], clov[i].tr[b][kj]);
+        }
 
-      clov_diag[i].di[b][j] = sqrt((double)(clov_diag[i].di[b][j]));
-      f_diag[j] = 1.0 / (clov_diag[i].di[b][j]);
-      for (k = j + 1; k < 2 * DIMF; k++) {
-        kj = k * (k - 1) / 2 + j;
-        CMULREAL(clov[i].tr[b][kj], f_diag[j], clov[i].tr[b][kj]);
-      }
-
-      for (k = j + 1; k < 2*DIMF; k++) {
-        kj = k*(k-1)/2 + j;
-        CMUL_J(clov[i].tr[b][kj], clov[i].tr[b][kj], tc);
-        clov_diag[i].di[b][k] -= tc.real;
-        for (l = k + 1; l < 2*DIMF; l++) {
-          lj = l*(l-1)/2 + j;
-          lk = l*(l-1)/2 + k;
-          CMUL_JDIF(clov[i].tr[b][lj], clov[i].tr[b][kj], clov[i].tr[b][lk]);
+        for (k = j + 1; k < 2 * DIMF; k++) {
+          kj = k*(k-1)/2 + j;
+          CMUL_J(clov[i].tr[b][kj], clov[i].tr[b][kj], tc);
+          clov_diag[i].di[b][k] -= tc.real;
+          for (l = k + 1; l < 2 * DIMF; l++) {
+            lj = l*(l-1)/2 + j;
+            lk = l*(l-1)/2 + k;
+            CMUL_JDIF(clov[i].tr[b][lj], clov[i].tr[b][kj], clov[i].tr[b][lk]);
+          }
         }
       }
-    }
 
-    /* Accumulate trlogA */
-    for (j = 0; j < 2*DIMF; j++)
-      trlogA += (double)2.0 * log((double)(clov_diag[i].di[b][j]));
+      /* Accumulate trlogA */
+      for (j = 0; j < 2 * DIMF; j++)
+        trlogA += (double)2.0 * log((double)(clov_diag[i].di[b][j]));
 
-    /* Now use forward and backward substitution to construct inverse */
-    for (k = 0; k < 2*DIMF; k++) {
-      for (l = 0; l < k; l++) v1[l] = cmplx(0.0, 0.0);
+      /* Now use forward and backward substitution to construct inverse */
+      for (k = 0; k < 2 * DIMF; k++) {
+        for (l = 0; l < k; l++)
+          v1[l] = cmplx(0.0, 0.0);
 
-      /* Forward substitute */
-      v1[k] = cmplx(f_diag[k], 0.0);
-      for (l = k + 1; l < 2*DIMF; l++) {
-        sum = cmplx(0.0, 0.0);
-        for (j = k; j < l; j++) {
-          lj = l * (l - 1) / 2 + j;
-          CMULDIF(clov[i].tr[b][lj], v1[j], sum);
+        /* Forward substitute */
+        v1[k] = cmplx(f_diag[k], 0.0);
+        for (l = k + 1; l < 2 * DIMF; l++) {
+          sum = cmplx(0.0, 0.0);
+          for (j = k; j < l; j++) {
+            lj = l * (l - 1) / 2 + j;
+            CMULDIF(clov[i].tr[b][lj], v1[j], sum);
+          }
+          CMULREAL(sum, f_diag[l], v1[l]);
         }
-        CMULREAL(sum, f_diag[l], v1[l]);
-      }
 
-      /* Backward substitute */
-      l = 2 * DIMF - 1;
-      CMULREAL(v1[l], f_diag[l], v1[l]);
-      for (l = 2 * DIMF - 2; l >= k; l--) {
-        sum = v1[l];
-        for (j = l + 1; j < 2 * DIMF; j++) {
-          jl = j * (j - 1) / 2 + l;
-          CMULJ_DIF(clov[i].tr[b][jl], v1[j], sum);
+        /* Backward substitute */
+        l = 2 * DIMF - 1;
+        CMULREAL(v1[l], f_diag[l], v1[l]);
+        for (l = 2 * DIMF - 2; l >= k; l--) {
+          sum = v1[l];
+          for (j = l + 1; j < 2 * DIMF; j++) {
+            jl = j * (j - 1) / 2 + l;
+            CMULJ_DIF(clov[i].tr[b][jl], v1[j], sum);
+          }
+          CMULREAL(sum, f_diag[l], v1[l]);
         }
-        CMULREAL(sum, f_diag[l], v1[l]);
-      }
 
-      /* Overwrite column k */
-      clov_diag[i].di[b][k] = v1[k].real;
-      for (l = k + 1; l < 2 * DIMF; l++) {
-        lk = l * (l - 1) / 2 + k;
-        clov[i].tr[b][lk] = v1[l];
+        /* Overwrite column k */
+        clov_diag[i].di[b][k] = v1[k].real;
+        for (l = k + 1; l < 2 * DIMF; l++) {
+          lk = l * (l - 1) / 2 + k;
+          clov[i].tr[b][lk] = v1[l];
+        }
       }
     }
   } END_LOOP
 
   g_doublesum(&trlogA);
   return trlogA;
-} /* compute_clovinv */
+}
 // -----------------------------------------------------------------
 
 
@@ -353,52 +349,11 @@ double compute_clovinv(clover *my_clov, int parity) {
    the somewhat dirty structure, equivalent to a wilson_vector: */
 typedef struct { complex b[2][2 * DIMF]; } wilson_block_vector;
 
-// src and dest will be recast as wilson_block_vector
-void mult_this_ldu_site(clover *my_clov, field_offset src, field_offset dest,
-                        int parity) {
+// Recast src and dest as wilson_block_vector
+void mult_this_ldu(clover *my_clov, wilson_vector *src,
+                   wilson_vector *dest, int parity) {
 
   register int i, b, j, k, jk, kj;
-  register complex tc;
-  register site *s;
-  triangular *clov = my_clov->clov;
-  diagonal *clov_diag = my_clov->clov_diag;
-
-  FORSOMEPARITY(i, s, parity) {
-    if (i < loopend - FETCH_UP) {
-      prefetch_W((wilson_vector *)(F_PT((s + FETCH_UP), src)));
-      prefetch_W((wilson_vector *)(F_PT((s + FETCH_UP), dest)));
-    }
-    for (b = 0; b < 2; b++) {
-      for (j = 0; j < 2 * DIMF; j++) {
-        /* diagonal part */
-        CMULREAL(((wilson_block_vector *)F_PT(s, src))->b[b][j],
-                 clov_diag[i].di[b][j], tc);
-
-        /* lower triangular part */
-        jk = j * (j - 1) / 2;
-        for (k = 0; k < j; k++) {
-          CMULSUM(clov[i].tr[b][jk],
-                  ((wilson_block_vector *)F_PT(s, src))->b[b][k], tc);
-          jk++;
-        }
-
-        /* upper triangular part */
-        for (k = j + 1; k < 2*DIMF; k++) {
-          kj = k*(k-1)/2 + j;
-          CMULJ_SUM(clov[i].tr[b][kj],
-                    ((wilson_block_vector *)F_PT(s, src))->b[b][k], tc);
-        }
-        ((wilson_block_vector *)F_PT(s, dest))->b[b][j] = tc;
-      }
-    }
-  } END_LOOP
-}
-
-void mult_this_ldu_field(clover *my_clov, wilson_vector *src,
-                         wilson_vector *dest, int parity) {
-
-  register int i, b, j, k, jk, kj;
-  register complex tc;
   register site *s;
   triangular *clov = my_clov->clov;
   diagonal *clov_diag = my_clov->clov_diag;
@@ -413,21 +368,20 @@ void mult_this_ldu_field(clover *my_clov, wilson_vector *src,
     for (b = 0; b < 2; b++) {
       for (j = 0; j < 2*DIMF; j++) {
         /* diagonal part */
-        CMULREAL(srcb[i].b[b][j], clov_diag[i].di[b][j], tc);
+        CMULREAL(srcb[i].b[b][j], clov_diag[i].di[b][j], destb[i].b[b][j]);
 
         /* lower triangular part */
         jk = j * (j - 1) / 2;
         for (k = 0; k < j; k++) {
-          CMULSUM(clov[i].tr[b][jk], srcb[i].b[b][k], tc);
+          CMULSUM(clov[i].tr[b][jk], srcb[i].b[b][k], destb[i].b[b][j]);
           jk++;
         }
 
         /* upper triangular part */
         for (k = j + 1; k < 2 * DIMF; k++) {
           kj = k * (k - 1) / 2 + j;
-          CMULJ_SUM(clov[i].tr[b][kj], srcb[i].b[b][k], tc);
+          CMULJ_SUM(clov[i].tr[b][kj], srcb[i].b[b][k], destb[i].b[b][j]);
         }
-        destb[i].b[b][j] = tc;
       }
     }
   } END_LOOP
@@ -459,7 +413,7 @@ and sigma(nu, mu) = -sigma(mu, nu), and sums over the dirac indices.
 /* triang, diag are input & contain the color-dirac matrix
    mat is output: the resulting su3_matrix  */
 // Put result in tempmat
-void tr_sigma_ldu_mu_nu_site(int mu, int nu) {
+void tr_sigma_ldu_mu_nu(int mu, int nu) {
   register int i, j, k, jk, jk2, kj;
   register int mm = 0, nn = 0;  /* dummy directions */
   register Real pm = 0;
@@ -468,7 +422,7 @@ void tr_sigma_ldu_mu_nu_site(int mu, int nu) {
   complex tc, tc2;
   triangular *clov = global_clov->clov;
   diagonal *clov_diag = global_clov->clov_diag;
-  char myname[] = "tr_sigma_ldu_mu_nu_site";
+  char myname[] = "tr_sigma_ldu_mu_nu";
 
   /* take care of the case mu > nu by flipping them and mult. by -1 */
   if (mu < nu) {
@@ -643,6 +597,7 @@ void tr_sigma_ldu_mu_nu_site(int mu, int nu) {
 
 // -----------------------------------------------------------------
 // Make only the global clover term
+// Compute R = 1 - i * CKU0 sigma_{\mu\nu} F_{\mu\nu} on each site
 void make_clov(Real Clov_c) {
   global_clov = create_clov();
   if (global_clov == NULL)
@@ -656,6 +611,8 @@ void make_clov(Real Clov_c) {
 
 // -----------------------------------------------------------------
 // Invert only the global clover term
+// "clov" and "clov_diag" now contain R^(-1) on parity sites,
+// still with R itself on other_parity sites
 double make_clovinv(int parity) {
   return compute_clovinv(global_clov, parity);
 }
@@ -666,12 +623,8 @@ double make_clovinv(int parity) {
 // -----------------------------------------------------------------
 // Multiply only by the global clover term
 // src and dest will be recast as wilson_block_vector
-void mult_ldu_site(field_offset src, field_offset dest, int parity) {
-  mult_this_ldu_site(global_clov, src, dest, parity);
-}
-
-void mult_ldu_field(wilson_vector *src, wilson_vector *dest, int parity) {
-  mult_this_ldu_field(global_clov, src, dest, parity);
+void mult_ldu(wilson_vector *src, wilson_vector *dest, int parity) {
+  mult_this_ldu(global_clov, src, dest, parity);
 }
 // -----------------------------------------------------------------
 

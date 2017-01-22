@@ -489,8 +489,8 @@ void wvec_dot_sum(wilson_vector *a, wilson_vector *b, complex *c);
 // In file addwvec.c
 void sum_wvec(wilson_vector *b, wilson_vector *c);
 void dif_wvec(wilson_vector *b, wilson_vector *c);
-void add_wilson_vector(wilson_vector *a, wilson_vector *b, wilson_vector *c);
-void sub_wilson_vector(wilson_vector *a, wilson_vector *b, wilson_vector *c);
+void add_wvec(wilson_vector *a, wilson_vector *b, wilson_vector *c);
+void sub_wvec(wilson_vector *a, wilson_vector *b, wilson_vector *c);
 
 // In file s_m_wvec.c
 void scalar_mult_wvec(wilson_vector *b, Real s, wilson_vector *c);

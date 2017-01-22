@@ -1,8 +1,8 @@
 /* calculates udadu_mu_nu and multiplies by an su3_matrix
    for the Tr_{dirac} \sigma_mu_nu A_odd^{-1} U dA_odd/dU term of
-   the fermion force.
+   the fermion force
 */
-// Must be called after tr_sigma_ldu_mu_nu_site constructs tempmat
+// Must be called after tr_sigma_ldu_mu_nu constructs tempmat
 // Put answer into tempmat2
 
 #include "cl_dyn_includes.h"

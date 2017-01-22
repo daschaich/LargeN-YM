@@ -8,9 +8,6 @@
 
 #define TIMING
 //#define CG_DEBUG
-
-/// Number of CG restarts during update
-#define CONGRAD_RESTART 0
 // -----------------------------------------------------------------
 
 

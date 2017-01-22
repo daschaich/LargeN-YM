@@ -13,8 +13,8 @@
 
 
 // -----------------------------------------------------------------
-void w_source_cd(field_offset src, int color, int spin, int source,
-                 int x0, int y0, int z0, int t0, Real gamma) {
+void source(wilson_vector *src, int color, int spin, int type,
+            int x0, int y0, int z0, int t0, Real gamma) {
 
   register int i;
   register site *s;
@@ -22,23 +22,22 @@ void w_source_cd(field_offset src, int color, int spin, int source,
   Real rx, ry, rz, radius2;
 
 #ifdef DEBUG_CHECK
-  node0_printf("w_source_cd is making source %d\n", source);
+  node0_printf("source is making source type %d\n", type);
 #endif
 
   // Clear source
   FORALLSITES(i, s)
-    clear_wvec((wilson_vector *)F_PT(s, src));
+    clear_wvec(&(src[i]));
 
-  if (source == POINT) {
+  if (type == POINT) {
     // Unit delta function at (x0, y0, z0, t0)
     if (node_number(x0, y0, z0, t0) == mynode()) {
       i = node_index(x0, y0, z0, t0);
-      ((wilson_vector *)F_PT(&(lattice[i]), src))->d[spin].c[color].real = 1.0;
+      src[i].d[spin].c[color].real = 1.0;
     }
   }
-  else if (source == WALL) {
+  else if (type == WALL) {
     // Gaussian fixed to timeslice t0, centered on (x0, y0, z0)
-
     FORALLSITES(i, s) {
       if (s->t != t0)
         continue;
@@ -51,8 +50,7 @@ void w_source_cd(field_offset src, int color, int spin, int source,
       rz = (my_z < (nz - my_z)) ? (Real)my_z : (Real)(my_z - nz);
 
       radius2 = rx * rx + ry * ry + rz * rz;
-      ((wilson_vector *)F_PT(s, src))->d[spin].c[color].real =
-        (Real)exp((double)(-radius2 * gamma));
+      src[i].d[spin].c[color].real = (Real)exp((double)(-radius2 * gamma));
     }
   }
 }
@@ -63,7 +61,7 @@ void w_source_cd(field_offset src, int color, int spin, int source,
 // -----------------------------------------------------------------
 // Pion and rho with point sink and zero spatial momentum
 // Sources are type wilson_matrix
-void w_meson_cd(field_offset src1, field_offset src2, char id_string[]) {
+void meson(field_offset src1, field_offset src2, char id_string[]) {
   register int i, t;
   register site *s;
   int my_t, cf, sf, ci, si;
@@ -257,7 +255,7 @@ void w_meson_cd(field_offset src1, field_offset src2, char id_string[]) {
 #define DELTA_N 2
 // Sources are type wilson_matrix
 // ispinp1 and ispinp2 are the spins of the source and sink -- always zero
-void w_baryon_cd(field_offset src1, field_offset src2, field_offset src3) {
+void baryon(field_offset src1, field_offset src2, field_offset src3) {
   register int isite, t;
   register site *s;
   int my_t, i, j, k, ispinp1 = 0, ispinp2 = 0;
@@ -436,15 +434,17 @@ void w_baryon_cd(field_offset src1, field_offset src2, field_offset src3) {
 
 
 // -----------------------------------------------------------------
-int w_spectrum_cl() {
-  register site *s;
+int spectrum() {
   register int i;
+  register site *s;
   int iters = 0, spin, color;
 
   for (spin = 0; spin < 4; spin++) {
     for (color = 0; color < NCOL; color++) {
-      /*node0_printf("source spin = %d, color = %d\n", spin, color);*/
-      w_source_cd(F_OFFSET(chi[0]), color, spin, WALL, 0, 0, 0, 0, 0.25);
+#ifdef DEBUG_CHECK
+      node0_printf("spectrum spin = %d, color = %d\n", spin, color);
+#endif
+      source(chi[1], color, spin, WALL, 0, 0, 0, 0, 0.25);
 
 #ifdef DEBUG_CHECK
       printf("Dumping source...\n");
@@ -460,51 +460,72 @@ int w_spectrum_cl() {
       }
 #endif
 
-      // Load inversion control structure
-      qic.start_flag = 0;   // Use zero initial guess for psi[0]
+      // chi[0] <-- Mdag.chi[1]
+      make_clov(CKU0);
+      make_clovinv(ODD);
+      fermion_op(chi[1], chi[0], MINUS, EVEN);
 
-      // Load Dirac matrix parameters, including temporaries
-      qic.wv1 = F_OFFSET(tmp);
-      qic.wv2 = F_OFFSET(mp);
+      // Invert Mdag.M with zero initial guess and result in psi[0]
+      FOREVENSITES(i, s)
+        clear_wvec(&(psi[0][i]));
+      iters += congrad(0, 0.0, EVEN);
 
-      // Invert M, result in psi[0]
-      iters += wilson_invert(F_OFFSET(chi[0]), F_OFFSET(psi[0]), F_OFFSET(r),
-                             cgilu_cl, &qic, (void *)&dcp);
+      // Repeat the steps above for odd sites
+      free_clov();
+      make_clov(CKU0);
+      make_clovinv(EVEN);
+      fermion_op(chi[1], chi[0], MINUS, ODD);
+      FORODDSITES(i, s)
+        clear_wvec(&(psi[0][i]));
+      iters += congrad(0, 0.0, ODD);
+      free_clov();
 
-      /*
-         printf("DUMP propagator!!\n");
-         FORALLSITES(i, s) {
-         printf("i = %d,  coords %d %d %d %d\n", i, s->x, s->y, s->z, s->t);
-         dump_wvec(&(s->psi[0]));
-         }
-         */
-      // copy result to quark_propagator
+#ifdef DEBUG_CHECK
+      printf("Dumping Mdag.source...\n");
+      FORALLSITES(i, s) {
+        printf("chi[0](%d, %d, %d, %d):\n", s->x, s->y, s->z, s->t);
+        dump_wvec(&(chi[0][i]));
+      }
+
+      printf("Dumping propagator...\n");
+      FORALLSITES(i, s) {
+        printf("psi[0](%d, %d, %d, %d):\n", s->x, s->y, s->z, s->t);
+        dump_wvec(&(psi[0][i]));
+      }
+#endif
+
+      // Copy result to quark_propagator
       FORALLSITES(i, s)
-        s->quark_propagator.d[spin].c[color] = s->psi[0];
+        copy_wvec(&(psi[0][i]), &(s->quark_propagator.d[spin].c[color]));
 
+      // TODO: The 'DSL' mesons change far more than the other results
+      //       when using congrad rather than wilson_invert...
+      //       Comment out for now
+//#if 0
       /* For extra contributions needed for clover "rotated" fields */
-      /* contributing to the pion propagator--gamma-5 gamma-5 correlator and
-         gamma-5 gamma-5*gamma-0 correlator */
+      /* contributing to the pion propagator--gamma5 gamma5 correlator and
+         gamma5 gamma5.gamma0 correlator */
       /* These refinements are required for the axial Ward identity */
 
       /* These extra contributions are of the form
          psibar <-dslash Gammas psi  and psibar Gammas dslash->  psi  */
       /* Where dslash is the naive operator (without the Wilson term) */
 
-      /* Do Wilson Dslash on the psi field */
-      dslash_w_site(F_OFFSET(psi[0]), F_OFFSET(mp), PLUS, EVENANDODD);
-      dslash_w_site(F_OFFSET(psi[0]), F_OFFSET(tmp), MINUS, EVENANDODD);
+      // dslash on the propagator
+      dslash(psi[0], mp, PLUS, EVENANDODD);
+      dslash(psi[0], tempwvec, MINUS, EVENANDODD);
       // From subtraction we get 2Dslash
       FORALLSITES(i, s) {
-        sub_wilson_vector(&s->mp, &s->tmp,
-                          &s->rotated_propagator.d[spin].c[color]);
+        sub_wvec(&(mp[i]), &(tempwvec[i]),
+                 &s->rotated_propagator.d[spin].c[color]);
       }
+//#endif
     }
   }
-  w_meson_cd(F_OFFSET(quark_propagator), F_OFFSET(quark_propagator), "ONE_");
-  w_meson_cd(F_OFFSET(quark_propagator), F_OFFSET(rotated_propagator), "DSL_");
-  w_baryon_cd(F_OFFSET(quark_propagator), F_OFFSET(quark_propagator),
-              F_OFFSET(quark_propagator));
+  meson(F_OFFSET(quark_propagator), F_OFFSET(quark_propagator), "ONE_");
+  meson(F_OFFSET(quark_propagator), F_OFFSET(rotated_propagator), "DSL_");
+  baryon(F_OFFSET(quark_propagator), F_OFFSET(quark_propagator),
+         F_OFFSET(quark_propagator));
 
   return iters;
 }

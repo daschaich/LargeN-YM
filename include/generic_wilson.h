@@ -12,32 +12,11 @@
 
 
 // -----------------------------------------------------------------
-int wilson_invert(     // Return value is number of iterations taken
-    field_offset src,   // type wilson_vector (source already created)
-    field_offset dest,  // type wilson_vector (answer and initial guess)
-    field_offset sav,   // type wilson_vector (for saving source)
-    int (*invert_func)(field_offset src, field_offset dest,
-      quark_invert_control *qic,
-      void *dmp),
-    quark_invert_control *qic, /* inverter control */
-    void *dmp            /* Passthrough Dirac matrix parameters */
-    );
-
 void boundary_flip(int sign);
 
-void dslash_w_site(field_offset src,field_offset dest,
-                   int isign, int parity);
-void dslash_w_site_special(field_offset src,field_offset dest,
-                           int isign, int parity,msg_tag **tag,
-                           int is_started);
-void dslash_w_field(wilson_vector *src, wilson_vector *dest,
-                    int isign, int parity);
-void dslash_w_field_special(wilson_vector *src, wilson_vector *dest,
-                            int isign, int parity,msg_tag **tag,
-                            int is_started);
-
-void cleanup_dslash_temps();
-void cleanup_tmp_links();
+void dslash(wilson_vector *src, wilson_vector *dest, int isign, int parity);
+void dslash_special(wilson_vector *src, wilson_vector *dest,
+                    int isign, int parity, msg_tag **tag, int is_started);
 // -----------------------------------------------------------------
 
 

@@ -33,11 +33,6 @@ int main(int argc, char *argv[]) {
     terminate(1);
   }
 
-  // Set up loop tables
-#ifdef IMP
-  make_loop_table2();
-#endif
-
   // Start the clocks
   dtime = -dclock();
 #ifdef TIMING
@@ -68,16 +63,7 @@ int main(int argc, char *argv[]) {
     s_iters = update();
     avs_iters += s_iters;
 
-    /* Do "local" measurements every trajectory! */
-    /* The action from the RG trans */
-#ifdef IMP  /* For improved action only
-               Plaquette action trivially follows from ds[s|t]plaq */
-    gauge_action(&ss_plaq);
-    node0_printf("ACTION_V %.8g %.8g\n",
-                 ss_plaq, ss_plaq / (double)(6.0 * volume));
-#endif
-
-    // Measure fermionic observables: psi-bar-psi, fermion action, etc.
+    // Measure psibar.psi (etc.) after every trajecory
     m_iters = f_meas();
     avm_iters += m_iters;
 
@@ -95,7 +81,7 @@ int main(int argc, char *argv[]) {
       Nmeas++;
 #ifdef SPECTRUM
       gaugefix(TUP, 1.5, 500, GAUGE_FIX_TOL, -1, -1);
-      avspect_iters += w_spectrum_cl();
+      avspect_iters += spectrum();
 #endif
     }
     fflush(stdout);
@@ -109,9 +95,9 @@ int main(int argc, char *argv[]) {
 
   node0_printf("Average cg iters for steps: %.4g\n",
                (double)avs_iters / trajecs);
+  node0_printf("Average cg iters for measurements: %.4g\n",
+               (double)avm_iters / trajecs);
   if (Nmeas > 0) {
-    node0_printf("Average cg iters for measurements: %.4g\n",
-                 (double)avm_iters / Nmeas);
 #ifdef SPECTRUM
     node0_printf("Average cg iters for spectrum: %.4g\n",
                  (double)avspect_iters / Nmeas);

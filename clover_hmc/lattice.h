@@ -43,9 +43,6 @@ typedef struct {
   // Antihermitian momentum matrices in each direction
   anti_hermitmat mom[4];
 
-  // Temporary half_wilson_vectors for dslash_w_site and update_h
-  half_wilson_vector htmp[8];
-
 #ifdef SPECTRUM
   wilson_matrix quark_propagator;
   wilson_matrix rotated_propagator;   // For clover-rotated operators
@@ -79,8 +76,8 @@ EXTERN int nsteps[MAX_MASSES + 1];
 EXTERN Real gnorm, fnorm[2], max_gf, max_ff[2];
 
 // Global action and evolution variables
-EXTERN Real beta, beta_frep, kappa, mkappa, clov_c, u0, CKU0;
-EXTERN Real rsqmin, rsqprop, one_ov_N;
+EXTERN Real beta, beta_frep, kappa, mkappa, mkappaSq, clov_c, u0, CKU0;
+EXTERN Real rsqmin, rsqprop, one_ov_N, one_ov_vol;
 EXTERN double returntrlogA, g_ssplaq, g_stplaq;
 EXTERN double_complex linktr;
 EXTERN u_int32type nersc_checksum;
@@ -104,24 +101,6 @@ EXTERN int this_node;           // Node number of this node
 // Each node maintains a structure with the pseudorandom number
 // generator state
 EXTERN double_prn node_prn;
-
-#ifdef IMP
-// Improved action stuff
-#define nloop 1
-#define nreps 1
-#define max_num 400
-
-/* global defns for general action (check this works...) */
-EXTERN int loop_ind[nloop][10], loop_length[nloop];
-EXTERN int loop_table[nloop][max_num][10], loop_num[nloop], loop_char[max_num];
-EXTERN Real loop_coeff[nloop][nreps];
-EXTERN int loop_ch[nloop][max_num], ch;
-
-EXTERN Real loop_term[48][nreps];
-#endif
-
-EXTERN quark_invert_control qic;
-EXTERN dirac_clover_param dcp;
 
 EXTERN gauge_file *startlat_p;
 EXTERN gauge_file *savelat_p;

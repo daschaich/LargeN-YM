@@ -109,6 +109,7 @@ int initial_set() {
   number_of_nodes = numnodes();
   one_ov_N = 1.0 / (Real)NCOL;
   volume = nx * ny * nz * nt;
+  one_ov_vol = 1.0 / (Real)volume;
   total_iters = 0;
   return prompt;
 }
@@ -317,6 +318,7 @@ int readin(int prompt) {
   beta_frep = par_buf.beta_frep;
   kappa = par_buf.kappa;
   mkappa = -kappa;
+  mkappaSq = -kappa * kappa;
   if (num_masses > 1)
     shift = par_buf.shift;
 
@@ -342,18 +344,6 @@ int readin(int prompt) {
   saveflag = par_buf.saveflag;
   strcpy(startfile,par_buf.startfile);
   strcpy(savefile,par_buf.savefile);
-
-  // Load part of inversion control structure for generic inverters
-  // Note different convention: linear resid rather than quadratic rsq
-  qic.min = 0;
-  qic.max = niter;
-  qic.nrestart = nrestart;
-  qic.resid = sqrt(rsqprop);
-
-  // Load part of Dirac matrix parameters
-  dcp.Kappa = kappa;
-  dcp.Clov_c = clov_c;
-  dcp.U0 = u0;
 
   // Do whatever is needed to get lattice
   startlat_p = reload_lattice(startflag, startfile);

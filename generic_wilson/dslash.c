@@ -1,7 +1,7 @@
 /*
 Compute SUM_dirs (
-    (1 + isign*gamma[dir]) * U(x, dir) * src(x+dir)
-  + (1 - isign*gamma[dir]) * U_adj(x-dir, dir) * src(x-dir)
+    (1 + isign*gamma[dir]) * U(x, dir) * src(x + dir)
+  + (1 - isign*gamma[dir]) * Udag(x - dir, dir) * src(x - dir)
 )
 */
 
@@ -11,9 +11,7 @@ Compute SUM_dirs (
 
 
 // -----------------------------------------------------------------
-void dslash_w_field(wilson_vector *src, wilson_vector *dest,
-                    int isign, int parity) {
-
+void dslash(wilson_vector *src, wilson_vector *dest, int isign, int parity) {
   register int i, dir, otherparity = 0;
   register site *s;
   half_wilson_vector hwvx, hwvy, hwvz, hwvt;
@@ -57,10 +55,8 @@ void dslash_w_field(wilson_vector *src, wilson_vector *dest,
         parity, gen_pt[OPP_DIR(dir)]);
   }
 
-  /* Set dest to zero */
   /* Take Wilson projection for src displaced in up direction, gathered,
-     multiply it by link matrix, expand it, and add.
-     to dest */
+     multiply it by link matrix, expand it, and overwrite dest */
   FORALLUPDIR(dir)
     wait_gather(tag[dir]);
 
@@ -100,16 +96,15 @@ void dslash_w_field(wilson_vector *src, wilson_vector *dest,
 
 
 // -----------------------------------------------------------------
-/* Special dslash for use by congrad.  Uses restart_gather_temp() when
-  possible. Last argument is an integer, which will tell if
-  gathers have been started.  If is_started = 0, use
-  start_gather_field, otherwise use restart_gather_field.
-  Argument "tag" is a vector of a msg_tag *'s to use for
-  the gathers.
-  The calling program must clean up the gathers! */
-void dslash_w_field_special(wilson_vector *src, wilson_vector *dest,
-                            int isign, int parity, msg_tag **tag,
-                            int is_started) {
+// Special dslash for use by congrad
+// Uses restart_gather_temp() when possible
+// Last argument is an integer, which tell if gathers have been started
+// If is_started = 0, use start_gather_field,
+// otherwise use restart_gather_field
+// Argument "tag" is a vector of a msg_tag *'s to use for the gathers
+// The calling program must clean up the gathers!
+void dslash_special(wilson_vector *src, wilson_vector *dest,
+                    int isign, int parity, msg_tag **tag, int is_started) {
 
   register int i;
   register site *s;
@@ -165,10 +160,8 @@ void dslash_w_field_special(wilson_vector *src, wilson_vector *dest,
         tag[OPP_DIR(dir)]);
   }
 
-  /* Set dest to zero */
   /* Take Wilson projection for src displaced in up direction, gathered,
-     multiply it by link matrix, expand it, and add.
-     to dest */
+     multiply it by link matrix, expand it, and overwrite dest */
   FORALLUPDIR(dir)
     wait_gather(tag[dir]);
 

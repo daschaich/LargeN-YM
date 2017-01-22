@@ -15,12 +15,12 @@ typedef struct {
   int warms;                // The number of warmup trajectories
   int trajecs;              // The number of real trajectories
   Real traj_length;         // The length of each trajectory
-  // Steps for all possible Hasenbusch masses, plus one for gauge
+  // Steps for all possible Hasenbusch terms, plus one for gauge
   int nsteps[MAX_MASSES + 1];
   int propinterval;         // Number of trajectories between measurements
   int startflag;            // What to do for beginning lattice
   int saveflag;             // What to do with lattice at end
-  int num_masses;           // Number of masses
+  int num_masses;           // 1 + number of Hasenbusch terms
   Real beta, kappa;         // Gauge coupling, fermion hopping parameter
   Real beta_frep;           // Gauge coupling for irrep plaquette
   Real clov_c, u0;          // Clover coefficient, <Tr(U_p)>^{1 / 4}
@@ -32,7 +32,7 @@ typedef struct {
   int niter;                    // Maximum number of CG iterations
   int nrestart;                 // Maximum number of CG restarts
   Real rsqmin, rsqprop;         // For deciding on convergence
-  Real shift;                   // Hasenbusch mass shift
+  Real shift;                   // Hasenbusch shift
   char startfile[MAXFILENAME], savefile[MAXFILENAME];
   char stringLFN[MAXFILENAME];  // ILDG LFN if applicable
 } params;

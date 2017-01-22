@@ -37,7 +37,7 @@
 #include "../include/su3.h"
 #include "../include/dirs.h"
 
-void mult_by_gamma_right(wilson_matrix *src,  wilson_matrix *dest, int dir) {
+void mult_by_gamma_right(wilson_matrix *src, wilson_matrix *dest, int dir) {
   register int i, c1, s1;
 
   switch(dir) {

@@ -20,13 +20,13 @@ void dif_wvec(wilson_vector *b, wilson_vector *c) {
      dif_su3_vector(&(b->d[i]), &(c->d[i]));
 }
 
-void add_wilson_vector(wilson_vector *a, wilson_vector *b, wilson_vector *c) {
+void add_wvec(wilson_vector *a, wilson_vector *b, wilson_vector *c) {
    register int i;
    for (i = 0; i < 4; i++)
      add_su3_vector(&(a->d[i]), &(b->d[i]), &(c->d[i]));
 }
 
-void sub_wilson_vector(wilson_vector *a, wilson_vector *b, wilson_vector *c) {
+void sub_wvec(wilson_vector *a, wilson_vector *b, wilson_vector *c) {
    register int i;
    for (i = 0; i < 4; i++)
      sub_su3_vector(&(a->d[i]), &(b->d[i]), &(c->d[i]));

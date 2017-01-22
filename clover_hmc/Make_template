@@ -7,7 +7,7 @@
 # Targets:
 #   su3_phi uses phi algorithm
 #   su3_hmc uses hybrid Monte Carlo algorithm
-#   su3_hmc_spectrum does spectrum measurements in addition to HMC
+#   su3_hmc_spectrum does spectrum measurements in addition to HMC (3F only!)
 
 # Features:
 #   LU-preconditioned CG, with dynamical fermion matrix on even sites only
@@ -47,28 +47,23 @@ HEADERS = ${GLOBAL_HEADERS} ${MY_HEADERS} ${INLINE_HEADERS}
 # Basic set from current directory
 MY_OBJECTS = control.o          \
              setup.o            \
-             gauge_info.o       \
+             apply_bc.o         \
+             chain_rule_f.o     \
+             f_meas.o           \
              congrad.o          \
+             gauge_info.o       \
              grsource.o         \
              mult_sigma_mu_nu.o \
              udadu_mat_mu_nu.o  \
              udadu_mu_nu.o      \
              update_h.o         \
              update_o.o         \
-             update_u.o         \
-             f_meas.o           \
-             apply_bc.o         \
-             chain_rule_f.o
-
-# More from current directory, for improved action only
-IMP_OBJECTS = gauge_action.o \
-              loop_table.o   \
-              path.o
+             update_u.o
 
 # Basic set from generic directory
 G_OBJECTS = check_unitarity.o \
             io_helpers.o      \
-            io_lat4.o         \
+            io_lat.o          \
             io_lat_utils.o    \
             make_lattice.o    \
             nersc_cksum.o     \
@@ -77,26 +72,23 @@ G_OBJECTS = check_unitarity.o \
             ploop_dist.o      \
             ranmom.o          \
             ranstuff.o        \
-            reunitarize2.o    \
+            reunitarize.o     \
             remap_stdio_from_args.o
 
 # Basic set from generic_wilson directory
 G_WILSON_OBJECTS = boundary_flip.o   \
-                   wilson_invert.o   \
-                   dslash_w_field.o  \
-                   dslash_w.o        \
+                   dslash.o          \
                    fermion_rep.o     \
                    fermion_rep_f.o
 
 # Basic set from generic_clover directory
-G_CLOVER_OBJECTS = f_mu_nu.o    \
-                   make_clov2.o \
-                   d_cgilu_cl_lean.o
+G_CLOVER_OBJECTS = f_mu_nu.o \
+                   make_clov.o
 
 # Basic set from generic_nhyp
 G_NHYP_OBJECTS = block_nhyp.o \
-                 nhyp.o       \
-                 force_nhyp.o
+                 force_nhyp.o \
+                 nhyp.o
 
 # Uncomment for nHYP smearing
 DEFINES = -DNHYP_JACOBI
@@ -153,7 +145,7 @@ su3_hmc::
 su3_hmc_spectrum::
 	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" \
 	"DEFINES = ${DEFINES} -DPHI_ALGORITHM -DHMC_ALGORITHM -DSPECTRUM " \
-	"EXTRA_OBJECTS = action.o gaugefix2.o t_props_cl.o w_spectrum_cl.o "
+	"EXTRA_OBJECTS = action.o gaugefix.o spectrum.o "
 
 clean:
 	-/bin/rm -f *.o
