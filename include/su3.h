@@ -514,7 +514,7 @@ complex complextrace_su3(su3_matrix *a, su3_matrix *b);
 complex det_su3(su3_matrix *a);
 void su3_adjoint(su3_matrix *a, su3_matrix *b);
 void scalar_add_diag_su3_f(su3_matrix_f *a, Real s);
-void c_scalar_add_diag_su3_f(su3_matrix_f *a, complex *f);
+void c_scalar_add_diag_su3_f(su3_matrix_f *a, complex *s);
 complex complextrace_su3_f(su3_matrix_f *a, su3_matrix_f *b);
 
 void make_anti_hermitian(su3_matrix_f *m3, anti_hermitmat *ah3);

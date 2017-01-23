@@ -52,9 +52,6 @@ int initial_set() {
     printf("NHYP_DEBUG turned on\n");
   #if NCOL == 4
     printf("  TOL_NHYP = %.4g for SU(4)\n", (Real)TOL_NHYP);
-    #ifdef NHYP_JACOBI
-    printf("  PRINT_JACOBI_ITERS = %d\n", PRINT_JACOBI_ITERS);
-    #endif
   #endif
 #endif
     printf("BETA_FREP turned on\n");
@@ -342,8 +339,8 @@ int readin(int prompt) {
   fixflag = NO_GAUGE_FIX;
 #endif
   saveflag = par_buf.saveflag;
-  strcpy(startfile,par_buf.startfile);
-  strcpy(savefile,par_buf.savefile);
+  strcpy(startfile, par_buf.startfile);
+  strcpy(savefile, par_buf.savefile);
 
   // Do whatever is needed to get lattice
   startlat_p = reload_lattice(startflag, startfile);

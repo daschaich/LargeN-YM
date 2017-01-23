@@ -47,7 +47,6 @@
 #ifdef NHYP_DEBUG
   #if NCOL == 4
     #define TOL_NHYP 1e-5          // Tolerance for warnings
-    #define PRINT_JACOBI_ITERS 20  // Monitor Jacobi iterations
   #endif
 #endif
 // -----------------------------------------------------------------

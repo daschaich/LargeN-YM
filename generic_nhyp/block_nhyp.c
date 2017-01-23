@@ -20,52 +20,52 @@ T.D. attempt to make this competely general
 void staple_nhyp(int dir, int dir2, su3_matrix_f *lnk1, su3_matrix_f *lnk2,
                  su3_matrix_f *stp) {
 
-    register int i;
-    register site *s;
-    msg_tag *tag0, *tag1, *tag2;
-    su3_matrix_f tmat;
+  register int i;
+  register site *s;
+  msg_tag *tag0, *tag1, *tag2;
+  su3_matrix_f tmat;
 
-    // dir is the direction of the original link
-    // dir2 is the other direction that defines the staple
-    // Get blocked_link[dir2] from direction dir */
-    tag0 = start_gather_field(lnk2, sizeof(su3_matrix_f), dir,
-                              EVENANDODD, gen_pt[0]);
+  // dir is the direction of the original link
+  // dir2 is the other direction that defines the staple
+  // Get blocked_link[dir2] from direction dir
+  tag0 = start_gather_field(lnk2, sizeof(su3_matrix_f), dir,
+                            EVENANDODD, gen_pt[0]);
 
-    // Get blocked_link[dir] from direction dir2 */
-    tag1 = start_gather_field(lnk1, sizeof(su3_matrix_f), dir2,
-                              EVENANDODD, gen_pt[1]);
+  // Get blocked_link[dir] from direction dir2
+  tag1 = start_gather_field(lnk1, sizeof(su3_matrix_f), dir2,
+                            EVENANDODD, gen_pt[1]);
 
-    // Start working on the lower staple while we wait for the gathers
-    // The lower staple is prepared at x-dir2, stored in tempmat_nhyp1
-    // and then gathered to x
-    FORALLSITES(i, s)
-      mult_su3_an_f(lnk2 + i, lnk1 + i, tempmatf + i);
+  // Start working on the lower staple while we wait for the gathers
+  // The lower staple is prepared at x-dir2, stored in tempmat_nhyp1
+  // and then gathered to x
+  FORALLSITES(i, s)
+    mult_su3_an_f(&(lnk2[i]), &(lnk1[i]), &(tempmatf[i]));
 
-    // Finish and gather lower staple from direction -dir2
-    wait_gather(tag0);
-    wait_gather(tag1);
-    FORALLSITES(i, s) {
-      mult_su3_nn_f(tempmatf + i, (su3_matrix_f *)gen_pt[0][i], &tmat);
-      su3mat_copy_f(&tmat, tempmatf + i);
-    }
+  // Finish and gather lower staple from direction -dir2
+  wait_gather(tag0);
+  wait_gather(tag1);
+  FORALLSITES(i, s) {
+    mult_su3_nn_f(&(tempmatf[i]), (su3_matrix_f *)gen_pt[0][i], &tmat);
+    su3mat_copy_f(&tmat, &(tempmatf[i]));
+  }
 
-    tag2 = start_gather_field(tempmatf, sizeof(su3_matrix_f),
-                              OPP_DIR(dir2), EVENANDODD, gen_pt[2]);
+  tag2 = start_gather_field(tempmatf, sizeof(su3_matrix_f),
+                            OPP_DIR(dir2), EVENANDODD, gen_pt[2]);
 
-    // Calculate and add upper staple while gather runs
-    FORALLSITES(i, s) {
-      mult_su3_nn_f(lnk2 + i, (su3_matrix_f *)gen_pt[1][i], &tmat);
-      mult_su3_na_sum_f(&tmat, (su3_matrix_f *)gen_pt[0][i], stp + i);
-    }
+  // Calculate and add upper staple while gather runs
+  FORALLSITES(i, s) {
+    mult_su3_nn_f(&(lnk2[i]), (su3_matrix_f *)gen_pt[1][i], &tmat);
+    mult_su3_na_sum_f(&tmat, (su3_matrix_f *)gen_pt[0][i], &(stp[i]));
+  }
+  cleanup_gather(tag0);
+  cleanup_gather(tag1);
 
-    // Finally add the lower staple
-    wait_gather(tag2);
-    FORALLSITES(i, s)
-      add_su3_matrix_f(stp + i, (su3_matrix_f *)gen_pt[2][i], stp + i);
+  // Finally add the lower staple
+  wait_gather(tag2);
+  FORALLSITES(i, s)
+    sum_su3_matrix_f((su3_matrix_f *)gen_pt[2][i], &(stp[i]));
 
-    cleanup_gather(tag0);
-    cleanup_gather(tag1);
-    cleanup_gather(tag2);
+  cleanup_gather(tag2);
 }
 // -----------------------------------------------------------------
 
@@ -93,7 +93,7 @@ void block_nhyp1() {
       if (dir2 == dir)
         continue;
       FORALLSITES(i, st)
-        clear_su3mat_f(Staple1[dir2][dir] + i);
+        clear_su3mat_f(&(Staple1[dir2][dir][i]));
 
       // Compute the staple
       staple_nhyp(dir, dir2, gauge_field_thin[dir],
@@ -101,32 +101,32 @@ void block_nhyp1() {
 
       // Make Omega, including IR regulator
       FORALLSITES(i, st) {
-        scalar_mult_add_su3_matrix_f(gauge_field_thin[dir] + i,
-            Staple1[dir2][dir] + i, tr1, &Q[1]);
-        scalar_mult_su3_matrix_f(&Q[1], tr2, &Omega);
-        Staple1[dir2][dir][i]=Omega;
+        scalar_mult_add_su3_matrix_f(&(gauge_field_thin[dir][i]),
+                                     &(Staple1[dir2][dir][i]), tr1, &(Q[1]));
+        scalar_mult_su3_matrix_f(&(Q[1]), tr2, &Omega);
+        su3mat_copy_f(&Omega, &(Staple1[dir2][dir][i]));
 
-        mult_su3_an_f(&Omega, &Omega, &Q[1]);
-        scalar_add_diag_su3_f(&Q[1],IR_STAB);
+        mult_su3_an_f(&Omega, &Omega, &(Q[1]));
+        scalar_add_diag_su3_f(&(Q[1]), IR_STAB);
 #ifndef NHYP_DEBUG
         compute_fhb(Q[1], f, NULL, 0);
 #else
-        compute_fhb(&Omega, &Q[1], f, NULL, 0);
+        compute_fhb(&Omega, &(Q[1]), f, NULL, 0);
 #endif
 
 #if NCOL == 2
-        scalar_mult_su3_matrix_f(&Omega, f[0], hyplink1[dir2][dir] + i);
+        scalar_mult_su3_matrix_f(&Omega, f[0], &(hyplink1[dir2][dir][i]));
 #else
         // Compute Q^(-1 / 2)
-        scalar_mult_su3_matrix_f(&Q[1], f[1], &eQ);
+        scalar_mult_su3_matrix_f(&(Q[1]), f[1], &eQ);
         for (j = 2; j < NCOL; j++) {
-          mult_su3_nn_f(&Q[1], &Q[j-1], &Q[j]);
-          scalar_mult_add_su3_matrix_f(&eQ, &Q[j], f[j], &eQ);
+          mult_su3_nn_f(&(Q[1]), &(Q[j - 1]), &(Q[j]));
+          scalar_mult_sum_su3_matrix_f(&(Q[j]), f[j], &eQ);
         }
         scalar_add_diag_su3_f(&eQ, f[0]);
 
         // Multiply Omega by eQ = (Omega^dag Omega)^(-1 / 2)
-        mult_su3_nn_f(&Omega, &eQ, hyplink1[dir2][dir] + i);
+        mult_su3_nn_f(&Omega, &eQ, &(hyplink1[dir2][dir][i]));
 #endif
       }
     }
@@ -158,7 +158,7 @@ void block_nhyp2() {
         continue;
 
       FORALLSITES(i, st)
-        clear_su3mat_f(Staple2[dir2][dir] + i);
+        clear_su3mat_f(&(Staple2[dir2][dir][i]));
 
       FORALLUPDIR(dir3) {
         if (dir3 == dir || dir3 == dir2)
@@ -180,32 +180,32 @@ void block_nhyp2() {
 
       // Make Omega, including IR regulator
       FORALLSITES(i, st) {
-        scalar_mult_add_su3_matrix_f(gauge_field_thin[dir] + i,
-            Staple2[dir2][dir] + i, tr1, &Q[1]);
-        scalar_mult_su3_matrix_f(&Q[1], tr2, &Omega);
-        Staple2[dir2][dir][i] = Omega;
+        scalar_mult_add_su3_matrix_f(&(gauge_field_thin[dir][i]),
+                                     &(Staple2[dir2][dir][i]), tr1, &(Q[1]));
+        scalar_mult_su3_matrix_f(&(Q[1]), tr2, &Omega);
+        su3mat_copy_f(&Omega, &(Staple2[dir2][dir][i]));
 
-        mult_su3_an_f(&Omega, &Omega, &Q[1]);
-        scalar_add_diag_su3_f(&Q[1], IR_STAB);
+        mult_su3_an_f(&Omega, &Omega, &(Q[1]));
+        scalar_add_diag_su3_f(&(Q[1]), IR_STAB);
 #ifndef NHYP_DEBUG
-        compute_fhb(&Q[1], f, NULL, 0);
+        compute_fhb(&(Q[1]), f, NULL, 0);
 #else
-        compute_fhb(&Omega, &Q[1], f, NULL, 0);
+        compute_fhb(&Omega, &(Q[1]), f, NULL, 0);
 #endif
 
 #if NCOL == 2
-        scalar_mult_su3_matrix_f(&Omega, f[0], hyplink2[dir2][dir] + i);
+        scalar_mult_su3_matrix_f(&Omega, f[0], &(hyplink2[dir2][dir][i]));
 #else
         // Compute Q^(-1 / 2)
-        scalar_mult_su3_matrix_f(&Q[1], f[1], &eQ);
+        scalar_mult_su3_matrix_f(&(Q[1]), f[1], &eQ);
         for (j = 2; j < NCOL; j++) {
-          mult_su3_nn_f(&Q[1], &Q[j-1], &Q[j]);
-          scalar_mult_add_su3_matrix_f(&eQ, &Q[j], f[j], &eQ);
+          mult_su3_nn_f(&(Q[1]), &(Q[j - 1]), &(Q[j]));
+          scalar_mult_sum_su3_matrix_f(&(Q[j]), f[j], &eQ);
         }
         scalar_add_diag_su3_f(&eQ, f[0]);
 
         // Multiply Omega by eQ = (Omega^dag Omega)^(-1 / 2)
-        mult_su3_nn_f(&Omega, &eQ, hyplink2[dir2][dir] + i);
+        mult_su3_nn_f(&Omega, &eQ, &(hyplink2[dir2][dir][i]));
 #endif
       }
     }
@@ -250,31 +250,31 @@ void block_nhyp3() {
 
     // Make Omega, including IR regulator
     FORALLSITES(i, st) {
-      scalar_mult_add_su3_matrix_f(gauge_field_thin[dir] + i,
-                                   Staple3[dir] + i, tr1, &Q[1]);
-      scalar_mult_su3_matrix_f(&Q[1], tr2, &Omega);
-      Staple3[dir][i] = Omega;
-      mult_su3_an_f(&Omega, &Omega, &Q[1]);
-      scalar_add_diag_su3_f(&Q[1], IR_STAB);
+      scalar_mult_add_su3_matrix_f(&(gauge_field_thin[dir][i]),
+                                   &(Staple3[dir][i]), tr1, &(Q[1]));
+      scalar_mult_su3_matrix_f(&(Q[1]), tr2, &Omega);
+      su3mat_copy_f(&Omega, &(Staple3[dir][i]));
+      mult_su3_an_f(&Omega, &Omega, &(Q[1]));
+      scalar_add_diag_su3_f(&(Q[1]), IR_STAB);
 #ifndef NHYP_DEBUG
-      compute_fhb(&Q[1], f, NULL, 0);
+      compute_fhb(&(Q[1]), f, NULL, 0);
 #else
-      compute_fhb(&Omega, &Q[1], f, NULL, 0);
+      compute_fhb(&Omega, &(Q[1]), f, NULL, 0);
 #endif
 
 #if NCOL == 2
-      scalar_mult_su3_matrix_f(&Omega, f[0], gauge_field[dir] + i);
+      scalar_mult_su3_matrix_f(&Omega, f[0], &(gauge_field[dir][i]));
 #else
       // Compute Q^(-1 / 2)
-      scalar_mult_su3_matrix_f(&Q[1], f[1], &eQ);
+      scalar_mult_su3_matrix_f(&(Q[1]), f[1], &eQ);
       for (j = 2; j < NCOL; j++) {
-        mult_su3_nn_f(&Q[1], &Q[j - 1], &Q[j]);
-        scalar_mult_add_su3_matrix_f(&eQ, &Q[j], f[j], &eQ);
+        mult_su3_nn_f(&(Q[1]), &(Q[j - 1]), &(Q[j]));
+        scalar_mult_sum_su3_matrix_f(&(Q[j]), f[j], &eQ);
       }
       scalar_add_diag_su3_f(&eQ, f[0]);
 
       // Multiply Omega by eQ = (Omega^dag Omega)^(-1 / 2)
-      mult_su3_nn_f(&Omega, &eQ, gauge_field[dir] + i);
+      mult_su3_nn_f(&Omega, &eQ, &(gauge_field[dir][i]));
 #endif
     }
   }

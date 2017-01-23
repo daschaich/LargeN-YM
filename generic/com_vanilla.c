@@ -430,18 +430,16 @@ dclock_cpu(void)
   return( ((double)fine)/CLOCKS_PER_SEC);
 }
 
-/*
-**  Double precision wall clock time in seconds
-*/
+// Double precision wall clock time in seconds
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
-double dclock(void){
+double dclock() {
   struct timeval tp;
-  gettimeofday(&tp,NULL);
-  return ( (double) tp.tv_sec + (double) tp.tv_usec * 1.e-6 );
+  gettimeofday(&tp, NULL);
+  return ((double)tp.tv_sec + (double)tp.tv_usec * 1.e-6 );
 }
 #else
-double dclock(void){
+double dclock() {
   return dclock_cpu();
 }
 #endif
