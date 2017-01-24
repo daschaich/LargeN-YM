@@ -390,6 +390,7 @@ int update() {
 
 #ifdef NHYP_JACOBI
   for (i = 0; i < JACOBI_HIST_MAX; i++) {
+    g_intsum(&(jacobi_hist[i]));
     jacobi_tot += jacobi_hist[i];
     jacobi_ave += (Real)((i + 1) * jacobi_hist[i]);
   }
