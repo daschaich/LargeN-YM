@@ -34,7 +34,6 @@ void f_mu_nu(su3_matrix f_mn[], int mu, int nu) {
   int order_flag;
   su3_matrix tmat;
   msg_tag *tag0, *tag1, *tag2, *tag3, *tag4;
-  char myname[] = "f_mu_nu";
 
   /* Want mu < nu, so that only nu can be TUP! */
   if (mu > nu) {

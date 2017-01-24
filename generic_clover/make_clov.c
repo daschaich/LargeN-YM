@@ -14,7 +14,7 @@ static clover *global_clov;
 
 // -----------------------------------------------------------------
 // Allocate space for a clover term
-clover *create_clov(void) {
+clover *create_clov() {
   clover *my_clov = malloc(sizeof(*my_clov));
   my_clov->clov = malloc(sites_on_node * sizeof(triangular));
   my_clov->clov_diag = malloc(sites_on_node * sizeof(diagonal));
@@ -22,6 +22,7 @@ clover *create_clov(void) {
   if (my_clov->clov == NULL || my_clov->clov_diag == NULL) {
     printf("create_clov(%d): malloc failed\n", this_node);
     terminate(1);
+    return NULL;        // Silences a compiler warning
   }
   else
     return my_clov;
@@ -39,7 +40,6 @@ void compute_clov(clover *my_clov, Real Clov_c) {
   register complex tc;
   triangular *clov = my_clov->clov;
   diagonal *clov_diag = my_clov->clov_diag;
-  char myname[] = "make_clov";
 
 /* The clover term
 *                                           (X | 0)
