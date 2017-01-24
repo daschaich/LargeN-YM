@@ -186,8 +186,8 @@ void Jacobi(Matrix *A, Matrix *V, Real tolerance) {
 
   eps = FrobeniusNorm(A) * tolerance;
 #ifdef DEBUG
-  printf("In jacobi::Jacobi -- convergence eps: %g\n",eps);
-  printf("%i off(A): %g\n", iter, OffDiag(A));
+  printf("Jacobi convergence eps %.4g\n",eps);
+  printf("%i off(A) %.4g\n", iter, OffDiag(A));
 #endif
   old_off  = 1.0e+32;
   off = OffDiag(A);
@@ -206,7 +206,7 @@ void Jacobi(Matrix *A, Matrix *V, Real tolerance) {
     old_off = off;
     off = OffDiag(A);
 #ifdef DEBUG
-    printf("%i off(A): %g\n", iter, off);
+    printf("%i off(A) %.4g\n", iter, off);
 #endif
   }
   if (iter < JACOBI_HIST_MAX)

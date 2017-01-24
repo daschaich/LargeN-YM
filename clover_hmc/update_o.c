@@ -277,6 +277,10 @@ int update() {
   Real xrandom;
   double startaction, endaction, endtrlogA, change;
 #endif
+#ifdef NHYP_JACOBI
+  int jacobi_tot = 0;
+  Real jacobi_ave = 0.0;
+#endif
   gnorm = 0.0;
   fnorm[0] = 0.0;
   fnorm[1] = 0.0;
@@ -377,27 +381,25 @@ int update() {
   free_clov();    // Needed for Phi algorithm in addition to HMC
 
   node0_printf("MONITOR_FORCE_FERMION0 %.4g %.4g\n",
-               fnorm[0]/(double)(2 * nsteps[0]), max_ff[0]);
+               fnorm[0] / (double)(2 * nsteps[0]), max_ff[0]);
   node0_printf("MONITOR_FORCE_FERMION1 %.4g %.4g\n",
-               fnorm[1]/(double)(4 * nsteps[0] * nsteps[1]), max_ff[1]);
+               fnorm[1] / (double)(4 * nsteps[0] * nsteps[1]), max_ff[1]);
   // gnorm divided by nsteps_gauge every time gauge_update_step called
   node0_printf("MONITOR_FORCE_GAUGE %.4g %.4g\n",
-               gnorm/(double)(4 * nsteps[0] * nsteps[1]), max_gf);
+               gnorm / (double)(4 * nsteps[0] * nsteps[1]), max_gf);
 
 #ifdef NHYP_JACOBI
-  jacobi_total = 0;
-  jacobi_avrg = 0.0;
   for (i = 0; i < JACOBI_HIST_MAX; i++) {
-    jacobi_total += jacobi_hist[i];
-    jacobi_avrg += (Real)((i + 1) * jacobi_hist[i]);
+    jacobi_tot += jacobi_hist[i];
+    jacobi_ave += (Real)((i + 1) * jacobi_hist[i]);
   }
-  jacobi_avrg /= (Real)jacobi_total;
-  node0_printf("MONITOR_JACOBI_TOTL %d\n", jacobi_total);
-  if (jacobi_total > 0) {
-    node0_printf("MONITOR_JACOBI_AVRG %.4g\n", jacobi_avrg);
-    node0_printf("MONITOR_JACOBI_HIST   ");
+  node0_printf("MONITOR_JACOBI_TOT  %d\n", jacobi_tot);
+  if (jacobi_tot > 0) {
+    jacobi_ave /= (Real)jacobi_tot;
+    node0_printf("MONITOR_JACOBI_AVE  %.4g\n", jacobi_ave);
+    node0_printf("MONITOR_JACOBI_HIST");
     for (i = 0; i < JACOBI_HIST_MAX; i++)
-      node0_printf("%.4g ",  (Real)jacobi_hist[i] / (Real)jacobi_total);
+      node0_printf(" %.4g", (Real)jacobi_hist[i] / (Real)jacobi_tot);
     node0_printf("\n");
   }
 #endif

@@ -87,7 +87,7 @@ double gauge_force(Real eps) {
     }
   }
   g_doublesum(&norm);
-  return eb3 * sqrt(norm) / (double)volume;
+  return (eb3 * sqrt(norm) / (double)volume);
 }
 // -----------------------------------------------------------------
 
@@ -239,11 +239,7 @@ void gauge_force_frep(int dir) {
 void prepare_vecs(int level) {
   register int i;
   register site *s;
-  complex tc;
   wilson_vector twvec, twvec2;
-
-  if (level == 1)
-    tc = cmplx(0, shift);
 
   dslash(psi[level], tempwvec, PLUS, ODD);
   mult_ldu(tempwvec, psi[level], ODD);
@@ -256,9 +252,9 @@ void prepare_vecs(int level) {
     if (level == 1) {
       scalar_mult_add_wvec(&(tempwvec[i]), &(p[i]), mkappa, &twvec);
 
-      // Add i * shift * gamma5.p to complete M.psi
+      // Add i * shift * gamma5.psi[level] to complete M.psi[level]
       mult_by_gamma(&(psi[level][i]), &twvec2, GAMMAFIVE);
-      c_scalar_mult_add_wvec(&twvec, &twvec2, &tc, &(p[i]));
+      c_scalar_mult_add_wvec(&twvec, &twvec2, &ishift, &(p[i]));
     }
     else {
       scalar_mult_wvec(&(p[i]), mkappa, &(p[i]));
@@ -316,8 +312,8 @@ TIC(1)
   }
 
   /* while we're at it, get the diagonal clover entry */
-  /* With A_odd == sigma_mu_nu F_mu_nu, now add force term
-     U dF_mu_nu/dU Tr_{dirac} (sigma_mu_nu A_odd^{-1}) */
+  /* With A_odd == sigma_{\mu\nu} F_{\mu\nu}, now add force term
+     U dF_{\mu\nu}/dU Tr_{dirac} (sigma_{\mu\nu} A_odd^{-1}) */
   FORALLUPDIR(mu) {
     FORALLUPDIR(nu) {
       if (nu == mu)
@@ -329,8 +325,10 @@ TIC(1)
     }
   }
 
-  FORALLUPDIR(mu)
-    gauge_force_frep(mu);
+  if (fabs(beta_frep) > IMAG_TOL) {
+    FORALLUPDIR(mu)
+      gauge_force_frep(mu);
+  }
 
   if (num_masses == 1)
     level = 0;
@@ -382,7 +380,7 @@ TIC(1)
       mult_su3_an(&(s->link[mu]), &(s->Force[mu]), &tmat);
 
       /* dH/dV^T from dW/dV^T dH/dW^T */
-      chain_rule(&tmatf, &tmat, gauge_field[mu] + i);
+      chain_rule(&tmatf, &tmat, &(gauge_field[mu][i]));
 
       // Take care of boundary conditions
       apply_bc(&tmatf, mu, s->t);
@@ -393,12 +391,12 @@ TIC(1)
   }
 
   // More chain rule: dH/dU^T = dV/dU^T dH/dV^T
-  // nhyp_force receives and returns force in Sigma[mu]
+  // nhyp_force receives dH/dV^T and returns dH/dU^T both in Sigma[mu]
   nhyp_force1();
   // Finally we can update
   FORALLUPDIR(mu) {
     FORALLSITES(i, s) {
-      // First multiply back U*dH/dU^T
+      // First multiply back U.dH/dU^T
       mult_su3_nn_f(&(s->linkf[mu]), &(Sigma[mu][i]), &tmatf);
       // Now update
       update_anti_hermitian(s, mu, ferm_epsilon, &tmatf);
@@ -419,7 +417,7 @@ TIC(1)
   node0_printf("Fermion force time = %.4g mflops = %.4g\n",
                dtime, mflops);
 #endif
-  return 2.0 * ferm_epsilon * sqrt(norm) / (double)volume;
+  return (2.0 * ferm_epsilon * sqrt(norm) / (double)volume);
 }
 // -----------------------------------------------------------------
 

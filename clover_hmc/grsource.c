@@ -18,7 +18,6 @@ void grsource() {
   register int i, j, k;
   register site *s;
   int index = num_masses - 1, iters = 0;
-  complex ishift = cmplx(0.0, shift), mishift = cmplx(0.0, -shift);
   wilson_vector twvec;
 #ifdef DEBUG_CHECK
   double rr = 0.0;

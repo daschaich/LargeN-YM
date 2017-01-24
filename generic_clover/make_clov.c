@@ -21,8 +21,7 @@ clover *create_clov(void) {
 
   if (my_clov->clov == NULL || my_clov->clov_diag == NULL) {
     printf("create_clov(%d): malloc failed\n", this_node);
-    free(my_clov);
-    return NULL;
+    terminate(1);
   }
   else
     return my_clov;
@@ -33,34 +32,26 @@ clover *create_clov(void) {
 
 // -----------------------------------------------------------------
 // Compute the clover field
+// f_mu_nu calls use tempmat, tempmat2 and staple for temporary storage
 void compute_clov(clover *my_clov, Real Clov_c) {
   register int i, j, k, jk, jk2;
   register site *s;
   register complex tc;
   triangular *clov = my_clov->clov;
   diagonal *clov_diag = my_clov->clov_diag;
-  su3_matrix *f_mn = malloc(sites_on_node * sizeof(*f_mn));
   char myname[] = "make_clov";
-
-  if (f_mn == NULL) {
-    printf("%s(%d): Can't malloc f_mn\n", myname, this_node);
-    terminate(1);
-  }
 
 /* The clover term
 *                                           (X | 0)
-* sum_{mu < nu} sigma_{mu, nu} F_{mu, nu} = (-----)
+* sum_{mu < nu} sigma_{\mu\nu} F_{\mu\nu} = (-----)
 *                                           (0 | Y)
 *
 * is block diagonal in the Weyl basis used, and hermitian. Together with the 1|
 * we will store it in a lower complex triangular (block) matrix (without
 * diagonal) and a real diagonal. The blocks go over Dirac indices 0, 1 and 2, 3.
 *
-*   With
-*
-*   sigma_{mu, nu} = i/2 [gamma_{mu}, gamma_{nu}]
-*
-*   and with our gamma matrices (see libraries/mb_gamma.c)
+*   With sigma_{\mu\nu} = i/2 [gamma_{mu}, gamma_{nu}]
+*   and with our gamma matrices as shown in libraries/mb_gamma.c,
 *
 *   1234 = XYZT    and   Pauli sigma_1, sigma_2, sigma_3
 *
@@ -77,7 +68,7 @@ void compute_clov(clover *my_clov, Real Clov_c) {
 *
 * This has to be multiplied by the "clover coefficient" and subtracted from 1|.
 *
-* Note that F_mn = f_mn/i = -i f_mn!
+* Note that F_mn = f_mn / i = -i f_mn!
 *
 * (The indices above start from 1, in the program they start from 0,
 * i.e. subtract -1 from the above) */
@@ -246,7 +237,6 @@ void compute_clov(clover *my_clov, Real Clov_c) {
       jk++;
     }
   }
-  free(f_mn);
 }
 // -----------------------------------------------------------------
 
@@ -362,11 +352,11 @@ void mult_this_ldu(clover *my_clov, wilson_vector *src,
 
   FORSOMEPARITY(i, s, parity) {
     if (i < loopend - FETCH_UP) {
-      prefetch_W(&srcb[i + FETCH_UP]);
-      prefetch_W(&destb[i + FETCH_UP]);
+      prefetch_W(&(srcb[i + FETCH_UP]));
+      prefetch_W(&(destb[i + FETCH_UP]));
     }
     for (b = 0; b < 2; b++) {
-      for (j = 0; j < 2*DIMF; j++) {
+      for (j = 0; j < 2 * DIMF; j++) {
         /* diagonal part */
         CMULREAL(srcb[i].b[b][j], clov_diag[i].di[b][j], destb[i].b[b][j]);
 
@@ -406,12 +396,12 @@ sigma(YUP, ZUP)          sigma(YUP, TUP)          sigma(ZUP, TUP)
          0  0  0 -i              0  0  0  1              0  0 -i  0
          0  0 -i  0              0  0 -1  0              0  0  0  i
 
-and sigma(nu, mu) = -sigma(mu, nu), and sums over the dirac indices.
+and sigma(nu, mu) = -sigma(mu, nu), and sums over the Dirac indices.
 */
-// Used in clover_diagonal
 
-/* triang, diag are input & contain the color-dirac matrix
+/* triang, diag are input & contain the color-Dirac matrix
    mat is output: the resulting su3_matrix  */
+// Used in fermion_force
 // Put result in tempmat
 void tr_sigma_ldu_mu_nu(int mu, int nu) {
   register int i, j, k, jk, jk2, kj;

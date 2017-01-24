@@ -122,6 +122,8 @@ void make_fields() {
   FIELD_ALLOC_VEC(gauge_field_thin, su3_matrix_f, 4);
 
   /* move here alloc for clov? */
+  size += (Real)(sizeof(su3_matrix));
+  FIELD_ALLOC(f_mn, su3_matrix);
 
   // CG stuff
   size += (Real)((5.0 + 2.0 * MAX_MASSES) * sizeof(wilson_vector));
@@ -162,18 +164,18 @@ void make_fields() {
   FIELD_ALLOC_MAT(SigmaH2, su3_matrix_f, 4, 4);
 #endif
 
-  size += (Real)(3.0 * sizeof(su3_matrix));
-  FIELD_ALLOC(tempmat, su3_matrix);
-  FIELD_ALLOC(tempmat2, su3_matrix);
-  FIELD_ALLOC(staple, su3_matrix);
-
   size += (Real)(3.0 * sizeof(su3_matrix_f));
   FIELD_ALLOC(tempmatf, su3_matrix_f);
   FIELD_ALLOC(tempmatf2, su3_matrix_f);
   FIELD_ALLOC(staplef, su3_matrix_f);
 
-  node0_printf("Mallocing %.1f MBytes per node for fields\n",
-               (double)sites_on_node * size / 1e6);
+  size += (Real)(3.0 * sizeof(su3_matrix));
+  FIELD_ALLOC(tempmat, su3_matrix);
+  FIELD_ALLOC(tempmat2, su3_matrix);
+  FIELD_ALLOC(staple, su3_matrix);
+
+  size *= (Real)sites_on_node;
+  node0_printf("Mallocing %.1f MBytes per core for fields\n", size / 1e6);
 
 #if NCOL == 4
 #ifdef NHYP_JACOBI
@@ -318,6 +320,10 @@ int readin(int prompt) {
   mkappaSq = -kappa * kappa;
   if (num_masses > 1)
     shift = par_buf.shift;
+  else
+    shift = 0.0;
+  ishift = cmplx(0.0, shift);
+  CNEGATE(ishift, mishift);
 
   clov_c = par_buf.clov_c;
   u0 = par_buf.u0;

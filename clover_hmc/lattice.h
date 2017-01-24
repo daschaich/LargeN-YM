@@ -72,6 +72,7 @@ EXTERN float traj_length;
 // Global Hasenbusch variables
 EXTERN int num_masses;    // Maximum number of masses, <= MAX_MASSES
 EXTERN Real shift;
+EXTERN complex ishift, mishift;
 EXTERN int nsteps[MAX_MASSES + 1];
 EXTERN Real gnorm, fnorm[2], max_gf, max_ff[2];
 
@@ -131,6 +132,9 @@ EXTERN wilson_vector *old_psi[MAX_MASSES];  // For predicting next psi
 #endif
 EXTERN half_wilson_vector *htmp[8];     // Temporaries for dslash_w_field
 
+// Clover stuff
+EXTERN su3_matrix *f_mn;
+
 // nHYP stuff
 EXTERN Real alpha_smear[3];
 EXTERN su3_matrix_f *hyplink1[4][4];
@@ -148,14 +152,13 @@ EXTERN su3_matrix_f *Lambda1[4];
 EXTERN su3_matrix_f *Lambda2[4];
 
 // Temporary fundamental and irrep matrices
-EXTERN su3_matrix *tempmat, *tempmat2, *staple;
 EXTERN su3_matrix_f *tempmatf, *tempmatf2, *staplef;
+EXTERN su3_matrix *tempmat, *tempmat2, *staple;
 
 #ifdef NHYP_JACOBI
 EXTERN Matrix Qj, Vj;
 #define JACOBI_HIST_MAX 10
-EXTERN int jacobi_hist[JACOBI_HIST_MAX], jacobi_total;
-EXTERN Real jacobi_avrg;
+EXTERN int jacobi_hist[JACOBI_HIST_MAX];
 #endif
 
 // Up to 20 concurrent timers for timing
