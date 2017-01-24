@@ -17,14 +17,14 @@
 
 // -----------------------------------------------------------------
 // Wrapper for (unshifted) fermion operator and its adjoint
-// CG uses special restarted dslashes, which are more efficient than this
 // The sign is PLUS for M, MINUS for MDAG
 // !!! Assume make_clov(CKU0) and make_clovinv(ODD) have been called
 //   The first computes R = 1 - i*CKU0 sigma_{\mu\nu} F_{\mu\nu} on each site
 //   The second inverts R_o on odd sites only
-//   This fixes the operator to the EVEN sublattice
-//   (So we can use *src = *dest if we want)
+//   This fixes the operator to the given parity
+// The calls don't clobber: we can use *src = *dest if we want
 // Uses tempwvec and p for temporary storage, preserving src
+// (prepare_vecs in update_h makes use of that p...)
 void fermion_op(wilson_vector *src, wilson_vector *dest,
                 int sign, int parity) {
 
@@ -39,20 +39,20 @@ void fermion_op(wilson_vector *src, wilson_vector *dest,
       terminate(1);
   }
 
-  // M = R_p - kappa^2 * dslash_po * R_o^(-1) * dslash_op
-  // 1) tempwvec_e <-- R_e src_e, then untouched until last step
+  // M = R_p - kappa^2 * dslash_po * R_o^(-1) * dslash_op src_p
+  // 1) tempwvec_p <-- R_p src_p, then untouched until last step
   mult_ldu(src, tempwvec, parity);
 
-  // 2) tempwvec_o <-- dslash_oe src_e
+  // 2) tempwvec_o <-- dslash_op src_p
   dslash(src, tempwvec, sign, otherparity);
 
   // 3) p_o <-- R_o^(-1) tempwvec_o
   mult_ldu(tempwvec, p, otherparity);
 
-  // 4) dest_e <-- dslash_eo p_o
+  // 4) dest_p <-- dslash_po p_o
   dslash(p, dest, sign, parity);
 
-  // 5) dest_e <-- tempwvec_e - kappa^2 * chi[0]_e and done
+  // 5) dest_p <-- tempwvec_p - kappa^2 * chi[0]_p and done
   FORSOMEPARITY(i, s, parity) {
     scalar_mult_wvec(&(dest[i]), mkappaSq, &(dest[i]));
     sum_wvec(&(tempwvec[i]), &(dest[i]));

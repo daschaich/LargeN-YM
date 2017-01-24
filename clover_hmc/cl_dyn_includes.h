@@ -43,7 +43,6 @@ void grsource();
 void checkmul(int level, Real mshift);
 int update();
 void update_u(Real eps);
-void update_h(Real eps);
 void udadu_mat_mu_nu(int mu, int nu);
 void udadu_mu_nu(wilson_vector *lsrc, wilson_vector *rsrc, int mu, int nu);
 void mult_sigma_mu_nu(wilson_vector *src, wilson_vector *dest,

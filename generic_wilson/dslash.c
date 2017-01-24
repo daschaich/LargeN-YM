@@ -11,6 +11,7 @@ Compute SUM_dirs (
 
 
 // -----------------------------------------------------------------
+// Takes data from otherparity to update the given parity
 void dslash(wilson_vector *src, wilson_vector *dest, int isign, int parity) {
   register int i, dir, otherparity = 0;
   register site *s;

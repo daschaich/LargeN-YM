@@ -95,6 +95,7 @@ double gauge_force(Real eps) {
 
 // -----------------------------------------------------------------
 // Fermion force from hopping and clover terms
+// Expects that the vectors psi and mp have been prepared by prepare_vecs
 void delta(int level) {
   register int i, mu, nu;
   register site *s;
@@ -102,7 +103,7 @@ void delta(int level) {
   su3_matrix tmat;
   half_wilson_vector thvec;
   wilson_vector twvec, twvec2;
-  msg_tag *tag0,*tag1;
+  msg_tag *tag0, *tag1;
 
   FORALLUPDIR(mu) {
 #ifdef CG_DEBUG
@@ -111,7 +112,7 @@ void delta(int level) {
 
     FORALLSITES(i, s) {
       wp_shrink(&(psi[level][i]), &(htmp[0][i]), mu, PLUS);
-      wp_shrink(&(p[i]), &(htmp[1][i]), mu, MINUS);
+      wp_shrink(&(mp[i]), &(htmp[1][i]), mu, MINUS);
     }
     tag0 = start_gather_field(htmp[0], sizeof(half_wilson_vector),
                               mu, EVENANDODD, gen_pt[0]);
@@ -122,7 +123,7 @@ void delta(int level) {
 
     /* First the U d(dslash)/dU terms (do for only one value of nu) */
     FORALLSITES(i, s) {
-      /* psi and p parallel transported in from positive directions */
+      /* psi and mp parallel transported in from positive directions */
       mult_su3_mat_hwvec(&(s->link[mu]), (half_wilson_vector *)gen_pt[0][i],
                          &thvec);
       wp_grow(&thvec, &twvec, mu, PLUS);
@@ -135,7 +136,7 @@ void delta(int level) {
       /* i even => twvec2 = (1-gamma_mu)*U*Aodd^(-1)*D_adj*M*psi,
          i odd  => twvec2 = (1-gamma_mu)*U*M*psi */
 
-      su3_projector_w(&twvec, &(p[i]), &(tempmat[i]));
+      su3_projector_w(&twvec, &(mp[i]), &(tempmat[i]));
       su3_projector_w(&twvec2, &(psi[level][i]), &tmat);
       sum_su3_matrix(&tmat, &(tempmat[i]));
       scalar_mult_su3_matrix(&(tempmat[i]), mkappa, &(tempmat[i]));
@@ -150,12 +151,12 @@ void delta(int level) {
         continue;
 
       // U dA/dU from U dM/dU
-      udadu_mu_nu(p, psi[level], mu, nu);        // Result in tempmat
+      udadu_mu_nu(mp, psi[level], mu, nu);       // Result in tempmat
       FORALLSITES(i, s)
         scalar_mult_sum_su3_matrix(&(tempmat[i]), tCKU0, &(s->Force[mu]));
 
       // U dA/dU from U dM^dagger/dU
-      udadu_mu_nu(psi[level], p, mu, nu);        // Result in tempmat
+      udadu_mu_nu(psi[level], mp, mu, nu);       // Result in tempmat
       FORALLSITES(i, s)
         scalar_mult_sum_su3_matrix(&(tempmat[i]), tCKU0, &(s->Force[mu]));
     }
@@ -236,41 +237,39 @@ void gauge_force_frep(int dir) {
 
 
 // -----------------------------------------------------------------
-void prepare_vecs(int level) {
+// Prepare vectors psi[level] and mp for delta:
+// psi[level]_o <-- kappa * R_o^(-1) * dslash_oe * psi[level]_e
+// psi[level]_e <-- psi[level]_e
+// mp_e <-- M.psi[level]_e
+// mp_o <-- kappa * R_o^(-1) * dslash_oe^dag * M.psi[level]_e
+// Somewhat hacky: Positive MSq hits mp on all sites
+void prepare_vecs(int level, Real MSq) {
   register int i;
   register site *s;
   wilson_vector twvec, twvec2;
 
-  dslash(psi[level], tempwvec, PLUS, ODD);
-  mult_ldu(tempwvec, psi[level], ODD);
+  // fermion_op computes the temporary p_o <-- R_o^(-1) * dslash_oe * psi_e
+  fermion_op(psi[level], mp, PLUS, EVEN);
   FORODDSITES(i, s)
-    scalar_mult_wvec(&(psi[level][i]), kappa, &(psi[level][i]));
+    scalar_mult_wvec(&(p[i]), kappa, &(psi[level][i]));
 
-  dslash(psi[level], p, PLUS, EVEN);
-  mult_ldu(psi[level], tempwvec, EVEN);
-  FOREVENSITES(i, s) {
-    if (level == 1) {
-      scalar_mult_add_wvec(&(tempwvec[i]), &(p[i]), mkappa, &twvec);
-
-      // Add i * shift * gamma5.psi[level] to complete M.psi[level]
-      mult_by_gamma(&(psi[level][i]), &twvec2, GAMMAFIVE);
-      c_scalar_mult_add_wvec(&twvec, &twvec2, &ishift, &(p[i]));
-    }
-    else {
-      scalar_mult_wvec(&(p[i]), mkappa, &(p[i]));
-      sum_wvec(&(tempwvec[i]), &(p[i]));
+  if (level == 1) {
+    FOREVENSITES(i, s) {
+      // Add i * shift * gamma5.psi[level] to M.psi[level]
+      mult_by_gamma(&(psi[level][i]), &twvec, GAMMAFIVE);
+      c_scalar_mult_sum_wvec(&twvec, &ishift, &(mp[i]));
     }
   }
-  dslash(p, tempwvec, MINUS, ODD);
-  mult_ldu(tempwvec, p, ODD);
-  FORODDSITES(i, s)
-    scalar_mult_wvec(&(p[i]), kappa, &(p[i]));
 
-  /* M = A_even - kappa^2 * Dslash * A_odd^{-1} * Dslash
-     psi(even) = psi(even)
-     psi(odd)  = kappa * A_odd^{-1} * Dslash * psi(even)
-     p(even) = M * psi(even)
-     p(odd)  = kappa * A_odd^{-1} * Dslash_adjoint * M * psi(even). */
+  dslash(mp, tempwvec, MINUS, ODD);   // dslash_oe^dag * M.psi[level]_e
+  mult_ldu(tempwvec, mp, ODD);
+  FORODDSITES(i, s)
+    scalar_mult_wvec(&(mp[i]), kappa, &(mp[i]));
+
+  if (MSq > IMAG_TOL) {
+    FORALLSITES(i, s)
+      scalar_mult_wvec(&(mp[i]), MSq, &(mp[i]));
+  }
 }
 // -----------------------------------------------------------------
 
@@ -334,37 +333,11 @@ TIC(1)
     level = 0;
   else
     level = 1;
-  prepare_vecs(level);
+  prepare_vecs(level, 0.0);
   delta(level);
 
-  if (eps2 > 0.0 && num_masses == 2) {
-    dslash(psi[0], tempwvec, PLUS, ODD);
-    mult_ldu(tempwvec, psi[0], ODD);
-    FORODDSITES(i, s)
-      scalar_mult_wvec(&(psi[0][i]), kappa, &(psi[0][i]));
-
-    dslash(psi[0], p, PLUS, EVEN);
-    mult_ldu(psi[0], tempwvec, EVEN);
-    FOREVENSITES(i, s) {
-      scalar_mult_wvec(&(p[i]), mkappa, &(p[i]));
-      sum_wvec(&(tempwvec[i]), &(p[i]));
-    }
-
-    dslash(p, tempwvec, MINUS, ODD);
-    mult_ldu(tempwvec, p, ODD);
-    FORODDSITES(i, s)
-      scalar_mult_wvec(&(p[i]), kappa, &(p[i]));
-
-    /* M = A_even - kappa^2 * Dslash * A_odd^{-1} * Dslash
-       psi(even) = psi(even)
-       psi(odd)  = kappa * A_odd^{-1} * Dslash * psi(even)
-       p(even) = M * psi(even)
-       p(odd)  = kappa * A_odd^{-1} * Dslash_adjoint * M * psi(even). */
-
-    /* And the overall factor of shift^2, here we also adjust the stepsize */
-    FORALLSITES(i, s)
-      scalar_mult_wvec(&(p[i]), MSq, &(p[i]));
-
+  if (eps2 > IMAG_TOL && num_masses == 2) {
+    prepare_vecs(0, MSq);
     delta(0);
   }
 
@@ -418,14 +391,5 @@ TIC(1)
                dtime, mflops);
 #endif
   return (2.0 * ferm_epsilon * sqrt(norm) / (double)volume);
-}
-// -----------------------------------------------------------------
-
-
-
-// -----------------------------------------------------------------
-void update_h(Real eps) {
-  gauge_force(eps);
-  fermion_force(eps, 0.0);
 }
 // -----------------------------------------------------------------
