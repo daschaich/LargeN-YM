@@ -1,0 +1,10 @@
+magic_number = 20103
+time_stamp = "Tue Jan 24 12:59:46 2017"
+checksums = "a9d83109 457d5663"
+nx = 4
+ny = 4
+nz = 4
+nt = 4
+gauge.previous.filename = "config.4F.4444"
+gauge.previous.time_stamp = "Tue Jan 24 00:49:13 2017"
+gauge.previous.checksums = "f0fb37f1 42d99611"

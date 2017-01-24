@@ -15,7 +15,7 @@ nstep 2
 nstep_gauge 5
 traj_between_meas 3
 
-beta 9.0
+beta 9.6
 beta_frep 0.0
 kappa 0.125
 shift 0.2
@@ -31,5 +31,5 @@ max_cg_restarts 10
 error_per_site 1e-6
 error_for_propagator 1e-6
 
-fresh
-save_serial config.4F.4444
+reload_serial config.4F.4444
+forget

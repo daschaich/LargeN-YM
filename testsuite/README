@@ -8,7 +8,7 @@ Depending on the fermion rep, each target may be tested for SU(N) gauge theory w
 * N=2, 3 or 4 colors for the fundamental rep (2F, 3F, 4F)
 * N=3 or 4 colors for the two-index-symmetric rep (2S, 3S, 4S)
 * N=4 colors for the two-index-antisymmetric rep (3A, 4A)
-The gauge configurations loaded by each test are also provided.  The choice of (beta, beta_frep)=(2.5, 0.5) for 3S is motivated by Table I in arXiv:1201.0935 while (6, 0.5) for 4A is motivated by Table III in arXiv:1307.2425.  We then scale beta~N^2 for other N.
+The gauge configurations loaded by each test are also provided.  The choice of (beta, beta_frep)=(2.5, 0.5) for 3S is motivated by Table I in arXiv:1201.0935, the choice of (6, 0.5) for 4A is motivated by Table III in arXiv:1307.2425, and the choice of (5.4, 0) for 3F is motivated by arXiv:1606:01277.  We then scale beta~N^2 for other N.
 
 Although the 3A rep is the same as the 3F rep, the output from these tests is not identical since the random gaussian pseudofermion components are generated in different orders.  Similarly the 2S rep is the same as the 2Adj rep that is not currently included in this package.
 
