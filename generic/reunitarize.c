@@ -57,7 +57,7 @@ double av_deviation;
 #if NCOL == 4
 /* calculate row 3 of SU(4) matrix from other 3 rows, assumed to be already
    orthonormal    */
-void fixsu4(su3_matrix_f *c) {
+void fixsu4(matrix_f *c) {
   register Real bj0r, bj0i, bj1r, bj1i, bj2r, bj2i;
   register Real ar, ai, tr, ti;
 
@@ -102,7 +102,7 @@ int check_deviation(Real deviation) {
     return 1;
 }
 
-void reunit_report_problem_matrix(su3_matrix_f *mat, int i, int dir) {
+void reunit_report_problem_matrix(matrix_f *mat, int i, int dir) {
   int ii, jj;
   union {
     Real fval;
@@ -133,7 +133,7 @@ void reunit_report_problem_matrix(su3_matrix_f *mat, int i, int dir) {
   fflush(stdout);
 } /* reunit_report_problem_matrix */
 
-int reunit_su3(su3_matrix_f *c) {
+int reunit_su3(matrix_f *c) {
   register Real ar, c0r, c0i, c1r, c1i;
 #if NCOL > 2
   register Real c2r, c2i, ai;
@@ -398,14 +398,14 @@ int reunit_su3(su3_matrix_f *c) {
 void reunitarize() {
   register int i, dir;
   register site *s;
-  register su3_matrix_f *mat;
+  register matrix_f *mat;
   int errcount = 0, errors;
 
   max_deviation = 0.0;
   av_deviation = 0.0;
   FORALLSITES(i, s) {
     FORALLUPDIR(dir) {
-      mat = (su3_matrix_f *)&(s->linkf[dir]);
+      mat = (matrix_f *)&(s->linkf[dir]);
       errors = reunit_su3(mat);
       errcount += errors;
       if (errors)

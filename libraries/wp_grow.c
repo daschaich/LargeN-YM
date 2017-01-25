@@ -1,4 +1,4 @@
-/* 
+/*
   Expand the "Wilson projection" of a Wilson fermion vector.
   (1 +- gamma_j) is a projection operator, and we are given a
   half_wilson_vector which contains the two components of a Wilson

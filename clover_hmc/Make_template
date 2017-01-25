@@ -69,7 +69,7 @@ G_OBJECTS = check_unitarity.o \
             nersc_cksum.o     \
             plaquette.o       \
             plaquette_lcl.o   \
-            ploop_dist.o      \
+            ploop.o           \
             ranmom.o          \
             ranstuff.o        \
             reunitarize.o     \

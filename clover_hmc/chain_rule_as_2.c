@@ -26,14 +26,14 @@
         #error "Wrong version of fermion_rep!"
 #endif
 
-void chain_rule(su3_matrix_f *sigmaf, su3_matrix *sigma,
-                su3_matrix_f *gaugelinkf){
+void chain_rule(matrix_f *sigmaf, matrix *sigma,
+                matrix_f *gaugelinkf){
 
   int i,j,ij,k,l,kl; /* ij and kl are the compound indices of the
 				fermion rep  */
   complex y;
 
-  clear_su3mat_f(sigmaf);
+  clear_mat_f(sigmaf);
 
   ij=0;
   for(i=0;i<NCOL;i++) {

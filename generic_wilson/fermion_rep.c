@@ -19,7 +19,7 @@ void fermion_rep() {
   // and puts the smeared link in gauge_field[mu]
   FORALLUPDIR(mu) {
     FORALLSITES(i, s)
-      su3mat_copy_f(&(s->linkf[mu]), gauge_field_thin[mu] + i);
+      mat_copy_f(&(s->linkf[mu]), gauge_field_thin[mu] + i);
   }
   block_nhyp();
 

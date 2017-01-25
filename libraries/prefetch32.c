@@ -18,13 +18,13 @@
 // 8 floats in cache line
 // 2 floats per alignment boundary
 
-// su3_matrix: 18 Reals
+// matrix: 18 Reals
 #define _pftch_M(a) \
   dummy = *((Real *)(a)     ); \
   dummy = *((Real *)(a) +  8); \
   dummy = *((Real *)(a) + 16);
 
-// su3_vector: 6 Reals
+// vector: 6 Reals
 #define _pftch_V(a) \
   dummy = *((Real *)(a)     ); \
   dummy = *((Real *)(a) + 4 );
@@ -42,14 +42,14 @@
   dummy = *((Real *)(a) + 16); \
   dummy = *((Real *)(a) + 22);
 
-// 4 su3_vectors: 24 Reals
+// 4 vectors: 24 Reals
 #define _pftch_4V(a) \
   dummy = *((Real *)(a)     ); \
   dummy = *((Real *)(a) +  8); \
   dummy = *((Real *)(a) + 16); \
   dummy = *((Real *)(a) + 22);
 
-// 4 su3_matrices: 72 Reals
+// 4 matrices: 72 Reals
 #define _pftch_4M(a) \
   dummy = *((Real *)(a)     ); \
   dummy = *((Real *)(a) +  8); \
@@ -82,13 +82,13 @@
 
 
 // -----------------------------------------------------------------
-void _prefetch_M(su3_matrix *a0) {
+void _prefetch_M(matrix *a0) {
   register Real dummy;
 
   _pftch_M(a0);
 }
 
-void _prefetch_V(su3_vector *a0) {
+void _prefetch_V(vector *a0) {
   register Real dummy;
 
   _pftch_V(a0);
@@ -106,14 +106,14 @@ void _prefetch_H(half_wilson_vector *a0) {
   _pftch_H(a0);
 }
 
-void _prefetch_VV(su3_vector *a0, su3_vector *a1) {
+void _prefetch_VV(vector *a0, vector *a1) {
   register Real dummy;
 
   _pftch_V(a0);
   _pftch_V(a1);
 }
 
-void _prefetch_VVV(su3_vector *a0, su3_vector *a1, su3_vector *a2) {
+void _prefetch_VVV(vector *a0, vector *a1, vector *a2) {
   register Real dummy;
 
   _pftch_V(a0);
@@ -121,8 +121,8 @@ void _prefetch_VVV(su3_vector *a0, su3_vector *a1, su3_vector *a2) {
   _pftch_V(a2);
 }
 
-void _prefetch_VVVV(su3_vector *a0, su3_vector *a1, su3_vector *a2,
-                    su3_vector *a3) {
+void _prefetch_VVVV(vector *a0, vector *a1, vector *a2,
+                    vector *a3) {
 
   register Real dummy;
 
@@ -132,8 +132,8 @@ void _prefetch_VVVV(su3_vector *a0, su3_vector *a1, su3_vector *a2,
   _pftch_V(a3);
 }
 
-void _prefetch_VVVVV(su3_vector *a0, su3_vector *a1, su3_vector *a2,
-         su3_vector *a3, su3_vector *a4) {
+void _prefetch_VVVVV(vector *a0, vector *a1, vector *a2,
+         vector *a3, vector *a4) {
   register Real dummy;
 
   _pftch_V(a0);
@@ -173,8 +173,8 @@ void _prefetch_WWWWW(wilson_vector *a0, wilson_vector *a1, wilson_vector *a2,
   _pftch_W(a4);
 }
 
-void _prefetch_4MVVVV(su3_matrix *a0, su3_vector *a1, su3_vector *a2,
-                      su3_vector *a3, su3_vector *a4) {
+void _prefetch_4MVVVV(matrix *a0, vector *a1, vector *a2,
+                      vector *a3, vector *a4) {
 
   register Real dummy;
 
@@ -185,7 +185,7 @@ void _prefetch_4MVVVV(su3_matrix *a0, su3_vector *a1, su3_vector *a2,
   _pftch_V(a4);
 }
 
-void _prefetch_4MWWWW(su3_matrix *a0, wilson_vector *a1, wilson_vector *a2,
+void _prefetch_4MWWWW(matrix *a0, wilson_vector *a1, wilson_vector *a2,
           wilson_vector *a3, wilson_vector *a4) {
   register Real dummy;
 
@@ -196,7 +196,7 @@ void _prefetch_4MWWWW(su3_matrix *a0, wilson_vector *a1, wilson_vector *a2,
   _pftch_W(a4);
 }
 
-void _prefetch_4MV4V(su3_matrix *a0, su3_vector *a1, su3_vector *a2) {
+void _prefetch_4MV4V(matrix *a0, vector *a1, vector *a2) {
   register Real dummy;
 
   _pftch_4M(a0);
@@ -204,7 +204,7 @@ void _prefetch_4MV4V(su3_matrix *a0, su3_vector *a1, su3_vector *a2) {
   _pftch_4V(a2);
 }
 
-void _prefetch_4MW4W(su3_matrix *a0, wilson_vector *a1, wilson_vector *a2) {
+void _prefetch_4MW4W(matrix *a0, wilson_vector *a1, wilson_vector *a2) {
   register Real dummy;
 
   _pftch_4M(a0);

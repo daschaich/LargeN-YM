@@ -5,7 +5,7 @@
 #include "../include/complex.h"
 #include "../include/su3.h"
 
-Real su3_rdot(su3_vector *a, su3_vector *b) {
+Real rdot(vector *a, vector *b) {
   register Real tr,sum;
 #if DIMF > 6
   register int i;

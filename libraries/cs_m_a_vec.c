@@ -6,7 +6,7 @@
 #include "../include/complex.h"
 #include "../include/su3.h"
 
-void c_scalar_mult_sum_su3vec(su3_vector *b, complex *s, su3_vector *c) {
+void c_scalar_mult_sum_su3vec(vector *b, complex *s, vector *c) {
   register int i;
   for (i = 0; i < DIMF; i++) {
     c->c[i].real += b->c[i].real * s->real - b->c[i].imag * s->imag;
@@ -14,8 +14,8 @@ void c_scalar_mult_sum_su3vec(su3_vector *b, complex *s, su3_vector *c) {
   }
 }
 
-void c_scalar_mult_add_su3vec(su3_vector *a, su3_vector *b, complex *s,
-                              su3_vector *c) {
+void c_scalar_mult_add_su3vec(vector *a, vector *b, complex *s,
+                              vector *c) {
 
   register int i;
   for (i = 0; i < DIMF; i++) {

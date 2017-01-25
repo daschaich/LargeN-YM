@@ -24,7 +24,7 @@
 #endif
 
 
-void make_fermion_rep_matrix(su3_matrix_f *a, su3_matrix *b){
+void make_fermion_rep_matrix(matrix_f *a, matrix *b){
 
 int i,j;
 
@@ -47,7 +47,7 @@ The code assumes that the boundary matrices are diagonal
 
 #ifdef SF
 
-void make_fermion_rep_driv(su3_matrix_f *a, su3_matrix *b,
+void make_fermion_rep_driv(matrix_f *a, matrix *b,
                            Real *factor, int sign) {
   int i,j;
 

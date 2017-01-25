@@ -36,7 +36,7 @@ int check_deviation(Real deviation) {
 }
 
 
-void reunit_report_problem_matrix(su3_matrix_f *mat, int i, int dir) {
+void reunit_report_problem_matrix(matrix_f *mat, int i, int dir) {
   int ii, jj;
   union {
     Real fval;
@@ -69,7 +69,7 @@ void reunit_report_problem_matrix(su3_matrix_f *mat, int i, int dir) {
 
 /* the above routines were from reinutarize2.c. Now for the new routine */
 
-int reunit_su3(su3_matrix_f *c)
+int reunit_su3(matrix_f *c)
 {
   Real deviation;
   int i, j, k, errors;
@@ -77,8 +77,8 @@ int reunit_su3(su3_matrix_f *c)
   register Real ar;
   complex deter;
 
-  su3_matrix_f cold;
-  complex find_det(su3_matrix_f *c);
+  matrix_f cold;
+  complex find_det(matrix_f *c);
   errors = 0;
 
 
@@ -86,7 +86,7 @@ int reunit_su3(su3_matrix_f *c)
   for(i=0;i<NCOL;i++)for(j=0;j<NCOL;j++) cold.e[i][j]=(*c).e[i][j];
   /*
   node0_printf("OLD MATRIX\n");
-    dumpmat_f(&cold);
+    dump_mat_f(&cold);
   */
 
 
@@ -135,7 +135,7 @@ int reunit_su3(su3_matrix_f *c)
 
  /* let's check the determinant
   node0_printf("MATRIX AFTER RE-ORTHONORMAL\n");
-    dumpmat_f(c);
+    dump_mat_f(c);
 */
   deter=find_det(c);
   ar=deter.real*deter.real + deter.imag*deter.imag;
@@ -161,7 +161,7 @@ int reunit_su3(su3_matrix_f *c)
 
   /*
   node0_printf("NEW\n");
-    dumpmat_f(c);
+    dump_mat_f(c);
   */
 
 
@@ -176,7 +176,7 @@ int reunit_su3(su3_matrix_f *c)
 void reunitarize() {
   register int i, dir;
   register site *s;
-  register su3_matrix_f *mat;
+  register matrix_f *mat;
   int errcount = 0, errors;
 
   max_deviation = 0.;
@@ -184,7 +184,7 @@ void reunitarize() {
 
   FORALLSITES(i, s){
     FORALLUPDIR(dir) {
-      mat = (su3_matrix_f *)&(s->linkf[dir]);
+      mat = (matrix_f *)&(s->linkf[dir]);
       errors = reunit_su3(mat );
       errcount += errors;
       if (errors)reunit_report_problem_matrix(mat, i, dir);
@@ -213,15 +213,15 @@ void reunitarize() {
 
 }
 
-complex find_det(su3_matrix_f *Q) {
+complex find_det(matrix_f *Q) {
   complex det, det2;
   int i;
-  void ludcmp_cx(su3_matrix_f *a, int *indx, Real *d);
-  su3_matrix_f QQ;
+  void ludcmp_cx(matrix_f *a, int *indx, Real *d);
+  matrix_f QQ;
   Real d;
   int indx[NCOL];
 
-  su3mat_copy_f(Q,&QQ);
+  mat_copy_f(Q,&QQ);
   ludcmp_cx(&QQ, indx,&d);
   det=cmplx(d, 0.0);
   for(i=0;i<NCOL;i++) {
@@ -237,7 +237,7 @@ complex find_det(su3_matrix_f *Q) {
 
 
 #define TINY 1.0e-20;
-void ludcmp_cx(su3_matrix_f *a, int *indx, Real *d) {
+void ludcmp_cx(matrix_f *a, int *indx, Real *d) {
   int i, imax, j, k;
   Real big, fdum;
   complex sum, dum, ct;

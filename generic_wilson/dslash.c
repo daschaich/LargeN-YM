@@ -44,10 +44,10 @@ void dslash(wilson_vector *src, wilson_vector *dest, int isign, int parity) {
      multiply it by adjoint link matrix, gather it "up" */
   FORSOMEPARITY(i, s, otherparity) {
     wp_shrink_4dir(&(src[i]), &hwvx, &hwvy, &hwvz, &hwvt, -isign);
-    mult_adj_su3_mat_hwvec(&(s->link[XUP]), &hwvx, &(htmp[XDOWN][i]));
-    mult_adj_su3_mat_hwvec(&(s->link[YUP]), &hwvy, &(htmp[YDOWN][i]));
-    mult_adj_su3_mat_hwvec(&(s->link[ZUP]), &hwvz, &(htmp[ZDOWN][i]));
-    mult_adj_su3_mat_hwvec(&(s->link[TUP]), &hwvt, &(htmp[TDOWN][i]));
+    mult_adj_mat_hwvec(&(s->link[XUP]), &hwvx, &(htmp[XDOWN][i]));
+    mult_adj_mat_hwvec(&(s->link[YUP]), &hwvy, &(htmp[YDOWN][i]));
+    mult_adj_mat_hwvec(&(s->link[ZUP]), &hwvz, &(htmp[ZDOWN][i]));
+    mult_adj_mat_hwvec(&(s->link[TUP]), &hwvt, &(htmp[TDOWN][i]));
   }
 
   FORALLUPDIR(dir) {
@@ -62,13 +62,13 @@ void dslash(wilson_vector *src, wilson_vector *dest, int isign, int parity) {
     wait_gather(tag[dir]);
 
   FORSOMEPARITY(i, s, parity) {
-    mult_su3_mat_hwvec(&(s->link[XUP]),
+    mult_mat_hwvec(&(s->link[XUP]),
         (half_wilson_vector *)(gen_pt[XUP][i]), &hwvx);
-    mult_su3_mat_hwvec(&(s->link[YUP]),
+    mult_mat_hwvec(&(s->link[YUP]),
         (half_wilson_vector *)(gen_pt[YUP][i]), &hwvy);
-    mult_su3_mat_hwvec(&(s->link[ZUP]),
+    mult_mat_hwvec(&(s->link[ZUP]),
         (half_wilson_vector *)(gen_pt[ZUP][i]), &hwvz);
-    mult_su3_mat_hwvec(&(s->link[TUP]),
+    mult_mat_hwvec(&(s->link[TUP]),
         (half_wilson_vector *)(gen_pt[TUP][i]), &hwvt);
     grow_add_four_wvecs(&(dest[i]),
         &hwvx, &hwvy, &hwvz, &hwvt, isign);
@@ -143,10 +143,10 @@ void dslash_special(wilson_vector *src, wilson_vector *dest,
      multiply it by adjoint link matrix, gather it "up" */
   FORSOMEPARITY(i, s, otherparity) {
     wp_shrink_4dir(&(src[i]), &hwvx, &hwvy, &hwvz, &hwvt, -isign);
-    mult_adj_su3_mat_hwvec(&(s->link[XUP]), &hwvx, &(htmp[XDOWN][i]));
-    mult_adj_su3_mat_hwvec(&(s->link[YUP]), &hwvy, &(htmp[YDOWN][i]));
-    mult_adj_su3_mat_hwvec(&(s->link[ZUP]), &hwvz, &(htmp[ZDOWN][i]));
-    mult_adj_su3_mat_hwvec(&(s->link[TUP]), &hwvt, &(htmp[TDOWN][i]));
+    mult_adj_mat_hwvec(&(s->link[XUP]), &hwvx, &(htmp[XDOWN][i]));
+    mult_adj_mat_hwvec(&(s->link[YUP]), &hwvy, &(htmp[YDOWN][i]));
+    mult_adj_mat_hwvec(&(s->link[ZUP]), &hwvz, &(htmp[ZDOWN][i]));
+    mult_adj_mat_hwvec(&(s->link[TUP]), &hwvt, &(htmp[TDOWN][i]));
   }
 
   FORALLUPDIR(dir) {
@@ -167,13 +167,13 @@ void dslash_special(wilson_vector *src, wilson_vector *dest,
     wait_gather(tag[dir]);
 
   FORSOMEPARITY(i, s, parity) {
-    mult_su3_mat_hwvec(&(s->link[XUP]),
+    mult_mat_hwvec(&(s->link[XUP]),
         (half_wilson_vector *)(gen_pt[XUP][i]), &hwvx);
-    mult_su3_mat_hwvec(&(s->link[YUP]),
+    mult_mat_hwvec(&(s->link[YUP]),
         (half_wilson_vector *)(gen_pt[YUP][i]), &hwvy);
-    mult_su3_mat_hwvec(&(s->link[ZUP]),
+    mult_mat_hwvec(&(s->link[ZUP]),
         (half_wilson_vector *)(gen_pt[ZUP][i]), &hwvz);
-    mult_su3_mat_hwvec(&(s->link[TUP]),
+    mult_mat_hwvec(&(s->link[TUP]),
         (half_wilson_vector *)(gen_pt[TUP][i]), &hwvt);
     grow_add_four_wvecs(&(dest[i]),
         &hwvx, &hwvy, &hwvz, &hwvt, isign);

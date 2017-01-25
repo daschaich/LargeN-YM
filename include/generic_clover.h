@@ -10,7 +10,7 @@
 
 
 // -----------------------------------------------------------------
-void f_mu_nu(su3_matrix f_mn[],int mu,int nu);
+void f_mu_nu(matrix f_mn[],int mu,int nu);
 
 typedef struct { complex tr[2][DIMF*(2*DIMF-1)]; } triangular;
 typedef struct { Real di[2][2*DIMF]; } diagonal;

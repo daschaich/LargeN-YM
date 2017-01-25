@@ -7,7 +7,7 @@
 #include "../include/complex.h"
 #include "../include/su3.h"
 
-void mult_su3_na_sum(su3_matrix *a, su3_matrix *b, su3_matrix *c) {
+void mult_na_sum(matrix *a, matrix *b, matrix *c) {
   register int i, j, k;
   for (i = 0; i < DIMF; i++) {
     for (j = 0; j < DIMF; j++) {
@@ -21,7 +21,7 @@ void mult_su3_na_sum(su3_matrix *a, su3_matrix *b, su3_matrix *c) {
   }
 }
 
-void mult_su3_na_dif(su3_matrix *a, su3_matrix *b, su3_matrix *c) {
+void mult_na_dif(matrix *a, matrix *b, matrix *c) {
   register int i, j, k;
   for (i = 0; i < DIMF; i++) {
     for (j = 0; j < DIMF; j++) {
@@ -35,7 +35,7 @@ void mult_su3_na_dif(su3_matrix *a, su3_matrix *b, su3_matrix *c) {
   }
 }
 
-void mult_su3_na(su3_matrix *a, su3_matrix *b, su3_matrix *c) {
+void mult_na(matrix *a, matrix *b, matrix *c) {
   register int i, j;
 #ifndef FAST
   register int k;

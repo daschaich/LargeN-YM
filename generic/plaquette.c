@@ -10,39 +10,39 @@
 void plaquette(double *ss_plaq, double *st_plaq) {
   register int i, dir, dir2;
   register site *s;
-  register su3_matrix_f *m1, *m4;
+  register matrix_f *m1, *m4;
   double ss_sum = 0.0, st_sum = 0.0;
   msg_tag *mtag0, *mtag1;
-  su3_matrix_f tmat;
+  matrix_f tmat;
 
   // We can exploit a symmetry under dir<-->dir2
   for (dir = YUP; dir <= TUP; dir++) {
     for (dir2 = XUP; dir2 < dir; dir2++) {
       // gen_pt[0] is U_b(x+a), gen_pt[1] is U_a(x+b)
-      mtag0 = start_gather_site(F_OFFSET(linkf[dir2]), sizeof(su3_matrix_f),
+      mtag0 = start_gather_site(F_OFFSET(linkf[dir2]), sizeof(matrix_f),
                                 dir, EVENANDODD, gen_pt[0]);
-      mtag1 = start_gather_site(F_OFFSET(linkf[dir]), sizeof(su3_matrix_f),
+      mtag1 = start_gather_site(F_OFFSET(linkf[dir]), sizeof(matrix_f),
                                 dir2, EVENANDODD, gen_pt[1]);
 
       // tempmatf(x) = Udag_b(x) U_a(x)
       FORALLSITES(i, s) {
         m1 = &(s->linkf[dir]);
         m4 = &(s->linkf[dir2]);
-        mult_su3_an_f(m4, m1, &(tempmatf[i]));
+        mult_an_f(m4, m1, &(tempmatf[i]));
       }
       wait_gather(mtag0);
       wait_gather(mtag1);
 
       // Compute tr[Udag_a(x+b) Udag_b(x) U_a(x) U_b(x+a)]
       FORALLSITES(i, s) {
-        m1 = (su3_matrix_f *)(gen_pt[0][i]);
-        m4 = (su3_matrix_f *)(gen_pt[1][i]);
-        mult_su3_nn_f(&(tempmatf[i]), m1, &tmat);
+        m1 = (matrix_f *)(gen_pt[0][i]);
+        m4 = (matrix_f *)(gen_pt[1][i]);
+        mult_nn_f(&(tempmatf[i]), m1, &tmat);
 
         if (dir == TUP)
-          st_sum += (double)realtrace_su3_f(m4, &tmat);
+          realtrace_sum_f(m4, &tmat, &st_sum);
         else
-          ss_sum += (double)realtrace_su3_f(m4, &tmat);
+          realtrace_sum_f(m4, &tmat, &ss_sum);
       }
       cleanup_gather(mtag0);
       cleanup_gather(mtag1);
@@ -66,39 +66,39 @@ void plaquette(double *ss_plaq, double *st_plaq) {
 void plaquette_frep(double *ss_plaq_frep, double *st_plaq_frep) {
   register int i, dir, dir2;
   register site *s;
-  register su3_matrix *m1, *m4;
+  register matrix *m1, *m4;
   double ss_sum = 0.0, st_sum = 0.0;
   msg_tag *mtag0, *mtag1;
-  su3_matrix tmat;
+  matrix tmat;
 
   // We can exploit a symmetry under dir<-->dir2
   for (dir = YUP; dir <= TUP; dir++) {
     for (dir2 = XUP; dir2 < dir; dir2++) {
       // gen_pt[0] is U_b(x+a), gen_pt[1] is U_a(x+b)
-      mtag0 = start_gather_site(F_OFFSET(link[dir2]), sizeof(su3_matrix),
+      mtag0 = start_gather_site(F_OFFSET(link[dir2]), sizeof(matrix),
                                 dir, EVENANDODD, gen_pt[0]);
-      mtag1 = start_gather_site(F_OFFSET(link[dir]), sizeof(su3_matrix),
+      mtag1 = start_gather_site(F_OFFSET(link[dir]), sizeof(matrix),
                                 dir2, EVENANDODD, gen_pt[1]);
 
       // tempmat = Udag_b(x) U_a(x)
       FORALLSITES(i, s) {
         m1 = &(s->link[dir]);
         m4 = &(s->link[dir2]);
-        mult_su3_an(m4, m1, &tempmat[i]);
+        mult_an(m4, m1, &tempmat[i]);
       }
       wait_gather(mtag0);
       wait_gather(mtag1);
 
       // Compute tr[Udag_a(x+b) Udag_b(x) U_a(x) U_b(x+a)]
       FORALLSITES(i, s) {
-        m1 = (su3_matrix *)(gen_pt[0][i]);
-        m4 = (su3_matrix *)(gen_pt[1][i]);
-        mult_su3_nn(&(tempmat[i]), m1, &tmat);
+        m1 = (matrix *)(gen_pt[0][i]);
+        m4 = (matrix *)(gen_pt[1][i]);
+        mult_nn(&(tempmat[i]), m1, &tmat);
 
         if (dir == TUP)
-          st_sum += (double)realtrace_su3(m4, &tmat);
+          realtrace_sum(m4, &tmat, &st_sum);
         else
-          ss_sum += (double)realtrace_su3(m4, &tmat);
+          realtrace_sum(m4, &tmat, &ss_sum);
       }
       cleanup_gather(mtag0);
       cleanup_gather(mtag1);

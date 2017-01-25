@@ -32,12 +32,12 @@ typedef struct {
 #endif
 
   // Gauge field
-  su3_matrix link[4];
-  su3_matrix_f linkf[4];
+  matrix link[4];
+  matrix_f linkf[4];
 
   // Program-dependent fields
 #ifdef HMC_ALGORITHM
-  su3_matrix_f old_linkf[4];    // For accept/reject
+  matrix_f old_linkf[4];    // For accept/reject
 #endif
 
   // Antihermitian momentum matrices in each direction
@@ -49,7 +49,7 @@ typedef struct {
 #endif
 
   // A bit wasteful of space
-  su3_matrix Force[4];
+  matrix Force[4];
 } site;
 // -----------------------------------------------------------------
 
@@ -116,8 +116,8 @@ EXTERN site *lattice;
 #define N_POINTERS 8
 EXTERN char **gen_pt[N_POINTERS];
 
-EXTERN su3_matrix_f *gauge_field[4];
-EXTERN su3_matrix_f *gauge_field_thin[4];
+EXTERN matrix_f *gauge_field[4];
+EXTERN matrix_f *gauge_field_thin[4];
 
 // CG stuff
 EXTERN wilson_vector *g_rand;           // Gaussian random vector
@@ -133,27 +133,27 @@ EXTERN wilson_vector *old_psi[MAX_MASSES];  // For predicting next psi
 EXTERN half_wilson_vector *htmp[8];     // Temporaries for dslash_w_field
 
 // Clover stuff
-EXTERN su3_matrix *f_mn;
+EXTERN matrix *f_mn;
 
 // nHYP stuff
 EXTERN Real alpha_smear[3];
-EXTERN su3_matrix_f *hyplink1[4][4];
-EXTERN su3_matrix_f *hyplink2[4][4];
-EXTERN su3_matrix_f *Sigma[4];
-EXTERN su3_matrix_f *SigmaH[4];
-EXTERN su3_matrix_f *SigmaH2[4][4];
+EXTERN matrix_f *hyplink1[4][4];
+EXTERN matrix_f *hyplink2[4][4];
+EXTERN matrix_f *Sigma[4];
+EXTERN matrix_f *SigmaH[4];
+EXTERN matrix_f *SigmaH2[4][4];
 
-EXTERN su3_matrix_f *Staple1[4][4];
-EXTERN su3_matrix_f *Staple2[4][4];
-EXTERN su3_matrix_f *Staple3[4];
+EXTERN matrix_f *Staple1[4][4];
+EXTERN matrix_f *Staple2[4][4];
+EXTERN matrix_f *Staple3[4];
 
-EXTERN su3_matrix_f *LambdaU[4];
-EXTERN su3_matrix_f *Lambda1[4];
-EXTERN su3_matrix_f *Lambda2[4];
+EXTERN matrix_f *LambdaU[4];
+EXTERN matrix_f *Lambda1[4];
+EXTERN matrix_f *Lambda2[4];
 
 // Temporary fundamental and irrep matrices
-EXTERN su3_matrix_f *tempmatf, *tempmatf2, *staplef;
-EXTERN su3_matrix *tempmat, *tempmat2, *staple;
+EXTERN matrix_f *tempmatf, *tempmatf2, *staplef;
+EXTERN matrix *tempmat, *tempmat2, *staple;
 
 #ifdef NHYP_JACOBI
 EXTERN Matrix Qj, Vj;

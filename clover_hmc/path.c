@@ -9,19 +9,19 @@ void path(int *dir, int *sign, int length) {
 
   /* j=0 */
   if (sign[0] > 0) {
-    mtag0 = start_gather_site(F_OFFSET(linkf[dir[0]]), sizeof(su3_matrix_f),
+    mtag0 = start_gather_site(F_OFFSET(linkf[dir[0]]), sizeof(matrix_f),
                               OPP_DIR(dir[0]), EVENANDODD, gen_pt[0]);
     wait_gather(mtag0);
 
     FORALLSITES(i, s)
-      su3mat_copy_f((su3_matrix_f *)(gen_pt[0][i]), &(tempmatf[i]));
+      mat_copy_f((matrix_f *)(gen_pt[0][i]), &(tempmatf[i]));
 
     cleanup_gather(mtag0);
   }
 
   if (sign[0] < 0) {
     FORALLSITES(i, s)
-      su3_adjoint_f(&(s->linkf[dir[0]]), &(tempmatf[i]));
+      adjoint_f(&(s->linkf[dir[0]]), &(tempmatf[i]));
   }
 
 
@@ -29,30 +29,30 @@ void path(int *dir, int *sign, int length) {
     if (sign[j] > 0) {
 
       FORALLSITES(i, s)
-        mult_su3_nn_f(&(tempmatf[i]), &(s->linkf[dir[j]]), &(tempmatf2[i]));
+        mult_nn_f(&(tempmatf[i]), &(s->linkf[dir[j]]), &(tempmatf2[i]));
 
-      mtag0 = start_gather_field(tempmatf2, sizeof(su3_matrix_f),
+      mtag0 = start_gather_field(tempmatf2, sizeof(matrix_f),
                                  OPP_DIR(dir[j]), EVENANDODD, gen_pt[0]);
 
       wait_gather(mtag0);
       FORALLSITES(i, s)
-        su3mat_copy_f((su3_matrix_f *)(gen_pt[0][i]), &(tempmatf[i]));
+        mat_copy_f((matrix_f *)(gen_pt[0][i]), &(tempmatf[i]));
 
       cleanup_gather(mtag0);
     }
 
     if (sign[j] < 0) {
-      mtag0 = start_gather_field(tempmatf, sizeof(su3_matrix_f),
+      mtag0 = start_gather_field(tempmatf, sizeof(matrix_f),
                                  dir[j], EVENANDODD, gen_pt[1]);
 
       wait_gather(mtag0);
       FORALLSITES(i, s) {
-        mult_su3_na_f((su3_matrix_f *)(gen_pt[1][i]), &(s->linkf[dir[j]]),
+        mult_na_f((matrix_f *)(gen_pt[1][i]), &(s->linkf[dir[j]]),
                       &(tempmatf2[i]));
       }
 
       FORALLSITES(i, s)
-        su3mat_copy_f(&(tempmatf2[i]), &(tempmatf[i]));
+        mat_copy_f(&(tempmatf2[i]), &(tempmatf[i]));
 
       cleanup_gather(mtag0);
     }

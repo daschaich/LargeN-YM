@@ -8,7 +8,7 @@
 #include "../include/complex.h"
 #include "../include/su3.h"
 
-void scalar_mult_su3_vector(su3_vector *a, Real s, su3_vector *b) {
+void scalar_mult_vector(vector *a, Real s, vector *b) {
   register int i;
   for (i = 0; i < DIMF; i++) {
     b->c[i].real = s * a->c[i].real;
@@ -16,7 +16,7 @@ void scalar_mult_su3_vector(su3_vector *a, Real s, su3_vector *b) {
   }
 }
 
-void scalar_mult_sum_su3_vector(su3_vector *b, Real s, su3_vector *c) {
+void scalar_mult_sum_vector(vector *b, Real s, vector *c) {
   register int i;
   for (i = 0; i < DIMF; i++) {
     c->c[i].real += s * b->c[i].real;
@@ -24,7 +24,7 @@ void scalar_mult_sum_su3_vector(su3_vector *b, Real s, su3_vector *c) {
   }
 }
 
-void scalar_mult_dif_su3_vector(su3_vector *b, Real s, su3_vector *c) {
+void scalar_mult_dif_vector(vector *b, Real s, vector *c) {
   register int i;
   for (i = 0; i < DIMF; i++) {
     c->c[i].real -= s * b->c[i].real;
@@ -32,8 +32,8 @@ void scalar_mult_dif_su3_vector(su3_vector *b, Real s, su3_vector *c) {
   }
 }
 
-void scalar_mult_add_su3_vector(su3_vector *a, su3_vector *b, Real s,
-                                su3_vector *c) {
+void scalar_mult_add_vector(vector *a, vector *b, Real s,
+                                vector *c) {
 
   register int i;
   for (i = 0; i < DIMF; i++) {

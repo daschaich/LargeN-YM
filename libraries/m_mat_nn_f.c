@@ -5,7 +5,7 @@
 #include "../include/complex.h"
 #include "../include/su3.h"
 
-void mult_su3_nn_f(su3_matrix_f *a, su3_matrix_f *b, su3_matrix_f *c) {
+void mult_nn_f(matrix_f *a, matrix_f *b, matrix_f *c) {
   register int i, j;
 #ifndef FAST
   register int k;

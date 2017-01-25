@@ -1,6 +1,6 @@
 /*****************  make_ahmat.c  (in su3.a) ****************************
 *									*
-* void make_anti_hermitian( su3_matrix *m3, anti_hermitmat *ah3)	*
+* void make_anti_hermitian( matrix *m3, anti_hermitmat *ah3)	*
 * take the traceless and anti_hermitian part of an su3 matrix 		*
 * and compress it 							*
 */
@@ -10,7 +10,7 @@
 
 
 #ifndef FAST
-void make_anti_hermitian( su3_matrix_f *m3, anti_hermitmat *ah3 ) {
+void make_anti_hermitian( matrix_f *m3, anti_hermitmat *ah3 ) {
 Real temp;
 	
 #if (NCOL==2)
@@ -47,7 +47,7 @@ Real temp;
 }/* make_anti_hermitian */
 
 #else
-void make_anti_hermitian( su3_matrix_f *m3, anti_hermitmat *ah3 ) {
+void make_anti_hermitian( matrix_f *m3, anti_hermitmat *ah3 ) {
 Real temp,temp2;
 	
 	temp =

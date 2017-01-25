@@ -5,7 +5,7 @@
 #include "../include/complex.h"
 #include "../include/su3.h"
 
-void su3_projector_w(wilson_vector *a, wilson_vector *b, su3_matrix *c) {
+void projector_w(wilson_vector *a, wilson_vector *b, matrix *c) {
   register int i, j, k;
 #ifndef FAST
   for (i = 0; i < DIMF; i++) {

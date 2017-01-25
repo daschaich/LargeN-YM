@@ -117,13 +117,13 @@ int initial_set() {
 // -----------------------------------------------------------------
 // Allocate all space for fields
 void make_fields() {
-  Real size = (Real)(8.0 * sizeof(su3_matrix_f));
-  FIELD_ALLOC_VEC(gauge_field, su3_matrix_f, 4);
-  FIELD_ALLOC_VEC(gauge_field_thin, su3_matrix_f, 4);
+  Real size = (Real)(8.0 * sizeof(matrix_f));
+  FIELD_ALLOC_VEC(gauge_field, matrix_f, 4);
+  FIELD_ALLOC_VEC(gauge_field_thin, matrix_f, 4);
 
   /* move here alloc for clov? */
-  size += (Real)(sizeof(su3_matrix));
-  FIELD_ALLOC(f_mn, su3_matrix);
+  size += (Real)(sizeof(matrix));
+  FIELD_ALLOC(f_mn, matrix);
 
   // CG stuff
   size += (Real)((5.0 + 2.0 * MAX_MASSES) * sizeof(wilson_vector));
@@ -143,36 +143,36 @@ void make_fields() {
   FIELD_ALLOC_VEC(htmp, half_wilson_vector, 8);
 
   // nHYP stuff
-  size += (Real)(16.0 * sizeof(su3_matrix_f));
-  FIELD_ALLOC_VEC(Sigma, su3_matrix_f, 4);
-  FIELD_ALLOC_VEC(SigmaH, su3_matrix_f, 4);
-  FIELD_ALLOC_VEC(Staple3, su3_matrix_f, 4);
-  FIELD_ALLOC_VEC(LambdaU, su3_matrix_f, 4);
+  size += (Real)(16.0 * sizeof(matrix_f));
+  FIELD_ALLOC_VEC(Sigma, matrix_f, 4);
+  FIELD_ALLOC_VEC(SigmaH, matrix_f, 4);
+  FIELD_ALLOC_VEC(Staple3, matrix_f, 4);
+  FIELD_ALLOC_VEC(LambdaU, matrix_f, 4);
 
 #if SMEAR_LEVEL > 1
-  size += (Real)(28.0 * sizeof(su3_matrix_f));
-  FIELD_ALLOC_VEC(Lambda1, su3_matrix_f, 4);
-  FIELD_ALLOC_MAT_OFFDIAG(hyplink2, su3_matrix_f, 4);
-  FIELD_ALLOC_MAT_OFFDIAG(Staple2, su3_matrix_f, 4);
+  size += (Real)(28.0 * sizeof(matrix_f));
+  FIELD_ALLOC_VEC(Lambda1, matrix_f, 4);
+  FIELD_ALLOC_MAT_OFFDIAG(hyplink2, matrix_f, 4);
+  FIELD_ALLOC_MAT_OFFDIAG(Staple2, matrix_f, 4);
 #endif
 
 #if SMEAR_LEVEL == 3
-  size += (Real)(44.0 * sizeof(su3_matrix_f));
-  FIELD_ALLOC_VEC(Lambda2, su3_matrix_f, 4);
-  FIELD_ALLOC_MAT_OFFDIAG(hyplink1, su3_matrix_f, 4);
-  FIELD_ALLOC_MAT_OFFDIAG(Staple1, su3_matrix_f, 4);
-  FIELD_ALLOC_MAT(SigmaH2, su3_matrix_f, 4, 4);
+  size += (Real)(44.0 * sizeof(matrix_f));
+  FIELD_ALLOC_VEC(Lambda2, matrix_f, 4);
+  FIELD_ALLOC_MAT_OFFDIAG(hyplink1, matrix_f, 4);
+  FIELD_ALLOC_MAT_OFFDIAG(Staple1, matrix_f, 4);
+  FIELD_ALLOC_MAT(SigmaH2, matrix_f, 4, 4);
 #endif
 
-  size += (Real)(3.0 * sizeof(su3_matrix_f));
-  FIELD_ALLOC(tempmatf, su3_matrix_f);
-  FIELD_ALLOC(tempmatf2, su3_matrix_f);
-  FIELD_ALLOC(staplef, su3_matrix_f);
+  size += (Real)(3.0 * sizeof(matrix_f));
+  FIELD_ALLOC(tempmatf, matrix_f);
+  FIELD_ALLOC(tempmatf2, matrix_f);
+  FIELD_ALLOC(staplef, matrix_f);
 
-  size += (Real)(3.0 * sizeof(su3_matrix));
-  FIELD_ALLOC(tempmat, su3_matrix);
-  FIELD_ALLOC(tempmat2, su3_matrix);
-  FIELD_ALLOC(staple, su3_matrix);
+  size += (Real)(3.0 * sizeof(matrix));
+  FIELD_ALLOC(tempmat, matrix);
+  FIELD_ALLOC(tempmat2, matrix);
+  FIELD_ALLOC(staple, matrix);
 
   size *= (Real)sites_on_node;
   node0_printf("Mallocing %.1f MBytes per core for fields\n", size / 1e6);

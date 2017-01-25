@@ -25,7 +25,7 @@
         #error "Wrong version of fermion_rep!"
 #endif
 
-void make_fermion_rep_matrix(su3_matrix_f *a, su3_matrix *b){
+void make_fermion_rep_matrix(matrix_f *a, matrix *b){
 
 int i,j,ij,k,l,kl; /* ij and kl are the compound indices of the
 				fermion rep  */
@@ -65,7 +65,7 @@ The code assumes that the boundary matrices are diagonal
   (a) = temp;                                  \
   }
 
-void make_fermion_rep_driv(su3_matrix_f *a, su3_matrix *b,
+void make_fermion_rep_driv(matrix_f *a, matrix *b,
                            Real *factor, int sign) {
 
 int i,j,ij,k,l,kl; /* ij and kl are the compound indices of the

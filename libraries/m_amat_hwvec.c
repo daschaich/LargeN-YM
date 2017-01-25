@@ -5,11 +5,11 @@
 #include "../include/complex.h"
 #include "../include/su3.h"
 
-void mult_adj_su3_mat_hwvec(su3_matrix *a, half_wilson_vector *b,
+void mult_adj_mat_hwvec(matrix *a, half_wilson_vector *b,
                             half_wilson_vector *c) {
 #ifndef FAST
-    mult_adj_su3_mat_vec(a, &(b->h[0]), &(c->h[0]));
-    mult_adj_su3_mat_vec(a, &(b->h[1]), &(c->h[1]));
+    mult_adj_mat_vec(a, &(b->h[0]), &(c->h[0]));
+    mult_adj_mat_vec(a, &(b->h[1]), &(c->h[1]));
 
 #else   // FAST version for NCOL = DIMF = 3
   register Real a0r, a0i, a1r, a1i, a2r, a2i;

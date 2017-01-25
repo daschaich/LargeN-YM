@@ -128,7 +128,7 @@ void compute_clov(clover *my_clov, Real Clov_c) {
 
   f_mu_nu(f_mn, 0, 1);
   FORALLSITES(i, s)
-    scalar_mult_su3_matrix(&(f_mn[i]), Clov_c, &(f_mn[i]));
+    scalar_mult_mat(&(f_mn[i]), Clov_c, &(f_mn[i]));
 
   jk = 0;
   for (j = 0; j < DIMF; j++) {
@@ -153,7 +153,7 @@ void compute_clov(clover *my_clov, Real Clov_c) {
 
   f_mu_nu(f_mn, 2, 3);
   FORALLSITES(i, s)
-    scalar_mult_su3_matrix(&(f_mn[i]), Clov_c, &(f_mn[i]));
+    scalar_mult_mat(&(f_mn[i]), Clov_c, &(f_mn[i]));
 
   jk = 0;
   for (j = 0; j < DIMF; j++) {
@@ -179,7 +179,7 @@ void compute_clov(clover *my_clov, Real Clov_c) {
 
   f_mu_nu(f_mn, 1, 2);
   FORALLSITES(i, s)
-    scalar_mult_su3_matrix(&(f_mn[i]), Clov_c, &(f_mn[i]));
+    scalar_mult_mat(&(f_mn[i]), Clov_c, &(f_mn[i]));
 
   for (j = 0; j < DIMF; j++) {
     jk = (j + DIMF)*(j + DIMF-1)/2;
@@ -194,7 +194,7 @@ void compute_clov(clover *my_clov, Real Clov_c) {
 
   f_mu_nu(f_mn, 0, 3);
   FORALLSITES(i, s)
-    scalar_mult_su3_matrix(&(f_mn[i]), Clov_c, &(f_mn[i]));
+    scalar_mult_mat(&(f_mn[i]), Clov_c, &(f_mn[i]));
 
   for (j = 0; j < DIMF; j++) {
     jk = (j + DIMF)*(j + DIMF-1)/2;
@@ -210,7 +210,7 @@ void compute_clov(clover *my_clov, Real Clov_c) {
 
   f_mu_nu(f_mn, 0, 2);
   FORALLSITES(i, s)
-    scalar_mult_su3_matrix(&(f_mn[i]), Clov_c, &(f_mn[i]));
+    scalar_mult_mat(&(f_mn[i]), Clov_c, &(f_mn[i]));
 
   for (j = 0; j < DIMF; j++) {
     jk = (j + DIMF) * (j + DIMF - 1) / 2;
@@ -225,7 +225,7 @@ void compute_clov(clover *my_clov, Real Clov_c) {
 
   f_mu_nu(f_mn, 1, 3);
   FORALLSITES(i, s)
-    scalar_mult_su3_matrix(&(f_mn[i]), Clov_c, &(f_mn[i]));
+    scalar_mult_mat(&(f_mn[i]), Clov_c, &(f_mn[i]));
 
   for (j = 0; j < DIMF; j++) {
     jk = (j + DIMF)*(j + DIMF-1)/2;
@@ -400,7 +400,7 @@ and sigma(nu, mu) = -sigma(mu, nu), and sums over the Dirac indices.
 */
 
 /* triang, diag are input & contain the color-Dirac matrix
-   mat is output: the resulting su3_matrix  */
+   mat is output: the resulting matrix  */
 // Used in fermion_force
 // Put result in tempmat
 void tr_sigma_ldu_mu_nu(int mu, int nu) {

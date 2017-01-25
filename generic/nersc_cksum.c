@@ -17,7 +17,7 @@ u_int32type nersc_cksum() {
 void linktrsum(double_complex *linktr) {
   int i, dir;
   site *s;
-  su3_matrix_f *a;
+  matrix_f *a;
 
   *linktr = dcmplx(0.0, 0.0);
   FORALLSITES(i, s) {

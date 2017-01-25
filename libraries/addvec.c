@@ -8,7 +8,7 @@
 #include "../include/complex.h"
 #include "../include/su3.h"
 
-void sum_su3_vector(su3_vector *b, su3_vector *c) {
+void sum_vector(vector *b, vector *c) {
   register int i;
   for (i = 0; i < DIMF; i++) {
     c->c[i].real += b->c[i].real;
@@ -16,7 +16,7 @@ void sum_su3_vector(su3_vector *b, su3_vector *c) {
   }
 }
 
-void dif_su3_vector(su3_vector *b, su3_vector *c) {
+void dif_vector(vector *b, vector *c) {
   register int i;
   for (i = 0; i < DIMF; i++) {
     c->c[i].real -= b->c[i].real;
@@ -24,7 +24,7 @@ void dif_su3_vector(su3_vector *b, su3_vector *c) {
   }
 }
 
-void add_su3_vector(su3_vector *a, su3_vector *b, su3_vector *c) {
+void add_vector(vector *a, vector *b, vector *c) {
   register int i;
   for (i = 0; i < DIMF; i++) {
     c->c[i].real = a->c[i].real + b->c[i].real;
@@ -32,7 +32,7 @@ void add_su3_vector(su3_vector *a, su3_vector *b, su3_vector *c) {
   }
 }
 
-void sub_su3_vector(su3_vector *a, su3_vector *b, su3_vector *c) {
+void sub_vector(vector *a, vector *b, vector *c) {
   register int i;
   for (i = 0; i < DIMF; i++) {
     c->c[i].real = a->c[i].real - b->c[i].real;

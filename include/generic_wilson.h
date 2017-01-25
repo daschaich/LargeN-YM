@@ -24,6 +24,6 @@ void dslash_special(wilson_vector *src, wilson_vector *dest,
 // -----------------------------------------------------------------
 // Higher-rep routines
 void fermion_rep();
-void make_fermion_rep_matrix(su3_matrix_f *a, su3_matrix *b);
+void make_fermion_rep_matrix(matrix_f *a, matrix *b);
 #endif
 // -----------------------------------------------------------------

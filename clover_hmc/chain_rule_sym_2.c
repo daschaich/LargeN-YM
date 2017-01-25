@@ -16,15 +16,15 @@
 
 
 // -----------------------------------------------------------------
-void chain_rule(su3_matrix_f *sigmaf, su3_matrix *sigma,
-                su3_matrix_f *gaugelinkf) {
+void chain_rule(matrix_f *sigmaf, matrix *sigma,
+                matrix_f *gaugelinkf) {
 
   int i, j, k, l;
   int ij = 0, kl;       // Compound indices of the fermion rep
   complex x, y;
   double root2 = sqrt(2.0);
 
-  clear_su3mat_f(sigmaf);
+  clear_mat_f(sigmaf);
   for (i = 0; i < NCOL; i++) {
     kl = 0;                               // j = i
     for (k = 0; k < NCOL; k++) {

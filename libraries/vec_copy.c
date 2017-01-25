@@ -1,13 +1,15 @@
 // -----------------------------------------------------------------
-// Print the given irrep vector
+// Copy an irrep vector
+// b <-- a
 #include "../include/config.h"
-#include <stdio.h>
 #include "../include/complex.h"
 #include "../include/su3.h"
 
-void dump_vec(vector *v) {
-  register int j;
-  for (j = 0; j < DIMF; j++)
-    printf("  (%.4g, %.4g)", v->c[j].real, v->c[j].imag);
+void vec_copy(vector *a, vector *b) {
+  register int i;
+  for (i = 0; i < DIMF; i++) {
+    b->c[i].real = a->c[i].real;
+    b->c[i].imag = a->c[i].imag;
+  }
 }
 // -----------------------------------------------------------------

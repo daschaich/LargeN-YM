@@ -159,7 +159,7 @@ int f_meas() {
     FORALLSITES(i, s) {
       wp_shrink(&(g_rand[i]), &(htmp[0][i]), dir, MINUS);
       wp_shrink(&(g_rand[i]), &hvec, dir, PLUS);
-      mult_adj_su3_mat_hwvec(&(s->link[dir]), &hvec, &(htmp[1][i]));
+      mult_adj_mat_hwvec(&(s->link[dir]), &hvec, &(htmp[1][i]));
     }
     tag0 = start_gather_field(htmp[0], sizeof(half_wilson_vector),
                               dir, EVENANDODD, gen_pt[0]);
@@ -168,7 +168,7 @@ int f_meas() {
     wait_gather(tag0);
     wait_gather(tag1);
     FORALLSITES(i, s) {
-      mult_su3_mat_hwvec(&(s->link[dir]), (half_wilson_vector *)(gen_pt[0][i]),
+      mult_mat_hwvec(&(s->link[dir]), (half_wilson_vector *)(gen_pt[0][i]),
                          &hvec);
       wp_grow(&hvec, &(p[i]), dir, MINUS);
       wp_grow((half_wilson_vector *)(gen_pt[1][i]), &twvec, dir, PLUS);

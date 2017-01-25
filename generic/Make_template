@@ -9,7 +9,6 @@
 G_ALL = \
  ape_smear.o \
  ax_gauge.o \
- byterevn.o \
  check_unitarity.o \
  com_mpi.o \
  com_vanilla.o \
@@ -29,7 +28,7 @@ G_ALL = \
  make_lattice.o \
  nersc_cksum.o \
  path_product.o \
- ploop_dist.o \
+ ploop.o \
  project_su3_hit.o \
  rand_gauge.o \
  ranmom.o \
@@ -97,7 +96,7 @@ plaquette.o: ../generic/plaquette.c
 	${CC} -c ${CFLAGS} $<
 plaquette_lcl.o: ../generic/plaquette_lcl.c
 	${CC} -c ${CFLAGS} $<
-ploop_dist.o: ../generic/ploop_dist.c
+ploop.o: ../generic/ploop.c
 	${CC} -c ${CFLAGS} $<
 ranmom.o: ../generic/ranmom.c
 	${CC} -c ${CFLAGS} $<

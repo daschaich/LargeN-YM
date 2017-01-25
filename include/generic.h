@@ -22,8 +22,8 @@
 // -----------------------------------------------------------------
 /* ape_smear.c */
 void ape_smear_field(
-  su3_matrix *src,       /* Gauge field input unsmeared */
-  su3_matrix *dest,      /* Gauge field output smeared */
+  matrix *src,       /* Gauge field input unsmeared */
+  matrix *dest,      /* Gauge field output smeared */
   Real staple_weight,    /* single staple weight */
   Real link_u0,          /* single link weight - used in normalization
                              if SU(3) projection is turned off */
@@ -40,10 +40,10 @@ void ape_smear_field(
   );
 
 void ape_smear_dir(
-  field_offset src,       /* field offset for su3_matrix[4] type
+  field_offset src,       /* field offset for matrix[4] type
            input unsmeared links */
   int dir1,               /* link direction to smear */
-  field_offset dest,      /* field offset for su3_matrix type
+  field_offset dest,      /* field offset for matrix type
            pointing to a specific direction
            output smeared links */
   Real staple_weight,    /* single staple weight */
@@ -62,9 +62,9 @@ void ape_smear_dir(
   );
 
 void ape_smear(
-  field_offset src,       /* field offset for su3_matrix type
+  field_offset src,       /* field offset for matrix type
            input unsmeared links */
-  field_offset dest,      /* field offset for su3_matrix type
+  field_offset dest,      /* field offset for matrix type
            output smeared links */
   Real staple_weight,    /* single staple weight */
   Real link_u0,          /* single link weight - used in normalization
@@ -100,13 +100,13 @@ void plaquette_frep_lcl(double *ss_plaq_frep, double *st_plaq_frep);
 
 /* field_strength.c */
 void make_field_strength(
-  field_offset link_src,       /* field offset for su3_matrix[4] type
+  field_offset link_src,       /* field offset for matrix[4] type
           for the source link matrices */
-  field_offset field_dest      /* field offset for su3_matrix[6] type
+  field_offset field_dest      /* field offset for matrix[6] type
           for the resulting field strength */
   );
 
-// gaugefix2.c
+// gaugefix.c
 void gaugefix(int gauge_dir, Real relax_boost, int max_gauge_iter,
               Real gfix_tol, field_offset diffmat, field_offset sumvec);
 
@@ -146,14 +146,14 @@ u_int32type nersc_cksum();
 void make_global_fields();
 
 /* path_product.c */
-void path_product(const int *dir, const int length, su3_matrix *tempmat1);
+void path_product(const int *dir, const int length, matrix *tempmat1);
 void path_prod_subl(const int *dir, const int length, const int subl,
-        su3_matrix *tempmat1);
+        matrix *tempmat1);
 
-/* plaquette4.c */
+/* plaquette.c */
 void plaquette(Real *ss_plaq, Real *st_plaq);
 
-/* ploop_dist.c */
+/* ploop.c */
 complex ploop();
 
 /* ranmom.c */

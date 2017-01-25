@@ -9,7 +9,7 @@
 #include "../include/complex.h"
 #include "../include/su3.h"
 
-void sum_su3_matrix(su3_matrix *b, su3_matrix *c) {
+void sum_mat(matrix *b, matrix *c) {
   register int i, j;
   for (i = 0; i < DIMF; i++) {
     for (j = 0; j < DIMF; j++) {
@@ -19,7 +19,7 @@ void sum_su3_matrix(su3_matrix *b, su3_matrix *c) {
   }
 }
 
-void dif_su3_matrix(su3_matrix *b, su3_matrix *c) {
+void dif_mat(matrix *b, matrix *c) {
   register int i, j;
   for (i = 0; i < DIMF; i++) {
     for (j = 0; j < DIMF; j++) {
@@ -29,7 +29,7 @@ void dif_su3_matrix(su3_matrix *b, su3_matrix *c) {
   }
 }
 
-void add_su3_matrix(su3_matrix *a, su3_matrix *b, su3_matrix *c) {
+void add_mat(matrix *a, matrix *b, matrix *c) {
   register int i, j;
   for (i = 0; i < DIMF; i++) {
     for (j = 0; j < DIMF; j++) {
@@ -39,7 +39,7 @@ void add_su3_matrix(su3_matrix *a, su3_matrix *b, su3_matrix *c) {
   }
 }
 
-void sub_su3_matrix(su3_matrix *a, su3_matrix *b, su3_matrix *c) {
+void sub_mat(matrix *a, matrix *b, matrix *c) {
   register int i, j;
   for (i = 0; i < DIMF; i++) {
     for (j = 0; j < DIMF; j++) {

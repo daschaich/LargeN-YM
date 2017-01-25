@@ -20,7 +20,7 @@
 
    -------------------------------------------------------------------
    EXAMPLE:  Fixing only the link matrices to Coulomb gauge with scratch
-     space in mp (su3_matrix) and chi (su3_vector):
+     space in mp (matrix) and chi (vector):
 
    gaugefix(TUP,(Real)1.5,500,(Real)1.0e-7,
          F_OFFSET(mp),F_OFFSET(chi),0,NULL,NULL,0,NULL,NULL);
@@ -69,8 +69,8 @@
 
 /* Scratch space */
 
-static su3_matrix_f *diffmatp;               /* malloced diffmat pointer */
-static su3_vector_f *sumvecp;                /* malloced sumvec pointer */
+static matrix_f *diffmatp;               /* malloced diffmat pointer */
+static vector_f *sumvecp;                /* malloced sumvec pointer */
 field_offset diffmat_offset,sumvec_offset;  /* field offsets */
 
 void gaugefix(int gauge_dir,Real relax_boost,int max_gauge_iter,
@@ -170,7 +170,7 @@ void gaugefixstep(int gauge_dir,double *av_gauge_fix_action,Real relax_boost,
 
       FORALLUPDIR(dir)
   {
-    mtag[dir] = start_gather_site( F_OFFSET(linkf[dir]), sizeof(su3_matrix_f),
+    mtag[dir] = start_gather_site( F_OFFSET(linkf[dir]), sizeof(matrix_f),
            OPP_DIR(dir), parity, gen_pt[dir] );
   }
 
@@ -209,7 +209,7 @@ void gaugefixstep(int gauge_dir,double *av_gauge_fix_action,Real relax_boost,
 
     FORSOMEPARITY(i,s,parity)
       {
-        su3mat_copy_f((su3_matrix_f *)(gen_pt[dir][i]), &diffmatp[i]);
+        mat_copy_f((matrix_f *)(gen_pt[dir][i]), &diffmatp[i]);
       }
 
     /* Now we are finished with gen_pt[dir] */
@@ -221,7 +221,7 @@ void gaugefixstep(int gauge_dir,double *av_gauge_fix_action,Real relax_boost,
 
     /* Gather diffmat onto sites of opposite parity */
 
-    mtag[dir] = start_gather_field( diffmatp, sizeof(su3_matrix_f),
+    mtag[dir] = start_gather_field( diffmatp, sizeof(matrix_f),
             dir, OPP_PAR(parity), gen_pt[dir] );
 
     wait_gather(mtag[dir]);
@@ -229,7 +229,7 @@ void gaugefixstep(int gauge_dir,double *av_gauge_fix_action,Real relax_boost,
     /* Copy modified matrices into proper location */
 
     FORSOMEPARITY(i,s,OPP_PAR(parity))
-      su3mat_copy_f((su3_matrix_f *)(gen_pt[dir][i]),&(s->linkf[dir]));
+      mat_copy_f((matrix_f *)(gen_pt[dir][i]),&(s->linkf[dir]));
 
     cleanup_gather(mtag[dir]);
   }
@@ -245,15 +245,15 @@ void do_hit_full(int gauge_dir, int parity, Real relax_boost,
   /* Do relaxation in SU(NCOL) */
   register int dir,i;
   register site *s;
-  su3_matrix_f u;
+  matrix_f u;
   void accum_gauge_hit(int gauge_dir,int parity);
-  complex find_det(su3_matrix_f *c);
+  complex find_det(matrix_f *c);
   Real f[NCOL],theta;
   complex tt1,phase,det;
   int j,k;
-  su3_matrix_f  Omega, Q[NCOL];
+  matrix_f  Omega, Q[NCOL];
 #if (NCOL>2)
-  su3_matrix_f eQ;
+  matrix_f eQ;
 #endif
 
 
@@ -264,27 +264,27 @@ void do_hit_full(int gauge_dir, int parity, Real relax_boost,
   FORSOMEPARITYDOMAIN(i,s,parity)
     {
     /* begin general code, stolen from nhyp */
-      su3mat_copy_f(&diffmatp[i],&Omega);
-      mult_su3_an_f(&Omega,&Omega,&Q[1]);
+      mat_copy_f(&diffmatp[i],&Omega);
+      mult_an_f(&Omega,&Omega,&Q[1]);
 #ifndef NHYP_DEBUG
       compute_fhb(&Q[1],f,NULL, 0);
 #else
       compute_fhb(&Omega,&Q[1],f,NULL, 0);
 #endif
 #if (NCOL==2)
-      scalar_mult_su3_matrix_f(&Omega,f[0],&u);
+      scalar_mult_mat_f(&Omega,f[0],&u);
 #else
       /* compute Q^(-1/2) via Eq. (3.8)  */
-      scalar_mult_su3_matrix_f(&Q[1],f[1],&eQ);
+      scalar_mult_mat_f(&Q[1],f[1],&eQ);
 
       for(j=2;j<NCOL;j++){
-  mult_su3_nn_f(&Q[1],&Q[j-1],&Q[j]);
-  scalar_mult_add_su3_matrix_f(&eQ,&Q[j],f[j],&eQ);
+  mult_nn_f(&Q[1],&Q[j-1],&Q[j]);
+  scalar_mult_add_mat_f(&eQ,&Q[j],f[j],&eQ);
       }
-      scalar_add_diag_su3_f(&eQ,f[0]);
+      scalar_add_diag_f(&eQ,f[0]);
 
       /* multiply Omega by eQ = (Omega^\dagger Omega)^(-1/2) to make u in U(N) */
-      mult_su3_nn_f(&Omega,&eQ,&u);
+      mult_nn_f(&Omega,&eQ,&u);
 #endif
 
       /* check det...*/
@@ -302,15 +302,15 @@ void do_hit_full(int gauge_dir, int parity, Real relax_boost,
       /* Do gauge transformation on all upward links */
 
       FORALLUPDIR(dir){
-  mult_su3_nn_f(&u,&(s->linkf[dir]),&Omega);
-  su3mat_copy_f(&Omega,&(s->linkf[dir]));
+  mult_nn_f(&u,&(s->linkf[dir]),&Omega);
+  mat_copy_f(&Omega,&(s->linkf[dir]));
       }
 
       /* Do gauge transformation hit on all downward links */
 
       FORALLUPDIR(dir){
-  mult_su3_na_f((su3_matrix_f *)gen_pt[dir][i],&u,&Omega);
-  su3mat_copy_f(&Omega,(su3_matrix_f *)gen_pt[dir][i]);
+  mult_na_f((matrix_f *)gen_pt[dir][i],&u,&Omega);
+  mat_copy_f(&Omega,(matrix_f *)gen_pt[dir][i]);
       }
       /* code to transform other variables has been removed */
     }
@@ -329,15 +329,15 @@ void accum_gauge_hit(int gauge_dir,int parity)
      and our recycled nHYP code finds the U(N) matrix V ~ Sigma*/
 
   register int j,k;
-  register su3_matrix_f *m1,*m2;
+  register matrix_f *m1,*m2;
   register int dir,i;
   register site *s;
-  su3_matrix_f m11;
+  matrix_f m11;
 
   /* Clear diffmat */
 
   FORSOMEPARITY(i,s,parity)
-  clear_su3mat_f(&diffmatp[i]);
+  clear_mat_f(&diffmatp[i]);
 
   /* Subtract upward link contributions */
 
@@ -348,7 +348,7 @@ void accum_gauge_hit(int gauge_dir,int parity)
     for(j=0;j<NCOL;j++)for(k=0;k<NCOL;k++){
       m11.e[j][k]  = conjg(&(m1->e[k][j]));
     }
-    add_su3_matrix_f( &diffmatp[i], &m11, &diffmatp[i]);
+    add_mat_f( &diffmatp[i], &m11, &diffmatp[i]);
   }
     }
 
@@ -356,8 +356,8 @@ void accum_gauge_hit(int gauge_dir,int parity)
   FORSOMEPARITYDOMAIN(i,s,parity) {
       FORALLUPDIRBUT(gauge_dir,dir) {
     /* Downward link matrix */
-    m2 = (su3_matrix_f *)gen_pt[dir][i];
-    add_su3_matrix_f( &diffmatp[i], m2, &diffmatp[i]);
+    m2 = (matrix_f *)gen_pt[dir][i];
+    add_mat_f( &diffmatp[i], m2, &diffmatp[i]);
   }
     }
 } /* accum_gauge_hit */
@@ -374,7 +374,7 @@ double get_gauge_fix_action(int gauge_dir,int parity)
 
   register int dir,i,ndir;
   register site *s;
-  register su3_matrix_f *m1, *m2;
+  register matrix_f *m1, *m2;
   double gauge_fix_action;
   complex trace;
 
@@ -385,12 +385,12 @@ double get_gauge_fix_action(int gauge_dir,int parity)
       FORALLUPDIRBUT(gauge_dir,dir)
   {
     m1 = &(s->linkf[dir]);
-    m2 = (su3_matrix_f *)gen_pt[dir][i];
+    m2 = (matrix_f *)gen_pt[dir][i];
 
-    trace = trace_su3_f(m1);
+    trace = trace_f(m1);
     gauge_fix_action += (double)trace.real;
 
-    trace = trace_su3_f(m2);
+    trace = trace_f(m2);
     gauge_fix_action += (double)trace.real;
   }
     }
@@ -409,7 +409,7 @@ void gaugefixscratch(field_offset diffmat, field_offset sumvec) {
   diffmat_offset = diffmat;
   diffmatp = NULL;
 
-  diffmatp = (su3_matrix_f *)malloc(sizeof(su3_matrix_f)*sites_on_node);
+  diffmatp = (matrix_f *)malloc(sizeof(matrix_f)*sites_on_node);
   if(diffmatp == NULL)
     {
       node0_printf("gaugefix: Can't malloc diffmat\n");

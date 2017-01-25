@@ -6,7 +6,7 @@
 #include "../include/complex.h"
 #include "../include/su3.h"
 
-Real magsq_su3vec(su3_vector *a) {
+Real magsq_su3vec(vector *a) {
   register Real sum = 0.0;
 #ifndef FAST
   register int i;
@@ -25,7 +25,7 @@ Real magsq_su3vec(su3_vector *a) {
   return sum;
 }
 
-void magsq_su3vec_sum(su3_vector *a, Real *c) {
+void magsq_su3vec_sum(vector *a, Real *c) {
 #ifndef FAST
   register int i;
   for (i = 0; i < DIMF; i++)

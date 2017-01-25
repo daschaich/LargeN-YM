@@ -29,7 +29,7 @@ void gauge_action(double *result) {
       path(dirs, sign, length);   // Puts result in tempmatf
 
       FORALLSITES(i, s) {
-        trace = trace_su3_f(&(tempmatf[i]));
+        trace = trace_f(&(tempmatf[i]));
         action = (Real)NCOL - (double)trace.real;
         total_action = (double)loop_coeff[iloop][0]*action;
         act2 = action;

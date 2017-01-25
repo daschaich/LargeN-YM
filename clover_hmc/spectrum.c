@@ -456,7 +456,7 @@ int spectrum() {
       printf("Dumping link_1...\n");
       FORALLSITES(i, s) {
         printf("link_1(%d, %d, %d, %d):\n", s->x, s->y, s->z, s->t);
-        dumpmat(&(s->link[1]));
+        dump_mat(&(s->link[1]));
       }
 #endif
 

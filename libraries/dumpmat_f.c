@@ -5,7 +5,7 @@
 #include "../include/complex.h"
 #include "../include/su3.h"
 
-void dumpmat_f(su3_matrix_f *m) {
+void dump_mat_f(matrix_f *m) {
   int i, j;
   for (i = 0; i < NCOL; i++) {
     for (j = 0; j < NCOL; j++)

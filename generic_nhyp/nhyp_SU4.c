@@ -18,9 +18,9 @@
 //   b[i][j] = d f[i] / d c[j] with c[j] = 1/(j+1) trace Q^(j+1)
 // The flag compute_b switches on/off the computation of these derivatives
 #ifndef NHYP_DEBUG
-void compute_fhb(su3_matrix_f *Q, Real *f, Real b[NCOL][NCOL], int compute_b)
+void compute_fhb(matrix_f *Q, Real *f, Real b[NCOL][NCOL], int compute_b)
 #else
-void compute_fhb(su3_matrix_f *Omega, su3_matrix_f *Q,
+void compute_fhb(matrix_f *Omega, matrix_f *Q,
                  Real *f, Real b[NCOL][NCOL], int compute_b)
 #endif
 

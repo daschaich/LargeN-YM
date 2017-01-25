@@ -4,7 +4,7 @@
 #include "../include/complex.h"
 #include "../include/su3.h"
 
-void clearvec_f(su3_vector_f *v) {
+void clear_vec_f(vector_f *v) {
   v->c[0].real = 0.0;
   v->c[0].imag = 0.0;
   v->c[1].real = 0.0;

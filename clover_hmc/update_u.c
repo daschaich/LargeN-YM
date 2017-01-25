@@ -15,7 +15,7 @@ void update_u(Real eps) {
   register int i, dir;
   register Real t2, t3, t4, t5, t6, t7, t8;
   register site *s;
-  su3_matrix_f *link, temp1, temp2, htemp;
+  matrix_f *link, temp1, temp2, htemp;
 
   /* Temporary by-hand optimization until pgcc compiler bug is fixed */
   t2 = eps / 2.0;
@@ -31,31 +31,31 @@ void update_u(Real eps) {
       uncompress_anti_hermitian(&(s->mom[dir]), &htemp);
       link = &(s->linkf[dir]);
 
-      mult_su3_nn_f(&htemp, link, &temp1);
-      scalar_mult_add_su3_matrix_f(link, &temp1, t8, &temp2);
+      mult_nn_f(&htemp, link, &temp1);
+      scalar_mult_add_mat_f(link, &temp1, t8, &temp2);
 
-      mult_su3_nn_f(&htemp, &temp2, &temp1);
-      scalar_mult_add_su3_matrix_f(link, &temp1, t7, &temp2);
+      mult_nn_f(&htemp, &temp2, &temp1);
+      scalar_mult_add_mat_f(link, &temp1, t7, &temp2);
 
-      mult_su3_nn_f(&htemp, &temp2, &temp1);
-      scalar_mult_add_su3_matrix_f(link, &temp1, t6, &temp2);
+      mult_nn_f(&htemp, &temp2, &temp1);
+      scalar_mult_add_mat_f(link, &temp1, t6, &temp2);
 
-      mult_su3_nn_f(&htemp, &temp2, &temp1);
-      scalar_mult_add_su3_matrix_f(link, &temp1, t5, &temp2);
+      mult_nn_f(&htemp, &temp2, &temp1);
+      scalar_mult_add_mat_f(link, &temp1, t5, &temp2);
 
-      mult_su3_nn_f(&htemp, &temp2, &temp1);
-      scalar_mult_add_su3_matrix_f(link, &temp1, t4, &temp2);
+      mult_nn_f(&htemp, &temp2, &temp1);
+      scalar_mult_add_mat_f(link, &temp1, t4, &temp2);
 
-      mult_su3_nn_f(&htemp, &temp2, &temp1);
-      scalar_mult_add_su3_matrix_f(link, &temp1, t3, &temp2);
+      mult_nn_f(&htemp, &temp2, &temp1);
+      scalar_mult_add_mat_f(link, &temp1, t3, &temp2);
 
-      mult_su3_nn_f(&htemp, &temp2, &temp1);
-      scalar_mult_add_su3_matrix_f(link, &temp1, t2, &temp2);
+      mult_nn_f(&htemp, &temp2, &temp1);
+      scalar_mult_add_mat_f(link, &temp1, t2, &temp2);
 
-      mult_su3_nn_f(&htemp, &temp2, &temp1);
-      scalar_mult_add_su3_matrix_f(link, &temp1, eps, &temp2);
+      mult_nn_f(&htemp, &temp2, &temp1);
+      scalar_mult_add_mat_f(link, &temp1, eps, &temp2);
 
-      su3mat_copy_f(&temp2,link);
+      mat_copy_f(&temp2,link);
     }
   }
 }

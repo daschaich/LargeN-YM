@@ -242,7 +242,7 @@ int update_step(Real *old_cg_time, Real *cg_time, Real *next_cg_time) {
 
 
 // -----------------------------------------------------------------
-// Copy fundamental gauge field as an array of four su3_matrix_f
+// Copy fundamental gauge field as an array of four matrix_f
 // Helper function for HMC update
 #ifdef HMC_ALGORITHM
 void gauge_field_copy_f(field_offset src, field_offset dest) {
@@ -253,10 +253,10 @@ void gauge_field_copy_f(field_offset src, field_offset dest) {
     src2 = src;
     dest2 = dest;
     FORALLUPDIR(dir) {
-      su3mat_copy_f((su3_matrix_f *)F_PT(s, src2),
-                    (su3_matrix_f *)F_PT(s, dest2));
-      src2 += sizeof(su3_matrix_f);
-      dest2 += sizeof(su3_matrix_f);
+      mat_copy_f((matrix_f *)F_PT(s, src2),
+                    (matrix_f *)F_PT(s, dest2));
+      src2 += sizeof(matrix_f);
+      dest2 += sizeof(matrix_f);
     }
   }
 }

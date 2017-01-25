@@ -14,8 +14,8 @@
 
 
 // -----------------------------------------------------------------
-void chain_rule(su3_matrix_f *sigmaf, su3_matrix *sigma,
-                su3_matrix_f *gaugelinkf) {
+void chain_rule(matrix_f *sigmaf, matrix *sigma,
+                matrix_f *gaugelinkf) {
 
   int i, j;
 

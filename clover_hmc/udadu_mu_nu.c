@@ -19,17 +19,17 @@ void udadu_mu_nu(wilson_vector *lsrc, wilson_vector *rsrc, int mu, int nu) {
   register site *s;
   int disp[4] = {0, 0, 0, 0};
   msg_tag *tag[8];
-  wilson_vector ltemp, rtemp;   /* input to su3_projector_w() */
+  wilson_vector ltemp, rtemp;   /* input to projector_w() */
   wilson_vector sittemp;
-  su3_matrix tmat;      /* for middle steps */
+  matrix tmat;      /* for middle steps */
 
   /**********  First work on upper leaf  **********/
   /* get link[nu] from direction +mu */
-  tag[0] = start_gather_site(F_OFFSET(link[nu]), sizeof(su3_matrix),
+  tag[0] = start_gather_site(F_OFFSET(link[nu]), sizeof(matrix),
                              mu, EVENANDODD, gen_pt[0]);
 
   /* get link[mu] from direction +nu */
-  tag[1] = start_gather_site(F_OFFSET(link[mu]), sizeof(su3_matrix),
+  tag[1] = start_gather_site(F_OFFSET(link[mu]), sizeof(matrix),
                              nu, EVENANDODD, gen_pt[1]);
 
   /*****  Upper leaf - same parity *****/
@@ -47,30 +47,30 @@ void udadu_mu_nu(wilson_vector *lsrc, wilson_vector *rsrc, int mu, int nu) {
   wait_gather(tag[0]);
   wait_gather(tag[1]);
   FORALLSITES(i, s) {
-    mult_adj_mat_wilson_vec(&(s->link[nu]), &(rsrc[i]), &rtemp);
-    mult_adj_mat_wilson_vec((su3_matrix *)(gen_pt[1][i]), &rtemp, &sittemp);
-    mult_mat_wilson_vec((su3_matrix *)(gen_pt[0][i]), &sittemp, &rtemp);
-    mult_mat_wilson_vec(&(s->link[mu]), &rtemp, &sittemp);
+    mult_adj_mat_wvec(&(s->link[nu]), &(rsrc[i]), &rtemp);
+    mult_adj_mat_wvec((matrix *)(gen_pt[1][i]), &rtemp, &sittemp);
+    mult_mat_wvec((matrix *)(gen_pt[0][i]), &sittemp, &rtemp);
+    mult_mat_wvec(&(s->link[mu]), &rtemp, &sittemp);
     mult_sigma_mu_nu(&sittemp, &rtemp, mu, nu);
 
     // Initialize tempmat
-    su3_projector_w(&rtemp, &(lsrc[i]), &(tempmat[i]));
+    projector_w(&rtemp, &(lsrc[i]), &(tempmat[i]));
   }
 
   /* ltemp = upperleftcorner*lsrc, rtemp = lowerrightcorner*rsrc */
   wait_general_gather(tag[3]);
   FORALLSITES(i, s) {
-    mult_mat_wilson_vec((su3_matrix *)(gen_pt[1][i]),
+    mult_mat_wvec((matrix *)(gen_pt[1][i]),
                         (wilson_vector *)(gen_pt[2][i]), &sittemp);
-    mult_mat_wilson_vec(&(s->link[nu]), &sittemp, &ltemp);
+    mult_mat_wvec(&(s->link[nu]), &sittemp, &ltemp);
 
-    mult_mat_wilson_vec((su3_matrix *)(gen_pt[0][i]),
+    mult_mat_wvec((matrix *)(gen_pt[0][i]),
                         (wilson_vector *)(gen_pt[3][i]), &rtemp);
-    mult_mat_wilson_vec(&(s->link[mu]), &rtemp, &sittemp);
+    mult_mat_wvec(&(s->link[mu]), &rtemp, &sittemp);
     mult_sigma_mu_nu(&sittemp, &rtemp, mu, nu);
 
-    su3_projector_w(&rtemp, &ltemp, &tmat);
-    sum_su3_matrix(&tmat, &(tempmat[i]));
+    projector_w(&rtemp, &ltemp, &tmat);
+    sum_mat(&tmat, &(tempmat[i]));
   }
   cleanup_general_gather(tag[2]);
   cleanup_general_gather(tag[3]);
@@ -87,16 +87,16 @@ void udadu_mu_nu(wilson_vector *lsrc, wilson_vector *rsrc, int mu, int nu) {
   wait_gather(tag[4]);
   wait_gather(tag[5]);
   FORALLSITES(i, s) {
-    mult_mat_wilson_vec(&(s->link[nu]),
+    mult_mat_wvec(&(s->link[nu]),
                         (wilson_vector *)(gen_pt[4][i]), &ltemp);
 
-    mult_adj_mat_wilson_vec((su3_matrix *)(gen_pt[1][i]),
+    mult_adj_mat_wvec((matrix *)(gen_pt[1][i]),
                             (wilson_vector *)(gen_pt[5][i]), &sittemp);
-    mult_mat_wilson_vec((su3_matrix *)(gen_pt[0][i]), &sittemp, &rtemp);
-    mult_mat_wilson_vec(&(s->link[mu]), &rtemp, &sittemp);
+    mult_mat_wvec((matrix *)(gen_pt[0][i]), &sittemp, &rtemp);
+    mult_mat_wvec(&(s->link[mu]), &rtemp, &sittemp);
     mult_sigma_mu_nu(&sittemp, &rtemp, mu, nu);
-    su3_projector_w(&rtemp, &ltemp, &tmat);
-    sum_su3_matrix(&tmat, &(tempmat[i]));
+    projector_w(&rtemp, &ltemp, &tmat);
+    sum_mat(&tmat, &(tempmat[i]));
   }
   cleanup_gather(tag[4]);
   cleanup_gather(tag[5]);
@@ -111,17 +111,17 @@ void udadu_mu_nu(wilson_vector *lsrc, wilson_vector *rsrc, int mu, int nu) {
   wait_gather(tag[4]);
   wait_gather(tag[5]);
   FORALLSITES(i, s) {
-    mult_adj_mat_wilson_vec((su3_matrix *)(gen_pt[0][i]),
+    mult_adj_mat_wvec((matrix *)(gen_pt[0][i]),
                             (wilson_vector *)(gen_pt[4][i]), &ltemp);
-    mult_mat_wilson_vec((su3_matrix *)(gen_pt[1][i]), &ltemp, &sittemp);
-    mult_mat_wilson_vec(&(s->link[nu]), &sittemp, &ltemp);
+    mult_mat_wvec((matrix *)(gen_pt[1][i]), &ltemp, &sittemp);
+    mult_mat_wvec(&(s->link[nu]), &sittemp, &ltemp);
 
-    mult_mat_wilson_vec(&(s->link[mu]), (wilson_vector *)(gen_pt[5][i]),
+    mult_mat_wvec(&(s->link[mu]), (wilson_vector *)(gen_pt[5][i]),
                         &sittemp);
     mult_sigma_mu_nu(&sittemp, &rtemp, mu, nu);
 
-    su3_projector_w(&rtemp, &ltemp, &tmat);
-    sum_su3_matrix(&tmat, &(tempmat[i]));
+    projector_w(&rtemp, &ltemp, &tmat);
+    sum_mat(&tmat, &(tempmat[i]));
   }
   cleanup_gather(tag[0]);
   cleanup_gather(tag[1]);
@@ -131,16 +131,16 @@ void udadu_mu_nu(wilson_vector *lsrc, wilson_vector *rsrc, int mu, int nu) {
   /**********  The Lower leaf  **********/
 
   /* get link[nu] from direction -nu */
-  tag[0] = start_gather_site(F_OFFSET(link[nu]), sizeof(su3_matrix),
+  tag[0] = start_gather_site(F_OFFSET(link[nu]), sizeof(matrix),
                              OPP_DIR(nu), EVENANDODD, gen_pt[0]);
 
   /* get link[mu] from direction -nu */
-  tag[1] = start_gather_site(F_OFFSET(link[mu]), sizeof(su3_matrix),
+  tag[1] = start_gather_site(F_OFFSET(link[mu]), sizeof(matrix),
                              OPP_DIR(nu), EVENANDODD, gen_pt[1]);
 
   /* get link[nu] from direction -nu +mu; disp[mu] = 1 already */
   disp[nu] = -1;
-  tag[6] = start_general_gather_site(F_OFFSET(link[nu]), sizeof(su3_matrix),
+  tag[6] = start_general_gather_site(F_OFFSET(link[nu]), sizeof(matrix),
                                      disp, EVENANDODD, gen_pt[6]);
 
   wait_gather(tag[0]);
@@ -151,17 +151,17 @@ void udadu_mu_nu(wilson_vector *lsrc, wilson_vector *rsrc, int mu, int nu) {
 
   /* ltemp = link[mu]*lsrc, rtemp = staple*rsrc */
   FORALLSITES(i, s) {
-    mult_mat_wilson_vec(&(s->link[mu]), (wilson_vector *)(gen_pt[4][i]),
+    mult_mat_wvec(&(s->link[mu]), (wilson_vector *)(gen_pt[4][i]),
                         &ltemp);
 
-    mult_mat_wilson_vec((su3_matrix *)(gen_pt[6][i]),
+    mult_mat_wvec((matrix *)(gen_pt[6][i]),
                         (wilson_vector *)(gen_pt[5][i]), &sittemp);
-    mult_mat_wilson_vec((su3_matrix *)(gen_pt[1][i]), &sittemp, &rtemp);
-    mult_adj_mat_wilson_vec((su3_matrix *)(gen_pt[0][i]), &rtemp, &sittemp);
+    mult_mat_wvec((matrix *)(gen_pt[1][i]), &sittemp, &rtemp);
+    mult_adj_mat_wvec((matrix *)(gen_pt[0][i]), &rtemp, &sittemp);
     mult_sigma_mu_nu(&sittemp, &rtemp, mu, nu);
 
-    su3_projector_w(&rtemp, &ltemp, &tmat);
-    dif_su3_matrix(&tmat, &(tempmat[i]));
+    projector_w(&rtemp, &ltemp, &tmat);
+    dif_mat(&tmat, &(tempmat[i]));
   }
   cleanup_gather(tag[4]);
   cleanup_gather(tag[5]);
@@ -176,17 +176,17 @@ void udadu_mu_nu(wilson_vector *lsrc, wilson_vector *rsrc, int mu, int nu) {
   wait_gather(tag[4]);
   wait_gather(tag[5]);
   FORALLSITES(i, s) {
-    mult_adj_mat_wilson_vec((su3_matrix *)(gen_pt[1][i]),
+    mult_adj_mat_wvec((matrix *)(gen_pt[1][i]),
                             (wilson_vector *)(gen_pt[4][i]), &ltemp);
-    mult_adj_mat_wilson_vec((su3_matrix *)(gen_pt[6][i]), &ltemp, &sittemp);
-    mult_mat_wilson_vec(&(s->link[mu]), &sittemp, &ltemp);
+    mult_adj_mat_wvec((matrix *)(gen_pt[6][i]), &ltemp, &sittemp);
+    mult_mat_wvec(&(s->link[mu]), &sittemp, &ltemp);
 
-    mult_adj_mat_wilson_vec((su3_matrix *)(gen_pt[0][i]),
+    mult_adj_mat_wvec((matrix *)(gen_pt[0][i]),
                             (wilson_vector *)(gen_pt[5][i]), &sittemp);
     mult_sigma_mu_nu(&sittemp, &rtemp, mu, nu);
 
-    su3_projector_w(&rtemp, &ltemp, &tmat);
-    dif_su3_matrix(&tmat, &(tempmat[i]));
+    projector_w(&rtemp, &ltemp, &tmat);
+    dif_mat(&tmat, &(tempmat[i]));
   }
   cleanup_gather(tag[4]);
   cleanup_gather(tag[5]);
@@ -203,31 +203,31 @@ void udadu_mu_nu(wilson_vector *lsrc, wilson_vector *rsrc, int mu, int nu) {
 
   /* ltemp = plaq*lsrc, rtemp = rsrc */
   FORALLSITES(i, s) {
-    mult_mat_wilson_vec((su3_matrix *)(gen_pt[0][i]), &(lsrc[i]), &sittemp);
-    mult_adj_mat_wilson_vec((su3_matrix *)(gen_pt[1][i]), &sittemp, &ltemp);
-    mult_adj_mat_wilson_vec((su3_matrix *)(gen_pt[6][i]), &ltemp, &sittemp);
-    mult_mat_wilson_vec(&(s->link[mu]), &sittemp, &ltemp);
+    mult_mat_wvec((matrix *)(gen_pt[0][i]), &(lsrc[i]), &sittemp);
+    mult_adj_mat_wvec((matrix *)(gen_pt[1][i]), &sittemp, &ltemp);
+    mult_adj_mat_wvec((matrix *)(gen_pt[6][i]), &ltemp, &sittemp);
+    mult_mat_wvec(&(s->link[mu]), &sittemp, &ltemp);
 
     mult_sigma_mu_nu(&(rsrc[i]), &rtemp, mu, nu);
 
-    su3_projector_w(&rtemp, &ltemp, &tmat);
-    dif_su3_matrix(&tmat, &(tempmat[i]));
+    projector_w(&rtemp, &ltemp, &tmat);
+    dif_mat(&tmat, &(tempmat[i]));
   }
 
   /* ltemp = upperrightcorner*lsrc, rtemp = lowerleftcorner*rsrc */
   wait_general_gather(tag[3]);
   FORALLSITES(i, s) {
-    mult_adj_mat_wilson_vec((su3_matrix *)(gen_pt[6][i]),
+    mult_adj_mat_wvec((matrix *)(gen_pt[6][i]),
                             (wilson_vector *)(gen_pt[2][i]), &sittemp);
-    mult_mat_wilson_vec(&(s->link[mu]), &sittemp, &ltemp);
+    mult_mat_wvec(&(s->link[mu]), &sittemp, &ltemp);
 
-    mult_mat_wilson_vec((su3_matrix *)(gen_pt[1][i]),
+    mult_mat_wvec((matrix *)(gen_pt[1][i]),
                         (wilson_vector *)(gen_pt[3][i]), &rtemp);
-    mult_adj_mat_wilson_vec((su3_matrix *)(gen_pt[0][i]), &rtemp, &sittemp);
+    mult_adj_mat_wvec((matrix *)(gen_pt[0][i]), &rtemp, &sittemp);
     mult_sigma_mu_nu(&sittemp, &rtemp, mu, nu);
 
-    su3_projector_w(&rtemp, &ltemp, &tmat);
-    dif_su3_matrix(&tmat, &(tempmat[i]));
+    projector_w(&rtemp, &ltemp, &tmat);
+    dif_mat(&tmat, &(tempmat[i]));
   }
   cleanup_gather(tag[0]);
   cleanup_gather(tag[1]);

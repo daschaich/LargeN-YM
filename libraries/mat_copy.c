@@ -1,15 +1,16 @@
 // -----------------------------------------------------------------
-// Clear the given fundamental matrix
+// Copy an irrep matrix
+// b <-- a
 #include "../include/config.h"
 #include "../include/complex.h"
 #include "../include/su3.h"
 
-void clear_mat_f(matrix_f *m) {
+void mat_copy(matrix *a, matrix *b) {
   register int i, j;
-  for (i = 0; i < NCOL; i++) {
-    for (j = 0; j < NCOL; j++) {
-      m->e[i][j].real = 0.0;
-      m->e[i][j].imag = 0.0;
+  for (i = 0; i < DIMF; i++) {
+    for (j = 0; j < DIMF; j++) {
+      b->e[i][j].real = a->e[i][j].real;
+      b->e[i][j].imag = a->e[i][j].imag;
     }
   }
 }

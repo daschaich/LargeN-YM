@@ -1,13 +1,13 @@
 /**************  l_su2_hit_n_f.c  (in su3.a) **********************
 *									*
-*  left multiply an su3_matrix_f by an su2 matrix          		*
+*  left multiply an matrix_f by an su2 matrix          		*
 */
 
 #include "../include/config.h"
 #include "../include/complex.h"
 #include "../include/su3.h"
 
-void left_su2_hit_n_f(su2_matrix *u,int p,int q,su3_matrix_f *link)
+void left_su2_hit_n_f(su2_matrix *u,int p,int q,matrix_f *link)
 {
   /* link <- u * link */
   /* The 0 row of the SU(2) matrix u matches row p of the SU(3) matrix */

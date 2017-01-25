@@ -14,9 +14,9 @@
 /* code related to b[][] is specific to SU(2), SU(3)  */
 
 #ifndef NHYP_DEBUG
-void compute_fhb( su3_matrix_f *Q, Real *f, Real b[NCOL][NCOL], int compute_b );
+void compute_fhb( matrix_f *Q, Real *f, Real b[NCOL][NCOL], int compute_b );
 #else
-void compute_fhb( su3_matrix_f *Omega, su3_matrix_f *Q,
+void compute_fhb( matrix_f *Omega, matrix_f *Q,
                   Real *f, Real b[NCOL][NCOL], int compute_b );
 #endif
 void block_nhyp();
