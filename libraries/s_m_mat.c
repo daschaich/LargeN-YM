@@ -19,26 +19,26 @@ void scalar_mult_mat(matrix *b, Real s, matrix *c) {
 
 #else  // FAST version for NCOL = DIMF = 3
   register Real ss = s;
-  b->e[0][0].real = ss * a->e[0][0].real;
-  b->e[0][0].imag = ss * a->e[0][0].imag;
-  b->e[0][1].real = ss * a->e[0][1].real;
-  b->e[0][1].imag = ss * a->e[0][1].imag;
-  b->e[0][2].real = ss * a->e[0][2].real;
-  b->e[0][2].imag = ss * a->e[0][2].imag;
+  c->e[0][0].real = ss * b->e[0][0].real;
+  c->e[0][0].imag = ss * b->e[0][0].imag;
+  c->e[0][1].real = ss * b->e[0][1].real;
+  c->e[0][1].imag = ss * b->e[0][1].imag;
+  c->e[0][2].real = ss * b->e[0][2].real;
+  c->e[0][2].imag = ss * b->e[0][2].imag;
 
-  b->e[1][0].real = ss * a->e[1][0].real;
-  b->e[1][0].imag = ss * a->e[1][0].imag;
-  b->e[1][1].real = ss * a->e[1][1].real;
-  b->e[1][1].imag = ss * a->e[1][1].imag;
-  b->e[1][2].real = ss * a->e[1][2].real;
-  b->e[1][2].imag = ss * a->e[1][2].imag;
+  c->e[1][0].real = ss * b->e[1][0].real;
+  c->e[1][0].imag = ss * b->e[1][0].imag;
+  c->e[1][1].real = ss * b->e[1][1].real;
+  c->e[1][1].imag = ss * b->e[1][1].imag;
+  c->e[1][2].real = ss * b->e[1][2].real;
+  c->e[1][2].imag = ss * b->e[1][2].imag;
 
-  b->e[2][0].real = ss * a->e[2][0].real;
-  b->e[2][0].imag = ss * a->e[2][0].imag;
-  b->e[2][1].real = ss * a->e[2][1].real;
-  b->e[2][1].imag = ss * a->e[2][1].imag;
-  b->e[2][2].real = ss * a->e[2][2].real;
-  b->e[2][2].imag = ss * a->e[2][2].imag;
+  c->e[2][0].real = ss * b->e[2][0].real;
+  c->e[2][0].imag = ss * b->e[2][0].imag;
+  c->e[2][1].real = ss * b->e[2][1].real;
+  c->e[2][1].imag = ss * b->e[2][1].imag;
+  c->e[2][2].real = ss * b->e[2][2].real;
+  c->e[2][2].imag = ss * b->e[2][2].imag;
 #endif
 }
 

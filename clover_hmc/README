@@ -19,13 +19,14 @@ To simplify things I stripped out some features that I don't expect to use, such
 
 defines.h defines Omelyan parameters, nHYP IR_STAB and EPS_SQ, as well as CG_DEBUG and NHYP_DEBUG
 
-Compiling the libraries with -DFAST speeds up the 3F HMC by ~10%, but only works if NCOL = DIMF = 3
+Compiling the libraries with -DFAST only works if NCOL = DIMF = 3
+In serial this seems to speed up the 3F HMC by ~5%, but no clear effect is visible on two cores
 
 Debugging checks:
   The usual check that Delta S scales quadratically with step size
-    Passes for 3F and unsmeared 3S
-    Fails for 3S when smearing turned on
-    (Make sure error_per_site is sufficiently small!)
+    Passes for 2F, 3F, 4F and 3A
+    Fails for 3S (even without smearing) and 4A
+  None of the following have yet been done:
   Reversibility
   Comparison with leapfrog integrator
   Set Hasenbusch_mass=mass and generate random numbers only for the
