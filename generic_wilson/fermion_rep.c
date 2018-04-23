@@ -19,13 +19,13 @@ void fermion_rep() {
   // and puts the smeared link in gauge_field[mu]
   FORALLUPDIR(mu) {
     FORALLSITES(i, s)
-      mat_copy_f(&(s->linkf[mu]), gauge_field_thin[mu] + i);
+      mat_copy_f(&(s->linkf[mu]), &(gauge_field_thin[mu][i]));
   }
   block_nhyp();
 
   FORALLUPDIR(mu) {
     FORALLSITES(i, s)
-      make_fermion_rep_matrix(gauge_field[mu] + i, &(s->link[mu]));
+      make_fermion_rep_matrix(&(gauge_field[mu][i]), &(s->link[mu]));
   }
   // Anti-periodic BCs in time direction
   current_boundary = PLUS;

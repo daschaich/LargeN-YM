@@ -89,7 +89,7 @@ void funnylat() {
   register int i, j, k, dir;
   register site *s;
 
-  FORALLSITES(i,s) {
+  FORALLSITES(i, s) {
     FORALLUPDIR(dir) {
       for (j = 0; j < NCOL; ++j) {
         for (k = 0; k < NCOL; ++k)
@@ -152,9 +152,9 @@ gauge_file *reload_lattice(int flag, char *filename) {
   nersc_checksum = nersc_cksum();
 #endif
 #if PRECISION == 1
-    node0_printf("CHECK PLAQ: %e %e\n",g_ssplaq,g_stplaq);
+    node0_printf("CHECK PLAQ: %e %e\n", g_ssplaq, g_stplaq);
     node0_printf("CHECK NERSC LINKTR: %e CKSUM: %x\n",
-                 linktr.real / (Real)NCOL,nersc_checksum);
+                 linktr.real / (Real)NCOL, nersc_checksum);
 #else     // Double precision
     node0_printf("CHECK PLAQ: %.16e %.16e\n",g_ssplaq, g_stplaq);
     node0_printf("CHECK NERSC LINKTR: %.16e CKSUM: %x\n",
@@ -219,7 +219,7 @@ int ask_starting_lattice(FILE *fp, int prompt, int *flag, char *filename) {
   else if (strcmp("reload_parallel", savebuf) == 0) {
     *flag = RELOAD_PARALLEL;
   }
-  else{
+  else {
     printf(" is not a valid starting lattice command. INPUT ERROR.\n");
     return 1;
   }
@@ -423,8 +423,8 @@ int get_i(FILE *fp, int prompt, char *tag, int *value) {
     if (get_tag(fp, tag, myname) == 1)
       return 1;
 
-    s = fscanf(fp,"%d",value);
-    if (check_read(s,myname,tag) == 1)
+    s = fscanf(fp, "%d", value);
+    if (check_read(s, myname, tag) == 1)
       return 1;
     printf("%d\n",*value);
   }
