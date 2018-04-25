@@ -13,6 +13,18 @@
 
 
 // -----------------------------------------------------------------
+// Irrep stuff
+// I'm having some trouble with "#define FREP <text>"
+// So let's make an integer code for each irrep,
+// as in include/macros.h and include/io_lat.h
+#define FUNDAMENTAL    90
+#define SYMMETRIC2     91
+#define ANTISYMMETRIC2 92
+// -----------------------------------------------------------------
+
+
+
+// -----------------------------------------------------------------
 // nHYP stuff
 #define NHYP_DEBUG
 
@@ -42,7 +54,6 @@
     #define TOL_JACOBI 1e-8
   #endif
 #endif
-
 
 #ifdef NHYP_DEBUG
   #if NCOL == 4

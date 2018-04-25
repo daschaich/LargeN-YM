@@ -13,10 +13,10 @@
 
 
 // -----------------------------------------------------------------
-// FREP can take the values: fundamental, symmetric2, antisymmetric2
+// FREP can take the values: FUNDAMENTAL, SYMMETRIC2, ANTISYMMETRIC2
 #define NCOL 3
 #define DIMF 3
-#define FREP fundamental
+#define FREP FUNDAMENTAL
 
 // Only have anti_hermitmat and explicit loops in libraries for N <= 4
 #if NCOL > 4
@@ -321,12 +321,10 @@ void sub_vector(vector *a, vector *b, vector *c);
 void scalar_mult_vector(vector *b, Real s, vector *c);
 void scalar_mult_sum_vector(vector *b, Real s, vector *c);
 void scalar_mult_dif_vector(vector *b, Real s, vector *c);
-void scalar_mult_add_vector(vector *a, vector *b, Real s,
-                                vector *c);
+void scalar_mult_add_vector(vector *a, vector *b, Real s, vector *c);
 
 // In file cs_m_a_vec.c
-void c_scalar_mult_add_su3vec(vector *a, vector *b, complex *s,
-                              vector *c);
+void c_scalar_mult_add_su3vec(vector *a, vector *b, complex *s, vector *c);
 void c_scalar_mult_sum_su3vec(vector *b, complex *s, vector *c);
 // -----------------------------------------------------------------
 
@@ -334,6 +332,10 @@ void c_scalar_mult_sum_su3vec(vector *b, complex *s, vector *c);
 
 // -----------------------------------------------------------------
 // Anti-hermitian matrix routines
+void make_anti_hermitian(matrix_f *m, anti_hermitmat *ah);
+void random_anti_hermitian(anti_hermitmat *ah, double_prn *prn_pt);
+void uncompress_anti_hermitian(anti_hermitmat *ah, matrix_f *m);
+void compress_anti_hermitian(matrix_f *m, anti_hermitmat *ah);
 // -----------------------------------------------------------------
 
 
@@ -479,6 +481,10 @@ void mult_adj_mat_wvec(matrix *a, wilson_vector *b, wilson_vector *c);
 
 // -----------------------------------------------------------------
 // Routines mixing SU(2) and U(N)
+void left_su2_hit_n(su2_matrix *u, int p, int q, matrix *link);
+void right_su2_hit_a(su2_matrix *u, int p, int q, matrix *link);
+void left_su2_hit_n_f(su2_matrix *u, int p, int q, matrix_f *link);
+void right_su2_hit_a_f(su2_matrix *u, int p, int q, matrix_f *link);
 // -----------------------------------------------------------------
 
 
@@ -503,16 +509,7 @@ void adjoint(matrix *a, matrix *b);
 void scalar_add_diag_f(matrix_f *a, Real s);
 void c_scalar_add_diag_f(matrix_f *a, complex *s);
 
-void make_anti_hermitian(matrix_f *m3, anti_hermitmat *ah3);
-void random_anti_hermitian(anti_hermitmat *mat_antihermit, double_prn *prn_pt);
-void uncompress_anti_hermitian(anti_hermitmat *mat_anti, matrix_f *mat);
-void compress_anti_hermitian(matrix_f *mat, anti_hermitmat *mat_anti);
-
 void dump_su2(su2_matrix *u);
-void left_su2_hit_n(su2_matrix *u, int p, int q, matrix *link);
-void right_su2_hit_a(su2_matrix *u, int p, int q, matrix *link);
-void left_su2_hit_n_f(su2_matrix *u, int p, int q, matrix_f *link);
-void right_su2_hit_a_f(su2_matrix *u, int p, int q, matrix_f *link);
 void mult_su2_mat_vec_elem_n(su2_matrix *u, complex *x0, complex *x1);
 void mult_su2_mat_vec_elem_a(su2_matrix *u, complex *x0, complex *x1);
 
@@ -554,13 +551,11 @@ void mult_mat_hwvec(matrix *mat, half_wilson_vector *src,
                     half_wilson_vector *dest);
 
 void sub_four_vecs(vector *a, vector *b1, vector *b2,
-  vector *b3, vector *b4);
-
-void sub_vector(vector *a, vector *b, vector *c);
+                   vector *b3, vector *b4);
 
 void wp_shrink_4dir(wilson_vector *a,  half_wilson_vector *b1,
-  half_wilson_vector *b2, half_wilson_vector *b3,
-  half_wilson_vector *b4, int sign);
+                    half_wilson_vector *b2, half_wilson_vector *b3,
+                    half_wilson_vector *b4, int sign);
 
 #endif
 // -----------------------------------------------------------------

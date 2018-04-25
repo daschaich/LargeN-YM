@@ -21,9 +21,9 @@
 #define MAXFILENAME 256
 
 // Gauge fixing options
-#define NO_GAUGE_FIX 30
+#define NO_GAUGE_FIX      30
 #define COULOMB_GAUGE_FIX 31
-#define LANDAU_GAUGE_FIX 32
+#define LANDAU_GAUGE_FIX  32
 // -----------------------------------------------------------------
 
 

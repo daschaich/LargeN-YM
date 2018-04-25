@@ -5,8 +5,8 @@
 
 /* Macros, structures and prototypes for KS propagator I/O */
 
-/* Original by MBW: Feb 2001, derived from io_lat.h 
-    only implementing ASCII I/O for now 
+/* Original by MBW: Feb 2001, derived from io_lat.h
+    only implementing ASCII I/O for now
     April 2002, MBW: adding binary I/O .. just serial
 */
 
@@ -19,7 +19,7 @@
 /* No provision for 64-bit integers here - there should be no such files! */
 
 #ifdef CONTROL
-#define EXTERN 
+#define EXTERN
 #else
 #define EXTERN extern
 #endif
@@ -44,18 +44,18 @@ typedef struct {
   int32type magic_number;               /* Identifies file format */
   int32type gmtime_stamp;             /* Used in FNAL header from call to time*/
   char   time_stamp[MAX_TIME_STAMP]; /* Date and time stamp - used to
-					check consistency between the
-					ASCII header file and the
-					lattice file */
+          check consistency between the
+          ASCII header file and the
+          lattice file */
   int32type dims[4];                    /* Full lattice dimensions */
   int32type header_bytes;               /* NOT WRITTEN TO THE FILE but
-					 helpful for finding the data */
+           helpful for finding the data */
   int32type order;                      /* 0 means no coordinate list is
-				        attached and the values are in
-				        coordinate serial order.
-				        Nonzero means that a
-				        coordinate list is attached,
-				        specifying the order of values */
+                attached and the values are in
+                coordinate serial order.
+                Nonzero means that a
+                coordinate list is attached,
+                specifying the order of values */
 } ks_prop_header;
 
 typedef struct {
@@ -71,10 +71,10 @@ typedef struct {
   ks_prop_header*  header;        /* Pointer to header for file */
   char *           filename;      /* Pointer to file name string */
   int              byterevflag;   /* Byte reverse flag - used only for reading */
-  int32type *      rank2rcv;      /* File site list - used only for 
-				     serial reading */ 
+  int32type *      rank2rcv;      /* File site list - used only for
+             serial reading */
   int              parallel;      /* 1 if file was opened in parallel
-				     0 if serial */
+             0 if serial */
   ks_prop_check    check;         /* Checksum */
   FILE *           info_fp;       /* Pointer to info file */
 } ks_prop_file;
@@ -83,7 +83,7 @@ typedef struct {
 /* Info file format */
 
 /* List of admissible keywords for version 5 ASCII lattice info file
-   
+
    The information file describes the action that was used to create
    the lattice file in whatever detail you want.
 
@@ -153,17 +153,17 @@ extern char *ks_prop_info_keyword[];
 /**********************************************************************/
 /* Prototypes for io_prop_ks.c */
 
-int write_ksprop_info_item( FILE *fpout, /* ascii file pointer */
-			    char *keyword,   /* keyword */
-			    char *fmt,       /* output format -
-						must use s, d, f, or e */
-			    char *src,       /* address of starting data */
-			    int count,       /* number of data items if > 1 */
-			    int stride);     /* byte stride of data if
-						count > 1 */
+int write_ksprop_info_item(FILE *fpout, /* ascii file pointer */
+          char *keyword,   /* keyword */
+          char *fmt,       /* output format -
+            must use s, d, f, or e */
+          char *src,       /* address of starting data */
+          int count,       /* number of data items if > 1 */
+          int stride);     /* byte stride of data if
+            count > 1 */
 
-int ask_starting_ksprop( int prompt, int *flag, char *filename );
-int ask_ending_ksprop( int prompt, int *flag, char *filename );
+int ask_starting_ksprop(int prompt, int *flag, char *filename );
+int ask_ending_ksprop(int prompt, int *flag, char *filename );
 
 /**********************************************************************/
 /* In ksprop_info.c (application dependent) */
@@ -172,7 +172,7 @@ void write_appl_ksprop_info(FILE *fp);
 /**********************************************************************/
 /* procedures for specific types of I/O                               */
 
-/* 
+/*
 
    restore_ksprop_ascii: Node 0 opens and reads in prop in ASCII format
    save_ksprop_ascii:    Node 0 opens and writes prop in ASCII format
@@ -231,21 +231,21 @@ void r_serial_ks_fm_f(ks_prop_file *kspf);
 
 /* Prototypes for io_helpers_ks.c */
 
-int reload_serpar_ksprop_to_site( int flag, int file_type, char *filename, 
-			   field_offset dest, int timing);
-int reload_serpar_ksprop_to_field( int flag, int file_type, char *filename, 
-			    vector *dest, int timing);
-int reload_ksprop_to_site( int flag, char *filename, 
-			   field_offset dest, int timing);
-int reload_ksprop_to_field( int flag, char *filename, vector *dest, 
-			    int timing);
-void save_ksprop_from_site( int flag, char *filename, char *recxml, 
-		  field_offset src, int timing);
-void save_ksprop_from_field( int flag, char *filename, char *recxml, 
-		  vector *src, int timing);
+int reload_serpar_ksprop_to_site(int flag, int file_type, char *filename,
+         field_offset dest, int timing);
+int reload_serpar_ksprop_to_field(int flag, int file_type, char *filename,
+          vector *dest, int timing);
+int reload_ksprop_to_site(int flag, char *filename,
+         field_offset dest, int timing);
+int reload_ksprop_to_field(int flag, char *filename, vector *dest,
+          int timing);
+void save_ksprop_from_site(int flag, char *filename, char *recxml,
+      field_offset src, int timing);
+void save_ksprop_from_field(int flag, char *filename, char *recxml,
+      vector *src, int timing);
 int read_lat_dim_ksprop(char *filename, int file_type, int *ndim, int dims[]);
 
-int ask_starting_ksprop( int prompt, int *flag, char *filename );
-int ask_ending_ksprop( int prompt, int *flag, char *filename );
+int ask_starting_ksprop(int prompt, int *flag, char *filename );
+int ask_ending_ksprop(int prompt, int *flag, char *filename );
 
 #endif /* _IO_PROP_KS_H */

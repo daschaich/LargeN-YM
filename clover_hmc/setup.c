@@ -18,11 +18,11 @@ int initial_set() {
     // Print banner
     printf("SU(%d) with clover fermions, DIMF = %d, fermion rep = ",
            NCOL, DIMF);
-#if FREP == fundamental
+#if FREP == FUNDAMENTAL
     printf("fundamental\n");
-#elif FREP == symmetric2
+#elif FREP == SYMMETRIC2
     printf("two-index symmetric\n");
-#elif FREP == antisymmetric2
+#elif FREP == ANTISYMMETRIC2
     printf("two-index antisymmetric\n");
 #else
     printf("unrecognized... shutting down\n");

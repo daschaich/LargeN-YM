@@ -8,17 +8,11 @@
 #if DIMF != NCOL * (NCOL + 1) / 2
   #error "Wrong version of chain_rule!"
 #endif
-#if FREP != symmetric2
+#if FREP != SYMMETRIC2
   #error "Wrong version of chain_rule!"
 #endif
-// -----------------------------------------------------------------
 
-
-
-// -----------------------------------------------------------------
-void chain_rule(matrix_f *sigmaf, matrix *sigma,
-                matrix_f *gaugelinkf) {
-
+void chain_rule(matrix_f *sigmaf, matrix *sigma, matrix_f *gaugelinkf) {
   int i, j, k, l;
   int ij = 0, kl;       // Compound indices of the fermion rep
   complex x, y;
@@ -70,3 +64,4 @@ void chain_rule(matrix_f *sigmaf, matrix *sigma,
     }
   }
 }
+// -----------------------------------------------------------------

@@ -5,12 +5,12 @@
 # User just needs to specify NCOL, DIMF and fermion irrep
 if [ $# -lt 4 ]; then
   echo "Try these:"
-  echo "./run_tests su3_hmc 2 2 fundamental"
-  echo "./run_tests su3_hmc 3 3 fundamental"
-  echo "./run_tests su3_hmc_spectrum 3 3 fundamental"
-  echo "./run_tests su3_hmc 3 6 symmetric2"
-  echo "./run_tests su3_hmc 4 4 fundamental"
-  echo "./run_tests su3_hmc 4 6 antisymmetric2"
+  echo "./run_tests su3_hmc 2 2 FUNDAMENTAL"
+  echo "./run_tests su3_hmc 3 3 FUNDAMENTAL"
+  echo "./run_tests su3_hmc_spectrum 3 3 FUNDAMENTAL"
+  echo "./run_tests su3_hmc 3 6 SYMMETRIC2"
+  echo "./run_tests su3_hmc 4 4 FUNDAMENTAL"
+  echo "./run_tests su3_hmc 4 6 ANTISYMMETRIC2"
   exit 0
 fi
 
@@ -19,11 +19,11 @@ N=$2
 DIMF=$3
 rep=$4
 
-if [[ "$rep" == "fundamental" ]] ; then
+if [[ "$rep" == "FUNDAMENTAL" ]] ; then
   tag='F'
-elif [[ "$rep" == "symmetric2" ]] ; then
+elif [[ "$rep" == "SYMMETRIC2" ]] ; then
   tag='S'
-elif [[ "$rep" == "antisymmetric2" ]] ; then
+elif [[ "$rep" == "ANTISYMMETRIC2" ]] ; then
   tag='A'
 else
   echo "Error: Unrecognized rep $rep"
@@ -33,19 +33,18 @@ fi
 outpat=${target#su3_} # Omit 'su3_' from output file
 
 # Change N and rep in include/su3.h
-cd ../../include/
-awk -v"X=#define NCOL $N" '{sub(/^#define NCOL .*/,X);print}' su3.h > TEMP && mv TEMP su3.h
-awk -v"X=#define DIMF $DIMF" '{sub(/^#define DIMF .*/,X);print}' su3.h > TEMP && mv TEMP su3.h
-awk -v"X=#define FREP $rep" '{sub(/^#define FREP .*/,X);print}' su3.h > TEMP && mv TEMP su3.h
+cd ../../clover_hmc/
+sed -i -E "s/(#define NCOL) .*/\1 $N/" ../include/su3.h
+sed -i -E "s/(#define DIMF) .*/\1 $DIMF/" ../include/su3.h
+sed -i -E "s/(#define FREP) .*/\1 $rep/" ../include/su3.h
 
 # Change rep in clover_hmc/Make_template
-cd ../clover_hmc/
-if [[ "$rep" == "symmetric2" ]] ; then
-  awk -v"X=chain_rule_sym_2" '{sub(/chain_rule_f/,X);print}' Make_template > TEMP && mv TEMP Make_template
-  awk -v"X=fermion_rep_sym_2" '{sub(/fermion_rep_f/,X);print}' Make_template > TEMP && mv TEMP Make_template
-elif [[ "$rep" == "antisymmetric2" ]] ; then
-  awk -v"X=chain_rule_as_2" '{sub(/chain_rule_f/,X);print}' Make_template > TEMP && mv TEMP Make_template
-  awk -v"X=fermion_rep_as_2" '{sub(/fermion_rep_f/,X);print}' Make_template > TEMP && mv TEMP Make_template
+if [[ "$rep" == "SYMMETRIC2" ]] ; then
+  sed -i -E "s/chain_rule_f/chain_rule_sym_2/" Make_template
+  sed -i -E "s/fermion_rep_f/fermion_rep_sym_2/" Make_template
+elif [[ "$rep" == "ANTISYMMETRIC2" ]] ; then
+  sed -i -E "s/chain_rule_f/chain_rule_as_2/" Make_template
+  sed -i -E "s/fermion_rep_f/fermion_rep_as_2/" Make_template
 fi
 
 # Compile
@@ -57,19 +56,17 @@ if ! make -f Make_scalar $target >& /dev/null ; then
 fi
 
 # Reset N and rep to SU(3) fundamental
-cd ../include/
-awk -v"X=#define NCOL 3" '{sub(/^#define NCOL .*/,X);print}' su3.h > TEMP && mv TEMP su3.h
-awk -v"X=#define DIMF 3" '{sub(/^#define DIMF .*/,X);print}' su3.h > TEMP && mv TEMP su3.h
-awk -v"X=#define FREP fundamental" '{sub(/^#define FREP .*/,X);print}' su3.h > TEMP && mv TEMP su3.h
+sed -i -E "s/(#define NCOL) .*/\1 3/" ../include/su3.h
+sed -i -E "s/(#define DIMF) .*/\1 3/" ../include/su3.h
+sed -i -E "s/(#define FREP) .*/\1 FUNDAMENTAL/" ../include/su3.h
 
 # Reset fundamental rep in clover_hmc/Make_template
-cd ../clover_hmc/
-if [[ "$rep" == "symmetric2" ]] ; then
-  awk -v"X=chain_rule_f" '{sub(/chain_rule_sym_2/,X);print}' Make_template > TEMP && mv TEMP Make_template
-  awk -v"X=fermion_rep_f" '{sub(/fermion_rep_sym_2/,X);print}' Make_template > TEMP && mv TEMP Make_template
-elif [[ "$rep" == "antisymmetric2" ]] ; then
-  awk -v"X=chain_rule_f" '{sub(/chain_rule_as_2/,X);print}' Make_template > TEMP && mv TEMP Make_template
-  awk -v"X=fermion_rep_f" '{sub(/fermion_rep_as_2/,X);print}' Make_template > TEMP && mv TEMP Make_template
+if [[ "$rep" == "SYMMETRIC2" ]] ; then
+  sed -i -E "s/chain_rule_sym_2/chain_rule_f/" Make_template
+  sed -i -E "s/fermion_rep_sym_2/fermion_rep_f/" Make_template
+elif [[ "$rep" == "ANTISYMMETRIC2" ]] ; then
+  sed -i -E "s/chain_rule_as_2/chain_rule_f/" Make_template
+  sed -i -E "s/fermion_rep_as_2/fermion_rep_f/" Make_template
 fi
 
 # Run

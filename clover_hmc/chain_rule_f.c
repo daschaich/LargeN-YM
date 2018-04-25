@@ -6,19 +6,12 @@
 #if DIMF != NCOL
   #error "Wrong version of chain_rule!"
 #endif
-#if FREP != fundamental
+#if FREP != FUNDAMENTAL
   #error "Wrong version of chain_rule!"
 #endif
-// -----------------------------------------------------------------
 
-
-
-// -----------------------------------------------------------------
-void chain_rule(matrix_f *sigmaf, matrix *sigma,
-                matrix_f *gaugelinkf) {
-
+void chain_rule(matrix_f *sigmaf, matrix *sigma, matrix_f *gaugelinkf) {
   int i, j;
-
   for (i = 0; i < NCOL; i++) {
     for (j = 0; j < NCOL; j++)
       sigmaf->e[i][j] = sigma->e[i][j];
