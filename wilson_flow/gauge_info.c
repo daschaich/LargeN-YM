@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------
 // Application-dependent routine for writing gauge info file
-// For Wilson-clover HMC
+// For Wilson flow
 
 // This file is an ASCII companion to the gauge configuration file
 // and contains information about the action used to generate it.
@@ -11,7 +11,7 @@
 // where n is an integer.
 //
 // Possible keywords are listed in io_lat.h
-#include "cl_dyn_includes.h"
+#include "wflow_includes.h"
 // -----------------------------------------------------------------
 
 
@@ -22,23 +22,8 @@
 // File has already been opened and the required magic number,
 // time stamp and lattice dimensions have already been written
 void write_appl_gauge_info(FILE *fp) {
-  char sums[20];
-  if (startlat_p != NULL) {
-    // Retain some info about the original (or previous) configuration */
-    write_gauge_info_item(fp, "gauge.previous.filename", "\"%s\"",
-                          startlat_p->filename, 0, 0);
-    write_gauge_info_item(fp, "gauge.previous.time_stamp", "\"%s\"",
-                          startlat_p->header->time_stamp, 0, 0);
-    sprintf(sums, "%x %x", startlat_p->check.sum29, startlat_p->check.sum31);
-    write_gauge_info_item(fp, "gauge.previous.checksums", "\"%s\"", sums, 0, 0);
-  }
-  if (fixflag == COULOMB_GAUGE_FIX) {
-    Real gfix_tol = GAUGE_FIX_TOL;
-    write_gauge_info_item(fp, "gauge.fix.description", "%s",
-                          "\"Coulomb\"", 0, 0);
-    write_gauge_info_item(fp, "gauge.fix.tolerance", "%g",
-                          (char *)&gfix_tol, 0, 0);
-  }
+  write_gauge_info_item(fp, "action.description", "%s",
+                        "\"Gauge plus fermion\"", 0, 0);
 }
 
 #define INFOSTRING_MAX 2048
@@ -51,10 +36,9 @@ char *create_QCDML() {
   char begin_info[] = "<info>";
   char end_info[] = "</info>";
   char end[] = "</usqcdInfo>";
-  Real myssplaq = g_ssplaq;                       // Precision conversion
-  Real mystplaq = g_stplaq;                       // Precision conversion
-  Real nersc_linktr = linktr.real / (Real)NCOL;   // Convention and precision
-  Real gfix_tol = GAUGE_FIX_TOL;
+  Real myssplaq = g_ssplaq;               // Precision conversion
+  Real mystplaq = g_stplaq;               // Precision conversion
+  Real nersc_linktr = linktr.real / 3.0;  // Convention and precision
   char sums[20];
 
   snprintf(info + bytes, max - bytes, "%s", begin);
@@ -88,15 +72,6 @@ char *create_QCDML() {
     sprint_gauge_info_item(info + bytes, max - bytes,
                            "gauge.previous.checksums",
                            "%s", sums, 0, 0);
-  }
-
-  if (fixflag == COULOMB_GAUGE_FIX) {
-    bytes = strlen(info);
-    sprint_gauge_info_item(info + bytes, max - bytes, "gauge.fix.description",
-                           "%s", "Coulomb", 0, 0);
-    bytes = strlen(info);
-    sprint_gauge_info_item(info + bytes, max - bytes, "gauge.fix.tolerance",
-                           "%g", (char *)&gfix_tol, 0, 0);
   }
 
   snprintf(info + bytes, max - bytes, "%s", end_info);

@@ -1,13 +1,13 @@
 # ------------------------------------------------------------------
-MAKEFILE = Make_scalar
+MAKEFILE = Make_mpi
 
-MPP            = # true
+MPP            = true
 PRECISION      = 2
-CC             = gcc
-OPT            = -O3 -Wall
+CC             = /usr/local/mpich2-1.4.1p1/bin/mpicc
+OPT            = -O3 -DP4 -DPREFETCH -Wall -fno-strict-aliasing
 CLFS           = -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE64
-                 # Large files gcc only
-MACHINE_DEP_IO = io_ansi.o
+               # Large files gcc only
+MACHINE_DEP_IO = io_ansi.o # (io_ansi.o io_nonansi.o)
 
 LD             = ${CC}
 LIBADD         =
@@ -19,7 +19,7 @@ CPREFETCH      =
 
 CODETYPE       = ${CTIME} ${CPROF} ${CDEBUG} ${CPREFETCH}
 
-MAKELIBRARIES  = Make_vanilla
+MAKELIBRARIES  = Make_mpi
 
 # Also check include/config.h
 # ------------------------------------------------------------------
@@ -40,9 +40,9 @@ PREC = -DPRECISION=${PRECISION}
 
 # Complete set of compiler flags - do not change
 CFLAGS = ${OPT} -D${COMMTYPE} ${CODETYPE} ${INLINEOPT} ${PREC} ${CLFS} \
-         -I${MYINCLUDEDIR} ${DEFINES}
+         -I${MYINCLUDEDIR} ${DEFINES} ${IMPI}
 
-ILIB = ${LIBADD}
+ILIB = ${LMPI} ${LIBADD}
 
 check:
 	make -f Make_test check

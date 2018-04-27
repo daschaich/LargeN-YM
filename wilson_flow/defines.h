@@ -3,11 +3,7 @@
 #ifndef _DEFINES_H
 #define _DEFINES_H
 
-#define SITERAND              // Use site-based random number generators
-#define GAUGE_FIX_TOL 1.0e-7  // For gauge fixing
-
-#define TIMING
-//#define CG_DEBUG
+// No random numbers
 // -----------------------------------------------------------------
 
 
@@ -23,9 +19,9 @@
 #define SMEAR_LEVEL 3
 
 // IR regulator:  Q = Omega^dag Omega + IR_STAB
-// This slightly changes the definition of the nhyp link.  Fine.
-// Since we're adding a constant, any derivative of Q is unchanged
-// Used in block_nhyp.c, force_nhyp.c
+// This slightly changes the definition of the nHYP link. Fine.
+// Since we're adding a constant, any derivative of Q is unchanged.
+// Used in block_nhyp.c
 #define IR_STAB 1e-6
 
 // Neighborhoods of 0 where we use approximate R and S for u0, u1, p
@@ -48,29 +44,6 @@
     #define TOL_NHYP 1e-5          // Tolerance for warnings
   #endif
 #endif
-// -----------------------------------------------------------------
-
-
-
-// -----------------------------------------------------------------
-// Integrator stuff
-// Maximal number of masses used in the Hasenbusch preconditioning
-#define MAX_MASSES 2
-
-// Omelyan lambda, 2lambda and 1 - 2lambda
-#define LAMBDA 0.193
-#define TWO_LAMBDA 0.386
-#define LAMBDA_MID 0.614
-// -----------------------------------------------------------------
-
-
-
-// -----------------------------------------------------------------
-// Measurement stuff
-// Threshold to print warning about non-zero imaginary components
-// of quantities expected to be real
-#define IMAG_TOL 1.0e-8
-#define SQ_TOL 1.0e-16
 
 #endif
 // -----------------------------------------------------------------

@@ -1,9 +1,24 @@
 // -----------------------------------------------------------------
 // Fundamental matrix multiplication with no adjoints
+// c <-- c + a * b
 // c <-- a * b
 #include "../include/config.h"
 #include "../include/complex.h"
 #include "../include/su3.h"
+
+void mult_nn_sum_f(matrix_f *a, matrix_f *b, matrix_f *c) {
+  register int i, j, k;
+  for (i = 0; i < NCOL; i++) {
+    for (j = 0; j < NCOL; j++) {
+      for (k = 0; k < NCOL; k++) {
+        c->e[i][j].real += a->e[i][k].real * b->e[k][j].real
+                         - a->e[i][k].imag * b->e[k][j].imag;
+        c->e[i][j].imag += a->e[i][k].imag * b->e[k][j].real
+                         + a->e[i][k].real * b->e[k][j].imag;
+      }
+    }
+  }
+}
 
 void mult_nn_f(matrix_f *a, matrix_f *b, matrix_f *c) {
   register int i, j;

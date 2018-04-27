@@ -87,7 +87,7 @@ void ax_gauge();
 /* check_unitarity.c */
 Real check_unitarity();
 
-// linktrsum
+// nersc_cksum.c
 void linktrsum(double_complex *linktr);
 
 // plaquette.c
@@ -98,13 +98,10 @@ void plaquette_frep(double *ss_plaq_frep, double *st_plaq_frep);
 void plaquette_lcl(double *ss_plaq, double *st_plaq);
 void plaquette_frep_lcl(double *ss_plaq_frep, double *st_plaq_frep);
 
-/* field_strength.c */
-void make_field_strength(
-  field_offset link_src,       /* field offset for matrix[4] type
-          for the source link matrices */
-  field_offset field_dest      /* field offset for matrix[6] type
-          for the resulting field strength */
-  );
+// field_strength.c
+// link_src is offset for matrix link[4] in site struct
+// field_dest is offset for matrix fieldstrength[6] in site struct
+void make_field_strength(field_offset link_src, field_offset field_dest);
 
 // gaugefix.c
 void gaugefix(int gauge_dir, Real relax_boost, int max_gauge_iter,

@@ -67,6 +67,8 @@ com_mpi.o: ../generic/com_mpi.c
 	${CC} -c ${CFLAGS} $<
 com_vanilla.o: ../generic/com_vanilla.c
 	${CC} -c ${CFLAGS} $<
+field_strength.o: ../generic/field_strength.c
+	${CC} -c ${CFLAGS} $<
 gaugefix.o: ../generic/gaugefix.c
 	${CC} -c ${CFLAGS} $<
 gaugefix_full.o: ../generic/gaugefix_full.c

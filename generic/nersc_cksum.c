@@ -1,19 +1,22 @@
-/* Two utilities used in the NERSC archive formate */
-
-/* Compute the low order 32 bits of the unsigned integer sum of the
-   float precision real and complex parts of the elements of the gauge
-   matrices.
-*/
-
-/* Computes the mean global sum of the trace of the gauge links --
-   used to aid checking lattice file integrity */
-
+// -----------------------------------------------------------------
+// Two utilities used to check saved lattice files
 #include "generic_includes.h"
+// -----------------------------------------------------------------
 
+
+
+// -----------------------------------------------------------------
+// Turn this one off for now
 u_int32type nersc_cksum() {
   return 0;
 }
+// -----------------------------------------------------------------
 
+
+
+// -----------------------------------------------------------------
+// Compute the mean global sum of the trace of the gauge links
+// Use to check lattice file integrity
 void linktrsum(double_complex *linktr) {
   int i, dir;
   site *s;
@@ -22,7 +25,7 @@ void linktrsum(double_complex *linktr) {
   *linktr = dcmplx(0.0, 0.0);
   FORALLSITES(i, s) {
     FORALLUPDIR(dir) {
-      a = &s->linkf[dir];
+      a = &(s->linkf[dir]);
       CSUM(*linktr, a->e[0][0]);
       CSUM(*linktr, a->e[1][1]);
 #if NCOL > 2
@@ -33,7 +36,7 @@ void linktrsum(double_complex *linktr) {
 #endif
     }
   }
-
   g_dcomplexsum(linktr);
-  CDIVREAL(*linktr, (4 * volume), *linktr);
+  CDIVREAL(*linktr, (4.0 * volume), *linktr);
 }
+// -----------------------------------------------------------------

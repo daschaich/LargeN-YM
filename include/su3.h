@@ -13,9 +13,20 @@
 
 
 // -----------------------------------------------------------------
+// Irrep stuff
+// I'm having some trouble #defining FREP as <text>
+// Let's make an integer code for each irrep, as in macros.h and io_lat.h
+#define FUNDAMENTAL    90
+#define SYMMETRIC2     91
+#define ANTISYMMETRIC2 92
+// -----------------------------------------------------------------
+
+
+
+// -----------------------------------------------------------------
 // FREP can take the values: FUNDAMENTAL, SYMMETRIC2, ANTISYMMETRIC2
-#define NCOL 3
-#define DIMF 3
+#define NCOL 4
+#define DIMF 4
 #define FREP FUNDAMENTAL
 
 // Only have anti_hermitmat and explicit loops in libraries for N <= 4
@@ -353,6 +364,7 @@ void trace_sum_f(matrix_f *a, complex *c);
 
 // In file tr_prod_f.c
 Real realtrace_f(matrix_f *a, matrix_f *b);
+Real realtrace_nn_f(matrix_f *a, matrix_f *b);
 void realtrace_sum_f(matrix_f *a, matrix_f *b, Real *c);
 complex complextrace_f(matrix_f *a, matrix_f *b);
 
@@ -378,6 +390,7 @@ void c_scalar_mult_add_mat_f(matrix_f *a, matrix_f *b, complex *s,
                              matrix_f *c);
 
 // In file m_mat_nn_f.c
+void mult_nn_sum_f(matrix_f *a, matrix_f *b, matrix_f *c);
 void mult_nn_f(matrix_f *a, matrix_f *b, matrix_f *c);
 
 // In file m_mat_na_f.c
