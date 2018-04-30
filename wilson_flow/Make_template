@@ -1,4 +1,4 @@
-# SU(N) Wilson flow measurements with optional MCRG blocking
+# SU(N) Wilson flow measurements with optional measurements
 # Generic make-include file
 # This template file defines rules and macros common to all architectures
 # It is intended to be an include file for other Makefiles
@@ -6,9 +6,6 @@
 
 # Targets:
 #   su3_Wflow
-
-# Features:
-#   nHYP smearing (handles "neighboring" sites separated by 2^block links)
 
 MYINCLUDEDIR = .
 INCLUDEDIR = ../include
@@ -34,20 +31,16 @@ HEADERS = ${GLOBAL_HEADERS} ${MY_HEADERS}
 
 # All required object files
 # Basic set from current directory
-MY_OBJECTS = control.o         \
-             wflow.o           \
-             setup.o           \
-             gauge_info.o      \
-             staple.o          \
-             loop_table.o      \
-             path.o            \
-             mcrg_block.o      \
-             block_mcrg.o      \
-             block_nhyp_mcrg.o \
-             blocked_path.o    \
-             blocked_ploops.o  \
-             stout_step_rk.o   \
-             blocked_gauge_loops.o
+MY_OBJECTS = control.o     \
+             wflow.o       \
+             setup.o       \
+             gauge_info.o  \
+             staple.o      \
+             loop_table.o  \
+             path.o        \
+             meas.o        \
+             gauge_loops.o \
+             stout_step_rk.o
 
 # Basic set from generic directory
 G_OBJECTS = check_unitarity.o \
@@ -58,14 +51,9 @@ G_OBJECTS = check_unitarity.o \
             make_lattice.o    \
             nersc_cksum.o     \
             plaquette.o       \
+            ploop.o           \
             reunitarize.o     \
             remap_stdio_from_args.o
-
-# Basic set from generic_nhyp directory
-G_NHYP_OBJECTS = nhyp.o
-
-# Uncomment for nHYP smearing
-DEFINES = -DNHYP_JACOBI
 
 # Selection of layout
 LAYOUT = layout_hyper_prime.o

@@ -2,12 +2,12 @@
 // Use ordinary gathers, accumulate in staple.e[0][0]
 #include "wflow_includes.h"
 
-void blocked_gauge_loops(int block, double *result) {
+void gauge_loops(double *result) {
   register int i, k;
   register site *s;
   int rep, dirs[10], sign[10], length;
   int ln, iloop;      // For loop_table
-  double g_action = 0, action, act2, total_action;
+  double g_action = 0.0, action, act2, total_action;
   complex tc;
 
   // Gauge action
@@ -32,13 +32,9 @@ void blocked_gauge_loops(int block, double *result) {
         }
       }
 
-      // Unfortunately, I don't seem able to combine these
       // Both put the result in tempmatf2
       // and use tempmatf for temporary storage
-      if (block > 0)
-        blocked_path(block, dirs, sign, length);
-      else
-        path(dirs, sign, length);
+      path(dirs, sign, length);
 
       FORALLSITES(i, s) {
         // Avoid excessively large numbers

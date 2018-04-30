@@ -9,9 +9,13 @@
 #include "../include/dirs.h"      // For NDIMS
 #include "../include/su3.h"
 
-#ifdef NHYP_JACOBI
-#include "../include/jacobi.h"
-#endif
+// Defines for index on field_strength
+#define FS_XY 0
+#define FS_XZ 1
+#define FS_YZ 2
+#define FS_XT 3
+#define FS_YT 4
+#define FS_ZT 5
 // -----------------------------------------------------------------
 
 
@@ -24,23 +28,12 @@ typedef struct {
   int index;          // Index in the array
 
   // No random numbers
-  // HYP stuff needed for MCRG measurements
-  // Tripled gauge field provides workspace and backup storage
-  matrix_f linkf[12];
-  matrix_f hyplink1[12], hyplink2[12];
-  matrix_f FS[6];       // Field strength for F^2 and topological charge
+  // Gauge links and field strength for F^2 and topological charge
+  matrix_f linkf[4], FS[6];
 
   // Need this for ../generic/plaquette.c
   matrix link[4];
 } site;
-
-// Defines for index on field_strength
-#define FS_XY 0
-#define FS_XZ 1
-#define FS_YZ 2
-#define FS_XT 3
-#define FS_YT 4
-#define FS_ZT 5
 // -----------------------------------------------------------------
 
 
@@ -55,7 +48,7 @@ typedef struct {
 
 EXTERN int nx, ny, nz, nt;  // Lattice dimensions
 EXTERN int volume;          // Volume of lattice
-EXTERN Real one_ov_N;
+EXTERN Real one_ov_N, one_ov_vol;
 
 EXTERN double g_ssplaq, g_stplaq;   // Global plaqs for I/O
 EXTERN double_complex linktr;
@@ -89,8 +82,6 @@ EXTERN int loop_num[nloop], loop_char[max_num];
 EXTERN Real loop_coeff[nloop][nreps];
 EXTERN int ch, loop_ch[nloop][max_num];
 EXTERN Real loop_term[max_num][nreps];
-EXTERN int hyp1ind[4][4][4];
-EXTERN int hyp2ind[4][4];
 
 // The lattice is a single global variable
 // (actually this is the part of the lattice on this node)
@@ -105,21 +96,14 @@ EXTERN char **gen_pt[N_POINTERS];
 EXTERN matrix_f *tempmatf, *tempmatf2;
 EXTERN matrix *tempmat;
 
-#ifdef NHYP_JACOBI
-EXTERN Matrix Qj, Vj;
-#define JACOBI_HIST_MAX 10
-EXTERN int jacobi_hist[JACOBI_HIST_MAX];
-#endif
-
 // Wilson flow stuff
 EXTERN Real tmax, start_eps, max_eps, epsilon;
 EXTERN matrix_f *S[NDIMS];
 EXTERN anti_hermitmat *A[NDIMS];
 
-// MCRG blocking stuff
-EXTERN Real alpha_smear[3];
-EXTERN int num_block;
-EXTERN Real tblock[100];
+// Measurement stuff
+EXTERN int num_meas;
+EXTERN Real tmeas[100];
 
 #endif
 // -----------------------------------------------------------------

@@ -18,7 +18,7 @@ int initial_set() {
   int prompt = 0, status = 0;
   if (mynode() == 0) {
     // Print banner
-    printf("SU(%d) Wilson flow with optional MCRG blocking\n", NCOL);
+    printf("SU(%d) Wilson flow with optional measurements\n", NCOL);
     printf("Machine = %s, with %d nodes\n", machine_type(), numnodes());
     time_stamp("start");
 
@@ -47,6 +47,7 @@ int initial_set() {
   this_node = mynode();
   number_of_nodes = numnodes();
   volume = nx * ny * nz * nt;
+  one_ov_vol = 1.0 / (Real)volume;
   one_ov_N = 1.0 / (Real)NCOL;
   return prompt;
 }
@@ -116,23 +117,19 @@ int readin(int prompt) {
     if (par_buf.start_eps * par_buf.tmax < 0)
       node0_printf("WARNING: start_eps and tmax have different signs\n");
 
-    // Smearing parameters
-    IF_OK status += get_f(stdin, prompt, "alpha_hyp0", &par_buf.alpha_hyp0);
-    IF_OK status += get_f(stdin, prompt, "alpha_hyp1", &par_buf.alpha_hyp1);
-    IF_OK status += get_f(stdin, prompt, "alpha_hyp2", &par_buf.alpha_hyp2);
-    // A maximum of 100 tvalues to perform blocking should be enough
-    IF_OK status += get_i(stdin, prompt, "num_block", &par_buf.num_block);
-    if (par_buf.num_block > 100) {
-      node0_printf("ERROR: Need to recompile for num_block > 100\n");
+    // A maximum of 100 tvalues to perform measurements should be enough
+    IF_OK status += get_i(stdin, prompt, "num_meas", &par_buf.num_meas);
+    if (par_buf.num_meas > 100) {
+      node0_printf("ERROR: Need to recompile for num_meas > 100\n");
       status++;
     }
-    for (i = 0; i < par_buf.num_block; i++) {
-      IF_OK status += get_f(stdin, prompt, "tblock", &par_buf.tblock[i]);
+    for (i = 0; i < par_buf.num_meas ; i++) {
+      IF_OK status += get_f(stdin, prompt, "tmeas", &par_buf.tmeas[i]);
       // Make sure we're going in the right direction
-      if (i > 0 && fabs(par_buf.tblock[i]) <= fabs(par_buf.tblock[i - 1])) {
-        node0_printf("ERROR: We require tblock be sorted\n");
-        node0_printf("ERROR: tblock[%d]=%g; tblock[%d]=%g\n",
-                     i, par_buf.tblock[i], i - 1, par_buf.tblock[i - 1]);
+      if (i > 0 && fabs(par_buf.tmeas[i]) <= fabs(par_buf.tmeas[i - 1])) {
+        node0_printf("ERROR: We require tmeas be sorted\n");
+        node0_printf("ERROR: tmeas[%d]=%g; tmeas[%d]=%g\n",
+                     i, par_buf.tmeas[i], i - 1, par_buf.tmeas[i - 1]);
         status++;
         break;
       }
@@ -160,13 +157,9 @@ int readin(int prompt) {
   start_eps = par_buf.start_eps;
   max_eps = par_buf.max_eps;
   tmax = par_buf.tmax;
-  num_block = par_buf.num_block;
-  for (i = 0; i < num_block; i++)
-    tblock[i] = par_buf.tblock[i];
-
-  alpha_smear[0] = par_buf.alpha_hyp0;
-  alpha_smear[1] = par_buf.alpha_hyp1;
-  alpha_smear[2] = par_buf.alpha_hyp2;
+  num_meas = par_buf.num_meas;
+  for (i = 0; i < num_meas; i++)
+    tmeas[i] = par_buf.tmeas[i];
 
   startflag = par_buf.startflag;
   saveflag = par_buf.saveflag;

@@ -12,10 +12,9 @@ typedef struct {
   char startfile[MAXFILENAME], savefile[MAXFILENAME];
   char stringLFN[MAXFILENAME];  // ILDG LFN if applicable
 
-  // Wilson flow and MCRG blocking paramaters
-  int num_block;
-  Real start_eps, max_eps;
-  Real tmax, alpha_hyp0, alpha_hyp1, alpha_hyp2, tblock[100];
+  // Wilson flow and measurement parameters
+  int num_meas;
+  Real start_eps, max_eps, tmax, tmeas[100];
 } params;
 #endif
 // -----------------------------------------------------------------

@@ -13,15 +13,15 @@ void directional_staple(int dir, int dir2, field_offset lnk1,
 
   register int i;
   register site *s;
-  msg_tag *tag0, *tag1, *tag2;
+  msg_tag *tag, *tag2, *tag3;
   matrix_f tmat;
 
-  // Get blocked_link[dir2] from direction dir
-  tag0 = start_gather_site(lnk2, sizeof(matrix_f), dir,
-                           EVENANDODD, gen_pt[0]);
+  // Get link[dir2] from direction dir
+  tag = start_gather_site(lnk2, sizeof(matrix_f), dir,
+                          EVENANDODD, gen_pt[0]);
 
-  // Get blocked_link[dir] from direction dir2
-  tag1 = start_gather_site(lnk1, sizeof(matrix_f), dir2,
+  // Get link[dir] from direction dir2
+  tag2 = start_gather_site(lnk1, sizeof(matrix_f), dir2,
                            EVENANDODD, gen_pt[1]);
 
   // Start working on the lower staple while we wait for the gathers
@@ -33,15 +33,15 @@ void directional_staple(int dir, int dir2, field_offset lnk1,
   }
 
   // Finish lower staple
-  wait_gather(tag0);
-  wait_gather(tag1);
+  wait_gather(tag);
+  wait_gather(tag2);
   FORALLSITES(i, s) {
     mult_nn_f(&(tempmatf[i]), (matrix_f *)gen_pt[0][i], &tmat);
     mat_copy_f(&tmat, &(tempmatf[i]));       // Overwrite tempmatf
   }
 
   // Gather staple from direction -dir2 to "home" site
-  tag2 = start_gather_field(tempmatf, sizeof(matrix_f),
+  tag3 = start_gather_field(tempmatf, sizeof(matrix_f),
                             OPP_DIR(dir2), EVENANDODD, gen_pt[2]);
 
   // Calculate upper staple, add it
@@ -51,13 +51,13 @@ void directional_staple(int dir, int dir2, field_offset lnk1,
   }
 
   // Finally add the lower staple
-  wait_gather(tag2);
+  wait_gather(tag3);
   FORALLSITES(i, s)
     sum_mat_f((matrix_f *)gen_pt[2][i], &(stp[i]));
 
-  cleanup_gather(tag0);
-  cleanup_gather(tag1);
+  cleanup_gather(tag);
   cleanup_gather(tag2);
+  cleanup_gather(tag3);
 }
 // -----------------------------------------------------------------
 

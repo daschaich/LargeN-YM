@@ -69,7 +69,7 @@ int main(int argc, char *argv[]) {
 
     // Measure and print Polyakov loop and plaquette
     // along with iterations for fermionic measurements above
-    plp = ploop();
+    plp = ploop(TUP);
     plaquette(&ss_plaq, &st_plaq);
     plaquette_frep(&ss_plaq_frep, &st_plaq_frep);
     node0_printf("GMES %.8g %.8g %d %d %.8g %.8g %.8g %.8g\n",

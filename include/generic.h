@@ -142,16 +142,11 @@ u_int32type nersc_cksum();
 /* make_global_fields.c */
 void make_global_fields();
 
-/* path_product.c */
-void path_product(const int *dir, const int length, matrix *tempmat1);
-void path_prod_subl(const int *dir, const int length, const int subl,
-        matrix *tempmat1);
-
 /* plaquette.c */
 void plaquette(Real *ss_plaq, Real *st_plaq);
 
 /* ploop.c */
-complex ploop();
+complex ploop(int dir);
 
 /* ranmom.c */
 void ranmom();

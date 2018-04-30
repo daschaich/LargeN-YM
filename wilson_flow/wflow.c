@@ -6,7 +6,7 @@
 void wflow() {
   register int i, dir;
   register site *s;
-  int j, istep, block_count = 0, blmax = 0;
+  int j, istep, meas_count = 0;
   int max_scale, eps_scale = 1, N_base = 0;     // All three always positive
   double t = 0.0, E = 0.0, tSqE = 0.0, old_tSqE, der_tSqE;
   double ssplaq, stplaq, plaq = 0, old_plaq, baseline = 0.0;
@@ -15,21 +15,10 @@ void wflow() {
   double Delta_t, interp_t, interp_plaq, interp_E, interp_tSqE;
   double interp_check, interp_topo, interp_der;
 
-  // Determine maximum number of blockings from smallest dimension
-  // Works even if we can only block down to odd j > 4
-  if (nx < nt)
-    j = nx;
-  else
-    j = nt;
-  while (j % 2 == 0 && j > 2) {    // While j is even
-    j /= 2;
-    blmax++;
-  }
-
-  // Special case: measure MCRG-blocked observables before any flow
-  if (num_block > 0 && tblock[0] == 0.0) {
-    mcrg_block(tblock[0], blmax);
-    block_count++;
+  // Special case: measure observables before any flow
+  if (num_meas > 0 && tmeas[0] == 0.0) {
+    meas(tmeas[0]);
+    meas_count++;
   }
 
   // Go
@@ -106,12 +95,12 @@ void wflow() {
     node0_printf("WFLOW %g %g %g %g %g %g %g\n",
                  t, plaq, E, tSqE, der_tSqE, check, topo);
 
-    // Do MCRG blocking at specified t
+    // Do measurements at specified t
     // Use start_eps rather than epsilon to get more accurate targeting
-    if (block_count < num_block
-        && fabs(t + 0.5 * start_eps) >= fabs(tblock[block_count])) {
-      mcrg_block(tblock[block_count], blmax);
-      block_count++;
+    if (meas_count < num_meas
+        && fabs(t + 0.5 * start_eps) >= fabs(tmeas[meas_count])) {
+      meas(tmeas[meas_count]);
+      meas_count++;
     }
 
     // Choose epsilon for the next step
@@ -128,7 +117,7 @@ void wflow() {
     // where eps_scale = floor(baseline / Delta_plaq)
     // Any signs should cancel in the Delta_plaq factors
     // Round down if eps_scale exceeds max_scale
-    // Also reduce to land on next tblock or final tmax
+    // Also reduce to land on next tmeas or final tmax
     else {
       // Finish setting up the baseline if this is the first t > 5
       if (N_base > 0) {
@@ -142,7 +131,7 @@ void wflow() {
         eps_scale = max_scale;
       epsilon = eps_scale * start_eps;
 
-      // Make sure we don't overshoot tmax or next tblock
+      // Make sure we don't overshoot tmax or next tmeas
       // This can probably be made more elegant
       // Need to make sure epsilon never becomes zero
       if (fabs(t + epsilon) > fabs(tmax)) {
@@ -151,9 +140,9 @@ void wflow() {
           eps_scale = 1;
         epsilon = eps_scale * start_eps;
       }
-      else if (block_count < num_block
-               && fabs(t + epsilon) > fabs(tblock[block_count])) {
-        eps_scale = (int)floor((tblock[block_count] - t) / start_eps);
+      else if (meas_count < num_meas
+               && fabs(t + epsilon) > fabs(tmeas[meas_count])) {
+        eps_scale = (int)floor((tmeas[meas_count] - t) / start_eps);
         if (eps_scale < 1)
           eps_scale = 1;
         epsilon = eps_scale * start_eps;
