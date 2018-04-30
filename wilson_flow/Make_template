@@ -55,6 +55,10 @@ G_OBJECTS = check_unitarity.o \
             reunitarize.o     \
             remap_stdio_from_args.o
 
+ifeq ($(strip ${HAVEQIO}),true)
+  G_OBJECTS += io_scidac.o io_scidac_types.o
+endif
+
 # Selection of layout
 LAYOUT = layout_hyper_prime.o
 
@@ -82,11 +86,23 @@ ${LASTMAKE}: ${ALL_MAKES}
 # All make files used in this compilation
 ALL_MAKES = Make_template            \
             ${MAKEFILE}              \
+            ../Make_template_qop     \
+            ../Make_template_scidac  \
             ../generic/Make_template \
             ../generic_nhyp/Make_template
 
 # To force a remake when changing any make file, header, or target
 ${OBJECTS} : ${HEADERS} ${LASTMAKE} ${ALL_MAKES}
+
+ifeq ($(strip ${HAVEQMP}),true)
+  DHAVE_QMP = -DHAVE_QMP
+endif
+
+ifeq ($(strip ${HAVEQIO}),true)
+  DHAVE_QIO = -DHAVE_QIO
+endif
+
+DARCH = ${DHAVE_QMP} ${DHAVE_QIO}
 
 ##### Targets:
 su3_Wflow::
