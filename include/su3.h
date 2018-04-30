@@ -28,6 +28,7 @@
 #define NCOL 4
 #define DIMF 4
 #define FREP FUNDAMENTAL
+#define N_OFFDIAG (NCOL * (NCOL - 1) / 2)
 
 // Only have anti_hermitmat and explicit loops in libraries for N <= 4
 #if NCOL > 4
@@ -44,20 +45,11 @@ typedef struct { fcomplex e[NCOL][NCOL]; } fmatrix_f;
 typedef struct { fcomplex e[DIMF][DIMF]; } fmatrix;
 typedef struct { fcomplex c[NCOL]; } fvector_f;
 typedef struct { fcomplex c[DIMF]; } fvector;
+
+// Anti-hermitian matrices for general NCOL
 typedef struct {
-#if NCOL == 2
-  fcomplex m01;
-  float m00im, m11im;
-#endif
-#if NCOL == 3
-  fcomplex m01, m02, m12;
-  float m00im, m11im, m22im;
-  float space;
-#endif
-#if NCOL == 4
-  fcomplex m01, m02, m03, m12, m13, m23;
-  float m00im, m11im, m22im, m33im;
-#endif
+  fcomplex m[N_OFFDIAG];
+  float im_diag[NCOL];
 } fanti_hermitmat;
 
 typedef struct { dcomplex e[NCOL][NCOL]; } dmatrix_f;
@@ -65,19 +57,8 @@ typedef struct { dcomplex e[DIMF][DIMF]; } dmatrix;
 typedef struct { dcomplex c[NCOL]; } dvector_f;
 typedef struct { dcomplex c[DIMF]; } dvector;
 typedef struct {
-#if NCOL == 2
-  dcomplex m01;
-  double m00im, m11im;
-#endif
-#if NCOL == 3
-  dcomplex m01, m02, m12;
-  double m00im, m11im, m22im;
-  double space;
-#endif
-#if NCOL == 4
-  dcomplex m01, m02, m03, m12, m13, m23;
-  double m00im, m11im, m22im, m33im;
-#endif
+  dcomplex m[N_OFFDIAG];
+  double im_diag[NCOL];
 } danti_hermitmat;
 
 #if PRECISION == 1

@@ -1,68 +1,55 @@
-/*****************  make_ahmat.c  (in su3.a) ****************************
-*									*
-* void make_anti_hermitian( matrix *m3, anti_hermitmat *ah3)	*
-* take the traceless and anti_hermitian part of an su3 matrix 		*
-* and compress it 							*
-*/
+// -----------------------------------------------------------------
+// Compute and compress the traceless anti-hermitian part of a matrix
+// dest = 0.5 * (src - src^dag) - Tr[0.5 * (src - src^dag)]
 #include "../include/config.h"
 #include "../include/complex.h"
 #include "../include/su3.h"
 
+void make_anti_hermitian(matrix_f *src, anti_hermitmat *dest) {
+  Real tr;
 
 #ifndef FAST
-void make_anti_hermitian( matrix_f *m3, anti_hermitmat *ah3 ) {
-Real temp;
-	
-#if (NCOL==2)
-	temp =
-	    (m3->e[0][0].imag + m3->e[1][1].imag)*0.5;
-#elif (NCOL==3)
-	temp =
-	    (m3->e[0][0].imag + m3->e[1][1].imag + m3->e[2][2].imag)*0.33333333333333333;
-#elif (NCOL==4)
-	temp =
-	    (m3->e[0][0].imag + m3->e[1][1].imag + m3->e[2][2].imag + m3->e[3][3].imag)*0.25;
-#endif
-	ah3->m00im = m3->e[0][0].imag - temp;
-	ah3->m11im = m3->e[1][1].imag - temp;
-	ah3->m01.real = (m3->e[0][1].real - m3->e[1][0].real)*0.5;
-	ah3->m01.imag = (m3->e[0][1].imag + m3->e[1][0].imag)*0.5;
-#if (NCOL>2)
-	ah3->m22im = m3->e[2][2].imag - temp;
-	ah3->m02.real = (m3->e[0][2].real - m3->e[2][0].real)*0.5;
-	ah3->m12.real = (m3->e[1][2].real - m3->e[2][1].real)*0.5;
-	ah3->m02.imag = (m3->e[0][2].imag + m3->e[2][0].imag)*0.5;
-	ah3->m12.imag = (m3->e[1][2].imag + m3->e[2][1].imag)*0.5;
-#if (NCOL>3)
-	ah3->m33im = m3->e[3][3].imag - temp;
-	ah3->m03.real = (m3->e[0][3].real - m3->e[3][0].real)*0.5;
-	ah3->m13.real = (m3->e[1][3].real - m3->e[3][1].real)*0.5;
-	ah3->m23.real = (m3->e[2][3].real - m3->e[3][2].real)*0.5;
-	ah3->m03.imag = (m3->e[0][3].imag + m3->e[3][0].imag)*0.5;
-	ah3->m13.imag = (m3->e[1][3].imag + m3->e[3][1].imag)*0.5;
-	ah3->m23.imag = (m3->e[2][3].imag + m3->e[3][2].imag)*0.5;
-#endif
-#endif
+  int i, j, index = 0;
 
-}/* make_anti_hermitian */
+  tr = src->e[0][0].imag;
+  for (i = 1; i < NCOL; i++)
+    tr += src->e[i][i].imag;
+  tr /= (Real)NCOL;
 
-#else
-void make_anti_hermitian( matrix_f *m3, anti_hermitmat *ah3 ) {
-Real temp,temp2;
-	
-	temp =
-	    (m3->e[0][0].imag + m3->e[1][1].imag);
-	temp2 = temp + m3->e[2][2].imag;
-	temp = temp2*0.333333333333333333;
-	ah3->m00im = m3->e[0][0].imag - temp;
-	ah3->m11im = m3->e[1][1].imag - temp;
-	ah3->m22im = m3->e[2][2].imag - temp;
-	temp = m3->e[0][1].real - m3->e[1][0].real; ah3->m01.real = temp*0.5;
-	temp = m3->e[0][2].real - m3->e[2][0].real; ah3->m02.real = temp*0.5;
-	temp = m3->e[1][2].real - m3->e[2][1].real; ah3->m12.real = temp*0.5;
-	temp = m3->e[0][1].imag + m3->e[1][0].imag; ah3->m01.imag = temp*0.5;
-	temp = m3->e[0][2].imag + m3->e[2][0].imag; ah3->m02.imag = temp*0.5;
-	temp = m3->e[1][2].imag + m3->e[2][1].imag; ah3->m12.imag = temp*0.5;
+  for (i = 0; i < NCOL; i++)
+    dest->im_diag[i] = src->e[i][i].imag - tr;
 
-}/* make_anti_hermitian */
-#endif /*end ifdef FAST */
+  for (i = 0; i < NCOL; i++) {
+    for (j = i + 1; j < NCOL; j++) {
+      dest->m[index].real = 0.5 * (src->e[i][j].real - src->e[j][i].real);
+      dest->m[index].imag = 0.5 * (src->e[i][j].imag + src->e[j][i].imag);
+      index++;
+    }
+  }
+
+#else  // FAST version for NCOL = DIMF = 3
+  Real tr2;
+  tr = src->e[0][0].imag + src->e[1][1].imag;
+  tr2 = tr + src->e[2][2].imag;
+  tr = tr2 * 0.333333333333333333;
+  dest->im_diag[0] = src->e[0][0].imag - tr;
+  dest->im_diag[1] = src->e[1][1].imag - tr;
+  dest->im_diag[2] = src->e[2][2].imag - tr;
+
+  tr = src->e[0][1].real - src->e[1][0].real;
+  dest->m[0].real = tr * 0.5;
+  tr = src->e[0][1].imag + src->e[1][0].imag;
+  dest->m[0].imag = tr * 0.5;
+
+  tr = src->e[0][2].real - src->e[2][0].real;
+  dest->m[1].real = tr * 0.5;
+  tr = src->e[0][2].imag + src->e[2][0].imag;
+  dest->m[1].imag = tr * 0.5;
+
+  tr = src->e[1][2].real - src->e[2][1].real;
+  dest->m[2].real = tr * 0.5;
+  tr = src->e[1][2].imag + src->e[2][1].imag;
+  dest->m[2].imag = tr * 0.5;
+#endif
+}
+// -----------------------------------------------------------------

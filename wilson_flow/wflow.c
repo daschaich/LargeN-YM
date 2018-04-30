@@ -76,7 +76,7 @@ void wflow() {
     // Check with plaquette
     plaquette(&ssplaq, &stplaq);
     plaq = 0.5 * (ssplaq + stplaq);
-    check = 12.0 * t * t * (3.0 - plaq);
+    check = 12.0 * t * t * (NCOL - plaq);
 
     // If necessary, interpolate from previous t-eps to current t
     // before printing out results computed above
@@ -95,7 +95,7 @@ void wflow() {
         prev_tSqE = interp_tSqE;
 
         interp_check = old_check + Delta_t * slope_check;
-        interp_plaq = 3.0 - check / (12.0 * interp_t * interp_t);
+        interp_plaq = NCOL - check / (12.0 * interp_t * interp_t);
 
         interp_topo = old_topo + Delta_t * slope_topo;
         node0_printf("WFLOW %g %g %g %g %g %g %g (interp)\n",

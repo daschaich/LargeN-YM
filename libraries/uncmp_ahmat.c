@@ -1,57 +1,27 @@
-/************  uncmp_ahmat.c  (in su3.a) ********************************
-*									*
-* void uncompress_anti_hermitian( anti_hermitmat *mat_antihermit,	*
-*	matrix *mat_su3 )						*
-* uncompresses an anti_hermitian matrix to make a 3x3 complex matrix	*
-*/
+// -----------------------------------------------------------------
+// Uncompress an anti-hermitian matrix into a fundamental matrix
 #include "../include/config.h"
 #include "../include/complex.h"
 #include "../include/su3.h"
 
-void uncompress_anti_hermitian( anti_hermitmat *mat_antihermit,
-	matrix_f *mat_su3 ) {
-/* uncompresses an anti_hermitian su3 matrix */
-        Real temp1;
-	mat_su3->e[0][0].imag=mat_antihermit->m00im;
-	mat_su3->e[0][0].real=0.;
-	mat_su3->e[1][1].imag=mat_antihermit->m11im;
-	mat_su3->e[1][1].real=0.;
-	mat_su3->e[0][1].imag=mat_antihermit->m01.imag;
-	temp1=mat_antihermit->m01.real;
-	mat_su3->e[0][1].real=temp1;
-	mat_su3->e[1][0].real= -temp1;
-	mat_su3->e[1][0].imag=mat_antihermit->m01.imag;
-#if (NCOL>2)
-	mat_su3->e[2][2].imag=mat_antihermit->m22im;
-	mat_su3->e[2][2].real=0.;
-	mat_su3->e[0][2].imag=mat_antihermit->m02.imag;
-	temp1=mat_antihermit->m02.real;
-	mat_su3->e[0][2].real=temp1;
-	mat_su3->e[2][0].real= -temp1;
-	mat_su3->e[2][0].imag=mat_antihermit->m02.imag;
-	mat_su3->e[1][2].imag=mat_antihermit->m12.imag;
-	temp1=mat_antihermit->m12.real;
-	mat_su3->e[1][2].real=temp1;
-	mat_su3->e[2][1].real= -temp1;
-	mat_su3->e[2][1].imag=mat_antihermit->m12.imag;
-#if (NCOL>3)
-	mat_su3->e[3][3].imag=mat_antihermit->m33im;
-	mat_su3->e[3][3].real=0.;
-	mat_su3->e[0][3].imag=mat_antihermit->m03.imag;
-	temp1=mat_antihermit->m03.real;
-	mat_su3->e[0][3].real=temp1;
-	mat_su3->e[3][0].real= -temp1;
-	mat_su3->e[3][0].imag=mat_antihermit->m03.imag;
-	mat_su3->e[1][3].imag=mat_antihermit->m13.imag;
-	temp1=mat_antihermit->m13.real;
-	mat_su3->e[1][3].real=temp1;
-	mat_su3->e[3][1].real= -temp1;
-	mat_su3->e[3][1].imag=mat_antihermit->m13.imag;
-	mat_su3->e[2][3].imag=mat_antihermit->m23.imag;
-	temp1=mat_antihermit->m23.real;
-	mat_su3->e[2][3].real=temp1;
-	mat_su3->e[3][2].real= -temp1;
-	mat_su3->e[3][2].imag=mat_antihermit->m23.imag;
-#endif
-#endif
-}/*uncompress_anti_hermitian*/
+void uncompress_anti_hermitian(anti_hermitmat *src, matrix_f *dest) {
+  int i, j, index = 0;
+  Real tr;
+
+  for (i = 0; i < NCOL; i++) {
+    dest->e[i][i].imag = src->im_diag[i];
+    dest->e[i][i].real = 0.0;
+  }
+  for (i = 0; i < NCOL; i++) {
+    for (j = i + 1; j < NCOL; j++) {
+      dest->e[i][j].imag = src->m[index].imag;
+      dest->e[j][i].imag = src->m[index].imag;
+
+      tr = src->m[index].real;
+      dest->e[i][j].real = tr;
+      dest->e[j][i].real = -tr;
+      index++;
+    }
+  }
+}
+// -----------------------------------------------------------------

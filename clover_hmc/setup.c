@@ -104,9 +104,9 @@ int initial_set() {
 
   this_node = mynode();
   number_of_nodes = numnodes();
-  one_ov_N = 1.0 / (Real)NCOL;
   volume = nx * ny * nz * nt;
   one_ov_vol = 1.0 / (Real)volume;
+  one_ov_N = 1.0 / (Real)NCOL;
   total_iters = 0;
   return prompt;
 }

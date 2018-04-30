@@ -63,28 +63,26 @@ void exp_mult(int dir, double eps, anti_hermitmat *A) {
 // -----------------------------------------------------------------
 // Clear A
 void clear_antiH(anti_hermitmat *a) {
-  a->m01.real = 0.0;
-  a->m01.imag = 0.0;
-  a->m02.real = 0.0;
-  a->m02.imag = 0.0;
-  a->m12.real = 0.0;
-  a->m12.imag = 0.0;
-  a->m00im = 0.0;
-  a->m11im = 0.0;
-  a->m22im = 0.0;
+  int i;
+  for (i = 0; i < NCOL; i++)
+    a->im_diag[i] = 0.0;
+
+  for (i = 0; i < N_OFFDIAG; i++) {
+    a->m[i].real = 0.0;
+    a->m[i].imag = 0.0;
+  }
 }
 
 // c <-- c + s * b (output is always last)
 void scalar_mult_sum_antiH(anti_hermitmat *b, Real s, anti_hermitmat *c) {
-  c->m01.real += s * b->m01.real;
-  c->m01.imag += s * b->m01.imag;
-  c->m02.real += s * b->m02.real;
-  c->m02.imag += s * b->m02.imag;
-  c->m12.real += s * b->m12.real;
-  c->m12.imag += s * b->m12.imag;
-  c->m00im += s * b->m00im;
-  c->m11im += s * b->m11im;
-  c->m22im += s * b->m22im;
+  int i;
+  for (i = 0; i < NCOL; i++)
+    c->im_diag[i] += s * b->im_diag[i];
+
+  for (i = 0; i < N_OFFDIAG; i++) {
+    c->m[i].real += s * b->m[i].real;
+    c->m[i].imag += s * b->m[i].imag;
+  }
 }
 // -----------------------------------------------------------------
 
@@ -98,7 +96,7 @@ void update_flow(double f1, double f2) {
   register int i, dir;
   register site *s;
   matrix_f tmat;
-  anti_hermitmat tantiH;
+  anti_hermitmat tah;
 
   // Lie derivative of (Wilson) action
   // Need to compute all four before we start updating U
@@ -107,11 +105,10 @@ void update_flow(double f1, double f2) {
 
   FORALLUPDIR(dir) {
     FORALLSITES(i, s) {
-      // Project_antihermitian_traceless(U.Sdag)
       mult_na_f(&(s->linkf[dir]), &(S[dir][i]), &tmat);
-      make_anti_hermitian(&tmat, &tantiH);
-      // A += f1 * U.S
-      scalar_mult_sum_antiH(&tantiH, (Real)f1, &(A[dir][i]));
+      make_anti_hermitian(&tmat, &tah);   // Traceless anti-H part
+      // A += f1 * antihermitian_traceless(U.Sdag)
+      scalar_mult_sum_antiH(&tah, (Real)f1, &(A[dir][i]));
     }
     exp_mult(dir, f2, A[dir]);                  // U = exp(f2 * A).U
   }

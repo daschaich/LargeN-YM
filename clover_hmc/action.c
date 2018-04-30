@@ -36,29 +36,21 @@ double fermion_action() {
 
 // -----------------------------------------------------------------
 // Sum magnitude squared of an antihermition matrix
-void ahmat_mag_sq(anti_hermitmat *pt, Real *c) {
-  register Real x;
+Real ahmat_mag_sq(anti_hermitmat *ah) {
+  register int i;
+  register Real sum;
 
-  x = pt->m00im;    *c += 0.5 * x * x;
-  x = pt->m11im;    *c += 0.5 * x * x;
-  x = pt->m01.real; *c += x * x;
-  x = pt->m01.imag; *c += x * x;
-#if NCOL > 2
-  x = pt->m22im;    *c += 0.5 * x * x;
-  x = pt->m02.real; *c += x * x;
-  x = pt->m02.imag; *c += x * x;
-  x = pt->m12.real; *c += x * x;
-  x = pt->m12.imag; *c += x * x;
-#if NCOL > 3
-  x = pt->m33im;    *c += 0.5 * x * x;
-  x = pt->m03.real; *c += x * x;
-  x = pt->m03.imag; *c += x * x;
-  x = pt->m13.real; *c += x * x;
-  x = pt->m13.imag; *c += x * x;
-  x = pt->m23.real; *c += x * x;
-  x = pt->m23.imag; *c += x * x;
-#endif
-#endif
+  sum = ah->im_diag[0] * ah->im_diag[0];
+  for (i = 1; i < NCOL; i++)
+    sum += ah->im_diag[i] * ah->im_diag[i];
+  sum *= 0.5;
+
+  for (i = 0; i < N_OFFDIAG; i++) {
+    sum += ah->m[i].real * ah->m[i].real;
+    sum += ah->m[i].imag * ah->m[i].imag;
+  }
+
+  return sum;
 }
 // -----------------------------------------------------------------
 
@@ -71,9 +63,9 @@ double hmom_action() {
   register site *s;
   double sum = 0.0;
 
-  FORALLUPDIR(dir) {
-    FORALLSITES(i, s)
-      ahmat_mag_sq(&(s->mom[dir]), &sum);
+  FORALLSITES(i, s) {
+    FORALLUPDIR(dir)
+      sum += (double)ahmat_mag_sq(&(s->mom[dir]));
   }
   g_doublesum(&sum);
   return sum;

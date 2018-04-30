@@ -55,6 +55,7 @@ typedef struct {
 
 EXTERN int nx, ny, nz, nt;  // Lattice dimensions
 EXTERN int volume;          // Volume of lattice
+EXTERN Real one_ov_N;
 
 EXTERN double g_ssplaq, g_stplaq;   // Global plaqs for I/O
 EXTERN double_complex linktr;

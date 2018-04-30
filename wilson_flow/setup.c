@@ -18,7 +18,7 @@ int initial_set() {
   int prompt = 0, status = 0;
   if (mynode() == 0) {
     // Print banner
-    printf("Wilson flow with optional MCRG blocking\n");
+    printf("SU(%d) Wilson flow with optional MCRG blocking\n", NCOL);
     printf("Machine = %s, with %d nodes\n", machine_type(), numnodes());
     time_stamp("start");
 
@@ -47,6 +47,7 @@ int initial_set() {
   this_node = mynode();
   number_of_nodes = numnodes();
   volume = nx * ny * nz * nt;
+  one_ov_N = 1.0 / (Real)NCOL;
   return prompt;
 }
 // -----------------------------------------------------------------

@@ -44,7 +44,7 @@ void make_field_strength(field_offset link_src, field_offset field_dest) {
   register int i, component, dir = -99, dir2 = -99;
   register site *s;
   int j;
-  complex cc;
+  complex tc;
   matrix_f tmat, tmat2;
   msg_tag *mtag, *mtag2;
 
@@ -102,7 +102,7 @@ void make_field_strength(field_offset link_src, field_offset field_dest) {
 
     wait_gather(mtag);
     wait_gather(mtag2);
-    FORALLSITES(i,s){
+    FORALLSITES(i, s) {
       mult_nn_f((matrix_f *)(gen_pt[0][i]), &LINK(dir2), &(tempmatf[i]));
       mult_nn_f((matrix_f *)(gen_pt[1][i]), &LINK(dir), &(tempmatf2[i]));
     }
@@ -116,7 +116,7 @@ void make_field_strength(field_offset link_src, field_offset field_dest) {
 
     wait_gather(mtag);
     wait_gather(mtag2);
-    FORALLSITES(i,s){
+    FORALLSITES(i, s) {
       mult_an_f((matrix_f *)(gen_pt[1][i]), (matrix_f *)(gen_pt[0][i]), &tmat);
       adjoint_f(&tmat, &tmat2);
       sum_mat_f(&tmat, &FS(component));
@@ -139,7 +139,7 @@ void make_field_strength(field_offset link_src, field_offset field_dest) {
     mtag = start_gather_field(tempmatf, sizeof(matrix_f),
                               OPP_DIR(dir2), EVENANDODD, gen_pt[0]);
     wait_gather(mtag);
-    FORALLSITES(i,s){
+    FORALLSITES(i, s) {
       mult_na_f((matrix_f *)(gen_pt[0][i]), &LINK(dir), &tmat);
       adjoint_f(&tmat, &tmat2);
       sum_mat_f(&tmat, &FS(component));
@@ -149,10 +149,10 @@ void make_field_strength(field_offset link_src, field_offset field_dest) {
 
     // Make traceless
     FORALLSITES(i, s) {
-      cc = trace_f(&FS(component));
-      CDIVREAL(cc, 3.0, cc);
+      tc = trace_f(&FS(component));
+      CMULREAL(tc, one_ov_N, tc);
       for (j = 0; j < NCOL; j++)
-        CSUB(FS(component).e[j][j], cc, FS(component).e[j][j]);
+        CSUB(FS(component).e[j][j], tc, FS(component).e[j][j]);
     }
   }
 }
