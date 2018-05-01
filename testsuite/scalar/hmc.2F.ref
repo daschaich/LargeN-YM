@@ -8,7 +8,7 @@ BETA_FREP turned on
 Hybrid Monte Carlo algorithm
 Phi algorithm
 LU preconditioning
-start: Tue Jan 24 10:04:18 2017
+start: Tue May  1 12:01:21 2018
 
 type 0 for no prompts or 1 for prompts
 nflavors 2
@@ -49,11 +49,11 @@ forget
 Restored binary gauge configuration serially from file config.2F.4444
 Time stamp Tue Jan 24 11:16:32 2017
 Checksums 80b1ae78 5e1231b2 OK
-Time to reload gauge configuration = 0.001842 seconds
-CHECK PLAQ: 1.2979619495479771e+00 1.3327503332607795e+00
+Time to reload gauge configuration = 0.01916 seconds
+CHECK PLAQ: 1.2979619495479755e+00 1.3327503332607844e+00
 CHECK NERSC LINKTR: 1.0825699702081693e-03 CKSUM: 0
 Reunitarized for double precision.  Max deviation 4e-08 changed to 2.2e-16
-Time to check unitarity = 5.102e-05 seconds
+Time to check unitarity = 9.584e-05 seconds
 START 1.2979619 1.3327503 2.6307123
 f_eps0 0.2 f_eps1 0.05 g_eps 0.005
 WARMUPS COMPLETED
@@ -88,12 +88,12 @@ RUNNING COMPLETED
 STOP 1.2584509 1.3154781 2.573929
 Average cg iters for steps: 422
 Average cg iters for measurements: 28
-Time               = 2.329 seconds
-congrad time       = 0.2166 seconds
-fermion_force time = 1.493 seconds
-block_nhyp time    = 0.1234 seconds
+Time               = 2.351 seconds
+congrad time       = 0.2123 seconds
+fermion_force time = 1.512 seconds
+block_nhyp time    = 0.1242 seconds
 compute_fhb time   = 0 seconds
 total_iters = 1392
 
-exit: Tue Jan 24 10:04:21 2017
+exit: Tue May  1 12:01:24 2018
 
