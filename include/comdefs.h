@@ -19,8 +19,8 @@
 #define SWITCH_PARITY    1
 #define SCRAMBLE_PARITY  2
 
-/* msg_tag structure used for gathers */
-/* actual structure defined in individual com_*.c files */
+// msg_tag structure used for gathers
+// Actual structure defined in individual com_*.c files
 typedef struct msg_tag msg_tag;
 // -----------------------------------------------------------------
 
@@ -34,6 +34,9 @@ void terminate(int status);
 char* machine_type();
 int mynode();
 int numnodes();
+int const *nodegeom();
+int const *jobgeom();
+int *ionodegeom();
 void g_sync();
 void g_intsum(int *ipt);
 void g_uint32sum(u_int32type *pt);
@@ -68,56 +71,56 @@ void sort_eight_gathers(int index);
 #define sort_eight_neighborlists sort_eight_gathers
 
 int make_gather(
-  void (*func)(int, int, int, int, int *, int, int *, int *, int *, int *),
+  void (*func)(int, int, int, int, int*, int, int*, int*, int*, int*),
             /* function which defines sites to gather from */
   int *args,    /* list of arguments, to be passed to function */
   int inverse,    /* OWN_INVERSE, WANT_INVERSE, or NO_INVERSE */
   int want_even_odd,  /* ALLOW_EVEN_ODD or NO_EVEN_ODD */
   int parity_conserve); /* {SAME,SWITCH,SCRAMBLE}_PARITY */
 
-msg_tag * declare_gather_site(
+msg_tag* declare_gather_site(
   field_offset field, /* which field? Some member of structure "site" */
   int size,   /* size in bytes of the field (eg sizeof(vector))*/
   int index,    /* direction to gather from. eg XUP - index into
          neighbor tables */
   int parity,   /* parity of sites whose neighbors we gather.
          one of EVEN, ODD or EVENANDODD. */
-  char ** dest);  /* one of the vectors of pointers */
+  char **dest);  /* one of the vectors of pointers */
 
-void prepare_gather(msg_tag *);
-void do_gather(msg_tag *);
+void prepare_gather(msg_tag *mbuf);
+void do_gather(msg_tag *mbuf);
 void wait_gather(msg_tag *mbuf);
 void cleanup_gather(msg_tag *mbuf);
 
-msg_tag * start_gather_site(
+msg_tag* start_gather_site(
   field_offset field, /* which field? Some member of structure "site" */
   int size,   /* size in bytes of the field (eg sizeof(vector))*/
   int index,    /* direction to gather from. eg XUP - index into
          neighbor tables */
   int parity,   /* parity of sites whose neighbors we gather.
          one of EVEN, ODD or EVENANDODD. */
-  char ** dest);  /* one of the vectors of pointers */
+  char **dest);  /* one of the vectors of pointers */
 
 void restart_gather_site(
-  field_offset field, /* which field? Some member of structure "site" */
-  int size,   /* size in bytes of the field (eg sizeof(vector))*/
-  int index,    /* direction to gather from. eg XUP - index into
-         neighbor tables */
-  int parity,   /* parity of sites whose neighbors we gather.
-         one of EVEN, ODD or EVENANDODD. */
-  char ** dest,   /* one of the vectors of pointers */
+  field_offset field,    /* which field? Some member of structure "site" */
+  int size,        /* size in bytes of the field (eg sizeof(vector))*/
+  int index,        /* direction to gather from. eg XUP - index into
+               neighbor tables */
+  int parity,        /* parity of sites whose neighbors we gather.
+               one of EVEN, ODD or EVENANDODD. */
+  char ** dest,        /* one of the vectors of pointers */
   msg_tag *mbuf);       /* previously returned by start_gather_site */
 
-msg_tag * declare_gather_field(
-  void * field,   /* which field? pointer returned by malloc() */
+msg_tag* declare_gather_field(
+  void *field,   /* which field? pointer returned by malloc() */
   int size,   /* size in bytes of the field (eg sizeof(vector))*/
   int index,    /* direction to gather from. eg XUP - index into
          neighbor tables */
   int parity,   /* parity of sites whose neighbors we gather.
          one of EVEN, ODD or EVENANDODD. */
-  char ** dest);  /* one of the vectors of pointers */
+  char **dest);  /* one of the vectors of pointers */
 
-msg_tag * declare_strided_gather(
+msg_tag* declare_strided_gather(
   void *field,          /* source buffer aligned to desired field */
   int stride,           /* bytes between fields in source buffer */
   int size,   /* size in bytes of the field (eg sizeof(vector))*/
@@ -125,25 +128,25 @@ msg_tag * declare_strided_gather(
          neighbor tables */
   int subl,   /* subl of sites whose neighbors we gather.
          It is EVENANDODD, if all sublattices are done. */
-  char ** dest);  /* one of the vectors of pointers */
+  char **dest);  /* one of the vectors of pointers */
 
-msg_tag * start_gather_field(
-  void * field,   /* which field? pointer returned by malloc() */
+msg_tag* start_gather_field(
+  void *field,   /* which field? pointer returned by malloc() */
   int size,   /* size in bytes of the field (eg sizeof(vector))*/
   int index,    /* direction to gather from. eg XUP - index into
          neighbor tables */
   int parity,   /* parity of sites whose neighbors we gather.
          one of EVEN, ODD or EVENANDODD. */
-  char ** dest);  /* one of the vectors of pointers */
+  char **dest);  /* one of the vectors of pointers */
 
 void restart_gather_field(
-  void * field,   /* which field? pointer returned by malloc() */
-  int size,   /* size in bytes of the field (eg sizeof(vector))*/
-  int index,    /* direction to gather from. eg XUP - index into
-         neighbor tables */
-  int parity,   /* parity of sites whose neighbors we gather.
-         one of EVEN, ODD or EVENANDODD. */
-  char ** dest,   /* one of the vectors of pointers */
+  void * field,        /* which field? pointer returned by malloc() */
+  int size,        /* size in bytes of the field (eg sizeof(vector))*/
+  int index,        /* direction to gather from. eg XUP - index into
+               neighbor tables */
+  int parity,        /* parity of sites whose neighbors we gather.
+               one of EVEN, ODD or EVENANDODD. */
+  char ** dest,        /* one of the vectors of pointers */
   msg_tag *mbuf);       /* previously returned by start_gather_site */
 
 void accumulate_gather(
@@ -158,34 +161,33 @@ void declare_accumulate_gather_site(
          neighbor tables */
   int parity,   /* parity of sites whose neighbors we gather.
          one of EVEN, ODD or EVENANDODD. */
-  char ** dest);  /* one of the vectors of pointers */
+  char **dest);  /* one of the vectors of pointers */
 
 void declare_accumulate_gather_field(
   msg_tag **mmtag,      /* msg_tag to accumulate into */
-  void * field,   /* which field? pointer returned by malloc() */
+  void *field,   /* which field? pointer returned by malloc() */
   int size,   /* size in bytes of the field (eg sizeof(vector))*/
   int index,    /* direction to gather from. eg XUP - index into
          neighbor tables */
   int parity,   /* parity of sites whose neighbors we gather.
          one of EVEN, ODD or EVENANDODD. */
-  char ** dest);  /* one of the vectors of pointers */
+  char **dest);  /* one of the vectors of pointers */
 
-msg_tag * start_general_gather_site(
+msg_tag* start_general_gather_site(
   field_offset field, /* which field? Some member of structure "site" */
   int size,   /* size in bytes of the field (eg sizeof(vector))*/
   int *displacement,  /* displacement to gather from. four components */
   int parity,   /* parity of sites to which we gather.
          one of EVEN, ODD or EVENANDODD. */
-  char ** dest);  /* one of the vectors of pointers */
+  char **dest);  /* one of the vectors of pointers */
 
-msg_tag * start_general_gather_field(
-/* arguments */
- void * field,          /* which field? Pointer returned by malloc() */
+msg_tag* start_general_gather_field(
+ void *field,          /* which field? Pointer returned by malloc() */
  int size,    /* size in bytes of the field (eg sizeof(vector))*/
  int *displacement, /* displacement to gather from. four components */
  int parity,    /* parity of sites to which we gather.
          one of EVEN, ODD or EVENANDODD. */
- char ** dest);   /* one of the vectors of pointers */
+ char **dest);   /* one of the vectors of pointers */
 
 void wait_general_gather(msg_tag *mbuf);
 void cleanup_general_gather(msg_tag *mbuf);

@@ -33,7 +33,6 @@
 #define MAX_BUF_LENGTH 4096
 
 /* Checksums
-
    The dataset from which each checksum is computed is the full gauge
    configuration for lattice files and for propagator files, the
    propagator for a single source spin-color combination.  Data in these
@@ -63,232 +62,82 @@
 #define MAX_LINE_LENGTH 1024
 #define MAX_TOKENS 512
 
-#define TOL 0.0000001       // Tolerance for floating point checks
+#define TOL 0.0000001   // Tolerance for floating point checks
+// -----------------------------------------------------------------
 
 
-/*----------------------------------------------------------------------*/
 
-/* Open a binary file for serial writing by node 0 */
-
+// -----------------------------------------------------------------
+// Open a binary file for serial writing by node0
+// Return a file structure describing the opened file
 gauge_file *w_serial_i(char *filename) {
-  /* Only node 0 opens the file filename */
-  /* Returns a file structure describing the opened file */
-
-  char myname[] = "w_serial_i";
   FILE *fp;
   gauge_file *gf;
   gauge_header *gh;
 
-  /* Set up gauge file and gauge header structures and load header values */
+  // Set up gauge file and gauge header structures and load header values
   gf = setup_output_gauge_file();
   gh = gf->header;
 
-  /* Set number of nodes to zero to indicate coordinate natural ordering */
-
+  // Set number of nodes to zero to indicate coordinate natural ordering
   gh->order = NATURAL_ORDER;
 
-  /* Only node 0 opens the requested file */
+  // Only node0 opens the requested file
   if (this_node == 0) {
     fp = fopen(filename, "wb");
     if (fp == NULL) {
-      printf("%s: Node %d can't open file %s, error %d\n",
-          myname, this_node, filename, errno);fflush(stdout);
+      printf("w_serial_i: node%d can't open file %s, error %d\n",
+             this_node, filename, errno);
+      fflush(stdout);
       terminate(1);
     }
-
-    /* Node 0 writes the header */
-    swrite_gauge_hdr(fp, gh);
+    swrite_gauge_hdr(fp, gh);   // Write the header
   }
 
-  /* Assign values to file structure */
-  if (this_node == 0)
+  // Assign values to file structure
+  if (this_node == 0)   // Only node 0 knows about this file
     gf->fp = fp;
   else
-    gf->fp = NULL;                /* Only node 0 knows about this file */
+    gf->fp = NULL;
 
   gf->filename = filename;
-  gf->byterevflag    = 0;            /* Not used for writing */
-  gf->rank2rcv       = NULL;         /* Not used for writing */
-  gf->parallel       = 0;
-
+  gf->byterevflag = 0;    // Not used for writing
+  gf->rank2rcv = NULL;    // Not used for writing
+  gf->parallel = 0;
   return gf;
 }
+// -----------------------------------------------------------------
 
 
-/*---------------------------------------------------------------------------*/
 
-/* Here only node 0 writes gauge configuration to a binary file */
-
-void w_serial_old(gauge_file *gf) {
-  /* gf  = file descriptor as opened by w_serial_i */
-
-  FILE *fp = NULL;
-  gauge_header *gh = NULL;
-  u_int32type *val;
-  int rank29, rank31;
-  fmatrix_f *lbuf = NULL;
-  fmatrix_f tbuf[4];
-  int buf_length;
-  register int i, j, k;
-  off_t offset;             /* File stream pointer */
-  off_t coord_list_size;    /* Size of coordinate list in bytes */
-  off_t head_size;          /* Size of header plus coordinate list */
-  off_t checksum_offset = 0; /* Location of checksum */
-  off_t gauge_check_size;   /* Size of checksum record */
-
-  int currentnode, newnode;
-  int x, y, z, t;
-
-  if (this_node == 0) {
-    if (gf->parallel)
-      printf("w_serial: Attempting serial write to parallel file \n");
-
-    lbuf = (fmatrix_f *)malloc(MAX_BUF_LENGTH*4*sizeof(fmatrix_f));
-    if (lbuf == NULL) {
-      printf("w_serial: Node 0 can't malloc lbuf\n");
-      fflush(stdout);
-      terminate(1);
-    }
-
-    fp = gf->fp;
-    gh = gf->header;
-
-    /* No coordinate list was written because fields are to be written
-       in standard coordinate list order */
-    coord_list_size = 0;
-    head_size = gh->header_bytes + coord_list_size;
-
-    checksum_offset = head_size;
-
-    gauge_check_size = sizeof(gf->check.sum29) + sizeof(gf->check.sum31);
-
-    offset = head_size + gauge_check_size;
-
-    if (fseeko(fp, offset, SEEK_SET) < 0) {
-      printf("w_serial: Node %d fseeko %lld failed error %d file %s\n",
-          this_node, (long long)offset, errno, gf->filename);
-      fflush(stdout);terminate(1);
-    }
-  }
-
-  /* Buffered algorithm for writing fields in serial order */
-
-  /* initialize checksums */
-  gf->check.sum31 = 0;
-  gf->check.sum29 = 0;
-  /* counts 32-bit words mod 29 and mod 31 in order of appearance on file */
-  /* Here only node 0 uses these values */
-  rank29 = 4*sizeof(fmatrix_f)/sizeof(int32type)*sites_on_node*this_node % 29;
-  rank31 = 4*sizeof(fmatrix_f)/sizeof(int32type)*sites_on_node*this_node % 31;
-
-  g_sync();
-  currentnode = 0;
-
-  buf_length = 0;
-
-  for (j = 0, t = 0;t<nt;t++)for (z = 0;z<nz;z++)for (y = 0;y<ny;y++)for (x = 0;x<nx;x++, j++) {
-    newnode = node_number(x, y, z, t);
-    if (newnode != currentnode) { /* switch to another node */
-      /* Node 0 sends a few bytes to newnode to say it's OK to
-         send */
-      if (this_node == 0 && newnode!= 0)send_field((char *)tbuf, 4, newnode);
-      if (this_node == newnode && newnode!= 0)get_field((char *)tbuf, 4, 0);
-      currentnode = newnode;
-    }
-
-    /* Node 0 receives the data */
-    if (this_node == 0) {
-      /* Data on node 0 is just copied to tbuf */
-      if (currentnode == 0) {
-        i = node_index(x, y, z, t);
-        d2f_4mat(&lattice[i].linkf[0], tbuf);
-      }
-      else {
-        /* Data on any other node is received in tbuf */
-        get_field((char *)tbuf, 4*sizeof(fmatrix_f), currentnode);
-      }
-
-      /* Pack tbufs in lbuf */
-      memcpy((void *)&lbuf[4*buf_length],
-          (void *)tbuf, 4*sizeof(fmatrix_f));
-
-
-      /* Accumulate checksums - contribution from next site */
-      for (k = 0, val = (u_int32type *)&lbuf[4*buf_length];
-          k < 4*(int)sizeof(fmatrix_f)/(int)sizeof(int32type);
-          k++, val++) {
-        gf->check.sum29 ^= (*val)<<rank29 | (*val)>>(32-rank29);
-        gf->check.sum31 ^= (*val)<<rank31 | (*val)>>(32-rank31);
-        rank29++; if (rank29 >= 29)rank29 = 0;
-        rank31++; if (rank31 >= 31)rank31 = 0;
-      }
-
-      buf_length++;
-
-
-      if ((buf_length == MAX_BUF_LENGTH) || (j == volume-1)) {
-        /* write out buffer */
-
-        if ((int)fwrite(lbuf, 4*sizeof(fmatrix_f), buf_length, fp) != buf_length) {
-          printf("w_serial: Node %d gauge configuration write error %d file %s\n",
-              this_node, errno, gf->filename);
-          fflush(stdout);
-          terminate(1);
-        }
-        buf_length = 0;   /* start again after write */
-      }
-    }
-    else { // Nodes other than 0
-      if (this_node == currentnode) {
-        i = node_index(x, y, z, t);
-        /* Convert 4 matrices from generic to single precision in
-           tbuf and send */
-        d2f_4mat(&lattice[i].linkf[0], tbuf);
-        send_field((char *)tbuf, 4*sizeof(fmatrix_f), 0);
-      }
-    }
-  } /*close x, y, z, t loops */
-
-  g_sync();
-  if (this_node == 0) {
-    free(lbuf);
-    printf("Saved gauge configuration serially to binary file %s\n",
-        gf->filename);
-    printf("Time stamp %s\n", gh->time_stamp);
-
-    /* Write checksum */
-    /* Position file pointer */
-    if (fseeko(fp, checksum_offset, SEEK_SET) < 0) {
-      printf("w_serial: Node %d fseeko %lld failed error %d file %s\n",
-          this_node, (long long)checksum_offset, errno, gf->filename);
-      fflush(stdout);
-      terminate(1);
-    }
-    write_checksum(SERIAL, gf);
-  }
-}
-
-/* Flush lbuf to output */
-/* buf_length is reset */
+// -----------------------------------------------------------------
+// Flush lbuf to output, resetting buf_length
 static void flush_lbuf_to_file(gauge_file *gf, fmatrix_f *lbuf,
-    int *buf_length) {
+                               int *buf_length) {
 
   FILE *fp = gf->fp;
+  int stat;
 
-  if (*buf_length <= 0)return;
-  if ((int)fwrite(lbuf, 4*sizeof(fmatrix_f),*buf_length, fp) !=
-      *buf_length) {
-    printf("w_serial: Node %d gauge configuration write error %d file %s\n",
-        this_node, errno, gf->filename);
+  if (*buf_length <= 0)
+    return;
+
+  stat = (int)fwrite(lbuf, 4 * sizeof(fmatrix_f), *buf_length, fp);
+  if (stat != *buf_length) {
+    printf("w_serial: node%d gauge configuration write error %d file %s\n",
+           this_node, errno, gf->filename);
     fflush(stdout);
     terminate(1);
   }
   *buf_length = 0;
 }
+// -----------------------------------------------------------------
 
-/* Accumulate checksums */
+
+
+// -----------------------------------------------------------------
+// Accumulate checksums
 static void accum_cksums(gauge_file *gf, int *rank29, int *rank31,
-    u_int32type *buf, int n) {
+                         u_int32type *buf, int n) {
 
   int k;
   u_int32type *val;
@@ -296,26 +145,33 @@ static void accum_cksums(gauge_file *gf, int *rank29, int *rank31,
   for (k = 0, val = buf; k < n; k++, val++) {
     gf->check.sum29 ^= (*val)<<(*rank29) | (*val)>>(32-(*rank29));
     gf->check.sum31 ^= (*val)<<(*rank31) | (*val)>>(32-(*rank31));
-    (*rank29)++; if (*rank29 >= 29)*rank29 = 0;
-    (*rank31)++; if (*rank31 >= 31)*rank31 = 0;
+    (*rank29)++;
+    if (*rank29 >= 29)
+      *rank29 = 0;
+    (*rank31)++;
+    if (*rank31 >= 31)
+      *rank31 = 0;
   }
 }
+// -----------------------------------------------------------------
 
-/* Flush tbuf to lbuf and accumulate checksums */
-/* tbuf_length is not reset here */
+
+
+// -----------------------------------------------------------------
+// Flush tbuf to lbuf and accumulate checksums without resetting tbuf_length
 static void flush_tbuf_to_lbuf(gauge_file *gf, int *rank29, int *rank31,
-    fmatrix_f *lbuf, int *buf_length,
-    fmatrix_f *tbuf, int tbuf_length) {
+                               fmatrix_f *lbuf, int *buf_length,
+                               fmatrix_f *tbuf, int tbuf_length) {
 
   int nword;
   u_int32type *buf;
 
   if (tbuf_length > 0) {
-    memcpy((void *)&lbuf[4*(*buf_length)],
-        (void *)tbuf, 4*tbuf_length*sizeof(fmatrix_f));
+    memcpy((void *)&lbuf[4 * (*buf_length)],
+           (void *)tbuf, 4 * tbuf_length * sizeof(fmatrix_f));
 
-    nword = 4*(int)sizeof(fmatrix_f)/(int)sizeof(int32type)*tbuf_length;
-    buf = (u_int32type *)&lbuf[4*(*buf_length)];
+    nword = 4 * (int)sizeof(fmatrix_f) / (int)sizeof(int32type) * tbuf_length;
+    buf = (u_int32type *)&lbuf[4 * (*buf_length)];
     accum_cksums(gf, rank29, rank31, buf, nword);
 
     *buf_length += tbuf_length;
@@ -323,62 +179,57 @@ static void flush_tbuf_to_lbuf(gauge_file *gf, int *rank29, int *rank31,
 }
 
 static void send_buf_to_node0(fmatrix_f *tbuf, int tbuf_length,
-    int currentnode) {
-  if (this_node == currentnode) {
-    send_field((char *)tbuf, 4*tbuf_length*sizeof(fmatrix_f), 0);
-  }
-  else if (this_node == 0) {
-    get_field((char *)tbuf, 4*tbuf_length*sizeof(fmatrix_f),
-        currentnode);
-  }
+                              int currentnode) {
+
+  if (this_node == currentnode)
+    send_field((char *)tbuf, 4 * tbuf_length * sizeof(fmatrix_f), 0);
+  else if (this_node == 0)
+    get_field((char *)tbuf, 4 * tbuf_length * sizeof(fmatrix_f), currentnode);
 }
+// -----------------------------------------------------------------
 
+
+
+// -----------------------------------------------------------------
+// Only node0 writes the gauge configuration to a binary file gf
 void w_serial(gauge_file *gf) {
-  /* gf  = file descriptor as opened by w_serial_i */
-
+  register int i, j;
+  int rank29, rank31, buf_length, tbuf_length;
+  int x, y, z, t, currentnode, newnode;
   FILE *fp = NULL;
   gauge_header *gh = NULL;
-  int rank29, rank31;
   fmatrix_f *lbuf = NULL;
-  fmatrix_f *tbuf = NULL;
-  int buf_length, tbuf_length;
-  register int i, j;
-  off_t offset;             /* File stream pointer */
-  off_t coord_list_size;    /* Size of coordinate list in bytes */
-  off_t head_size;          /* Size of header plus coordinate list */
-  off_t checksum_offset = 0; /* Location of checksum */
-  off_t gauge_check_size;   /* Size of checksum record */
+  fmatrix_f *tbuf = malloc(nx * 4 * sizeof(*tbuf));
+  off_t offset;               // File stream pointer
+  off_t coord_list_size;      // Size of coordinate list in bytes
+  off_t head_size;            // Size of header plus coordinate list
+  off_t checksum_offset = 0;  // Location of checksum
+  off_t gauge_check_size;     // Size of checksum record
 
-  int currentnode, newnode;
-  int x, y, z, t;
-  char myname[] = "w_serial";
-
-  /* Allocate message buffer space for one x dimension of the local
-     hypercube */
-  /* The largest possible space we need is nx */
-
-  tbuf = (fmatrix_f *)malloc(nx*4*sizeof(fmatrix_f));
+  // tbuf holds message buffer space for the x dimension
+  // of the local hypercube (needs at most 4nx matrices)
   if (tbuf == NULL) {
-    printf("%s(%d): No room for tbuf\n", myname, this_node);
+    printf("w_serial: node%d can't malloc tbuf\n", this_node);
     terminate(1);
   }
 
+  // Only allocate lbuf on node0
   if (this_node == 0) {
     if (gf->parallel)
-      printf("w_serial: Attempting serial write to parallel file \n");
+      printf("w_serial: Attempting serial write to parallel file\n");
 
-    lbuf = (fmatrix_f *)malloc(MAX_BUF_LENGTH*4*sizeof(fmatrix_f));
+    lbuf = malloc(MAX_BUF_LENGTH * 4 * sizeof(*lbuf));
     if (lbuf == NULL) {
       printf("w_serial: Node 0 can't malloc lbuf\n");
-      fflush(stdout);terminate(1);
+      fflush(stdout);
+      terminate(1);
     }
 
     fp = gf->fp;
     gh = gf->header;
 
-    /* No coordinate list was written because fields are to be written
-       in standard coordinate list order */
-
+    // No coordinate list written
+    // Fields to be written in standard coordinate list order
     coord_list_size = 0;
     head_size = gh->header_bytes + coord_list_size;
 
@@ -389,65 +240,75 @@ void w_serial(gauge_file *gf) {
     offset = head_size + gauge_check_size;
 
     if (fseeko(fp, offset, SEEK_SET) < 0) {
-      printf("w_serial: Node %d fseeko %lld failed error %d file %s\n",
-          this_node, (long long)offset, errno, gf->filename);
-      fflush(stdout);terminate(1);
+      printf("w_serial: node%d fseeko %lld failed error %d file %s\n",
+             this_node, (long long)offset, errno, gf->filename);
+      fflush(stdout);
+      terminate(1);
     }
   }
 
-  /* Buffered algorithm for writing fields in serial (lexicographic) order */
-
-  /* initialize checksums */
+  // Buffered algorithm for writing fields in serial (lexicographic) order
+  // Initialize checksums
   gf->check.sum31 = 0;
   gf->check.sum29 = 0;
-  /* counts 32-bit words mod 29 and mod 31 in order of appearance on file */
-  /* Here only node 0 uses these values -- both start at 0 */
-  rank29 = 4*sizeof(fmatrix_f)/sizeof(int32type)*sites_on_node*this_node % 29;
-  rank31 = 4*sizeof(fmatrix_f)/sizeof(int32type)*sites_on_node*this_node % 31;
+  // Count 32-bit words mod 29 and mod 31 in order of appearance on file
+  // Here only node 0 uses these values -- both start at 0
+  i = 4 * sizeof(fmatrix_f) / sizeof(int32type) * sites_on_node * this_node;
+  rank29 = i % 29;
+  rank31 = i % 31;
 
   g_sync();
-  currentnode = 0;  /* The node delivering data */
-
+  currentnode = 0;  // The node delivering data
   buf_length = 0;
   tbuf_length = 0;
-  for (j = 0, t = 0;t<nt;t++)for (z = 0;z<nz;z++)for (y = 0;y<ny;y++)for (x = 0;x<nx;x++, j++) {
-    newnode = node_number(x, y, z, t);  /* The node providing the next site */
-    if (newnode != currentnode || x == 0) {
-      /* We are switching to a new node or have exhausted a line of nx */
-      /* Sweep any data in the retiring node's tbuf to the node0 lbuf*/
-      if (tbuf_length > 0) {
-        if (currentnode != 0)
-          send_buf_to_node0(tbuf, tbuf_length, currentnode);
+  for (j = 0, t = 0; t < nt; t++) {
+    for (z = 0; z < nz; z++) {
+      for (y = 0; y < ny; y++) {
+        for (x = 0; x < nx; x++, j++) {
+          // The node providing the next site
+          newnode = node_number(x, y, z, t);
+          if (newnode != currentnode || x == 0) {
+            // We are switching to a new node or have exhausted a line of nx
+            // Sweep any data in the retiring node's tbuf to the node0 lbuf
+            if (tbuf_length > 0) {
+              if (currentnode != 0)
+                send_buf_to_node0(tbuf, tbuf_length, currentnode);
 
-        if (this_node == 0) {
-          /* Node 0 flushes tbuf and accumulates checksum */
-          flush_tbuf_to_lbuf(gf, &rank29, &rank31, lbuf, &buf_length,
-              tbuf, tbuf_length);
-          /* Node 0 writes lbuf if full */
-          if (buf_length > MAX_BUF_LENGTH - nx)
-            flush_lbuf_to_file(gf, lbuf, &buf_length);
+              // node0 flushes tbuf, accumulates checksum
+              // and writes lbuf if it is full
+              if (this_node == 0) {
+                flush_tbuf_to_lbuf(gf, &rank29, &rank31, lbuf, &buf_length,
+                    tbuf, tbuf_length);
+                if (buf_length > MAX_BUF_LENGTH - nx)
+                  flush_lbuf_to_file(gf, lbuf, &buf_length);
+              }
+              tbuf_length = 0;
+            }
+
+            // node0 sends a few bytes to newnode as a clear to send signal
+            if (newnode != currentnode) {
+              if (this_node == 0 && newnode != 0)
+                send_field((char *)tbuf, 4, newnode);
+              if (this_node == newnode && newnode != 0)
+                get_field((char *)tbuf, 4, 0);
+              currentnode = newnode;
+            }
+          }
+
+          // The node with the data just appends to its tbuf
+          if (this_node == currentnode) {
+            i = node_index(x, y, z, t);
+            d2f_4mat(&lattice[i].linkf[0], &tbuf[4 * tbuf_length]);
+          }
+
+          if (this_node == currentnode || this_node == 0)
+            tbuf_length++;
         }
-        tbuf_length = 0;
       }
-      /* Node 0 sends a few bytes to newnode as a clear to send signal */
-      if (newnode != currentnode) {
-        if (this_node == 0 && newnode!= 0)send_field((char *)tbuf, 4, newnode);
-        if (this_node == newnode && newnode!= 0)get_field((char *)tbuf, 4, 0);
-        currentnode = newnode;
-      }
-    } /* currentnode != newnode */
-
-    /* The node with the data just appends to its tbuf */
-    if (this_node == currentnode) {
-      i = node_index(x, y, z, t);
-      d2f_4mat(&lattice[i].linkf[0],&tbuf[4*tbuf_length]);
     }
+  }
 
-    if (this_node == currentnode || this_node == 0)
-      tbuf_length++;
-  } /*close x, y, z, t loops */
-
-  /* Purge any remaining data */
+  // Purge any remaining data
   if (tbuf_length > 0) {
     if (currentnode != 0)
       send_buf_to_node0(tbuf, tbuf_length, currentnode);
@@ -455,7 +316,7 @@ void w_serial(gauge_file *gf) {
 
   if (this_node == 0) {
     flush_tbuf_to_lbuf(gf, &rank29, &rank31, lbuf, &buf_length,
-        tbuf, tbuf_length);
+                       tbuf, tbuf_length);
     flush_lbuf_to_file(gf, lbuf, &buf_length);
   }
 
@@ -468,22 +329,23 @@ void w_serial(gauge_file *gf) {
         gf->filename);
     printf("Time stamp %s\n", gh->time_stamp);
 
-    /* Write checksum */
-    /* Position file pointer */
+    // Write checksum
+    // Position file pointer
     if (fseeko(fp, checksum_offset, SEEK_SET) < 0) {
-      printf("w_serial: Node %d fseeko %lld failed error %d file %s\n",
-          this_node, (long long)checksum_offset, errno, gf->filename);
+      printf("w_serial: node%d fseeko %lld failed error %d file %s\n",
+             this_node, (long long)checksum_offset, errno, gf->filename);
       fflush(stdout);
       terminate(1);
     }
     write_checksum(SERIAL, gf);
   }
 }
+// -----------------------------------------------------------------
 
-/*----------------------------------------------------------------------*/
 
-/* Here only node 0 reads the gauge configuration from a binary file */
-/* gf  = gauge configuration file structure */
+
+// -----------------------------------------------------------------
+// Only node 0 reads the gauge configuration gf from a binary file
 void r_serial(gauge_file *gf) {
   FILE *fp = gf->fp;
   gauge_header *gh = gf->header;
@@ -495,38 +357,36 @@ void r_serial(gauge_file *gf) {
   off_t coord_list_size;      // Size of coordinate list in bytes
   off_t head_size;            // Size of header plus coordinate list
   off_t checksum_offset = 0;  // Where we put the checksum
-  int rcv_rank, rcv_coords, destnode, k;
-  int x, y, z, t;
+  int rcv_rank, rcv_coords, destnode, stat, idest = 0;
+  int k, x, y, z, t;
   int buf_length = 0, where_in_buf = 0;
   gauge_check test_gc;
   u_int32type *val;
   int rank29, rank31;
-  fmatrix_f *lbuf = NULL;
-  fmatrix_f tmpsu3[4];
-  char myname[] = "r_serial";
-  int idest = 0;
+  fmatrix_f *lbuf = NULL;   // Only allocate on node0
+  fmatrix_f tmat[4];
 
   if (this_node == 0) {
-    /* Compute offset for reading gauge configuration */
+    // Compute offset for reading gauge configuration
     if (gh->magic_number == GAUGE_VERSION_NUMBER)
-      gauge_check_size = sizeof(gf->check.sum29) +
-        sizeof(gf->check.sum31);
+      gauge_check_size = sizeof(gf->check.sum29) + sizeof(gf->check.sum31);
     else
       gauge_check_size = 0;
 
-    if (gf->header->order == NATURAL_ORDER)coord_list_size = 0;
-    else coord_list_size = sizeof(int32type)*volume;
+    if (gf->header->order == NATURAL_ORDER)
+      coord_list_size = 0;
+    else
+      coord_list_size = sizeof(int32type) * volume;
     checksum_offset = gf->header->header_bytes + coord_list_size;
     head_size = checksum_offset + gauge_check_size;
 
-    /* Allocate space for read buffer */
+    // Allocate single-precision read buffer
     if (gf->parallel)
-      printf("%s: Attempting serial read from parallel file \n", myname);
+      printf("r_serial: Attempting serial read from parallel file\n");
 
-    /* Allocate single precision read buffer */
-    lbuf = malloc(MAX_BUF_LENGTH * 4 * sizeof(fmatrix_f));
+    lbuf = malloc(MAX_BUF_LENGTH * 4 * sizeof(*lbuf));
     if (lbuf == NULL) {
-      printf("%s: Node %d can't malloc lbuf\n", myname, this_node);
+      printf("r_serial: node%d can't malloc lbuf\n", this_node);
       fflush(stdout);
       terminate(1);
     }
@@ -535,28 +395,27 @@ void r_serial(gauge_file *gf) {
     offset = head_size;
 
     if (fseeko(fp, offset, SEEK_SET) < 0) {
-      printf("%s: Node 0 fseeko %lld failed error %d file %s\n",
-             myname, (long long)offset, errno, filename);
-      fflush(stdout);terminate(1);
+      printf("r_serial: node0 fseeko %lld failed error %d file %s\n",
+             (long long)offset, errno, filename);
+      fflush(stdout);
+      terminate(1);
     }
-
     buf_length = 0;
     where_in_buf = 0;
   }
 
-  /* all nodes initialize checksums */
+  // All nodes initialize checksums
   test_gc.sum29 = 0;
   test_gc.sum31 = 0;
-  /* counts 32-bit words mod 29 and mod 31 in order of appearance
-     on file */
-  /* Here all nodes see the same sequence because we read serially */
+  // Count 32-bit words mod 29 and mod 31 in order of appearance on file
+  // Here all nodes see the same sequence because we read serially
   rank29 = 0;
   rank31 = 0;
 
   g_sync();
 
-  /* Node 0 reads and deals out the values */
-  for (rcv_rank = 0; rcv_rank<volume; rcv_rank++) {
+  // node0 reads and deals out the values
+  for (rcv_rank = 0; rcv_rank < volume; rcv_rank++) {
     /* If file is in coordinate natural order, receiving coordinate
        is given by rank. Otherwise, it is found in the table */
     if (gf->header->order == NATURAL_ORDER)
@@ -572,11 +431,11 @@ void r_serial(gauge_file *gf) {
     rcv_coords /= nz;
     t = rcv_coords % nt;
 
-    /* The node that gets the next set of gauge links */
+    // The node that gets the next set of gauge links
     destnode = node_number(x, y, z, t);
 
+    // node0 fills its buffer, if necessary
     if (this_node == 0) {
-      /* Node 0 fills its buffer, if necessary */
       if (where_in_buf == buf_length) {  /* get new buffer */
         /* new buffer length  = remaining sites, but never bigger
            than MAX_BUF_LENGTH */
@@ -584,56 +443,60 @@ void r_serial(gauge_file *gf) {
         if (buf_length > MAX_BUF_LENGTH)
           buf_length = MAX_BUF_LENGTH;
 
-        /* then do read */
-        if ((int)fread(lbuf, 4 * sizeof(fmatrix_f), buf_length, fp) != buf_length) {
-          printf("%s: node %d gauge configuration read error %d file %s\n",
-                 myname, this_node, errno, filename);
+        // Now do read
+        stat = (int)fread(lbuf, 4 * sizeof(fmatrix_f), buf_length, fp);
+        if (stat != buf_length) {
+          printf("r_serial: node%d gauge configuration read error %d file %s\n",
+                 this_node, errno, filename);
           fflush(stdout);
           terminate(1);
         }
-        where_in_buf = 0;  /* reset counter */
-      }  /*** end of the buffer read ****/
+        where_in_buf = 0;  // Reset counter
+      }  // End of the buffer read
 
-      if (destnode == 0) {  /* just copy links */
+      if (destnode == 0) {  // Just copy links
         idest = node_index(x, y, z, t);
-        /* Save 4 matrices in tmpsu3 for further processing */
-        memcpy(tmpsu3,&lbuf[4*where_in_buf], 4 * sizeof(fmatrix_f));
+        // Save 4 matrices in tmat for further processing
+        memcpy(tmat, &lbuf[4 * where_in_buf], 4 * sizeof(fmatrix_f));
       }
-      else {    /* send to correct node */
+      else {                // Send to correct node
         send_field((char *)&lbuf[4 * where_in_buf],
                    4 * sizeof(fmatrix_f), destnode);
       }
       where_in_buf++;
     }
 
-    /* The node that contains this site reads the message */
-    else {  /* for all nodes other than node 0 */
+    // The node that contains this site reads the message
+    else {  // All nodes other than node 0
       if (this_node == destnode) {
         idest = node_index(x, y, z, t);
-        /* Receive 4 matrices in temporary space for further processing */
-        get_field((char *)tmpsu3, 4 * sizeof(fmatrix_f), 0);
+        // Receive 4 matrices in temporary space for further processing
+        get_field((char *)tmat, 4 * sizeof(fmatrix_f), 0);
       }
     }
 
     /* The receiving node does the byte reversal and then checksum,
-       if needed.  At this point tmpsu3 contains the input matrices
+       if needed.  At this point tmat contains the input matrices
        and idest points to the destination site structure. */
-
     if (this_node == destnode) {
       if (byterevflag == 1)
-        byterevn((int32type *)tmpsu3,
+        byterevn((int32type *)tmat,
                  4 * sizeof(fmatrix_f) / sizeof(int32type));
-      /* Accumulate checksums */
-      for (k = 0, val = (u_int32type *)tmpsu3;
+      // Accumulate checksums
+      for (k = 0, val = (u_int32type *)tmat;
            k < 4*(int)sizeof(fmatrix_f) / (int)sizeof(int32type);
            k++, val++) {
-        test_gc.sum29 ^= (*val)<<rank29 | (*val)>>(32-rank29);
-        test_gc.sum31 ^= (*val)<<rank31 | (*val)>>(32-rank31);
-        rank29++; if (rank29 >= 29)rank29 = 0;
-        rank31++; if (rank31 >= 31)rank31 = 0;
+        test_gc.sum29 ^= (*val)<<rank29 | (*val)>>(32 - rank29);
+        test_gc.sum31 ^= (*val)<<rank31 | (*val)>>(32 - rank31);
+        rank29++;
+        if (rank29 >= 29)
+          rank29 = 0;
+        rank31++;
+        if (rank31 >= 31)
+          rank31 = 0;
       }
-      // Copy 4 matrices to lattice[idest], converting to generic precision
-      f2d_4mat(tmpsu3, &lattice[idest].linkf[0]);
+      // Copy 4 matrices to generic-precision lattice[idest]
+      f2d_4mat(tmat, &lattice[idest].linkf[0]);
     }
     else {
       rank29 += 4 * sizeof(fmatrix_f) / sizeof(int32type);
@@ -642,22 +505,19 @@ void r_serial(gauge_file *gf) {
       rank31 %= 31;
     }
   }
-
-  /* Combine node checksum contributions with global exclusive or */
+  // Combine node checksum contributions with global exclusive or
   g_xor32(&test_gc.sum29);
   g_xor32(&test_gc.sum31);
 
   if (this_node == 0) {
-    /* Read and verify checksum */
-    /* Checksums not implemented until version 5 */
-
+    // Read and verify checksum (not implemented until version 5)
     printf("Restored binary gauge configuration serially from file %s\n",
-        filename);
+           filename);
     if (gh->magic_number == GAUGE_VERSION_NUMBER) {
       printf("Time stamp %s\n", gh->time_stamp);
       if (fseeko(fp, checksum_offset, SEEK_SET) < 0) {
-        printf("%s: Node 0 fseeko %lld failed error %d file %s\n",
-            myname, (long long)offset, errno, filename);
+        printf("r_serial: node0 fseeko %lld failed error %d file %s\n",
+               (long long)offset, errno, filename);
         fflush(stdout);
         terminate(1);
       }
@@ -666,54 +526,45 @@ void r_serial(gauge_file *gf) {
     fflush(stdout);
     free(lbuf);
   }
+}
+// -----------------------------------------------------------------
 
-} /* r_serial */
 
 
-/*---------------------------------------------------------------------------*/
-
-/* Write parallel gauge configuration in coordinate natural order */
-/* gf  = file descriptor as opened by w_parallel_i */
+// -----------------------------------------------------------------
+// Write parallel gauge configuration gf in coordinate natural order
 void w_parallel(gauge_file *gf) {
   register int i;
-  FILE *fp;
-  fmatrix_f *lbuf;
+  FILE *fp = gf->fp;
   int buf_length, where_in_buf;
-  u_int32type *val;
+  int j, k, x, y, z, t;
   int rank29, rank31;
+  int isite, ksite, site_block, rcv_coords, rcv_rank, destnode, sendnode;
+  u_int32type *val;
   off_t checksum_offset;
-  int j, k;
-  int x, y, z, t;
+  fmatrix_f *lbuf = w_parallel_setup(gf, &checksum_offset);
   struct {
     short x, y, z, t;
     fmatrix_f linkf[4];
   } msg;
-  int isite, ksite, site_block;
-  int rcv_coords, rcv_rank;
-  int destnode, sendnode;
-  char myname[] = "w_parallel";
 
-  fp = gf->fp;
-
-  lbuf = w_parallel_setup(gf,&checksum_offset);
-
-  /* Collect buffer from other nodes and write when full */
-
-  /* initialize checksums */
+  // Collect buffer from other nodes and write when full
+  // initialize checksums
   gf->check.sum31 = 0;
   gf->check.sum29 = 0;
 
-  /* Read and deal */
-
+  // Read and deal
   g_sync();
   buf_length = 0;
 
   /* Clear buffer as a precaution.  Easier to tell if we botch the
      buffer loading. */
   for (i = 0; i < MAX_BUF_LENGTH; i++) {
-    for (j = 0; j < NCOL; j++)for (k = 0; k < NCOL; k++) {
-      lbuf[i].e[j][k].real = 0.0;
-      lbuf[i].e[j][k].imag = 0.0;
+    for (j = 0; j < NCOL; j++) {
+      for (k = 0; k < NCOL; k++) {
+        lbuf[i].e[j][k].real = 0.0;
+        lbuf[i].e[j][k].imag = 0.0;
+      }
     }
   }
 
@@ -727,15 +578,15 @@ void w_parallel(gauge_file *gf) {
   /* MUST be a factor of MAX_BUF_LENGTH */
   site_block = MAX_BUF_LENGTH;
   if (MAX_BUF_LENGTH % site_block != 0) {
-    printf("%s: site_block incommensurate with buffer size\n", myname);
+    printf("w_parallel: site_block incommensurate with buffer size\n");
     fflush(stdout);
     terminate(1);
   }
 
-  for (ksite = 0; ksite<sites_on_node; ksite += site_block) {
-    for (destnode = 0; destnode<number_of_nodes; destnode++)
+  for (ksite = 0; ksite < sites_on_node; ksite += site_block) {
+    for (destnode = 0; destnode < number_of_nodes; destnode++) {
       for (isite = ksite;
-          isite<sites_on_node && isite<ksite+site_block; isite++) {
+           isite < sites_on_node && isite < ksite + site_block; isite++) {
         /* This is the coordinate natural (typewriter) rank
            of the site the destnode needs next */
 
@@ -754,13 +605,13 @@ void w_parallel(gauge_file *gf) {
         sendnode = node_number(x, y, z, t);
 
         /* Node sendnode sends site value to destnode */
-        if (this_node == sendnode && destnode!= sendnode) {
+        if (this_node == sendnode && destnode != sendnode) {
           /* Message consists of site coordinates and 4 link matrices */
           msg.x = x; msg.y = y; msg.z = z; msg.t = t;
           i = node_index(x, y, z, t);
           /* Copy 4 matrices and convert to single precision msg
              structure */
-          d2f_4mat(&lattice[i].linkf[0],&msg.linkf[0]);
+          d2f_4mat(&lattice[i].linkf[0], &msg.linkf[0]);
 
           send_field((char *)&msg, sizeof(msg), destnode);
         }
@@ -771,8 +622,8 @@ void w_parallel(gauge_file *gf) {
             i = node_index(x, y, z, t);
             where_in_buf = buf_length;
             d2f_4mat(&lattice[i].linkf[0],&lbuf[4*where_in_buf]);
-            rank29 = rank31 =
-              4*sizeof(fmatrix_f)/sizeof(int32type)*rcv_rank;
+            rank29 = 4 * sizeof(fmatrix_f) / sizeof(int32type) * rcv_rank;
+            rank31 = rank29;
           }
           else {
             /* Receive a message */
@@ -786,20 +637,27 @@ void w_parallel(gauge_file *gf) {
             where_in_buf = (i % sites_on_node) % MAX_BUF_LENGTH;
 
             /* Move data to buffer */
-            memcpy((void *)&lbuf[4*where_in_buf],
-                (void *)msg.linkf, 4*sizeof(fmatrix_f));
-            rank29 = rank31 = 4*sizeof(fmatrix_f)/sizeof(int32type)*i;
+            memcpy((void *)&lbuf[4 * where_in_buf],
+                   (void *)msg.linkf, 4 * sizeof(fmatrix_f));
+            rank29 = 4 * sizeof(fmatrix_f) / sizeof(int32type) * i;
+            rank31 = rank29;
           }
 
           /* Receiving node accumulates checksums as the values
              are inserted into its buffer */
-          rank29 %= 29; rank31 %= 31;
-          for (k = 0, val = (u_int32type *)&lbuf[4*where_in_buf];
-              k < 4*(int)sizeof(fmatrix_f)/(int)sizeof(int32type); k++, val++) {
-            gf->check.sum29 ^= (*val)<<rank29 | (*val)>>(32-rank29);
-            gf->check.sum31 ^= (*val)<<rank31 | (*val)>>(32-rank31);
-            rank29++; if (rank29 >= 29)rank29 = 0;
-            rank31++; if (rank31 >= 31)rank31 = 0;
+          rank29 %= 29;
+          rank31 %= 31;
+          for (k = 0, val = (u_int32type *)&lbuf[4 * where_in_buf];
+               k < 4 * (int)sizeof(fmatrix_f) / (int)sizeof(int32type);
+               k++, val++) {
+            gf->check.sum29 ^= (*val)<<rank29 | (*val)>>(32 - rank29);
+            gf->check.sum31 ^= (*val)<<rank31 | (*val)>>(32 - rank31);
+            rank29++;
+            if (rank29 >= 29)
+              rank29 = 0;
+            rank31++;
+            if (rank31 >= 31)
+              rank31 = 0;
           }
 
           buf_length++;
@@ -807,26 +665,28 @@ void w_parallel(gauge_file *gf) {
               (isite == sites_on_node -1)) {
             /* write out buffer */
 
-            if ((int)g_write(lbuf, 4*sizeof(fmatrix_f), buf_length, fp)
+            if ((int)g_write(lbuf, 4 * sizeof(fmatrix_f), buf_length, fp)
                 != buf_length) {
-              printf("%s: Node %d gauge configuration write error %d file %s\n",
-                  myname, this_node, errno, gf->filename);
+              printf("w_parallel: Node %d gauge configuration write error %d file %s\n",
+                     this_node, errno, gf->filename);
               fflush(stdout);
               terminate(1);
             }
             buf_length = 0;   /* start again after write */
             /* Clear buffer as a precaution */
-            for (i = 0;i<MAX_BUF_LENGTH;i++)
-              for (j = 0;j<NCOL;j++)for (k = 0;k<NCOL;k++) {
+            for (i = 0; i < MAX_BUF_LENGTH; i++) {
+              for (j = 0; j < NCOL; j++)for (k = 0; k < NCOL; k++) {
                 lbuf[i].e[j][k].real = 0.0;
                 lbuf[i].e[j][k].imag = 0.0;
               }
+            }
           }
-        } /* else if (this_node == destnode) */
-      } /* destnode, isite */
+        }
+      }
+    }
     g_sync();  /* To assure all write buffers are completed before
                   starting on the next buffer */
-  } /* ksite */
+  }
   free(lbuf);
 
   /* Combine checksums */
@@ -836,12 +696,13 @@ void w_parallel(gauge_file *gf) {
   /* Write checksum at end of lattice file */
 
   /* Position file for writing checksum */
-  /* Only node 0 writes checksum data */
+  // Only node0 writes checksum data
   if (this_node == 0) {
     if (g_seek(fp, checksum_offset, SEEK_SET) < 0) {
-      printf("%s: Node %d g_seek %ld for checksum failed error %d file %s\n",
-          myname, this_node, (long)checksum_offset, errno, gf->filename);
-      fflush(stdout);terminate(1);
+      printf("w_parallel: Node %d g_seek %ld for checksum failed error %d file %s\n",
+             this_node, (long)checksum_offset, errno, gf->filename);
+      fflush(stdout);
+      terminate(1);
     }
 
     write_checksum(PARALLEL, gf);
@@ -851,38 +712,30 @@ void w_parallel(gauge_file *gf) {
     printf("Time stamp %s\n", (gf->header)->time_stamp);
   }
 }
+// -----------------------------------------------------------------
 
-/*-----------------------------------------------------------------------*/
 
-/* Write parallel gauge configuration in node dump order */
 
+// -----------------------------------------------------------------
+// Write parallel gauge configuration gf in node dump order
+// C. McNeile's algorithm, changed slightl
 void w_checkpoint(gauge_file *gf) {
-  /* gf  = file descriptor as opened by w_checkpoint_i */
-
-  FILE *fp;
-  fmatrix_f *lbuf;
-  u_int32type *val;
-  int k;
-  int rank29, rank31;
-  off_t checksum_offset;
-  int buf_length = 0;
   register site *s;
   register int i;
-  char myname[] = "w_checkpoint";
+  FILE *fp = gf->fp;
+  off_t checksum_offset;
+  fmatrix_f *lbuf = w_parallel_setup(gf, &checksum_offset);
+  u_int32type *val;
+  int k, rank29, rank31, buf_length = 0, stat;
 
-  fp = gf->fp;
-
-  lbuf = w_parallel_setup(gf,&checksum_offset);
-
-  /* C. McNeile's algorithm, changed slightly*/
-
-  /* initialize checksums */
+  // Initialize checksums
   gf->check.sum31 = 0;
   gf->check.sum29 = 0;
   /* counts 32-bit words mod 29 and mod 31 in order of appearance on file */
   /* Here all nodes use these values */
-  rank29 = 4*sizeof(fmatrix_f)/sizeof(int32type)*sites_on_node*this_node % 29;
-  rank31 = 4*sizeof(fmatrix_f)/sizeof(int32type)*sites_on_node*this_node % 31;
+  k = 4 * sizeof(fmatrix_f) / sizeof(int32type) * sites_on_node * this_node;
+  rank29 = k % 29;
+  rank31 = k % 31;
 
   FORALLSITES(i, s) {
     /* load the gauge configuration into the buffer */
@@ -890,62 +743,63 @@ void w_checkpoint(gauge_file *gf) {
     d2f_4mat(&lattice[i].linkf[0],&lbuf[4*buf_length]);
 
     /* Accumulate checksums - contribution from next site moved into buffer*/
-    for (k = 0, val = (u_int32type *)&lbuf[4*buf_length];
-        k < 4*(int)sizeof(fmatrix_f)/(int)sizeof(int32type); k++, val++) {
-      gf->check.sum29 ^= (*val)<<rank29 | (*val)>>(32-rank29);
-      gf->check.sum31 ^= (*val)<<rank31 | (*val)>>(32-rank31);
-      rank29++; if (rank29 >= 29)rank29 = 0;
-      rank31++; if (rank31 >= 31)rank31 = 0;
+    for (k = 0, val = (u_int32type *)&lbuf[4 * buf_length];
+         k < 4 * (int)sizeof(fmatrix_f) / (int)sizeof(int32type);
+         k++, val++) {
+      gf->check.sum29 ^= (*val)<<rank29 | (*val)>>(32 - rank29);
+      gf->check.sum31 ^= (*val)<<rank31 | (*val)>>(32 - rank31);
+      rank29++;
+      if (rank29 >= 29)
+        rank29 = 0;
+      rank31++;
+      if (rank31 >= 31)
+        rank31 = 0;
     }
 
     buf_length++;
-
     if ((buf_length == MAX_BUF_LENGTH) || (i == sites_on_node -1)) {
-      /* write out buffer */
 
+      // Write out buffer
       fflush(stdout);
-      if ((int)g_write(lbuf, 4*sizeof(fmatrix_f), buf_length, fp) != buf_length) {
-        printf("%s: Node %d gauge configuration write error %d file %s\n",
-            myname, this_node, errno, gf->filename);
+      stat = (int)g_write(lbuf, 4*sizeof(fmatrix_f), buf_length, fp);
+      if (stat != buf_length) {
+        printf("w_checkpoint: Node %d gauge configuration write error %d file %s\n",
+               this_node, errno, gf->filename);
         fflush(stdout);
         terminate(1);
       }
-      buf_length = 0;   /* start again after write */
+      buf_length = 0;   // Start again after write
     }
-
   }
-
   free(lbuf);
 
-  /* Combine checksums */
+  // Combine checksums
   g_xor32(&gf->check.sum29);
   g_xor32(&gf->check.sum31);
 
   /* Write checksum at end of lattice file */
-
   /* Position file for writing checksum */
-  /* Only node 0 writes checksum data */
+  /* Only node0 writes checksum data */
   if (this_node == 0) {
     if (g_seek(fp, checksum_offset, SEEK_SET) < 0) {
-      printf("%s: Node %d g_seek %ld for checksum failed error %d file %s\n",
-          myname, this_node, (long)checksum_offset, errno, gf->filename);
+      printf("w_checkpoint: node%d g_seek %ld for checksum failed error %d file %s\n",
+             this_node, (long)checksum_offset, errno, gf->filename);
       fflush(stdout);
       terminate(1);
     }
-
     write_checksum(PARALLEL, gf);
 
-    printf("Saved gauge configuration checkpoint file %s\n",
-        gf->filename);
+    printf("Saved gauge configuration checkpoint file %s\n", gf->filename);
     printf("Time stamp %s\n", (gf->header)->time_stamp);
   }
 }
+// -----------------------------------------------------------------
 
-/*---------------------------------------------------------------------------*/
 
+
+// -----------------------------------------------------------------
+// Return file descriptor for opened file
 gauge_file *r_parallel_i(char *filename) {
-  /* Returns file descriptor for opened file */
-
   gauge_header *gh;
   gauge_file *gf;
   FILE *fp;
@@ -963,12 +817,14 @@ gauge_file *r_parallel_i(char *filename) {
   fp = g_open(filename, "rb");
   if (fp == NULL) {
     printf("r_parallel_i: Node %d can't open file %s, error %d\n",
-        this_node, filename, errno);fflush(stdout);terminate(1);
+           this_node, filename, errno);
+    fflush(stdout);
+    terminate(1);
   }
 
   gf->fp = fp;
 
-  /* Node 0 reads header */
+  // node0 reads header
   if (this_node == 0)
     byterevflag = read_gauge_hdr(gf, PARALLEL);
 
@@ -985,17 +841,19 @@ gauge_file *r_parallel_i(char *filename) {
 
   return gf;
 }
+// -----------------------------------------------------------------
 
-/*----------------------------------------------------------------------*/
 
-/* Read gauge configuration in parallel from a single file */
+
+// -----------------------------------------------------------------
+// Read gauge configuration in parallel from a single file
 void r_parallel(gauge_file *gf) {
   /* gf  = gauge configuration file structure */
+  register int i, k;
 
   FILE *fp;
   gauge_header *gh;
   char *filename;
-  /* int byterevflag;*/
   fmatrix_f *lbuf;
   struct {
     short x, y, z, t;
@@ -1009,12 +867,11 @@ void r_parallel(gauge_file *gf) {
   int destnode, sendnode, isite, ksite, site_block;
   int x, y, z, t;
   int rcv_rank, rcv_coords;
-  register int i, k;
 
-  off_t offset;            /* File stream pointer */
-  off_t gauge_node_size;   /* Size of a gauge configuration block for
-                              all sites on one node */
-  off_t gauge_check_size;  /* Size of gauge configuration checksum record */
+  off_t offset;             /* File stream pointer */
+  off_t gauge_node_size;    /* Size of a gauge configuration block for
+                               all sites on one node */
+  off_t gauge_check_size;   /* Size of gauge configuration checksum record */
   off_t coord_list_size;    /* Size of coordinate list in bytes */
   off_t head_size;          /* Size of header plus coordinate list */
   off_t checksum_offset;    /* Where we put the checksum */
@@ -1024,13 +881,12 @@ void r_parallel(gauge_file *gf) {
   gh = gf->header;
 
   filename = gf->filename;
-  /* byterevflag = gf->byterevflag;*/
 
   if (!gf->parallel)
     printf("%s: Attempting parallel read from serial file.\n", myname);
 
   /* Allocate single precision read buffer */
-  lbuf = (fmatrix_f *)malloc(MAX_BUF_LENGTH*4*sizeof(fmatrix_f));
+  lbuf = malloc(MAX_BUF_LENGTH*4*sizeof(fmatrix_f));
   if (lbuf == NULL) {
     printf("%s: Node %d can't malloc lbuf\n", myname, this_node);
     fflush(stdout);
@@ -1039,8 +895,7 @@ void r_parallel(gauge_file *gf) {
 
   gauge_node_size = sites_on_node * 4 * sizeof(fmatrix_f);
   if (gh->magic_number == GAUGE_VERSION_NUMBER)
-    gauge_check_size = sizeof(gf->check.sum29) +
-      sizeof(gf->check.sum31);
+    gauge_check_size = sizeof(gf->check.sum29) + sizeof(gf->check.sum31);
   else
     gauge_check_size = 0;
 
@@ -1115,7 +970,6 @@ void r_parallel(gauge_file *gf) {
         rcv_coords /= nz;
         t = rcv_coords % nt;
 
-
         /* Destination node for this value */
         destnode = node_number(x, y, z, t);
 
@@ -1131,7 +985,7 @@ void r_parallel(gauge_file *gf) {
 
             if (g_read(lbuf, buf_length*4*sizeof(fmatrix_f), 1, fp) != 1) {
               printf("%s: node %d gauge configuration read error %d file %s\n",
-                  myname, this_node, errno, filename);
+                     myname, this_node, errno, filename);
               fflush(stdout); terminate(1);
             }
             where_in_buf = 0;  /* reset counter */
@@ -1214,10 +1068,12 @@ void r_parallel(gauge_file *gf) {
     fflush(stdout);
   }
 }
+// -----------------------------------------------------------------
 
-/*---------------------------------------------------------------------------*/
-/* Top level routines */
-/*---------------------------------------------------------------------------*/
+
+
+// -----------------------------------------------------------------
+// Top level routines
 
 /* Read a lattice in ASCII format serially (node 0 only) */
 
@@ -1447,8 +1303,7 @@ gauge_file *save_ascii(char *filename) {
   g_sync();
   if (this_node == 0) {
     fflush(fp);
-    printf("Saved gauge configuration to ascii file %s\n",
-        gf->filename);
+    printf("Saved gauge configuration to ascii file %s\n", gf->filename);
     printf("Time stamp %s\n", gh->time_stamp);
     fclose(fp);
     fflush(stdout);
@@ -1467,27 +1322,33 @@ gauge_file *restore_serial(char *filename) {
     /* Close this reader and reread to get the header */
     free(gf->header);
     free(gf);
+#ifdef HAVE_QIO
+    gf = restore_serial_scidac(filename);
+#else
     node0_printf("Looks like a SciDAC file.  Recompile with QIO.\n");
     terminate(1);
+#endif
   }
   else {
     r_serial(gf);
     r_serial_f(gf);
   }
-
   return gf;
 }
+// -----------------------------------------------------------------
 
-/*---------------------------------------------------------------------------*/
-/* Restore lattice file by reading to all nodes simultaneously */
-/* Handles most lattice formats */
+
+
+// -----------------------------------------------------------------
+// Restore lattice file by reading to all nodes simultaneously
+// Handles most lattice formats
 gauge_file *restore_parallel(char *filename) {
   gauge_file *gf;
 
   gf = r_parallel_i(filename);
   if (gf->header->magic_number == LIME_MAGIC_NO) {
     r_serial_f(gf);
-    /* Close this reader and reread to get the header */
+    // Close this reader and reread to get the header
     free(gf->header);
     free(gf);
 #ifdef HAVE_QIO
@@ -1501,13 +1362,14 @@ gauge_file *restore_parallel(char *filename) {
     r_parallel(gf);
     r_parallel_f(gf);
   }
-
   return gf;
 }
+// -----------------------------------------------------------------
 
-/*---------------------------------------------------------------------------*/
 
-/* Save lattice in natural order by writing serially (node 0 only) */
+
+// -----------------------------------------------------------------
+// Save lattice in natural order by writing serially (node 0 only)
 gauge_file *save_serial(char *filename) {
   gauge_file *gf;
 
@@ -1517,10 +1379,12 @@ gauge_file *save_serial(char *filename) {
 
   return gf;
 }
+// -----------------------------------------------------------------
 
-/*---------------------------------------------------------------------------*/
 
-/* Save lattice in natural order by writing from all nodes at once */
+
+// -----------------------------------------------------------------
+// Save lattice in natural order by writing from all nodes at once
 gauge_file *save_parallel(char *filename) {
   gauge_file *gf;
 
@@ -1530,11 +1394,12 @@ gauge_file *save_parallel(char *filename) {
 
   return gf;
 }
+// -----------------------------------------------------------------
 
-/*---------------------------------------------------------------------------*/
 
-/* Save lattice in node-dump order */
 
+// -----------------------------------------------------------------
+// Save lattice in node-dump order
 /* This is much faster than save_parallel.  Lattices in this format
    can also be read much more quickly to the same number of nodes and
    layout. However, we probably wouldn't share lattices written in this

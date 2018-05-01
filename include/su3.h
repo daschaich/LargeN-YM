@@ -25,8 +25,8 @@
 
 // -----------------------------------------------------------------
 // FREP can take the values: FUNDAMENTAL, SYMMETRIC2, ANTISYMMETRIC2
-#define NCOL 4
-#define DIMF 4
+#define NCOL 3
+#define DIMF 3
 #define FREP FUNDAMENTAL
 #define N_OFFDIAG (NCOL * (NCOL - 1) / 2)
 
