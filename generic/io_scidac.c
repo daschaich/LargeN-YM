@@ -396,7 +396,7 @@ gauge_file *restore_scidac(char *filename, int serpar) {
 
   // Read the lattice field as single or double precision according to
   // the type size (bytes in a single SU(NCOL) matrix)
-  else if (NCOL == 2) {
+  if (NCOL == 2) {
     if (typesize == 32)
       status = read_F2_M_to_site(infile, recxml, dest, LATDIM);
     else if (typesize == 64)
