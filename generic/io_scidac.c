@@ -1,5 +1,8 @@
 // -----------------------------------------------------------------
 // QIO interface to produce ILDG archivable file
+// Generalized for N=2, 3 or 4
+// Full generality would require rewriting the elaborate #defines
+// in io_scidac_types, which seem to require a numerical NCOL argument
 #include "generic_includes.h"
 #include <qio.h>
 #include "../include/io_lat.h"
@@ -88,10 +91,10 @@ int qio_status(int status) {
 
 // -----------------------------------------------------------------
 QIO_Writer *open_scidac_output(char *filename, int volfmt,
-             int serpar, int ildgstyle,
-             char *stringLFN, QIO_Layout *layout,
-             QIO_Filesystem *fs,
-             QIO_String *xml_write_file) {
+                               int serpar, int ildgstyle,
+                               char *stringLFN, QIO_Layout *layout,
+                               QIO_Filesystem *fs,
+                               QIO_String *xml_write_file) {
 
   QIO_Writer *outfile;
   QIO_Oflag oflag;
@@ -109,12 +112,13 @@ QIO_Writer *open_scidac_output(char *filename, int volfmt,
 
   // Open the file for writing
 #ifdef QIO_TRELEASE
-  QIO_set_trelease(0,QIO_TRELEASE);
+  QIO_set_trelease(0, QIO_TRELEASE);
 #endif
   outfile = QIO_open_write(xml_write_file, filename, volfmt, layout,
-         fs, &oflag);
+                           fs, &oflag);
   if (outfile == NULL) {
-    printf("open_scidac_output(%d): QIO_open_write returned NULL\n",this_node);
+    printf("open_scidac_output(%d): ", this_node);
+    printf("QIO_open_write returned NULL\n");
     return NULL;
   }
   return outfile;
@@ -131,7 +135,6 @@ QIO_Reader *open_scidac_input_xml(char *filename, QIO_Layout *layout,
 
   QIO_Reader *infile;
   QIO_Iflag iflag;
-  char myname[] = "open_scidac_input_xml";
 
   // Create the iflag structure
   iflag.serpar = serpar;
@@ -139,11 +142,12 @@ QIO_Reader *open_scidac_input_xml(char *filename, QIO_Layout *layout,
 
   // Open the file for reading
 #ifdef QIO_TRELEASE
-  QIO_set_trelease(0,QIO_TRELEASE);
+  QIO_set_trelease(0, QIO_TRELEASE);
 #endif
   infile = QIO_open_read(xml_file_in, filename, layout, fs, &iflag);
   if (infile == NULL) {
-    printf("%s(%d): QIO_open_read returns NULL.\n",myname,this_node);
+    printf("open_scidac_input_xml(%d): ", this_node);
+    printf("QIO_open_read returns NULL.\n");
     return NULL;
   }
   return infile;
@@ -155,7 +159,7 @@ QIO_Reader *open_scidac_input_xml(char *filename, QIO_Layout *layout,
 // -----------------------------------------------------------------
 // Open file with announcement and discard file XML
 QIO_Reader *open_scidac_input(char *filename, QIO_Layout *layout,
-            QIO_Filesystem *fs, int serpar) {
+                              QIO_Filesystem *fs, int serpar) {
 
   QIO_String *xml_file_in;
   QIO_Reader *infile;
@@ -168,8 +172,8 @@ QIO_Reader *open_scidac_input(char *filename, QIO_Layout *layout,
   if (infile == NULL)return NULL;
 
   if (this_node==0) {
-    printf("Restoring binary SciDAC file %s\n",filename);
-    printf("File info \n\"%s\"\n",QIO_string_ptr(xml_file_in));
+    printf("Restoring binary SciDAC file %s\n", filename);
+    printf("File info \n\"%s\"\n", QIO_string_ptr(xml_file_in));
   }
 
   QIO_string_destroy(xml_file_in);
@@ -238,8 +242,20 @@ gauge_file *save_scidac(char *filename, int volfmt, int serpar, int ildgstyle,
   QIO_string_set(recxml, info);
 
   // Write the lattice field
+#if NCOL == 2
+  status = write_F2_M_from_site(outfile, recxml, src, LATDIM);
+#endif
+#if NCOL == 3
   status = write_F3_M_from_site(outfile, recxml, src, LATDIM);
-  if (status)terminate(1);
+#endif
+#if NCOL == 4
+  status = write_F4_M_from_site(outfile, recxml, src, LATDIM);
+#endif
+#if NCOL > 4
+  #error "NCOL > 4 not yet implemented!"
+#endif
+  if (status)
+    terminate(1);
 
   // Discard for now
   QIO_string_destroy(recxml);
@@ -327,22 +343,22 @@ gauge_file *save_partfile_scidac(char *filename) {
 
 gauge_file *save_serial_ildg(char *filename, char *stringLFN) {
   return save_scidac(filename, QIO_SINGLEFILE, QIO_SERIAL, QIO_ILDGLAT,
-         stringLFN);
+                     stringLFN);
 }
 
 gauge_file *save_parallel_ildg(char *filename, char *stringLFN) {
   return save_scidac(filename, QIO_SINGLEFILE, QIO_PARALLEL, QIO_ILDGLAT,
-         stringLFN);
+                     stringLFN);
 }
 
 gauge_file *save_multifile_ildg(char *filename, char *stringLFN) {
   return save_scidac(filename, QIO_MULTIFILE, QIO_SERIAL, QIO_ILDGLAT,
-         stringLFN);
+                     stringLFN);
 }
 
 gauge_file *save_partfile_ildg(char *filename, char *stringLFN) {
   return save_scidac(filename, QIO_PARTFILE, QIO_SERIAL, QIO_ILDGLAT,
-         stringLFN);
+                     stringLFN);
 }
 // -----------------------------------------------------------------
 
@@ -416,15 +432,18 @@ gauge_file *restore_scidac(char *filename, int serpar) {
     terminate(1);
   }
 #endif
-#if NCOL > 3
-  if (typesize == NCOL * NCOL * 2 * 4)
-    status = read_FN_M_to_site(infile, recxml, dest, LATDIM);
-  else if (typesize == NCOL * NCOL * 2 * 8)
-    status = read_DN_M_to_site(infile, recxml, dest, LATDIM);
+#if NCOL == 4
+  if (typesize == 128)
+    status = read_F4_M_to_site(infile, recxml, dest, LATDIM);
+  else if (typesize == 256)
+    status = read_D4_M_to_site(infile, recxml, dest, LATDIM);
   else {
     node0_printf("restore_scidac: Bad typesize %d\n", typesize);
     terminate(1);
   }
+#endif
+#if NCOL > 4
+  #error "NCOL > 4 not yet implemented!"
 #endif
   if (status)
     terminate(1);
@@ -481,12 +500,25 @@ void restore_color_matrix_scidac_to_site(char *filename,
 
   // Open file for reading
   infile = open_scidac_input(filename, &layout, &fs, QIO_SERIAL);
-  if (infile == NULL)terminate(1);
+  if (infile == NULL)
+    terminate(1);
 
   // Read the lattice field
   recxml = QIO_string_create();
+#if NCOL == 2
+  status = read_F2_M_to_site(infile, recxml, dest, count);
+#endif
+#if NCOL == 3
   status = read_F3_M_to_site(infile, recxml, dest, count);
-  if (status)terminate(1);
+#endif
+#if NCOL == 4
+  status = read_F4_M_to_site(infile, recxml, dest, count);
+#endif
+#if NCOL > 4
+  #error "NCOL > 4 not yet implemented!"
+#endif
+  if (status)
+    terminate(1);
 
   // Discard for now
   QIO_string_destroy(recxml);
@@ -517,12 +549,25 @@ void restore_color_matrix_scidac_to_field(char *filename,
 
   // Open file for reading
   infile = open_scidac_input(filename, &layout, &fs, QIO_SERIAL);
-  if (infile == NULL)terminate(1);
+  if (infile == NULL)
+    terminate(1);
 
   // Read the lattice field
   recxml = QIO_string_create();
+#if NCOL == 2
+  status = read_F2_M_to_field(infile, recxml, dest, count);
+#endif
+#if NCOL == 3
   status = read_F3_M_to_field(infile, recxml, dest, count);
-  if (status)terminate(1);
+#endif
+#if NCOL == 4
+  status = read_F4_M_to_field(infile, recxml, dest, count);
+#endif
+#if NCOL > 4
+  #error "NCOL > 4 not yet implemented!"
+#endif
+  if (status)
+    terminate(1);
 
   // Discard for now
   QIO_string_destroy(recxml);
@@ -537,7 +582,8 @@ void restore_color_matrix_scidac_to_field(char *filename,
 // Write a set of color matrices in SciDAC format,
 // taking data from the site structure
 void save_color_matrix_scidac_from_site(char *filename, char *fileinfo,
-      char *recinfo, int volfmt,  field_offset src, int count) {
+                                        char *recinfo, int volfmt,
+                                        field_offset src, int count) {
 
   QIO_Layout layout;
   QIO_Filesystem fs;
@@ -555,16 +601,28 @@ void save_color_matrix_scidac_from_site(char *filename, char *fileinfo,
 
   // Open file for writing
   filexml = QIO_string_create();
-  QIO_string_set(filexml,fileinfo);
+  QIO_string_set(filexml, fileinfo);
   outfile = open_scidac_output(filename, volfmt, QIO_SERIAL,
-             QIO_ILDGNO, NULL, &layout, &fs, filexml);
-  if (outfile == NULL)terminate(1);
+                               QIO_ILDGNO, NULL, &layout, &fs, filexml);
+  if (outfile == NULL)
+    terminate(1);
   QIO_string_destroy(filexml);
 
   // Write the lattice field
   recxml = QIO_string_create();
   QIO_string_set(recxml, recinfo);
+#if NCOL == 2
+  status = write_F2_M_from_site(outfile, recxml, src, count);
+#endif
+#if NCOL == 3
   status = write_F3_M_from_site(outfile, recxml, src, count);
+#endif
+#if NCOL == 4
+  status = write_F4_M_from_site(outfile, recxml, src, count);
+#endif
+#if NCOL > 4
+  #error "NCOL > 4 not yet implemented!"
+#endif
   if (status)terminate(1);
   QIO_string_destroy(recxml);
 
@@ -617,14 +675,27 @@ void save_color_matrix_scidac_from_field(char *filename, char *fileinfo,
   QIO_string_set(filexml, fileinfo);
   outfile = open_scidac_output(filename, volfmt, QIO_SERIAL,
                                QIO_ILDGNO, NULL, &layout, &fs, filexml);
-  if (outfile == NULL)terminate(1);
+  if (outfile == NULL)
+    terminate(1);
   QIO_string_destroy(filexml);
 
   // Write the lattice field
   recxml = QIO_string_create();
   QIO_string_set(recxml, recinfo);
+#if NCOL == 2
+  status = write_F2_M_from_field(outfile, recxml, src, count);
+#endif
+#if NCOL == 3
   status = write_F3_M_from_field(outfile, recxml, src, count);
-  if (status)terminate(1);
+#endif
+#if NCOL == 4
+  status = write_F4_M_from_field(outfile, recxml, src, count);
+#endif
+#if NCOL > 4
+  #error "NCOL > 4 not yet implemented!"
+#endif
+  if (status)
+    terminate(1);
   QIO_string_destroy(recxml);
 
   // Write information
@@ -1009,36 +1080,36 @@ void save_real_scidac_from_field(char *filename, char *fileinfo,
 
   // Open file for writing
   filexml = QIO_string_create();
-  QIO_string_set(filexml,fileinfo);
+  QIO_string_set(filexml, fileinfo);
   outfile = open_scidac_output(filename, volfmt, QIO_SERIAL,
-             QIO_ILDGNO, NULL, &layout, &fs, filexml);
-  if (outfile == NULL)terminate(1);
+                               QIO_ILDGNO, NULL, &layout, &fs, filexml);
+  if (outfile == NULL)
+    terminate(1);
   QIO_string_destroy(filexml);
 
   // Write the lattice field
   recxml = QIO_string_create();
   QIO_string_set(recxml,recinfo);
   status = write_F_R_from_field(outfile, recxml, src, count);
-  if (status)terminate(1);
+  if (status)
+    terminate(1);
   QIO_string_destroy(recxml);
 
   // Write information
   if (volfmt == QIO_SINGLEFILE) {
-    node0_printf("Saved real field serially to binary file %s\n",
-     filename);
+    node0_printf("Saved real field serially to binary file %s\n", filename);
   }
   else if (volfmt == QIO_MULTIFILE) {
     node0_printf("Saved real field in multifile format to binary file %s\n",
-     filename);
+                 filename);
   }
   else if (volfmt == QIO_PARTFILE) {
     node0_printf("Saved real field in partition format to binary file %s\n",
-     filename);
+                 filename);
   }
 
-  node0_printf("Checksums %x %x\n",
-         QIO_get_writer_last_checksuma(outfile),
-         QIO_get_writer_last_checksumb(outfile));
+  node0_printf("Checksums %x %x\n", QIO_get_writer_last_checksuma(outfile),
+               QIO_get_writer_last_checksumb(outfile));
 
   close_scidac_output(outfile);
 }
@@ -1095,8 +1166,7 @@ void save_real_scidac_from_site(char *filename, char *fileinfo,
     node0_printf("Saved real field in partition format to binary file %s\n",
                  filename);
 
-  node0_printf("Checksums %x %x\n",
-               QIO_get_writer_last_checksuma(outfile),
+  node0_printf("Checksums %x %x\n", QIO_get_writer_last_checksuma(outfile),
                QIO_get_writer_last_checksumb(outfile));
 
   close_scidac_output(outfile);

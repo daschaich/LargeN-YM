@@ -13,11 +13,11 @@
 
 void random_anti_hermitian(anti_hermitmat *ahmat, double_prn *prn_pt) {
   Real r3;
-#if (NCOL > 2)
+#if NCOL > 2
   Real r8;
-#if (NCOL > 3)
+#if NCOL > 3
   Real r15;
-#if (NCOL > 4)
+#if NCOL > 4
   int i, j;
   Real tr;
 #endif
@@ -28,14 +28,14 @@ void random_anti_hermitian(anti_hermitmat *ahmat, double_prn *prn_pt) {
   r3 = gaussian_rand_no(prn_pt);
   ahmat->m[0].real = gaussian_rand_no(prn_pt);
   ahmat->m[0].imag = gaussian_rand_no(prn_pt);
-#if (NCOL > 2)
+#if NCOL > 2
   r8 = gaussian_rand_no(prn_pt);
   r8 *= sqrt((double)(1.0 / 3.0));
   ahmat->m[1].real = gaussian_rand_no(prn_pt);
   ahmat->m[1].imag = gaussian_rand_no(prn_pt);
   ahmat->m[2].real = gaussian_rand_no(prn_pt);
   ahmat->m[2].imag = gaussian_rand_no(prn_pt);
-#if (NCOL > 3)
+#if NCOL > 3
   r15 = gaussian_rand_no(prn_pt);
   r15 *= sqrt((double)(1.0 / 6.0));
   ahmat->m[3].real = gaussian_rand_no(prn_pt);
@@ -44,7 +44,7 @@ void random_anti_hermitian(anti_hermitmat *ahmat, double_prn *prn_pt) {
   ahmat->m[4].imag = gaussian_rand_no(prn_pt);
   ahmat->m[5].real = gaussian_rand_no(prn_pt);
   ahmat->m[5].imag = gaussian_rand_no(prn_pt);
-#if (NCOL > 4)
+#if NCOL > 4
   for (i = 6; i < N_OFFDIAG; i++) {
     ahmat->m[i].imag = gaussian_rand_no(prn_pt);
     ahmat->m[i].imag = gaussian_rand_no(prn_pt);
@@ -54,22 +54,22 @@ void random_anti_hermitian(anti_hermitmat *ahmat, double_prn *prn_pt) {
 #endif
 
   // Diagonal elements---purely imaginary and traceless
-#if (NCOL == 2)
+#if NCOL == 2
   ahmat->im_diag[0] =  r3;
   ahmat->im_diag[1] = -r3;
 #endif
-#if (NCOL == 3)
+#if NCOL == 3
   ahmat->im_diag[0] =   r3 + r8;
   ahmat->im_diag[1] =  -r3 + r8;
   ahmat->im_diag[2] = -2.0 * r8;
 #endif
-#if (NCOL > 3)
+#if NCOL > 3
   ahmat->im_diag[0] =   r3 + r8 + r15;
   ahmat->im_diag[1] =  -r3 + r8 + r15;
   ahmat->im_diag[2] = -2.0 * r8 + r15;
   ahmat->im_diag[3] =      -3.0 * r15;
 #endif
-#if (NCOL > 4)
+#if NCOL > 4
   for (i = 4; i < NCOL; i++) {
     // Reuse r15 for next properly scaled random number
     // Scaling factor is sqrt(2 / (i * (i + 1)))

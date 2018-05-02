@@ -103,8 +103,7 @@ static void d2p_mat(matrix *dest, dmatrix *src) {
 // Move data from MILC site structure to output buffer
 #define make_vget_from_site(P, C, T, FIXTYPE, VARTYPE, FUNC) \
 void vget_##P##C##_##T##_from_site(char *buf, size_t index, int count, \
-           void *arg) \
-{ \
+           void *arg) { \
   int i; \
   FIXTYPE *dest = (FIXTYPE *)buf; \
   /* arg contains pointer to field offset value */ \
@@ -115,13 +114,10 @@ void vget_##P##C##_##T##_from_site(char *buf, size_t index, int count, \
     FUNC(dest+i, src+i); \
 }
 
-/* Factory function for moving data from a MILC field to the output
-   buffer */
-
+// Move data from a MILC field to the output buffer
 #define make_vget_from_field(P, C, T, FIXTYPE, VARTYPE, FUNC) \
 void vget_##P##C##_##T##_from_field(char *buf, size_t index, int count, \
-            void *arg) \
-{ \
+            void *arg) { \
   int i; \
   FIXTYPE *dest = (FIXTYPE *)buf; \
   /* arg contains pointer to the data array */ \
@@ -131,17 +127,14 @@ void vget_##P##C##_##T##_from_field(char *buf, size_t index, int count, \
     FUNC(dest+i, src+i); \
 }
 
-#define make_vget(P, C,  T, FIXTYPE, VARTYPE, FUNC) \
- make_vget_from_site(P, C,  T, FIXTYPE, VARTYPE, FUNC); \
- make_vget_from_field(P, C,  T, FIXTYPE, VARTYPE, FUNC);
+#define make_vget(P, C, T, FIXTYPE, VARTYPE, FUNC) \
+ make_vget_from_site(P, C, T, FIXTYPE, VARTYPE, FUNC); \
+ make_vget_from_field(P, C, T, FIXTYPE, VARTYPE, FUNC);
 
-/* Factory function for moving data from input buffer to MILC site
-   structure */
-
+// Move data from input buffer to MILC site structure
 #define make_vput_to_site(P, C, T, FIXTYPE, VARTYPE, FUNC) \
 void vput_##P##C##_##T##_to_site(char *buf, size_t index, int count, \
-         void *arg)          \
-{ \
+         void *arg) { \
   int i; \
   FIXTYPE *src = (FIXTYPE *)buf; \
   /* arg contains pointer to field offset value */ \
@@ -152,12 +145,10 @@ void vput_##P##C##_##T##_to_site(char *buf, size_t index, int count, \
     FUNC(dest+i, src+i); \
 }
 
-/* Factory function for moving data from input buffer to MILC field */
-
+// Move data from input buffer to MILC field
 #define make_vput_to_field(P, C, T, FIXTYPE, VARTYPE, FUNC) \
 void vput_##P##C##_##T##_to_field(char *buf, size_t index, int count, \
-         void *arg) \
-{ \
+         void *arg) { \
   int i; \
   FIXTYPE *src = (FIXTYPE *)buf; \
   /* arg contains pointer to the data array */ \
@@ -168,8 +159,8 @@ void vput_##P##C##_##T##_to_field(char *buf, size_t index, int count, \
 }
 
 #define make_vput(P, C, T, FIXTYPE, VARTYPE, FUNC) \
- make_vput_to_site(P, C, T, FIXTYPE, VARTYPE, FUNC); \
- make_vput_to_field(P, C, T, FIXTYPE, VARTYPE, FUNC);
+  make_vput_to_site(P, C, T, FIXTYPE, VARTYPE, FUNC); \
+  make_vput_to_field(P, C, T, FIXTYPE, VARTYPE, FUNC);
 
 // Single precision
 make_vget(F, , R, float,    Real,    p2f_real);
@@ -234,7 +225,7 @@ int write_##P##C##_##T##_from_site(QIO_Writer *outfile, \
               SVAL, datum_size, count); \
  \
   /* Write the record for the field */ \
-  status = QIO_write(outfile, rec_info, xml_record_out,  \
+  status = QIO_write(outfile, rec_info, xml_record_out, \
          vget_##P##C##_##T##_from_site, \
          count*datum_size, word_size, (void *)&src); \
  if (status != QIO_SUCCESS)return 1; \
@@ -264,7 +255,7 @@ int write_##P##C##_##T##_timeslice_from_site(QIO_Writer *outfile, \
        prec, CVAL, SVAL, datum_size, count); \
  \
   /* Write the record for the field */ \
-  status = QIO_write(outfile, rec_info, xml_record_out,  \
+  status = QIO_write(outfile, rec_info, xml_record_out, \
          vget_##P##C##_##T##_from_site, \
          count*datum_size, word_size, (void *)&src); \
  if (status != QIO_SUCCESS)return 1; \
@@ -291,8 +282,8 @@ int write_##P##C##_##T##_from_field(QIO_Writer *outfile, \
             SVAL, datum_size, count); \
  \
   /* Write the record for the field */ \
-  status = QIO_write(outfile, rec_info, xml_record_out,  \
-         vget_##P##C##_##T##_from_field,  \
+  status = QIO_write(outfile, rec_info, xml_record_out, \
+         vget_##P##C##_##T##_from_field, \
          count*datum_size, word_size, (void *)src); \
   if (status != QIO_SUCCESS)return 1; \
  \
@@ -320,8 +311,8 @@ int write_##P##C##_##T##_timeslice_from_field(QIO_Writer *outfile, \
                prec, CVAL, SVAL, datum_size, count); \
  \
   /* Write the record for the field */ \
-  status = QIO_write(outfile, rec_info, xml_record_out,  \
-         vget_##P##C##_##T##_from_field,  \
+  status = QIO_write(outfile, rec_info, xml_record_out, \
+         vget_##P##C##_##T##_from_field, \
          count*datum_size, word_size, (void *)src); \
   if (status != QIO_SUCCESS)return 1; \
  \
@@ -331,24 +322,24 @@ int write_##P##C##_##T##_timeslice_from_field(QIO_Writer *outfile, \
 }
 
 #define make_write_all(P, PSTRING, C, CVAL, SVAL, T, TYPESTRING, \
-         FIXTYPE, VARTYPE, MYREAL) \
+                       FIXTYPE, VARTYPE, MYREAL) \
   make_write_all_from_site(P, PSTRING, C, CVAL, SVAL, T, TYPESTRING, \
-             FIXTYPE, VARTYPE, MYREAL); \
+                           FIXTYPE, VARTYPE, MYREAL); \
   make_write_all_from_field(P, PSTRING, C, CVAL, SVAL, T, TYPESTRING, \
-           FIXTYPE, VARTYPE, MYREAL);
+                            FIXTYPE, VARTYPE, MYREAL);
 
 #define make_write_tslice(P, PSTRING, C, CVAL, SVAL, T, TYPESTRING, \
-         FIXTYPE, VARTYPE, MYREAL) \
+                          FIXTYPE, VARTYPE, MYREAL) \
   make_write_tslice_from_site(P, PSTRING, C, CVAL, SVAL, T, TYPESTRING, \
-             FIXTYPE, VARTYPE, MYREAL); \
+                              FIXTYPE, VARTYPE, MYREAL); \
   make_write_tslice_from_field(P, PSTRING, C, CVAL, SVAL, T, TYPESTRING, \
-           FIXTYPE, VARTYPE, MYREAL);
+                               FIXTYPE, VARTYPE, MYREAL);
 
 // Single precision
-make_write_all(F, "F",  , 0, 0, R, "QLA_F_Real", float, Real, float);
-make_write_all(F, "F",  , 0, 0, C, "QLA_F_Complex", fcomplex, complex, float);
-make_write_tslice(F, "F",  , 0, 0, R, "QLA_F_Real", float, Real, float);
-make_write_tslice(F, "F",  , 0, 0, C, "QLA_F_Complex", fcomplex, complex, float);
+make_write_all(F, "F", , 0, 0, R, "QLA_F_Real", float, Real, float);
+make_write_all(F, "F", , 0, 0, C, "QLA_F_Complex", fcomplex, complex, float);
+make_write_tslice(F, "F", , 0, 0, R, "QLA_F_Real", float, Real, float);
+make_write_tslice(F, "F", , 0, 0, C, "QLA_F_Complex", fcomplex, complex, float);
 #if NCOL == 2
 make_write_all(F, "F", 2, 2, 0, V, "USQCD_F2_ColorVector", fvector, vector, float);
 make_write_all(F, "F", 2, 2, 0, M, "USQCD_F2_ColorMatrix", fmatrix, matrix, float);
@@ -359,15 +350,18 @@ make_write_all(F, "F", 3, 3, 0, V, "USQCD_F3_ColorVector", fvector, vector, floa
 make_write_all(F, "F", 3, 3, 0, M, "USQCD_F3_ColorMatrix", fmatrix, matrix, float);
 make_write_tslice(F, "F", 3, 3, 0, V, "USQCD_F3_ColorVector", fvector, vector, float);
 #endif
-#if NCOL > 3
-make_write_all(F, "F", NCOL, NCOL, 0, V, "USQCD_FN_ColorVector", fvector, vector, float);
-make_write_all(F, "F", NCOL, NCOL, 0, M, "USQCD_FN_ColorMatrix", fmatrix, matrix, float);
-make_write_tslice(F, "F", NCOL, NCOL, 0, V, "USQCD_FN_ColorVector", fvector, vector, float);
+#if NCOL == 4
+make_write_all(F, "F", NCOL, NCOL, 0, V, "USQCD_F4_ColorVector", fvector, vector, float);
+make_write_all(F, "F", NCOL, NCOL, 0, M, "USQCD_F4_ColorMatrix", fmatrix, matrix, float);
+make_write_tslice(F, "F", NCOL, NCOL, 0, V, "USQCD_F4_ColorVector", fvector, vector, float);
+#endif
+#if NCOL > 4
+  #error "NCOL > 4 not yet implemented!"
 #endif
 
 // Double precision
-make_write_all(D, "D",  , 0, 0, C, "QLA_D_Complex", dcomplex, complex, double);
-make_write_tslice(D, "D",  , 0, 0, C, "QLA_D_Complex", dcomplex, complex, double);
+make_write_all(D, "D", , 0, 0, C, "QLA_D_Complex", dcomplex, complex, double);
+make_write_tslice(D, "D", , 0, 0, C, "QLA_D_Complex", dcomplex, complex, double);
 
 #if NCOL == 2
 make_write_all(D, "D", 2, 2, 0, V, "USQCD_D2_ColorVector", dvector, vector, double);
@@ -377,16 +371,18 @@ make_write_tslice(D, "D", 2, 2, 0, V, "USQCD_D2_ColorVector", dvector, vector, d
 make_write_all(D, "D", 3, 3, 0, V, "USQCD_D3_ColorVector", dvector, vector, double);
 make_write_tslice(D, "D", 3, 3, 0, V, "USQCD_D3_ColorVector", dvector, vector, double);
 #endif
-#if NCOL > 3
-make_write_all(D, "D", NCOL, NCOL, 0, V, "USQCD_DN_ColorVector", dvector, vector, double);
-make_write_tslice(D, "D", NCOL, NCOL, 0, V, "USQCD_DN_ColorVector", dvector, vector, double);
+#if NCOL == 4
+make_write_all(D, "D", NCOL, NCOL, 0, V, "USQCD_D4_ColorVector", dvector, vector, double);
+make_write_tslice(D, "D", NCOL, NCOL, 0, V, "USQCD_D4_ColorVector", dvector, vector, double);
+#endif
+#if NCOL > 4
+  #error "NCOL > 4 not yet implemented!"
 #endif
 
 // Read MILC site structure data
 #define make_read_to_site(P, C, T, FIXTYPE, VARTYPE, MYREAL) \
 int read_##P##C##_##T##_to_site(QIO_Reader *infile, QIO_String *xml_record_in, \
-        field_offset dest, int count) \
-{ \
+        field_offset dest, int count) { \
   QIO_RecordInfo rec_info; \
   int status; \
   int datum_size = sizeof(FIXTYPE); \
@@ -409,8 +405,7 @@ int read_##P##C##_##T##_to_site(QIO_Reader *infile, QIO_String *xml_record_in, \
 // Read MILC field data
 #define make_read_to_field(P, C, T, FIXTYPE, VARTYPE, MYREAL) \
 int read_##P##C##_##T##_to_field(QIO_Reader *infile, \
-     QIO_String *xml_record_in, VARTYPE *dest, int count) \
-{ \
+     QIO_String *xml_record_in, VARTYPE *dest, int count) { \
   QIO_RecordInfo rec_info; \
   int status; \
   int datum_size = sizeof(FIXTYPE); \
@@ -435,8 +430,8 @@ int read_##P##C##_##T##_to_field(QIO_Reader *infile, \
   make_read_to_field(P, C, T, FIXTYPE, VARTYPE, MYREAL);
 
 // Single precision
-make_read(F,  , R, float, Real, float);
-make_read(F,  , C, fcomplex, complex, float);
+make_read(F, , R, float, Real, float);
+make_read(F, , C, fcomplex, complex, float);
 #if NCOL == 2
 make_read(F, 2, V, fvector, vector, float);
 make_read(F, 2, M, fmatrix, matrix, float);
@@ -465,8 +460,7 @@ make_read(D, NCOL, V, dvector, vector, double);
 make_read(D, NCOL, M, dmatrix, matrix, double);
 #endif
 
-/* Factory function for moving random generator state from site structure to
-   output */
+// Move random generator state from site structure to output
 void vget_S_from_site(char *buf, size_t index, int count, void *arg) {
   char *dest = buf;
   /* arg contains pointer to field offset value */
@@ -502,10 +496,9 @@ int write_S_from_site(QIO_Writer *outfile, QIO_String *xml_record_out,
   return 0;
 }
 
-/* Factory function for moving random number state from input
-   to site structure */
+// Move random number state from input to site structure
+// Assume input lattice is single precision, NCOL colors
 void vput_S_to_site(char *buf, size_t index, int count, void *arg) {
-  /* Assume input lattice is single precision, NCOL colors */
   char *src = buf;
   field_offset dest = *((field_offset *)arg);
   site *s = &lattice[index];
@@ -514,7 +507,7 @@ void vput_S_to_site(char *buf, size_t index, int count, void *arg) {
   memcpy(dest_prn, src, sizeof(double_prn));
 }
 
-/* Read random number state */
+// Read random number state
 int read_S_to_site(QIO_Reader *infile, QIO_String *xml_record_in,
                    field_offset dest) {
 
@@ -524,7 +517,7 @@ int read_S_to_site(QIO_Reader *infile, QIO_String *xml_record_in,
   int datum_size = sizeof(double_prn);
   int word_size = sizeof(float);
 
-  /* Read the field record */
+  // Read the field record
   status = QIO_read(infile, &rec_info, xml_record_in, vput_S_to_site,
                     datum_size * count, word_size, (void *)&dest);
   node0_printf("Record info \n\"%s\"\n",QIO_string_ptr(xml_record_in));

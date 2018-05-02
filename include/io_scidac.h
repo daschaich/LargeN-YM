@@ -278,74 +278,77 @@ int write_D3_V_timeslice_from_field(QIO_Writer *outfile,
                                     vector *src, int count, int t0);
 #endif
 #if NCOL > 3
-int read_FN_V_to_site(QIO_Reader *infile, QIO_String *xml_record_in,
+int read_F4_V_to_site(QIO_Reader *infile, QIO_String *xml_record_in,
                       field_offset dest, int count);
-int read_FN_M_to_site(QIO_Reader *infile, QIO_String *xml_record_in,
+int read_F4_M_to_site(QIO_Reader *infile, QIO_String *xml_record_in,
                       field_offset dest, int count);
-int read_FN_D_to_site(QIO_Reader *infile, QIO_String *xml_record_in,
+int read_F4_D_to_site(QIO_Reader *infile, QIO_String *xml_record_in,
                       field_offset dest, int count);
 
-int read_FN_V_to_field(QIO_Reader *infile, QIO_String *xml_record_in,
+int read_F4_V_to_field(QIO_Reader *infile, QIO_String *xml_record_in,
                        vector *dest, int count);
-int read_FN_M_to_field(QIO_Reader *infile, QIO_String *xml_record_in,
+int read_F4_M_to_field(QIO_Reader *infile, QIO_String *xml_record_in,
                        matrix *dest, int count);
 
-int read_DN_V_to_site(QIO_Reader *infile, QIO_String *xml_record_in,
+int read_D4_V_to_site(QIO_Reader *infile, QIO_String *xml_record_in,
                       field_offset dest, int count);
-int read_DN_M_to_site(QIO_Reader *infile, QIO_String *xml_record_in,
+int read_D4_M_to_site(QIO_Reader *infile, QIO_String *xml_record_in,
                       field_offset dest, int count);
 
-int read_DN_V_to_field(QIO_Reader *infile, QIO_String *xml_record_in,
+int read_D4_V_to_field(QIO_Reader *infile, QIO_String *xml_record_in,
                        vector *dest, int count);
-int read_DN_M_to_field(QIO_Reader *infile, QIO_String *xml_record_in,
+int read_D4_M_to_field(QIO_Reader *infile, QIO_String *xml_record_in,
                        matrix *dest, int count);
 
-int write_FN_V_from_site(QIO_Writer *outfile,
+int write_F4_V_from_site(QIO_Writer *outfile,
                          QIO_String *xml_record_out,
                          field_offset src, int count);
-int write_FN_D_from_site(QIO_Writer *outfile,
+int write_F4_D_from_site(QIO_Writer *outfile,
                          QIO_String *xml_record_out,
                          field_offset src, int count);
-int write_FN_M_from_site(QIO_Writer *outfile,
-                         QIO_String *xml_record_out,
-                         field_offset src, int count);
-
-int write_DN_V_from_site(QIO_Writer *outfile,
-                         QIO_String *xml_record_out,
-                         field_offset src, int count);
-int write_DN_D_from_site(QIO_Writer *outfile,
+int write_F4_M_from_site(QIO_Writer *outfile,
                          QIO_String *xml_record_out,
                          field_offset src, int count);
 
-int write_FN_V_timeslice_from_site(QIO_Writer *outfile,
+int write_D4_V_from_site(QIO_Writer *outfile,
+                         QIO_String *xml_record_out,
+                         field_offset src, int count);
+int write_D4_D_from_site(QIO_Writer *outfile,
+                         QIO_String *xml_record_out,
+                         field_offset src, int count);
+
+int write_F4_V_timeslice_from_site(QIO_Writer *outfile,
                                    QIO_String *xml_record_out,
                                    field_offset src, int count, int t0);
-int write_FN_D_timeslice_from_site(QIO_Writer *outfile,
+int write_F4_D_timeslice_from_site(QIO_Writer *outfile,
                                    QIO_String *xml_record_out,
                                    field_offset src, int count, int t0);
 
-int write_DN_V_timeslice_from_site(QIO_Writer *outfile,
+int write_D4_V_timeslice_from_site(QIO_Writer *outfile,
                                    QIO_String *xml_record_out,
                                    field_offset src, int count, int t0);
-int write_DN_D_timeslice_from_site(QIO_Writer *outfile,
+int write_D4_D_timeslice_from_site(QIO_Writer *outfile,
                                    QIO_String *xml_record_out,
                                    field_offset src, int count, int t0);
 
-int write_FN_V_from_field(QIO_Writer *outfile,
+int write_F4_V_from_field(QIO_Writer *outfile,
                           QIO_String *xml_record_out, vector *src, int count);
-int write_FN_M_from_field(QIO_Writer *outfile,
+int write_F4_M_from_field(QIO_Writer *outfile,
                           QIO_String *xml_record_out, matrix *src, int count);
 
-int write_DN_V_from_field(QIO_Writer *outfile,
+int write_D4_V_from_field(QIO_Writer *outfile,
                           QIO_String *xml_record_out, vector *src, int count);
 
-int write_FN_V_timeslice_from_field(QIO_Writer *outfile,
+int write_F4_V_timeslice_from_field(QIO_Writer *outfile,
                                     QIO_String *xml_record_out,
                                     vector *src, int count, int t0);
 
-int write_DN_V_timeslice_from_field(QIO_Writer *outfile,
+int write_D4_V_timeslice_from_field(QIO_Writer *outfile,
                                     QIO_String *xml_record_out,
                                     vector *src, int count, int t0);
+#endif
+#if NCOL > 4
+  #error "NCOL > 4 not yet implemented!"
 #endif
 // -----------------------------------------------------------------
 
@@ -353,7 +356,7 @@ int write_DN_V_timeslice_from_field(QIO_Writer *outfile,
 
 // -----------------------------------------------------------------
 // In gauge_info.c (application dependent)
-char *create_QCDML(void);
+char *create_QCDML();
 void free_QCDML(char *qcdml);
 
 #endif
