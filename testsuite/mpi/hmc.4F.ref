@@ -12,7 +12,7 @@ BETA_FREP turned on
 Hybrid Monte Carlo algorithm
 Phi algorithm
 LU preconditioning
-start: Tue May  1 12:09:07 2018
+start: Wed May  2 03:47:03 2018
 
 type 0 for no prompts or 1 for prompts
 nflavors 2
@@ -22,6 +22,7 @@ nz 4
 nt 4
 iseed 41
 LAYOUT = Hypercubes, options = hyper_prime,
+MPI with automatic hyper_prime layout
 ON EACH NODE 2 x 4 x 4 x 4
 Mallocing 0.6 MBytes per core for lattice
 Mallocing 3.9 MBytes per core for fields
@@ -53,11 +54,11 @@ forget
 Restored binary gauge configuration serially from file config.4F.4444
 Time stamp Tue Jan 24 09:08:59 2017
 Checksums ff508162 bfb64808 OK
-Time to reload gauge configuration = 0.003704 seconds
+Time to reload gauge configuration = 0.002423 seconds
 CHECK PLAQ: 1.6623868341873866e+00 1.6452447726390365e+00
 CHECK NERSC LINKTR: -1.2434277158519080e-02 CKSUM: 0
 Reunitarized for double precision.  Max deviation 6e-08 changed to 5.6e-16
-Time to check unitarity = 0.0001841 seconds
+Time to check unitarity = 0.0002511 seconds
 START 1.6623868 1.6452448 3.3076316
 f_eps0 0.1667 f_eps1 0.04167 g_eps 0.004167
 WARMUPS COMPLETED
@@ -98,12 +99,12 @@ RUNNING COMPLETED
 STOP 1.6245926 1.6817664 3.3063591
 Average cg iters for steps: 1420
 Average cg iters for measurements: 80
-Time               = 10.81 seconds
-congrad time       = 1.151 seconds
-fermion_force time = 5.911 seconds
-block_nhyp time    = 1.848 seconds
-compute_fhb time   = 2.668 seconds
+Time               = 10.79 seconds
+congrad time       = 1.152 seconds
+fermion_force time = 5.892 seconds
+block_nhyp time    = 1.853 seconds
+compute_fhb time   = 2.642 seconds
 total_iters = 4596
 
-exit: Tue May  1 12:09:18 2018
+exit: Wed May  2 03:47:14 2018
 

@@ -123,6 +123,8 @@ u_int32type crc32(u_int32type crc, const unsigned char *buf, size_t len);
 #define NUM_SUBL 2
 #endif
 
+static int jobid = 0;
+static int num_jobs = 1;
 static int *geom = NULL;
 static int *jobgeomvals = NULL;
 static int *worldcoord = NULL;
@@ -318,11 +320,11 @@ static void repartition_switch_machine() {
   /* localgeom gives the number of nodes in the job partition */
   if (num_nodes % num_jobs != 0) {
     printf("num_jobs %i must divide number of nodes %i\n",
-     num_jobs, num_nodes);
+           num_jobs, num_nodes);
     terminate(1);
   }
-  localgeom = num_nodes/num_jobs;
-  jobid = nodeid/localgeom;
+  localgeom = num_nodes / num_jobs;
+  jobid = nodeid / localgeom;
 
   /* Split the communicator */
   flag = MPI_Comm_split(MPI_COMM_THISJOB, jobid, 0, &jobcomm);
@@ -377,12 +379,13 @@ repartition_mesh_machine() {
 
   jobid = lex_rank(jobcoord, nd, jobgeomvals);
 
-  /* Split the communicator */
-
+  // Split the communicator
   flag = MPI_Comm_split(MPI_COMM_THISJOB, jobid, 0, &jobcomm);
-  if (flag != MPI_SUCCESS) err_func(&MPI_COMM_THISJOB, &flag);
+  if (flag != MPI_SUCCESS)
+    err_func(&MPI_COMM_THISJOB, &flag);
   flag = MPI_Comm_rank(jobcomm, &localnodeid);
-  if (flag != MPI_SUCCESS) err_func(&MPI_COMM_THISJOB, &flag);
+  if (flag != MPI_SUCCESS)
+    err_func(&MPI_COMM_THISJOB, &flag);
 
   //printf("node %d jobid %d\n", localnodeid, jobid); fflush(stdout);
 
