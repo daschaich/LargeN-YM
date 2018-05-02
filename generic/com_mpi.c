@@ -298,12 +298,10 @@ static void remove_from_args(int *argc, char ***argv, int first, int last) {
 }
 
 static int lex_rank(const int coords[], int dim, int size[]) {
-  int d;
-  int rank = coords[dim-1];
+  int d, rank = coords[dim-1];
 
-  for (d = dim-2; d >= 0; d--) {
+  for (d = dim - 2; d >= 0; d--)
     rank = rank * size[d] + coords[d];
-  }
   return rank;
 }
 

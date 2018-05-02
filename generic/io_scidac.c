@@ -395,10 +395,10 @@ gauge_file *restore_scidac(char *filename, int serpar) {
   typesize = QIO_get_typesize(&recinfo);
 
   // Read the lattice field as single or double precision according to
-  // the type size (bytes in a single SU(3) matrix)
-  if (typesize == 72)
+  // the type size (bytes in a single SU(NCOL) matrix)
+  if (typesize == NCOL * NCOL * 2 * 4)
     status = read_F3_M_to_site(infile, recxml, dest, LATDIM);
-  else if (typesize == 144)
+  else if (typesize == NCOL * NCOL * 2 * 8)
     status = read_D3_M_to_site(infile, recxml, dest, LATDIM);
   else {
     node0_printf("restore_scidac: Bad typesize %d\n", typesize);
