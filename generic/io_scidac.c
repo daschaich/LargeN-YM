@@ -425,6 +425,7 @@ gauge_file *restore_scidac(char *filename, int serpar) {
       node0_printf("restore_scidac: Bad typesize %d\n", typesize);
       terminate(1);
     }
+  }
   if (status)
     terminate(1);
 
