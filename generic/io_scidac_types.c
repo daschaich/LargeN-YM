@@ -466,7 +466,7 @@ make_read(D, 3, M, dmatrix, matrix, double);
 #endif
 #if NCOL == 4
 make_read(D, 4, V, dvector, vector, double);
-make_read(D, 4 M, dmatrix, matrix, double);
+make_read(D, 4, M, dmatrix, matrix, double);
 #endif
 #if NCOL > 4
   #error "NCOL > 4 not yet implemented!"
