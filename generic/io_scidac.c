@@ -396,14 +396,35 @@ gauge_file *restore_scidac(char *filename, int serpar) {
 
   // Read the lattice field as single or double precision according to
   // the type size (bytes in a single SU(NCOL) matrix)
-  if (typesize == NCOL * NCOL * 2 * 4)
-    status = read_F3_M_to_site(infile, recxml, dest, LATDIM);
-  else if (typesize == NCOL * NCOL * 2 * 8)
-    status = read_D3_M_to_site(infile, recxml, dest, LATDIM);
-  else {
-    node0_printf("restore_scidac: Bad typesize %d\n", typesize);
-    terminate(1);
+  else if (NCOL == 2) {
+    if (typesize == 32)
+      status = read_F2_M_to_site(infile, recxml, dest, LATDIM);
+    else if (typesize == 64)
+      status = read_D2_M_to_site(infile, recxml, dest, LATDIM);
+    else {
+      node0_printf("restore_scidac: Bad typesize %d\n", typesize);
+      terminate(1);
+    }
   }
+  else if (NCOL == 3) {
+    if (typesize == 72)
+      status = read_F3_M_to_site(infile, recxml, dest, LATDIM);
+    else if (typesize == 144)
+      status = read_D3_M_to_site(infile, recxml, dest, LATDIM);
+    else {
+      node0_printf("restore_scidac: Bad typesize %d\n", typesize);
+      terminate(1);
+    }
+  }
+  else {
+    if (typesize == NCOL * NCOL * 2 * 4)
+      status = read_FN_M_to_site(infile, recxml, dest, LATDIM);
+    else if (typesize == NCOL * NCOL * 2 * 8)
+      status = read_DN_M_to_site(infile, recxml, dest, LATDIM);
+    else {
+      node0_printf("restore_scidac: Bad typesize %d\n", typesize);
+      terminate(1);
+    }
   if (status)
     terminate(1);
 
