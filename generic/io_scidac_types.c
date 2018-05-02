@@ -180,11 +180,14 @@ make_vget(F, 3, M, fmatrix, matrix, p2f_mat);
 make_vput(F, 3, V, fvector, vector, f2p_vec);
 make_vput(F, 3, M, fmatrix, matrix, f2p_mat);
 #endif
-#if NCOL > 3
-make_vget(F, NCOL, V, fvector, vector, p2f_vec);
-make_vget(F, NCOL, M, fmatrix, matrix, p2f_mat);
-make_vput(F, NCOL, V, fvector, vector, f2p_vec);
-make_vput(F, NCOL, M, fmatrix, matrix, f2p_mat);
+#if NCOL == 4
+make_vget(F, 4, V, fvector, vector, p2f_vec);
+make_vget(F, 4, M, fmatrix, matrix, p2f_mat);
+make_vput(F, 4, V, fvector, vector, f2p_vec);
+make_vput(F, 4, M, fmatrix, matrix, f2p_mat);
+#endif
+#if NCOL > 4
+  #error "NCOL > 4 not yet implemented!"
 #endif
 
 // Double precision
@@ -201,10 +204,13 @@ make_vget(D, 3, V, dvector, vector, p2d_vec);
 make_vput(D, 3, V, dvector, vector, d2p_vec);
 make_vput(D, 3, M, dmatrix, matrix, d2p_mat);
 #endif
-#if NCOL > 3
-make_vget(D, NCOL, V, dvector, vector, p2d_vec);
-make_vput(D, NCOL, V, dvector, vector, d2p_vec);
-make_vput(D, NCOL, M, dmatrix, matrix, d2p_mat);
+#if NCOL == 4
+make_vget(D, 4, V, dvector, vector, p2d_vec);
+make_vput(D, 4, V, dvector, vector, d2p_vec);
+make_vput(D, 4, M, dmatrix, matrix, d2p_mat);
+#endif
+#if NCOL > 4
+  #error "NCOL > 4 not yet implemented!"
 #endif
 
 // Write MILC site structure data
@@ -351,9 +357,9 @@ make_write_all(F, "F", 3, 3, 0, M, "USQCD_F3_ColorMatrix", fmatrix, matrix, floa
 make_write_tslice(F, "F", 3, 3, 0, V, "USQCD_F3_ColorVector", fvector, vector, float);
 #endif
 #if NCOL == 4
-make_write_all(F, "F", NCOL, NCOL, 0, V, "USQCD_F4_ColorVector", fvector, vector, float);
-make_write_all(F, "F", NCOL, NCOL, 0, M, "USQCD_F4_ColorMatrix", fmatrix, matrix, float);
-make_write_tslice(F, "F", NCOL, NCOL, 0, V, "USQCD_F4_ColorVector", fvector, vector, float);
+make_write_all(F, "F", 4, 4, 0, V, "USQCD_F4_ColorVector", fvector, vector, float);
+make_write_all(F, "F", 4, 4, 0, M, "USQCD_F4_ColorMatrix", fmatrix, matrix, float);
+make_write_tslice(F, "F", 4, 4, 0, V, "USQCD_F4_ColorVector", fvector, vector, float);
 #endif
 #if NCOL > 4
   #error "NCOL > 4 not yet implemented!"
@@ -372,8 +378,8 @@ make_write_all(D, "D", 3, 3, 0, V, "USQCD_D3_ColorVector", dvector, vector, doub
 make_write_tslice(D, "D", 3, 3, 0, V, "USQCD_D3_ColorVector", dvector, vector, double);
 #endif
 #if NCOL == 4
-make_write_all(D, "D", NCOL, NCOL, 0, V, "USQCD_D4_ColorVector", dvector, vector, double);
-make_write_tslice(D, "D", NCOL, NCOL, 0, V, "USQCD_D4_ColorVector", dvector, vector, double);
+make_write_all(D, "D", 4, 4, 0, V, "USQCD_D4_ColorVector", dvector, vector, double);
+make_write_tslice(D, "D", 4, 4, 0, V, "USQCD_D4_ColorVector", dvector, vector, double);
 #endif
 #if NCOL > 4
   #error "NCOL > 4 not yet implemented!"
@@ -440,9 +446,12 @@ make_read(F, 2, M, fmatrix, matrix, float);
 make_read(F, 3, V, fvector, vector, float);
 make_read(F, 3, M, fmatrix, matrix, float);
 #endif
-#if NCOL > 3
-make_read(F, NCOL, V, fvector, vector, float);
-make_read(F, NCOL, M, fmatrix, matrix, float);
+#if NCOL == 4
+make_read(F, 4, V, fvector, vector, float);
+make_read(F, 4, M, fmatrix, matrix, float);
+#endif
+#if NCOL > 4
+  #error "NCOL > 4 not yet implemented!"
 #endif
 
 // Double precision
@@ -455,9 +464,12 @@ make_read(D, 2, M, dmatrix, matrix, double);
 make_read(D, 3, V, dvector, vector, double);
 make_read(D, 3, M, dmatrix, matrix, double);
 #endif
-#if NCOL > 3
-make_read(D, NCOL, V, dvector, vector, double);
-make_read(D, NCOL, M, dmatrix, matrix, double);
+#if NCOL == 4
+make_read(D, 4, V, dvector, vector, double);
+make_read(D, 4 M, dmatrix, matrix, double);
+#endif
+#if NCOL > 4
+  #error "NCOL > 4 not yet implemented!"
 #endif
 
 // Move random generator state from site structure to output

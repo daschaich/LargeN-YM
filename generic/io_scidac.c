@@ -263,11 +263,11 @@ gauge_file *save_scidac(char *filename, int volfmt, int serpar, int ildgstyle,
   // Write information
   if (volfmt == QIO_SINGLEFILE) {
     node0_printf("Saved gauge configuration serially to binary file %s\n",
-     filename);
+                 filename);
   }
   else if (volfmt == QIO_MULTIFILE) {
     node0_printf("Saved gauge configuration as multifile to binary file %s\n",
-     filename);
+                 filename);
   }
   else if (volfmt == QIO_PARTFILE) {
     node0_printf("Saved gauge configuration in partition format to binary file %s\n",
