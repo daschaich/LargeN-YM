@@ -1,8 +1,9 @@
-// -----------------------------------------------------------------
-// QIO interface to produce ILDG archivable file
-// Generalized for N=2, 3 or 4
-// Full generality would require rewriting the elaborate #defines
-// in io_scidac_types, which seem to require a numerical NCOL argument
+/********************** io_scidac.c **********************************/
+/* MILC/QIO interface.  Produces a ILDG archivable file */
+/* MIMD version 7 */
+/* CD 11/2004
+*/
+
 #include "generic_includes.h"
 #include <qio.h>
 #include "../include/io_lat.h"
@@ -10,38 +11,34 @@
 #include <string.h>
 #define LATDIM 4
 void QIO_set_trelease(double t_in, double t_out);
-// -----------------------------------------------------------------
 
+/* Map QIO layout functions to MILC functions */
 
-
-// -----------------------------------------------------------------
-// Map QIO layout functions to MILC functions
-int qio_node_number(const int x[]) {
-  return node_number(x[0], x[1], x[2], x[3]);
+int qio_node_number(const int x[]){
+  return node_number(x[0],x[1],x[2],x[3]);
 }
 
-int qio_node_index(const int x[]) {
-  return node_index(x[0], x[1], x[2], x[3]);
+int qio_node_index(const int x[]){
+  return node_index(x[0],x[1],x[2],x[3]);
 }
 
-void qio_get_coords(int x[], int node, int index) {
-  // For this node we have a table
-  if (node == this_node) {
-    x[0] = lattice[index].x;
-    x[1] = lattice[index].y;
-    x[2] = lattice[index].z;
-    x[3] = lattice[index].t;
+void qio_get_coords(int x[], int node, int index){
+  if(node != this_node){
+    printf("qio_get_coords: bad node number %d != this_node %d\n",
+	   node,this_node);
+    terminate(1);
   }
-  // For other nodes we require the layout function
-  else
-    get_coords(x, node, index);
+  x[0] = lattice[index].x;
+  x[1] = lattice[index].y;
+  x[2] = lattice[index].z;
+  x[3] = lattice[index].t;
 }
 
-int qio_num_sites(int node) {
+int qio_num_sites(int node){
   return num_sites(node);
 }
 
-void build_qio_layout(QIO_Layout *layout) {
+void build_qio_layout(QIO_Layout *layout){
   static int lattice_size[LATDIM];
 
   lattice_size[0] = nx;
@@ -61,48 +58,22 @@ void build_qio_layout(QIO_Layout *layout) {
   layout->number_of_nodes = number_of_nodes;
 }
 
-void build_qio_filesystem(QIO_Filesystem *fs) {
-  fs->number_io_nodes = 0;
-  fs->type = QIO_SINGLE_PATH;
-  fs->my_io_node = io_node;   // Partfile I/O uses io_node from layout*.c
-  fs->master_io_node = NULL;  // Serial I/O uses default: node 0
-  fs->io_node = NULL;
-  fs->node_path = NULL;
-}
-// -----------------------------------------------------------------
-
-
-
-// -----------------------------------------------------------------
-// Translate QIO status to a MILC convention
-//  0 = success
-// -1 = end of file
-//  1 = other failure
-int qio_status(int status) {
-  if (status == QIO_SUCCESS)
-    return 0;
-  if (status == QIO_EOF)
-    return -1;
-  return 1;
-}
-// -----------------------------------------------------------------
-
-
-
-// -----------------------------------------------------------------
-QIO_Writer *open_scidac_output(char *filename, int volfmt,
-                               int serpar, int ildgstyle,
-                               char *stringLFN, QIO_Layout *layout,
-                               QIO_Filesystem *fs,
-                               QIO_String *xml_write_file) {
-
+QIO_Writer *open_scidac_output(char *filename, int volfmt, 
+			       int serpar, int ildgstyle, 
+			       char *stringLFN, QIO_Layout *layout,
+			       char *xml_write_file){
+  QIO_String *xml_file_out;
   QIO_Writer *outfile;
   QIO_Oflag oflag;
 
-  // Create the output flag structure
+  /* Create the file XML */
+  xml_file_out = QIO_string_create();
+  QIO_string_set(xml_file_out,xml_write_file);
+
+  /* Create the output flag structure */
   oflag.serpar = serpar;
   oflag.ildgstyle = ildgstyle;
-  if (stringLFN != NULL) {
+  if(stringLFN != NULL){
     oflag.ildgLFN = QIO_string_create();
     QIO_string_set(oflag.ildgLFN, stringLFN);
   }
@@ -110,209 +81,426 @@ QIO_Writer *open_scidac_output(char *filename, int volfmt,
     oflag.ildgLFN = NULL;
   oflag.mode = QIO_TRUNC;
 
-  // Open the file for writing
+  /* Open the file for writing */
 #ifdef QIO_TRELEASE
-  QIO_set_trelease(0, QIO_TRELEASE);
+  QIO_set_trelease(0,QIO_TRELEASE);
 #endif
-  outfile = QIO_open_write(xml_write_file, filename, volfmt, layout,
-                           fs, &oflag);
-  if (outfile == NULL) {
-    printf("open_scidac_output(%d): ", this_node);
-    printf("QIO_open_write returned NULL\n");
+  outfile = QIO_open_write(xml_file_out, filename, volfmt, layout, &oflag);
+  if(outfile == NULL){
+    printf("open_scidac_output(%d): QIO_open_write returned NULL\n",this_node);
     return NULL;
   }
+  QIO_string_destroy(xml_file_out);
   return outfile;
 }
-// -----------------------------------------------------------------
 
-
-
-// -----------------------------------------------------------------
-// Open file silently and return file XML
-QIO_Reader *open_scidac_input_xml(char *filename, QIO_Layout *layout,
-          QIO_Filesystem *fs, int serpar,
-          QIO_String *xml_file_in) {
-
-  QIO_Reader *infile;
-  QIO_Iflag iflag;
-
-  // Create the iflag structure
-  iflag.serpar = serpar;
-  iflag.volfmt = QIO_UNKNOWN;  // Just discover the format
-
-  // Open the file for reading
-#ifdef QIO_TRELEASE
-  QIO_set_trelease(0, QIO_TRELEASE);
-#endif
-  infile = QIO_open_read(xml_file_in, filename, layout, fs, &iflag);
-  if (infile == NULL) {
-    printf("open_scidac_input_xml(%d): ", this_node);
-    printf("QIO_open_read returns NULL.\n");
-    return NULL;
-  }
-  return infile;
-}
-// -----------------------------------------------------------------
-
-
-
-// -----------------------------------------------------------------
-// Open file with announcement and discard file XML
-QIO_Reader *open_scidac_input(char *filename, QIO_Layout *layout,
-                              QIO_Filesystem *fs, int serpar) {
-
+QIO_Reader *open_scidac_input(char *filename, QIO_Layout *layout, 
+			      int serpar){
   QIO_String *xml_file_in;
   QIO_Reader *infile;
+  QIO_Iflag iflag;
+  char myname[] = "open_scidac_input";
 
-  // Allocate for the file XML string
+  /* Create the file XML */
   xml_file_in = QIO_string_create();
 
-  infile = open_scidac_input_xml(filename, layout, fs, serpar, xml_file_in);
+  /* Create the iflag structure */
+  iflag.serpar = serpar;
+  iflag.volfmt = QIO_UNKNOWN;  /* Just discover the format */
 
-  if (infile == NULL)return NULL;
+  /* Open the file for reading */
+#ifdef QIO_TRELEASE
+  QIO_set_trelease(0,QIO_TRELEASE);
+#endif
+  infile = QIO_open_read(xml_file_in, filename, layout, &iflag);
+  if(infile == NULL){
+    printf("%s(%d): QIO_open_read returns NULL.\n",myname,this_node);
+    return NULL;
+  }
 
-  if (this_node==0) {
-    printf("Restoring binary SciDAC file %s\n", filename);
-    printf("File info \n\"%s\"\n", QIO_string_ptr(xml_file_in));
+  if(this_node==0){
+    printf("Restoring binary SciDAC file %s\n",filename);
+    printf("File info \n\"%s\"\n",QIO_string_ptr(xml_file_in));
   }
 
   QIO_string_destroy(xml_file_in);
   return infile;
 }
 
-void close_scidac_output(QIO_Writer *outfile)
+void close_output(QIO_Writer *outfile)
 {
   QIO_close_write(outfile);
 }
 
-void close_scidac_input(QIO_Reader *infile)
+void close_input(QIO_Reader *infile)
 {
   QIO_close_read(infile);
 }
-// -----------------------------------------------------------------
 
+/* Factory function for moving color matrices from site structure to
+   single precision output */
+void vget_F3_M_from_site(char *buf, size_t index, int count, void *arg)
+{
+  int dir;
+  int i,j;
+  /* Assume output lattice is single precision */
+  fsu3_matrix *dest = (fsu3_matrix *)buf;
+  /* arg contains pointer to field offset value */
+  field_offset src = *((field_offset *)arg);
+  site *s = &lattice[index];
+  /* Source can be any precision */
+  su3_matrix *src_mat = (su3_matrix *)F_PT(s,src);
 
+  /* Copy, changing precision, if necessary */
+  for(dir = 0; dir < count; dir++)
+    for(i = 0; i < 3; i++)for(j = 0; j < 3; j++){
+      dest[dir].e[i][j].real = src_mat[dir].e[i][j].real;
+      dest[dir].e[i][j].imag = src_mat[dir].e[i][j].imag;
+    }
+}
 
-// -----------------------------------------------------------------
-#ifdef NO_GAUGE_FIELD
+/* Factory function for moving color matrices from temp to
+   single precision output */
+void vget_F3_M_from_field(char *buf, size_t index, int count, void *arg)
+{
+  int dir;
+  int i,j;
+  /* Assume output lattice is single precision */
+  fsu3_matrix *dest = (fsu3_matrix *)buf;
+  /* arg contains pointer to the temp su3_matrix array */
+  su3_matrix *src = (su3_matrix *)arg;
+  /* Source can be any precision */
+  su3_matrix *src_mat = src + index * count;
+
+  /* Copy, changing precision, if necessary */
+  for(dir = 0; dir < count; dir++)
+    for(i = 0; i < 3; i++)for(j = 0; j < 3; j++){
+      dest[dir].e[i][j].real = src_mat[dir].e[i][j].real;
+      dest[dir].e[i][j].imag = src_mat[dir].e[i][j].imag;
+    }
+}
+
+int write_F3_M_from_site(QIO_Writer *outfile, char *xml_write_lattice,
+	       field_offset src, int count){
+  QIO_String *xml_record_out;
+  int status;
+  QIO_RecordInfo *rec_info;
+  /* We assume output precision is single */
+  char qdptype[] = "QDP_F3_ColorMatrix";
+  char prec[] = "F";
+  int datum_size = sizeof(fsu3_matrix);
+  int word_size = sizeof(float);
+
+  /* Create the record info for the field */
+  rec_info = QIO_create_record_info(QIO_FIELD, qdptype, prec, 3,
+				    0, datum_size, count);
+  /* Create the record XML for the field */
+  xml_record_out = QIO_string_create();
+  QIO_string_set(xml_record_out,xml_write_lattice);
+
+  /* Write the record for the field */
+  status = QIO_write(outfile, rec_info, xml_record_out, vget_F3_M_from_site, 
+		     count*datum_size, word_size, (void *)&src);
+ if(status != QIO_SUCCESS)return 1;
+
+  QIO_destroy_record_info(rec_info);
+  QIO_string_destroy(xml_record_out);
+
+  return 0;
+}
+
+int write_F3_M_from_field(QIO_Writer *outfile, char *xml_write_lattice,
+	         su3_matrix *src, int count){
+  QIO_String *xml_record_out;
+  int status;
+  QIO_RecordInfo *rec_info;
+  /* We assume output precision is single */
+  char qdptype[] = "QDP_F3_ColorMatrix";
+  char prec[] = "F";
+  int datum_size = sizeof(fsu3_matrix);
+  int word_size = sizeof(float);
+
+  /* Create the record info for the field */
+  rec_info = QIO_create_record_info(QIO_FIELD, qdptype, prec, 3,
+				    0, datum_size, count);
+  /* Create the record XML for the field */
+  xml_record_out = QIO_string_create();
+  QIO_string_set(xml_record_out,xml_write_lattice);
+
+  /* Write the record for the field */
+  status = QIO_write(outfile, rec_info, xml_record_out, 
+		     vget_F3_M_from_field, count*datum_size, word_size, 
+		     (void *)src);
+  if(status != QIO_SUCCESS)return 1;
+
+  QIO_destroy_record_info(rec_info);
+  QIO_string_destroy(xml_record_out);
+
+  return 0;
+}
+
+/* Factory function for moving random generator state from site structure to
+   output */
+void vget_S_from_site(char *buf, size_t index, int count, void *arg)
+{
+  char *dest = buf;
+  /* arg contains pointer to field offset value */
+  field_offset src = *((field_offset *)arg);
+  site *s = &lattice[index];
+  char *src_prn = (char *)F_PT(s,src);
+
+  memcpy(dest, src_prn, sizeof(double_prn));
+}
+
+int write_S_from_site(QIO_Writer *outfile, char *xml_write_rand_state,
+		      field_offset src){
+  QIO_String *xml_record_out;
+  int status;
+  QIO_RecordInfo *rec_info;
+  char qdptype[] = "QDP_RandomState";
+  char prec[] = "";
+  int datum_size = sizeof(double_prn);
+  int word_size = sizeof(float);
+  int count = 1;
+
+  /* Create the record info for the field */
+  rec_info = QIO_create_record_info(QIO_FIELD, qdptype, prec, 0,
+				    0, datum_size, count);
+  /* Create the record XML for the field */
+  xml_record_out = QIO_string_create();
+  QIO_string_set(xml_record_out,xml_write_rand_state);
+
+  /* Write the record for the field */
+  status = QIO_write(outfile, rec_info, xml_record_out, vget_S_from_site, 
+		     count*datum_size, word_size, (void *)&src);
+ if(status != QIO_SUCCESS)return 1;
+
+  QIO_destroy_record_info(rec_info);
+  QIO_string_destroy(xml_record_out);
+
+  return 0;
+}
+
+/* Factory function for moving single precision gauge field from input
+   to site structure */
+void vput_F3_M_to_site(char *buf, size_t index, int count, void *arg)
+{
+  int dir;
+  int i,j;
+  /* Assume input lattice is single precision, 3 colors */
+  fsu3_matrix *src = (fsu3_matrix *)buf;
+  field_offset dest = *((field_offset *)arg);
+  site *s = &lattice[index];
+  /* Destination can be any precision */
+  su3_matrix *dest_mat = (su3_matrix *)F_PT(s,dest);
+  
+  /* Copy, changing precision, if necessary */
+  for (dir=0;dir<count;dir++)
+    for(i = 0; i < 3; i++)for(j = 0; j < 3; j++){
+      dest_mat[dir].e[i][j].real = src[dir].e[i][j].real;
+      dest_mat[dir].e[i][j].imag = src[dir].e[i][j].imag;
+    }
+}
+
+/* Factory function for moving single precision gauge field from input
+   to field */
+void vput_F3_M_to_field(char *buf, size_t index, int count, void *arg)
+{
+  int dir;
+  int i,j;
+  /* Assume input lattice is single precision, 3 colors */
+  fsu3_matrix *src = (fsu3_matrix *)buf;
+  su3_matrix *dest = (su3_matrix *)arg;
+  /* Destination can be any precision */
+  su3_matrix *dest_mat = dest + index * count;
+  
+  /* Copy, changing precision, if necessary */
+  for (dir=0;dir<count;dir++)
+    for(i = 0; i < 3; i++)for(j = 0; j < 3; j++){
+      dest_mat[dir].e[i][j].real = src[dir].e[i][j].real;
+      dest_mat[dir].e[i][j].imag = src[dir].e[i][j].imag;
+    }
+}
+
+/* Read a set of color matrices */
+int read_F3_M_to_site(QIO_Reader *infile, field_offset dest, int count)
+{
+  QIO_String *xml_record_in;
+  QIO_RecordInfo rec_info;
+  int status;
+  /* We assume input precision is single */
+  int datum_size = sizeof(fsu3_matrix);
+  int word_size = sizeof(float);
+  
+  /* Read the field record */
+  xml_record_in = QIO_string_create();
+  status = QIO_read(infile, &rec_info, xml_record_in, 
+		    vput_F3_M_to_site, datum_size*count, word_size, (void *)&dest);
+  node0_printf("Record info \n\"%s\"\n",QIO_string_ptr(xml_record_in));
+  if(status != QIO_SUCCESS)return 1;
+
+  node0_printf("Checksums %x %x\n",
+	       QIO_get_reader_last_checksuma(infile),
+	       QIO_get_reader_last_checksumb(infile));
+
+  QIO_string_destroy(xml_record_in);
+  return 0;
+}
+
+/* Read a set of color matrices */
+int read_F3_M_to_field(QIO_Reader *infile, su3_matrix *dest, int count)
+{
+  QIO_String *xml_record_in;
+  QIO_RecordInfo rec_info;
+  int status;
+  /* We assume input precision is single */
+  int datum_size = sizeof(fsu3_matrix);
+  int word_size = sizeof(float);
+  
+  /* Read the field record */
+  xml_record_in = QIO_string_create();
+  status = QIO_read(infile, &rec_info, xml_record_in, 
+		    vput_F3_M_to_field, datum_size*count, word_size, 
+		    (void *)dest);
+  node0_printf("Record info \n\"%s\"\n",QIO_string_ptr(xml_record_in));
+  if(status != QIO_SUCCESS)return 1;
+
+  node0_printf("Checksums %x %x\n",
+	       QIO_get_reader_last_checksuma(infile),
+	       QIO_get_reader_last_checksumb(infile));
+
+  QIO_string_destroy(xml_record_in);
+  return 0;
+}
+
+/* Factory function for moving random number state from input
+   to site structure */
+void vput_S_to_site(char *buf, size_t index, int count, void *arg)
+{
+  /* Assume input lattice is single precision, 3 colors */
+  char *src = buf;
+  field_offset dest = *((field_offset *)arg);
+  site *s = &lattice[index];
+  char *dest_prn = (char *)F_PT(s,dest);
+  
+  memcpy(dest_prn, src, sizeof(double_prn));
+}
+
+/* Read random number state */
+int read_S_to_site(QIO_Reader *infile, field_offset dest)
+{
+  QIO_String *xml_record_in;
+  QIO_RecordInfo rec_info;
+  int status;
+  int count = 1;
+  int datum_size = sizeof(double_prn);
+  int word_size = sizeof(float);
+  
+  /* Read the field record */
+  xml_record_in = QIO_string_create();
+  status = QIO_read(infile, &rec_info, xml_record_in, 
+		    vput_S_to_site, datum_size*count, word_size, (void *)&dest);
+  node0_printf("Record info \n\"%s\"\n",QIO_string_ptr(xml_record_in));
+  if(status != QIO_SUCCESS)return 1;
+
+  node0_printf("Checksums %x %x\n",
+	       QIO_get_reader_last_checksuma(infile),
+	       QIO_get_reader_last_checksumb(infile));
+
+  QIO_string_destroy(xml_record_in);
+  return 0;
+}
+
+/********************************************************************/
+
+#ifdef NOLINKS
 gauge_file *save_scidac(char *filename, int volfmt, int serpar, int ildgstyle,
-      char *stringLFN) {
-  printf("Can't save a lattice if we compile with -DNO_GAUGE_FIELD\n");
+			char *stringLFN){
+  printf("Can't save a lattice if we compile with -DNOLINKS\n");
   terminate(1);
   return NULL;
 }
 #else
-// Save the single precision lattice in SciDAC format
-// The QIO file is closed after writing the lattice
+/* Save the single precision lattice in SciDAC format */
+/* The QIO file is closed after writing the lattice */
 gauge_file *save_scidac(char *filename, int volfmt, int serpar, int ildgstyle,
-      char *stringLFN) {
+			char *stringLFN){
   QIO_Layout layout;
-  QIO_Filesystem fs;
   QIO_Writer *outfile;
   int status;
   field_offset src = F_OFFSET(link[0]);
   gauge_file *gf;
-  char *info;
-  QIO_String *filexml;
-  QIO_String *recxml;
+  char *qcdml;
   char default_file_xml[] = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><title>MILC ILDG archival gauge configuration</title>";
 
   QIO_verbose(QIO_VERB_OFF);
 
-  // Build the layout structure
+  /* Build the layout structure */
   build_qio_layout(&layout);
 
-  // Define the I/O system
-  build_qio_filesystem(&fs);
-
-  // Make a dummy gauge file structure for MILC use
+  /* Make a dummy gauge file structure for MILC use */
   gf = setup_output_gauge_file();
 
-  // Open file for writing
-  filexml = QIO_string_create();
-  QIO_string_set(filexml, default_file_xml);
-  outfile = open_scidac_output(filename, volfmt, serpar, ildgstyle,
-             stringLFN, &layout, &fs, filexml);
-  if (outfile == NULL)terminate(1);
-  QIO_string_destroy(filexml);
+  /* Open file for writing */
+  outfile = open_scidac_output(filename, volfmt, serpar, ildgstyle, 
+			stringLFN, &layout,default_file_xml);
+  if(outfile == NULL)terminate(1);
 
-  // Create the QCDML string for this configuration
-  info = create_QCDML();
-  recxml = QIO_string_create();
-  QIO_string_set(recxml, info);
+  /* Create the QCDML string for this configuration */
+  qcdml = create_QCDML();
 
-  // Write the lattice field
-#if NCOL == 2
-  status = write_F2_M_from_site(outfile, recxml, src, LATDIM);
-#endif
-#if NCOL == 3
-  status = write_F3_M_from_site(outfile, recxml, src, LATDIM);
-#endif
-#if NCOL == 4
-  status = write_F4_M_from_site(outfile, recxml, src, LATDIM);
-#endif
-#if NCOL > 4
-  #error "NCOL > 4 not yet implemented!"
-#endif
-  if (status)
-    terminate(1);
-
-  // Discard for now
-  QIO_string_destroy(recxml);
-
-  // Write information
-  if (volfmt == QIO_SINGLEFILE) {
+  /* Write the lattice field */
+  status = write_F3_M_from_site(outfile, qcdml, src, LATDIM);
+  if(status)terminate(1);
+  
+  /* Write information */
+  if(volfmt == QIO_SINGLEFILE){
     node0_printf("Saved gauge configuration serially to binary file %s\n",
-                 filename);
+		 filename);
   }
-  else if (volfmt == QIO_MULTIFILE) {
+  else if(volfmt == QIO_MULTIFILE){
     node0_printf("Saved gauge configuration as multifile to binary file %s\n",
-                 filename);
+	   filename);
   }
-  else if (volfmt == QIO_PARTFILE) {
+  else if(volfmt == QIO_PARTFILE){
     node0_printf("Saved gauge configuration in partition format to binary file %s\n",
-     filename);
+	   filename);
   }
 
   node0_printf("Time stamp %s\n",gf->header->time_stamp);
   node0_printf("Checksums %x %x\n",
-         QIO_get_writer_last_checksuma(outfile),
-         QIO_get_writer_last_checksumb(outfile));
+	       QIO_get_writer_last_checksuma(outfile),
+	       QIO_get_writer_last_checksumb(outfile));
 
-  // Close the file
+  /* Close the file */
   QIO_close_write(outfile);
 
-  free_QCDML(info);
+  free_QCDML(qcdml);
   return gf;
 }
-#endif // NO_GAUGE_FIELD
-// -----------------------------------------------------------------
+#endif /* NOLINKS */
 
 
+/* The functions below constitute the API */
 
-// -----------------------------------------------------------------
-// The functions below constitute the API
-int read_lat_dim_scidac(char *filename, int *ndim, int dims[]) {
+int read_lat_dim_scidac(char *filename, int *ndim, int dims[])
+{
   QIO_Layout layout;
-  QIO_Filesystem fs;
   int i;
   int *latsize;
   QIO_Reader *infile;
 
   QIO_verbose(QIO_VERB_REG);
 
-  // Build the layout structure
+  /* Build the layout structure */
   nx = 0; ny = 0; nz = 0; nt = 0;
   build_qio_layout(&layout);
-  // Forces discovery
+  /* Forces discovery */
   layout.latdim = 0;
 
-  // Set the file system parameters
-  build_qio_filesystem(&fs);
-
-  // Get lattice dimensions from file
-  infile = open_scidac_input(filename, &layout, &fs, QIO_SERIAL);
-  if (!infile)return 1;
+  /* Get lattice dimensions from file */
+  infile = open_scidac_input(filename, &layout, QIO_SERIAL);
+  if(!infile)return 1;
 
   *ndim = QIO_get_reader_latdim(infile);
   latsize = QIO_get_reader_latsize(infile);
@@ -325,389 +513,216 @@ int read_lat_dim_scidac(char *filename, int *ndim, int dims[]) {
   return 0;
 }
 
-gauge_file *save_serial_scidac(char *filename) {
+gauge_file *save_serial_scidac(char *filename){
   return save_scidac(filename, QIO_SINGLEFILE, QIO_SERIAL, QIO_ILDGNO, NULL);
 }
 
-gauge_file *save_parallel_scidac(char *filename) {
+gauge_file *save_parallel_scidac(char *filename){
   return save_scidac(filename, QIO_SINGLEFILE, QIO_PARALLEL, QIO_ILDGNO, NULL);
 }
 
-gauge_file *save_multifile_scidac(char *filename) {
+gauge_file *save_multifile_scidac(char *filename){
   return save_scidac(filename, QIO_MULTIFILE, QIO_SERIAL, QIO_ILDGNO, NULL);
 }
 
-gauge_file *save_partfile_scidac(char *filename) {
+gauge_file *save_partition_scidac(char *filename){
   return save_scidac(filename, QIO_PARTFILE, QIO_SERIAL, QIO_ILDGNO, NULL);
 }
 
-gauge_file *save_serial_ildg(char *filename, char *stringLFN) {
-  return save_scidac(filename, QIO_SINGLEFILE, QIO_SERIAL, QIO_ILDGLAT,
-                     stringLFN);
+gauge_file *save_serial_ildg(char *filename, char *stringLFN){
+  return save_scidac(filename, QIO_SINGLEFILE, QIO_SERIAL, QIO_ILDGLAT, 
+		     stringLFN);
 }
 
-gauge_file *save_parallel_ildg(char *filename, char *stringLFN) {
+gauge_file *save_parallel_ildg(char *filename, char *stringLFN){
   return save_scidac(filename, QIO_SINGLEFILE, QIO_PARALLEL, QIO_ILDGLAT,
-                     stringLFN);
+		     stringLFN);
 }
 
-gauge_file *save_multifile_ildg(char *filename, char *stringLFN) {
+gauge_file *save_multifile_ildg(char *filename, char *stringLFN){
   return save_scidac(filename, QIO_MULTIFILE, QIO_SERIAL, QIO_ILDGLAT,
-                     stringLFN);
+		     stringLFN);
 }
 
-gauge_file *save_partfile_ildg(char *filename, char *stringLFN) {
+gauge_file *save_partition_ildg(char *filename, char *stringLFN){
   return save_scidac(filename, QIO_PARTFILE, QIO_SERIAL, QIO_ILDGLAT,
-                     stringLFN);
+		     stringLFN);
 }
-// -----------------------------------------------------------------
 
-
-
-// -----------------------------------------------------------------
-// The QIO file is closed after reading the lattice
-#ifdef NO_GAUGE_FIELD
-gauge_file *restore_scidac(char *filename, int serpar) {
-  printf("Can't restore a lattice if we compile with -DNO_GAUGE_FIELD\n");
+/* The QIO file is closed after reading the lattice */
+#ifdef NOLINKS
+gauge_file *restore_scidac(char *filename, int serpar){
+  printf("Can't restore a lattice if we compile with -DNOLINKS\n");
   terminate(1);
   return NULL;
 }
 #else
-gauge_file *restore_scidac(char *filename, int serpar) {
+gauge_file *restore_scidac(char *filename, int serpar){
   QIO_Layout layout;
-  QIO_Filesystem fs;
   QIO_Reader *infile;
-  QIO_RecordInfo recinfo;
-  QIO_String *recxml;
   int status;
-  int typesize;
   field_offset dest = F_OFFSET(link[0]);
   gauge_file *gf;
 
   QIO_verbose(QIO_VERB_OFF);
 
-  // Build the layout structure
+  /* Build the layout structure */
   build_qio_layout(&layout);
 
-  // Define the I/O nodes
-  build_qio_filesystem(&fs);
-
-  // Make a dummy gauge file structure for MILC use
+  /* Make a dummy gauge file structure for MILC use */
   gf = setup_input_gauge_file(filename);
 
-  // Set the filename in the gauge_file structure
+  /* Set the filename in the gauge_file structure */
   gf->filename = filename;
 
-  // Open file for reading
-  infile = open_scidac_input(filename, &layout, &fs, serpar);
-  if (infile == NULL)
-    terminate(1);
+  /* Open file for reading */
+  infile = open_scidac_input(filename, &layout, serpar);
+  if(infile == NULL)terminate(1);
 
-  // Check the record type (double or single precision)
-  recxml = QIO_string_create();
-  status = QIO_read_record_info(infile, &recinfo, recxml);
-  if (status)
-    terminate(1);
-  typesize = QIO_get_typesize(&recinfo);
+  /* Read the lattice field */
+  status = read_F3_M_to_site(infile, dest, LATDIM);
+  if(status)terminate(1);
 
-  // Read the lattice field as single or double precision according to
-  // the type size (bytes in a single SU(NCOL) matrix)
-#if NCOL == 2
-  if (typesize == 32)
-    status = read_F2_M_to_site(infile, recxml, dest, LATDIM);
-  else if (typesize == 64)
-    status = read_D2_M_to_site(infile, recxml, dest, LATDIM);
-  else {
-    node0_printf("restore_scidac: Bad typesize %d\n", typesize);
-    terminate(1);
-  }
-#endif
-#if NCOL == 3
-  if (typesize == 72)
-    status = read_F3_M_to_site(infile, recxml, dest, LATDIM);
-  else if (typesize == 144)
-    status = read_D3_M_to_site(infile, recxml, dest, LATDIM);
-  else {
-    node0_printf("restore_scidac: Bad typesize %d\n", typesize);
-    terminate(1);
-  }
-#endif
-#if NCOL == 4
-  if (typesize == 128)
-    status = read_F4_M_to_site(infile, recxml, dest, LATDIM);
-  else if (typesize == 256)
-    status = read_D4_M_to_site(infile, recxml, dest, LATDIM);
-  else {
-    node0_printf("restore_scidac: Bad typesize %d\n", typesize);
-    terminate(1);
-  }
-#endif
-#if NCOL > 4
-  #error "NCOL > 4 not yet implemented!"
-#endif
-  if (status)
-    terminate(1);
-
-  // Discard for now
-  QIO_string_destroy(recxml);
-
-  // Close the file
+  /* Close the file */
   QIO_close_read(infile);
 
   return gf;
 }
 #endif
-// -----------------------------------------------------------------
 
-
-
-// -----------------------------------------------------------------
-// The QIO file is closed after reading the lattice
-gauge_file *restore_serial_scidac(char *filename) {
+/* The QIO file is closed after reading the lattice */
+gauge_file *restore_serial_scidac(char *filename){
   return restore_scidac(filename, QIO_SERIAL);
 }
-// -----------------------------------------------------------------
 
-
-
-// -----------------------------------------------------------------
-// The QIO file is closed after reading the lattice
-gauge_file *restore_parallel_scidac(char *filename) {
+/* The QIO file is closed after reading the lattice */
+gauge_file *restore_parallel_scidac(char *filename){
   return restore_scidac(filename, QIO_PARALLEL);
 }
-// -----------------------------------------------------------------
 
-
-
-// -----------------------------------------------------------------
-// Read color matrices in SciDAC format
-void restore_color_matrix_scidac_to_site(char *filename,
-                                         field_offset dest, int count) {
-
+/* Read color matrices in SciDAC format */
+void restore_color_matrix_scidac_to_site(char *filename, 
+				field_offset dest, int count){
   QIO_Layout layout;
-  QIO_Filesystem fs;
   QIO_Reader *infile;
-  QIO_String *recxml;
   int status;
 
   QIO_verbose(QIO_VERB_OFF);
 
-  // Build the layout structure
+  /* Build the layout structure */
   build_qio_layout(&layout);
 
-  // Set the file system parameters
-  build_qio_filesystem(&fs);
+  /* Open file for reading */
+  infile = open_scidac_input(filename, &layout, QIO_SERIAL);
+  if(infile == NULL)terminate(1);
 
-  // Open file for reading
-  infile = open_scidac_input(filename, &layout, &fs, QIO_SERIAL);
-  if (infile == NULL)
-    terminate(1);
+  /* Read the lattice field */
+  status = read_F3_M_to_site(infile, dest, count);
+  if(status)terminate(1);
 
-  // Read the lattice field
-  recxml = QIO_string_create();
-#if NCOL == 2
-  status = read_F2_M_to_site(infile, recxml, dest, count);
-#endif
-#if NCOL == 3
-  status = read_F3_M_to_site(infile, recxml, dest, count);
-#endif
-#if NCOL == 4
-  status = read_F4_M_to_site(infile, recxml, dest, count);
-#endif
-#if NCOL > 4
-  #error "NCOL > 4 not yet implemented!"
-#endif
-  if (status)
-    terminate(1);
-
-  // Discard for now
-  QIO_string_destroy(recxml);
-
-  close_scidac_input(infile);
+  close_input(infile);
 }
-// -----------------------------------------------------------------
 
-
-
-// -----------------------------------------------------------------
-// Read color matrices in SciDAC format to a field
-void restore_color_matrix_scidac_to_field(char *filename,
-        matrix *dest, int count) {
+/* Read color matrices in SciDAC format */
+void restore_color_matrix_scidac_to_field(char *filename, 
+				su3_matrix *dest, int count){
   QIO_Layout layout;
-  QIO_Filesystem fs;
   QIO_Reader *infile;
-  QIO_String *recxml;
   int status;
 
   QIO_verbose(QIO_VERB_OFF);
 
-  // Build the layout structure
+  /* Build the layout structure */
   build_qio_layout(&layout);
 
-  // Set the file system parameters
-  build_qio_filesystem(&fs);
+  /* Open file for reading */
+  infile = open_scidac_input(filename, &layout, QIO_SERIAL);
+  if(infile == NULL)terminate(1);
 
-  // Open file for reading
-  infile = open_scidac_input(filename, &layout, &fs, QIO_SERIAL);
-  if (infile == NULL)
-    terminate(1);
+  /* Read the lattice field */
+  status = read_F3_M_to_field(infile, dest, count);
+  if(status)terminate(1);
 
-  // Read the lattice field
-  recxml = QIO_string_create();
-#if NCOL == 2
-  status = read_F2_M_to_field(infile, recxml, dest, count);
-#endif
-#if NCOL == 3
-  status = read_F3_M_to_field(infile, recxml, dest, count);
-#endif
-#if NCOL == 4
-  status = read_F4_M_to_field(infile, recxml, dest, count);
-#endif
-#if NCOL > 4
-  #error "NCOL > 4 not yet implemented!"
-#endif
-  if (status)
-    terminate(1);
-
-  // Discard for now
-  QIO_string_destroy(recxml);
-
-  close_scidac_input(infile);
+  close_input(infile);
 }
-// -----------------------------------------------------------------
 
-
-
-// -----------------------------------------------------------------
-// Write a set of color matrices in SciDAC format,
-// taking data from the site structure
-void save_color_matrix_scidac_from_site(char *filename, char *fileinfo,
-                                        char *recinfo, int volfmt,
-                                        field_offset src, int count) {
-
+/* Write a set of color matrices in SciDAC format, taking data from the site
+   structure */
+void save_color_matrix_scidac_from_site(char *filename, char *filexml, 
+      char *recxml, int volfmt,  field_offset src, int count)
+{
   QIO_Layout layout;
-  QIO_Filesystem fs;
   QIO_Writer *outfile;
-  QIO_String *filexml, *recxml;
   int status;
 
   QIO_verbose(QIO_VERB_OFF);
 
-  // Build the layout structure
+  /* Build the layout structure */
   build_qio_layout(&layout);
 
-  // Define the I/O system
-  build_qio_filesystem(&fs);
-
-  // Open file for writing
-  filexml = QIO_string_create();
-  QIO_string_set(filexml, fileinfo);
+  /* Open file for writing */
   outfile = open_scidac_output(filename, volfmt, QIO_SERIAL,
-                               QIO_ILDGNO, NULL, &layout, &fs, filexml);
-  if (outfile == NULL)
-    terminate(1);
-  QIO_string_destroy(filexml);
+			       QIO_ILDGNO, NULL, &layout, filexml);
+  if(outfile == NULL)terminate(1);
 
-  // Write the lattice field
-  recxml = QIO_string_create();
-  QIO_string_set(recxml, recinfo);
-#if NCOL == 2
-  status = write_F2_M_from_site(outfile, recxml, src, count);
-#endif
-#if NCOL == 3
+  /* Write the lattice field */
   status = write_F3_M_from_site(outfile, recxml, src, count);
-#endif
-#if NCOL == 4
-  status = write_F4_M_from_site(outfile, recxml, src, count);
-#endif
-#if NCOL > 4
-  #error "NCOL > 4 not yet implemented!"
-#endif
-  if (status)terminate(1);
-  QIO_string_destroy(recxml);
-
-  // Write information
-  if (volfmt == QIO_SINGLEFILE) {
+  if(status)terminate(1);
+  
+  /* Write information */
+  if(volfmt == QIO_SINGLEFILE){
     node0_printf("Saved KS matrix serially to binary file %s\n",
-     filename);
+		 filename);
   }
-  else if (volfmt == QIO_MULTIFILE) {
+  else if(volfmt == QIO_MULTIFILE){
     node0_printf("Saved KS matrix as multifile to binary file %s\n",
-     filename);
+	   filename);
   }
-  else if (volfmt == QIO_PARTFILE) {
+  else if(volfmt == QIO_PARTFILE){
     node0_printf("Saved KS matrix in partition format to binary file %s\n",
-     filename);
+	   filename);
   }
 
   node0_printf("Checksums %x %x\n",
-         QIO_get_writer_last_checksuma(outfile),
-         QIO_get_writer_last_checksumb(outfile));
+	       QIO_get_writer_last_checksuma(outfile),
+	       QIO_get_writer_last_checksumb(outfile));
 
-  close_scidac_output(outfile);
+  close_output(outfile);
 }
-// -----------------------------------------------------------------
 
 
-
-// -----------------------------------------------------------------
-// Save a set of color matrices
-void save_color_matrix_scidac_from_field(char *filename, char *fileinfo,
-                                         char *recinfo, int volfmt,
-                                         matrix *src, int count) {
-
+/* Save a color matrix. */
+void save_color_matrix_scidac_from_field(char *filename,
+        char *filexml, char *recxml, int volfmt, su3_matrix *src, int count)
+{
   QIO_Layout layout;
   QIO_Writer *outfile;
-  QIO_Filesystem fs;
-  QIO_String *filexml, *recxml;
   int status;
 
   QIO_verbose(QIO_VERB_OFF);
 
-  // Build the layout structure
+  /* Build the layout structure */
   build_qio_layout(&layout);
 
-  // Build the structure defining the I/O nodes
-  build_qio_filesystem(&fs);
-
-  // Open file for writing
-  filexml = QIO_string_create();
-  QIO_string_set(filexml, fileinfo);
+  /* Open file for writing */
   outfile = open_scidac_output(filename, volfmt, QIO_SERIAL,
-                               QIO_ILDGNO, NULL, &layout, &fs, filexml);
-  if (outfile == NULL)
-    terminate(1);
-  QIO_string_destroy(filexml);
+                               QIO_ILDGNO, NULL, &layout, filexml);
+  if(outfile == NULL)terminate(1);
 
-  // Write the lattice field
-  recxml = QIO_string_create();
-  QIO_string_set(recxml, recinfo);
-#if NCOL == 2
-  status = write_F2_M_from_field(outfile, recxml, src, count);
-#endif
-#if NCOL == 3
+  /* Write the lattice field */
   status = write_F3_M_from_field(outfile, recxml, src, count);
-#endif
-#if NCOL == 4
-  status = write_F4_M_from_field(outfile, recxml, src, count);
-#endif
-#if NCOL > 4
-  #error "NCOL > 4 not yet implemented!"
-#endif
-  if (status)
-    terminate(1);
-  QIO_string_destroy(recxml);
+  if(status)terminate(1);
 
-  // Write information
-  if (volfmt == QIO_SINGLEFILE) {
+  /* Write information */
+  if(volfmt == QIO_SINGLEFILE){
     node0_printf("Saved KS matrix serially to binary file %s\n",
                  filename);
   }
-  else if (volfmt == QIO_MULTIFILE) {
+  else if(volfmt == QIO_MULTIFILE){
     node0_printf("Saved KS matrix as multifile to binary file %s\n",
            filename);
   }
-  else if (volfmt == QIO_PARTFILE) {
+  else if(volfmt == QIO_PARTFILE){
     node0_printf("Saved KS matrix in partition format to binary file %s\n",
            filename);
   }
@@ -716,459 +731,82 @@ void save_color_matrix_scidac_from_field(char *filename, char *fileinfo,
                QIO_get_writer_last_checksuma(outfile),
                QIO_get_writer_last_checksumb(outfile));
 
-  close_scidac_output(outfile);
+  close_output(outfile);
 }
-// -----------------------------------------------------------------
 
-
-
-// -----------------------------------------------------------------
-// Read random number state in SciDAC format (SITERAND case only)
-void restore_random_state_scidac_to_site(char *filename, field_offset dest) {
+/* Read random number state in SciDAC format (SITERAND case only) */
+void restore_random_state_scidac_to_site(char *filename, field_offset dest){
   QIO_Layout layout;
-  QIO_Filesystem fs;
   QIO_Reader *infile;
-  QIO_String *recxml;
   int status;
 
 #ifndef SITERAND
   node0_printf("restore_random_state_scidac_to_site: requires SITERAND. Save skipped\n");
-  if (1)return;
-#endif
+  if(1)return;
+#endif  
 
   QIO_verbose(QIO_VERB_OFF);
 
-  // Build the layout structure
+  /* Build the layout structure */
   build_qio_layout(&layout);
 
-  // Set the file system parameters
-  build_qio_filesystem(&fs);
+  /* Open file for reading */
+  infile = open_scidac_input(filename, &layout, QIO_SERIAL);
+  if(infile == NULL)terminate(1);
 
-  // Open file for reading
-  infile = open_scidac_input(filename, &layout, &fs, QIO_SERIAL);
-  if (infile == NULL)terminate(1);
+  /* Read the lattice field */
+  status = read_S_to_site(infile, dest);
+  if(status)terminate(1);
 
-  // Read the lattice field
-  recxml = QIO_string_create();
-  status = read_S_to_site(infile, recxml, dest);
-  if (status)terminate(1);
-
-  // Discard for now
-  QIO_string_destroy(recxml);
-
-  close_scidac_input(infile);
+  close_input(infile);
 }
-// -----------------------------------------------------------------
 
-
-
-// -----------------------------------------------------------------
-// Save (SITERAND) random number state
-void save_random_state_scidac_from_site(char *filename, char *fileinfo,
-                                        char *recinfo, int volfmt,
-                                        field_offset src) {
-
+/* Save random number state. (SITERAND case only) */
+void save_random_state_scidac_from_site(char *filename, 
+        char *filexml, char *recxml, int volfmt, field_offset src)
+{
   QIO_Layout layout;
-  QIO_Filesystem fs;
   QIO_Writer *outfile;
-  QIO_String *filexml, *recxml;
   int status;
 
 #ifndef SITERAND
-  node0_printf("save_random_state_scidac_from_site: ");
-  node0_printf("requires SITERAND. Save skipped\n");
-  return;
-#endif
+  node0_printf("save_random_state_scidac_from_site: requires SITERAND. Save skipped\n");
+  if(1)return;
+#endif  
 
   QIO_verbose(QIO_VERB_OFF);
 
-  // Build the layout structure
+  /* Build the layout structure */
   build_qio_layout(&layout);
 
-  // Define the I/O system
-  build_qio_filesystem(&fs);
-
-  // Open file for writing
-  filexml = QIO_string_create();
-  QIO_string_set(filexml, fileinfo);
+  /* Open file for writing */
   outfile = open_scidac_output(filename, volfmt, QIO_SERIAL,
-             QIO_ILDGNO, NULL, &layout, &fs, filexml);
-  if (outfile == NULL)terminate(1);
-  QIO_string_destroy(filexml);
+			       QIO_ILDGNO, NULL, &layout, filexml);
+  if(outfile == NULL)terminate(1);
 
-  // Write the lattice field
-  recxml = QIO_string_create();
-  QIO_string_set(recxml, recinfo);
+  /* Write the lattice field */
   status = write_S_from_site(outfile, recxml, src);
-  QIO_string_destroy(recxml);
-  if (status)terminate(1);
-
-  // Write information
-  if (volfmt == QIO_SINGLEFILE) {
+  if(status)terminate(1);
+  
+  /* Write information */
+  if(volfmt == QIO_SINGLEFILE){
     node0_printf("Saved random state serially to binary file %s\n",
-     filename);
+		 filename);
   }
-  else if (volfmt == QIO_MULTIFILE) {
+  else if(volfmt == QIO_MULTIFILE){
     node0_printf("Saved random state multifile to binary file %s\n",
-     filename);
+	   filename);
   }
-  else if (volfmt == QIO_PARTFILE) {
+  else if(volfmt == QIO_PARTFILE){
     node0_printf("Saved random state in partition format to binary file %s\n",
-     filename);
+	   filename);
   }
 
   node0_printf("Checksums %x %x\n",
-         QIO_get_writer_last_checksuma(outfile),
-         QIO_get_writer_last_checksumb(outfile));
+	       QIO_get_writer_last_checksuma(outfile),
+	       QIO_get_writer_last_checksumb(outfile));
 
-  close_scidac_output(outfile);
-}
-// -----------------------------------------------------------------
-
-
-
-// -----------------------------------------------------------------
-// Restore a real field
-void restore_real_scidac_to_field(char *filename, Real *dest, int count) {
-  QIO_Layout layout;
-  QIO_Filesystem fs;
-  QIO_Reader *infile;
-  QIO_String *recxml;
-  int status;
-
-  QIO_verbose(QIO_VERB_OFF);
-
-  // Build the layout structure
-  build_qio_layout(&layout);
-
-  // Set the file system parameters
-  build_qio_filesystem(&fs);
-
-  // Open file for reading
-  infile = open_scidac_input(filename, &layout, &fs, QIO_SERIAL);
-  if (infile == NULL)terminate(1);
-
-  // Read the lattice field
-  recxml = QIO_string_create();
-  status = read_F_R_to_field(infile, recxml, dest, count);
-  if (status)terminate(1);
-
-  // Discard for now
-  QIO_string_destroy(recxml);
-
-  close_scidac_input(infile);
-}
-// -----------------------------------------------------------------
-
-
-
-// -----------------------------------------------------------------
-// Write a complex field
-QIO_Writer *w_open_complex_scidac_file(char *filename, char *fileinfo,
-                                       int volfmt, int serpar) {
-
-  QIO_Layout layout;
-  QIO_Filesystem fs;
-  QIO_Writer *outfile;
-  QIO_String *filexml;
-
-  // Build the layout structure
-  build_qio_layout(&layout);
-
-  // Define the I/O nodes
-  build_qio_filesystem(&fs);
-
-  // Open file for writing
-  filexml = QIO_string_create();
-  QIO_string_set(filexml, fileinfo);
-  outfile = open_scidac_output(filename, volfmt, serpar, QIO_ILDGNO,
-             NULL, &layout, &fs, filexml);
-  QIO_string_destroy(filexml);
-  return outfile;
-}
-// -----------------------------------------------------------------
-
-
-
-// -----------------------------------------------------------------
-// Save a complex field
-int save_complex_scidac(QIO_Writer *outfile, char *filename, char *recinfo,
-                        int volfmt, complex *src, int count) {
-
-  QIO_String *recxml;
-  int status;
-
-  recxml = QIO_string_create();
-  QIO_string_set(recxml, recinfo);
-  status = write_F_C_from_field(outfile, recxml, src, count);
-  QIO_string_destroy(recxml);
-  if (status)return status;
-
-  // Write information
-  if (volfmt == QIO_SINGLEFILE) {
-    node0_printf("Saved complex field serially to binary file %s\n",
-     filename);
-  }
-  else if (volfmt == QIO_MULTIFILE) {
-    node0_printf("Saved complex field as multifile to binary file %s\n",
-     filename);
-  }
-  else if (volfmt == QIO_PARTFILE) {
-    node0_printf("Saved complex field in partition format to binary file %s\n",
-     filename);
-  }
-
-  node0_printf("Checksums %x %x\n",
-         QIO_get_writer_last_checksuma(outfile),
-         QIO_get_writer_last_checksumb(outfile));
-
-  return status;
+  close_output(outfile);
 }
 
-void w_close_complex_scidac_file(QIO_Writer *outfile) {
-  QIO_close_write(outfile);
-}
 
-void save_complex_scidac_from_field(char *filename, char *fileinfo,
-                                    char *recinfo, int volfmt, int serpar,
-                                    complex *src, int count) {
-
-    QIO_Writer *outfile;
-    int status;
-
-    QIO_verbose(QIO_VERB_OFF);
-
-    outfile = w_open_complex_scidac_file(filename, fileinfo, volfmt, serpar);
-    if (outfile == NULL)terminate(1);
-
-    // Write the lattice field: "count" complex numbers per site
-    status = save_complex_scidac(outfile, filename, recinfo,
-         volfmt, src, count);
-    if (status)terminate(1);
-
-    w_close_complex_scidac_file(outfile);
-}
-// -----------------------------------------------------------------
-
-
-
-// -----------------------------------------------------------------
-// Restore a complex field
-QIO_Reader *r_open_complex_scidac_file_xml(char *filename, int serpar,
-                                           QIO_String *xml_file) {
-
-  QIO_Layout layout;
-  QIO_Filesystem fs;
-  QIO_Reader *infile;
-
-  // Build the layout structure
-  build_qio_layout(&layout);
-
-  // Set the file system parameters
-  build_qio_filesystem(&fs);
-
-  // Open file for reading
-  infile = open_scidac_input_xml(filename, &layout, &fs, serpar, xml_file);
-  return infile;
-}
-
-QIO_Reader *r_open_complex_scidac_file(char *filename, int serpar) {
-  QIO_Reader *infile;
-  QIO_String *xml_file;
-
-  // Open file for reading
-  xml_file = QIO_string_create();
-  infile = r_open_complex_scidac_file_xml(filename, serpar, xml_file);
-  QIO_string_destroy(xml_file);
-  return infile;
-}
-
-int read_complex_scidac(QIO_Reader *infile, complex *dest, int count) {
-  QIO_String *recxml;
-  int status;
-
-  // Read the lattice field: "count" complex numbers per site
-  recxml = QIO_string_create();
-  status = read_F_C_to_field(infile, recxml, dest, count);
-
-  // Discard for now
-  QIO_string_destroy(recxml);
-
-  return status;
-}
-
-void r_close_complex_scidac_file(QIO_Reader *infile) {
-  close_scidac_input(infile);
-}
-
-void restore_complex_scidac_to_field(char *filename, int serpar,
-             complex *dest, int count) {
-  QIO_Reader *infile;
-  int status;
-
-  QIO_verbose(QIO_VERB_OFF);
-
-  infile = r_open_complex_scidac_file(filename, serpar);
-  if (infile == NULL)terminate(1);
-
-  // Read the lattice field: "count" complex numbers per site
-  status = read_complex_scidac(infile, dest, count);
-  if (status)terminate(1);
-
-  r_close_complex_scidac_file(infile);
-}
-// -----------------------------------------------------------------
-
-
-
-// -----------------------------------------------------------------
-// Restore a real field
-void restore_real_scidac_to_site(char *filename, field_offset dest,
-                                 int count) {
-
-  QIO_Layout layout;
-  QIO_Filesystem fs;
-  QIO_Reader *infile;
-  QIO_String *recxml;
-  int status;
-
-  QIO_verbose(QIO_VERB_OFF);
-
-  // Build the layout structure
-  build_qio_layout(&layout);
-
-  // Set the file system parameters
-  build_qio_filesystem(&fs);
-
-  // Open file for reading
-  infile = open_scidac_input(filename, &layout, &fs, QIO_SERIAL);
-  if (infile == NULL)terminate(1);
-
-  // Read the lattice field
-  recxml = QIO_string_create();
-  status = read_F_R_to_site(infile, recxml, dest, count);
-  if (status)terminate(1);
-
-  // Discard for now
-  QIO_string_destroy(recxml);
-
-  close_scidac_input(infile);
-}
-// -----------------------------------------------------------------
-
-
-
-// -----------------------------------------------------------------
-// Save a real field
-void save_real_scidac_from_field(char *filename, char *fileinfo,
-                                 char *recinfo, int volfmt,
-                                 Real *src, int count) {
-
-  QIO_Layout layout;
-  QIO_Filesystem fs;
-  QIO_Writer *outfile;
-  QIO_String *filexml, *recxml;
-  int status;
-
-  QIO_verbose(QIO_VERB_OFF);
-
-  // Build the layout structure
-  build_qio_layout(&layout);
-
-  // Define the I/O system
-  build_qio_filesystem(&fs);
-
-  // Open file for writing
-  filexml = QIO_string_create();
-  QIO_string_set(filexml, fileinfo);
-  outfile = open_scidac_output(filename, volfmt, QIO_SERIAL,
-                               QIO_ILDGNO, NULL, &layout, &fs, filexml);
-  if (outfile == NULL)
-    terminate(1);
-  QIO_string_destroy(filexml);
-
-  // Write the lattice field
-  recxml = QIO_string_create();
-  QIO_string_set(recxml,recinfo);
-  status = write_F_R_from_field(outfile, recxml, src, count);
-  if (status)
-    terminate(1);
-  QIO_string_destroy(recxml);
-
-  // Write information
-  if (volfmt == QIO_SINGLEFILE) {
-    node0_printf("Saved real field serially to binary file %s\n", filename);
-  }
-  else if (volfmt == QIO_MULTIFILE) {
-    node0_printf("Saved real field in multifile format to binary file %s\n",
-                 filename);
-  }
-  else if (volfmt == QIO_PARTFILE) {
-    node0_printf("Saved real field in partition format to binary file %s\n",
-                 filename);
-  }
-
-  node0_printf("Checksums %x %x\n", QIO_get_writer_last_checksuma(outfile),
-               QIO_get_writer_last_checksumb(outfile));
-
-  close_scidac_output(outfile);
-}
-// -----------------------------------------------------------------
-
-
-
-// -----------------------------------------------------------------
-// Save a real field from the MILC site structure*/
-void save_real_scidac_from_site(char *filename, char *fileinfo,
-                                char *recinfo, int volfmt,
-                                field_offset src, int count) {
-
-  QIO_Layout layout;
-  QIO_Filesystem fs;
-  QIO_Writer *outfile;
-  QIO_String *filexml, *recxml;
-  int status;
-
-  QIO_verbose(QIO_VERB_OFF);
-
-  // Build the layout structure
-  build_qio_layout(&layout);
-
-  // Define the I/O system
-  build_qio_filesystem(&fs);
-
-  // Open file for writing
-  filexml = QIO_string_create();
-  QIO_string_set(filexml, fileinfo);
-  outfile = open_scidac_output(filename, volfmt, QIO_SERIAL,
-                               QIO_ILDGNO, NULL, &layout, &fs, filexml);
-  if (outfile == NULL)
-    terminate(1);
-  QIO_string_destroy(filexml);
-
-  // Write the lattice field
-  recxml = QIO_string_create();
-  QIO_string_set(recxml,recinfo);
-  status = write_F_R_from_site(outfile, recxml, src, count);
-  if (status)
-    terminate(1);
-  QIO_string_destroy(recxml);
-
-  // Write information
-  if (volfmt == QIO_SINGLEFILE) {   // Suppress compiler warning
-    node0_printf("Saved real field serially to binary file %s\n", filename);
-  }
-  else if (volfmt == QIO_MULTIFILE) {
-    node0_printf("Saved real field in multifile format to binary file %s\n",
-                 filename);
-  }
-  else if (volfmt == QIO_PARTFILE)
-    node0_printf("Saved real field in partition format to binary file %s\n",
-                 filename);
-
-  node0_printf("Checksums %x %x\n", QIO_get_writer_last_checksuma(outfile),
-               QIO_get_writer_last_checksumb(outfile));
-
-  close_scidac_output(outfile);
-}
-// -----------------------------------------------------------------

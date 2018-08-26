@@ -1,14 +1,13 @@
 #ifndef _PREFETCH_H
 #define _PREFETCH_H
 
+#include "../include/su3.h"  // Define data types
+
 /***************************************************************************/
-/*                                                                         */
 /*          Cache manipulation for a variety of architectures              */
-/*                                                                         */
 /***************************************************************************/
 
-
-/* Abbreviations for data types...
+/* Abbreviations for data types:
    M  SU(3) matrix
    V  SU(3) vector
    W  Wilson vector
@@ -25,7 +24,6 @@
 
 /***************************************************************************/
 /*              Ignore Cache Manipulation Macros                           */
-/*                                                                         */
 /***************************************************************************/
 
 #define prefetch_M(a0)
@@ -49,11 +47,10 @@
 /***************************************************************************/
 /*                  Cache Manipulation Macros                              */
 /*                Prefetch via subroutine calls                            */
-/*                                                                         */
 /***************************************************************************/
 
-void _prefetch_M(matrix * );
-void _prefetch_V(vector * );
+void _prefetch_M(matrix *);
+void _prefetch_V(vector *);
 void _prefetch_W(wilson_vector *);
 void _prefetch_H(half_wilson_vector *);
 void _prefetch_VV(vector *, vector *);
@@ -61,11 +58,13 @@ void _prefetch_VVV(vector *, vector *, vector *);
 void _prefetch_VVVV(vector *, vector *, vector *, vector *);
 void _prefetch_VVVVV(vector *, vector *, vector *, vector *, vector *);
 void _prefetch_WWW(wilson_vector *, wilson_vector *, wilson_vector *);
-void _prefetch_WWWW(wilson_vector *, wilson_vector *, wilson_vector *, wilson_vector *);
+void _prefetch_WWWW(wilson_vector *, wilson_vector *, wilson_vector *,
+                    wilson_vector *);
 void _prefetch_WWWWW(wilson_vector *, wilson_vector *, wilson_vector *,
-          wilson_vector *, wilson_vector *);
+                     wilson_vector *, wilson_vector *);
 void _prefetch_4MVVVV(matrix *, vector *, vector *, vector *, vector *);
-void _prefetch_4MWWWW(matrix *, wilson_vector *, wilson_vector *, wilson_vector *, wilson_vector *);
+void _prefetch_4MWWWW(matrix *, wilson_vector *, wilson_vector *,
+                                wilson_vector *, wilson_vector *);
 void _prefetch_4MV4V(matrix *, vector *, vector *);
 void _prefetch_4MW4W(matrix *, wilson_vector *, wilson_vector *);
 
