@@ -1,7 +1,7 @@
 prompt 0
-nx 8
-ny 8
-nz 8
+nx 4
+ny 4
+nz 4
 nt 4
 
 start_eps 0.01
@@ -16,5 +16,5 @@ tmeas 0.3
 tmeas 0.4
 tmeas 0.5
 
-reload_serial config.10.lime
+reload_serial config.4F.4444
 forget
