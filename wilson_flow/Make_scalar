@@ -1,13 +1,25 @@
 # ------------------------------------------------------------------
 MAKEFILE = Make_scalar
 
-MPP            = # true
+MPP            = true # Needed to activate SciDAC libraries
 PRECISION      = 2
 CC             = gcc
 OPT            = -O3 -Wall
 CLFS           = -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE64
                  # Large files gcc only
 MACHINE_DEP_IO = io_ansi.o
+
+WANTQIO        = true
+WANTQMP        =
+
+SCIDAC         = /home/schaich/current/lqcd/install
+QIOSNG         = # $(SCIDAC)/qio-single
+QIOPAR         = $(SCIDAC)/qio
+QMPSNG         = # ${SCIDAC}/qmp-single
+QMPPAR         = ${SCIDAC}/qmp
+
+include ../Make_template_qop
+include ../Make_template_scidac
 
 LD             = ${CC}
 LIBADD         =
@@ -29,20 +41,30 @@ MAKELIBRARIES  = Make_vanilla
 # ------------------------------------------------------------------
 # Stuff below shouldn't change
 ifeq ($(strip ${MPP}),true)
-  COMMTYPE = MPI
-  COMMPKG = com_mpi.o
+  ifeq ($(strip ${HAVEQMP}),true)
+    COMMTYPE = QMP
+    COMMPKG = com_qmp.o
+  else
+    COMMTYPE = MPI
+    COMMPKG = com_mpi.o
+  endif
 else
-  COMMTYPE = SINGLE
-  COMMPKG = com_vanilla.o
+  ifeq ($(strip ${HAVEQMP}),true)
+    COMMTYPE = SINGLE
+    COMMPKG = com_qmp.o
+  else
+    COMMTYPE = SINGLE
+    COMMPKG = com_vanilla.o
+  endif
 endif
 
 PREC = -DPRECISION=${PRECISION}
 
 # Complete set of compiler flags - do not change
 CFLAGS = ${OPT} -D${COMMTYPE} ${CODETYPE} ${INLINEOPT} ${PREC} ${CLFS} \
-         -I${MYINCLUDEDIR} ${DEFINES}
+         ${INCSCIDAC} -I${MYINCLUDEDIR} ${DEFINES} ${DARCH}
 
-ILIB = ${LIBADD}
+ILIB = ${LIBSCIDAC} ${LIBADD}
 
 check:
 	make -f Make_test check
