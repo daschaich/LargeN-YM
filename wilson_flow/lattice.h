@@ -104,6 +104,5 @@ EXTERN anti_hermitmat *A[NDIMS];
 // Measurement stuff
 EXTERN int num_meas;
 EXTERN Real tmeas[100];
-
 #endif
 // -----------------------------------------------------------------

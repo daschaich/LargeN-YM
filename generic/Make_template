@@ -48,6 +48,7 @@ G_HEADERS = \
   ../include/comdefs.h \
   ../include/generic.h \
   ../include/int32type.h \
+  ../include/io_scidac.h \
   lattice.h
 
 G_ALL_DEPEND = \
