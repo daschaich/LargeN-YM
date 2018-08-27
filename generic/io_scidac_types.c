@@ -1,153 +1,116 @@
-/*********************** io_scidac_types.c **************************/
-/* Functions for reading and writing MILC fields through QIO        */
-
-/* Conversion of MILC types between prevailing and fixed precision */
-
+// -----------------------------------------------------------------
+// Functions for reading and writing through QIO
 #include "generic_includes.h"
 #include <qio.h>
 #include "../include/io_lat.h"
 #include "../include/io_scidac.h"
+// -----------------------------------------------------------------
 
-/* Real type */
 
-static void
-f2p_real(Real *dest, float *src){
+
+// -----------------------------------------------------------------
+// Conversion of MILC types between prevailing and fixed precision
+// Real type
+static void f2p_real(Real *dest, float *src) {
   *dest = *src;
 }
 
-static void
-p2f_real(float *dest, Real *src){
+static void p2f_real(float *dest, Real *src) {
   *dest = *src;
 }
-
-#if 0
-static void
-d2p_real(Real *dest, double *src){
-  *dest = *src;
-}
-
-static void
-p2d_real(double *dest, Real *src){
-  *dest = *src;
-}
-#endif
 
 /* Complex type */
-
-static void
-f2p_complex(complex *dest, fcomplex *src){
+static void f2p_complex(complex *dest, fcomplex *src) {
   dest->real = src->real;
   dest->imag = src->imag;
 }
 
-static void
-p2f_complex(fcomplex *dest, complex *src){
+static void p2f_complex(fcomplex *dest, complex *src) {
   dest->real = src->real;
   dest->imag = src->imag;
 }
 
-static void
-d2p_complex(complex *dest, dcomplex *src){
+static void d2p_complex(complex *dest, dcomplex *src) {
   dest->real = src->real;
   dest->imag = src->imag;
 }
 
-static void
-p2d_complex(dcomplex *dest, complex *src){
+static void p2d_complex(dcomplex *dest, complex *src) {
   dest->real = src->real;
   dest->imag = src->imag;
 }
 
-/* Color vector */
-
-static void
-f2p_vec(vector *dest, fvector *src){
+// Color vector
+static void f2p_vec(vector_f *dest, fvector_f *src) {
   int i;
 
-  for(i = 0; i < 3; i++){
+  for(i = 0; i < 3; i++) {
     dest->c[i].real = src->c[i].real;
     dest->c[i].imag = src->c[i].imag;
   }
 }
 
-static void
-p2f_vec(fvector *dest, vector *src){
+static void p2f_vec(fvector_f *dest, vector_f *src) {
   int i;
 
-  for(i = 0; i < 3; i++){
+  for(i = 0; i < 3; i++) {
     dest->c[i].real = src->c[i].real;
     dest->c[i].imag = src->c[i].imag;
   }
 }
 
-static void
-d2p_vec(vector *dest, dvector *src){
+static void d2p_vec(vector_f *dest, dvector_f *src) {
   int i;
 
-  for(i = 0; i < 3; i++){
+  for(i = 0; i < 3; i++) {
     dest->c[i].real = src->c[i].real;
     dest->c[i].imag = src->c[i].imag;
   }
 }
 
-static void
-p2d_vec(dvector *dest, vector *src){
+static void p2d_vec(dvector_f *dest, vector_f *src) {
   int i;
 
-  for(i = 0; i < 3; i++){
+  for(i = 0; i < 3; i++) {
     dest->c[i].real = src->c[i].real;
     dest->c[i].imag = src->c[i].imag;
   }
 }
 
-/* Color matrix */
+// Color matrix
+static void f2p_mat(matrix_f *dest, fmatrix_f *src) {
+  int i, j;
 
-static void
-f2p_mat(matrix *dest, fmatrix *src){
-  int i,j;
-
-  for(i = 0; i < 3; i++)for(j = 0; j < 3; j++){
+  for(i = 0; i < 3; i++)for(j = 0; j < 3; j++) {
     dest->e[i][j].real = src->e[i][j].real;
     dest->e[i][j].imag = src->e[i][j].imag;
   }
 }
 
-static void
-p2f_mat(fmatrix *dest, matrix *src){
-  int i,j;
+static void p2f_mat(fmatrix_f *dest, matrix_f *src) {
+  int i, j;
 
-  for(i = 0; i < 3; i++)for(j = 0; j < 3; j++){
+  for(i = 0; i < 3; i++)for(j = 0; j < 3; j++) {
     dest->e[i][j].real = src->e[i][j].real;
     dest->e[i][j].imag = src->e[i][j].imag;
   }
 }
 
-static void
-d2p_mat(matrix *dest, dmatrix *src){
-  int i,j;
+static void d2p_mat(matrix_f *dest, dmatrix_f *src) {
+  int i, j;
 
-  for(i = 0; i < 3; i++)for(j = 0; j < 3; j++){
+  for(i = 0; i < 3; i++)for(j = 0; j < 3; j++) {
     dest->e[i][j].real = src->e[i][j].real;
     dest->e[i][j].imag = src->e[i][j].imag;
   }
 }
+// -----------------------------------------------------------------
 
-/* Compilation suppressed until we need it */
-#if 0
-static void
-p2d_mat(dmatrix *dest, matrix *src){
-  int i,j;
 
-  for(i = 0; i < 3; i++)for(j = 0; j < 3; j++){
-    dest->e[i][j].real = src->e[i][j].real;
-    dest->e[i][j].imag = src->e[i][j].imag;
-  }
-}
-#endif
 
+// -----------------------------------------------------------------
 /* Factory function for moving data from MILC site structure to output
    buffer */
-
 #define make_vget_from_site(P, C, T, FIXTYPE, VARTYPE, FUNC) \
 void vget_##P##C##_##T##_from_site(char *buf, size_t index, int count, \
            void *arg) \
@@ -219,32 +182,29 @@ void vput_##P##C##_##T##_to_field(char *buf, size_t index, int count, \
  make_vput_to_field(P, C,  T, FIXTYPE, VARTYPE, FUNC);
 
 /* Single precision */
-
 make_vget(F,  , R, float,          Real,          p2f_real);
 make_vget(F,  , C, fcomplex,       complex,       p2f_complex);
-make_vget(F, 3, V, fvector,    vector,    p2f_vec);
-make_vget(F, 3, M, fmatrix,    matrix,    p2f_mat);
+make_vget(F, 3, V, fvector_f,    vector_f,    p2f_vec);
+make_vget(F, 3, M, fmatrix_f,    matrix_f,    p2f_mat);
 
 make_vput(F,  , R, float,          Real,          f2p_real);
 make_vput(F,  , C, fcomplex,       complex,       f2p_complex);
-make_vput(F, 3, V, fvector,    vector,    f2p_vec);
-make_vput(F, 3, M, fmatrix,    matrix,    f2p_mat);
+make_vput(F, 3, V, fvector_f,    vector_f,    f2p_vec);
+make_vput(F, 3, M, fmatrix_f,    matrix_f,    f2p_mat);
 
 /* Double precision */
-
 make_vget(D,  , C, dcomplex,       complex,       p2d_complex);
-make_vget(D, 3, V, dvector,    vector,    p2d_vec);
+make_vget(D, 3, V, dvector_f,    vector_f,    p2d_vec);
 
 make_vput(D,  , C, dcomplex,       complex,       d2p_complex);
-make_vput(D, 3, V, dvector,    vector,    d2p_vec);
-make_vput(D, 3, M, dmatrix,    matrix,    d2p_mat);
+make_vput(D, 3, V, dvector_f,    vector_f,    d2p_vec);
+make_vput(D, 3, M, dmatrix_f,    matrix_f,    d2p_mat);
 
 /* Write MILC site structure data */
-
 #define make_write_all_from_site(P, PSTRING, C, CVAL, SVAL, T, TYPESTRING, \
            FIXTYPE, VARTYPE, MYREAL)           \
 int write_##P##C##_##T##_from_site(QIO_Writer *outfile, \
-         QIO_String *xml_record_out, field_offset src, int count){ \
+         QIO_String *xml_record_out, field_offset src, int count) { \
   int status; \
   QIO_RecordInfo *rec_info; \
   /* We assume output precision is single */ \
@@ -269,11 +229,10 @@ int write_##P##C##_##T##_from_site(QIO_Writer *outfile, \
 }
 
 /* Write a time slice of MILC site structure data */
-
 #define make_write_tslice_from_site(P, PSTRING, C, CVAL, SVAL, T, TYPESTRING, \
            FIXTYPE, VARTYPE, MYREAL)           \
 int write_##P##C##_##T##_timeslice_from_site(QIO_Writer *outfile, \
-         QIO_String *xml_record_out, field_offset src, int count, int t0){ \
+         QIO_String *xml_record_out, field_offset src, int count, int t0) { \
   int status; \
   QIO_RecordInfo *rec_info; \
   /* We assume output precision is single */ \
@@ -304,7 +263,7 @@ int write_##P##C##_##T##_timeslice_from_site(QIO_Writer *outfile, \
 #define make_write_all_from_field(P, PSTRING, C, CVAL, SVAL, T, TYPESTRING, \
                       FIXTYPE, VARTYPE, MYREAL) \
 int write_##P##C##_##T##_from_field(QIO_Writer *outfile, \
-          QIO_String *xml_record_out, VARTYPE *src, int count){ \
+          QIO_String *xml_record_out, VARTYPE *src, int count) { \
   int status; \
   QIO_RecordInfo *rec_info; \
   char qdptype[] = TYPESTRING; \
@@ -332,7 +291,7 @@ int write_##P##C##_##T##_from_field(QIO_Writer *outfile, \
 #define make_write_tslice_from_field(P, PSTRING, C, CVAL, SVAL, T, \
            TYPESTRING, FIXTYPE, VARTYPE, MYREAL) \
 int write_##P##C##_##T##_timeslice_from_field(QIO_Writer *outfile, \
-          QIO_String *xml_record_out, VARTYPE *src, int count, int t0){ \
+          QIO_String *xml_record_out, VARTYPE *src, int count, int t0) { \
   int status; \
   QIO_RecordInfo *rec_info; \
   char qdptype[] = TYPESTRING; \
@@ -372,26 +331,22 @@ int write_##P##C##_##T##_timeslice_from_field(QIO_Writer *outfile, \
            FIXTYPE, VARTYPE, MYREAL);
 
 /* Single precision */
-
 make_write_all(F, "F",  , 0, 0, R, "QLA_F_Real", float, Real, float);
 make_write_all(F, "F",  , 0, 0, C, "QLA_F_Complex", fcomplex, complex, float);
-make_write_all(F, "F", 3, 3, 0, V, "USQCD_F3_ColorVector", fvector, vector, float);
-make_write_all(F, "F", 3, 3, 0, M, "USQCD_F3_ColorMatrix", fmatrix, matrix, float);
+make_write_all(F, "F", 3, 3, 0, V, "USQCD_F3_ColorVector", fvector_f, vector_f, float);
+make_write_all(F, "F", 3, 3, 0, M, "USQCD_F3_ColorMatrix", fmatrix_f, matrix_f, float);
 
 make_write_tslice(F, "F",  , 0, 0, R, "QLA_F_Real", float, Real, float);
 make_write_tslice(F, "F",  , 0, 0, C, "QLA_F_Complex", fcomplex, complex, float);
-make_write_tslice(F, "F", 3, 3, 0, V, "USQCD_F3_ColorVector", fvector, vector, float);
+make_write_tslice(F, "F", 3, 3, 0, V, "USQCD_F3_ColorVector", fvector_f, vector_f, float);
 
 /* Double precision */
-
 make_write_all(D, "D",  , 0, 0, C, "QLA_D_Complex", dcomplex, complex, double);
-make_write_all(D, "D", 3, 3, 0, V, "USQCD_D3_ColorVector", dvector, vector, double);
+make_write_all(D, "D", 3, 3, 0, V, "USQCD_D3_ColorVector", dvector_f, vector_f, double);
 make_write_tslice(D, "D",  , 0, 0, C, "QLA_D_Complex", dcomplex, complex, double);
-make_write_tslice(D, "D", 3, 3, 0, V, "USQCD_D3_ColorVector", dvector, vector, double);
-
+make_write_tslice(D, "D", 3, 3, 0, V, "USQCD_D3_ColorVector", dvector_f, vector_f, double);
 
 /* Read MILC site structure data */
-
 #define make_read_to_site(P, C, T, FIXTYPE, VARTYPE, MYREAL) \
 int read_##P##C##_##T##_to_site(QIO_Reader *infile, QIO_String *xml_record_in, \
         field_offset dest, int count) \
@@ -405,7 +360,7 @@ int read_##P##C##_##T##_to_site(QIO_Reader *infile, QIO_String *xml_record_in, \
   status = QIO_read(infile, &rec_info, xml_record_in,  \
         vput_##P##C##_##T##_to_site, datum_size*count, \
         word_size, (void *)&dest); \
-  node0_printf("Record info \n\"%s\"\n",QIO_string_ptr(xml_record_in)); \
+  node0_printf("Record info \n\"%s\"\n", QIO_string_ptr(xml_record_in)); \
   if(status != QIO_SUCCESS)return 1; \
  \
   node0_printf("Checksums %x %x\n", \
@@ -430,7 +385,7 @@ int read_##P##C##_##T##_to_field(QIO_Reader *infile, \
   status = QIO_read(infile, &rec_info, xml_record_in,  \
         vput_##P##C##_##T##_to_field, datum_size*count, \
         word_size, (void *)dest); \
-  node0_printf("Record info \n\"%s\"\n",QIO_string_ptr(xml_record_in)); \
+  node0_printf("Record info \n\"%s\"\n", QIO_string_ptr(xml_record_in)); \
   if(status != QIO_SUCCESS)return 1; \
  \
   node0_printf("Checksums %x %x\n", \
@@ -447,19 +402,17 @@ int read_##P##C##_##T##_to_field(QIO_Reader *infile, \
 /* Single precision */
 make_read(F,  , R, float, Real, float);
 make_read(F,  , C, fcomplex, complex, float);
-make_read(F, 3, V, fvector, vector, float);
-make_read(F, 3, M, fmatrix, matrix, float);
+make_read(F, 3, V, fvector_f, vector_f, float);
+make_read(F, 3, M, fmatrix_f, matrix_f, float);
 
 /* Double precision */
 make_read(D,  , C, dcomplex, complex, double);
-make_read(D, 3, V, dvector, vector, double);
-make_read(D, 3, M, dmatrix, matrix, double);
+make_read(D, 3, V, dvector_f, vector_f, double);
+make_read(D, 3, M, dmatrix_f, matrix_f, double);
 
 /* Factory function for moving random generator state from site structure to
    output */
-
-void vget_S_from_site(char *buf, size_t index, int count, void *arg)
-{
+void vget_S_from_site(char *buf, size_t index, int count, void *arg) {
   char *dest = buf;
   /* arg contains pointer to field offset value */
   field_offset src = *((field_offset *)arg);
@@ -470,7 +423,8 @@ void vget_S_from_site(char *buf, size_t index, int count, void *arg)
 }
 
 int write_S_from_site(QIO_Writer *outfile, QIO_String *xml_record_out,
-          field_offset src){
+                      field_offset src) {
+
   int status;
   QIO_RecordInfo *rec_info;
   char qdptype[] = "MILC_RandomState";
@@ -494,8 +448,7 @@ int write_S_from_site(QIO_Writer *outfile, QIO_String *xml_record_out,
 
 /* Factory function for moving random number state from input
    to site structure */
-void vput_S_to_site(char *buf, size_t index, int count, void *arg)
-{
+void vput_S_to_site(char *buf, size_t index, int count, void *arg) {
   /* Assume input lattice is single precision, 3 colors */
   char *src = buf;
   field_offset dest = *((field_offset *)arg);
@@ -517,13 +470,15 @@ int read_S_to_site(QIO_Reader *infile,  QIO_String *xml_record_in,
 
   /* Read the field record */
   status = QIO_read(infile, &rec_info, xml_record_in,
-        vput_S_to_site, datum_size*count, word_size, (void *)&dest);
-  node0_printf("Record info \n\"%s\"\n",QIO_string_ptr(xml_record_in));
-  if(status != QIO_SUCCESS)return 1;
+                    vput_S_to_site, datum_size * count,
+                    word_size, (void *)&dest);
+  node0_printf("Record info \n\"%s\"\n", QIO_string_ptr(xml_record_in));
+  if(status != QIO_SUCCESS)
+    return 1;
 
   node0_printf("Checksums %x %x\n",
-         QIO_get_reader_last_checksuma(infile),
-         QIO_get_reader_last_checksumb(infile));
+               QIO_get_reader_last_checksuma(infile),
+               QIO_get_reader_last_checksumb(infile));
 
   return 0;
 }

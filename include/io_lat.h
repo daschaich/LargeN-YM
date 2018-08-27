@@ -16,16 +16,17 @@
 #define SAVE_SERIAL           42
 #define SAVE_CHECKPOINT       43
 #define SAVE_SERIAL_FM        44
-#define SAVE_SERIAL_ILDG      45
-#define SAVE_PARALLEL_ILDG    46
-#define SAVE_MULTIFILE_ILDG   47
-#define SAVE_PARTITION_ILDG   48
-#define SAVE_SERIAL_SCIDAC    49
-#define SAVE_PARALLEL_SCIDAC  50
-#define SAVE_MULTIFILE_SCIDAC 51
-#define SAVE_PARTITION_SCIDAC 52
-#define SAVE_PARALLEL         53
-#define SAVE_MULTIDUMP        54
+#define SAVE_SERIAL_FM_SC     45
+#define SAVE_SERIAL_ILDG      46
+#define SAVE_PARALLEL_ILDG    47
+#define SAVE_MULTIFILE_ILDG   48
+#define SAVE_PARTFILE_ILDG    49
+#define SAVE_SERIAL_SCIDAC    50
+#define SAVE_PARALLEL_SCIDAC  51
+#define SAVE_MULTIFILE_SCIDAC 52
+#define SAVE_PARTFILE_SCIDAC  53
+#define SAVE_PARALLEL         54
+#define SAVE_MULTIDUMP        55
 
 // Helps global variable definitions
 #ifdef CONTROL
@@ -141,11 +142,14 @@ char *gauge_info_keyword[] = {
       "gauge.previous.checksums",
       "gauge.fix.description",
       "gauge.fix.tolerance",
+      "gauge.fix.tolerance",
       "gauge.smear.description",
       "gauge.smear.steps",
       "gauge.smear.factor",   /* (1-f)*link + f/6*staples */
 
       "quark.description",
+      "quark.dyn_flavors",
+      "quark.dyn_mass",
       "quark.flavors",
       "quark.flavors1",
       "quark.flavors2",
@@ -312,9 +316,8 @@ int sprint_gauge_info_item(
           floating point data must be
           of type (Real) */
   int count,       /* number of data items if > 1 */
-  int stride);     /* byte stride of data if
-          count > 1 */
-gauge_file *setup_output_gauge_file(void);
+  int stride);     /* byte stride of data if count > 1 */
+gauge_file *setup_output_gauge_file();
 gauge_file *setup_input_gauge_file(char *filename);
 
 /* For compatibility */
@@ -329,10 +332,10 @@ void write_appl_gauge_info(FILE *fp);
 gauge_file *save_serial_scidac(char *filename);
 gauge_file *save_parallel_scidac(char *filename);
 gauge_file *save_multifile_scidac(char *filename);
-gauge_file *save_partition_scidac(char *filename);
+gauge_file *save_partfile_scidac(char *filename);
 gauge_file *save_serial_ildg(char *filename, char *stringLFN);
 gauge_file *save_parallel_ildg(char *filename, char *stringLFN);
-gauge_file *save_partition_ildg(char *filename, char *stringLFN);
+gauge_file *save_partfile_ildg(char *filename, char *stringLFN);
 gauge_file *save_multifile_ildg(char *filename, char *stringLFN);
 gauge_file *restore_serial_scidac(char *filename);
 gauge_file *restore_parallel_scidac(char *filename);

@@ -16,11 +16,6 @@
 #include <qio.h>
 #endif
 
-// This is dangerous: It assumes off_t = long for this compilation
-#ifndef HAVE_FSEEKO
-#define fseeko fseek
-#endif
-
 #define EPS 1e-6
 
 #define PARALLEL 1   // Must evaluate to true
@@ -70,7 +65,7 @@
 // -----------------------------------------------------------------
 // Open a binary file for serial writing by node0
 // Return a file structure describing the opened file
-gauge_file *w_serial_i(char *filename) {
+static gauge_file *w_serial_i(char *filename) {
   FILE *fp;
   gauge_file *gf;
   gauge_header *gh;
@@ -121,7 +116,7 @@ static void flush_lbuf_to_file(gauge_file *gf, fmatrix_f *lbuf,
   if (*buf_length <= 0)
     return;
 
-  stat = (int)fwrite(lbuf, 4 * sizeof(fmatrix_f), *buf_length, fp);
+  stat = (int)g_write(lbuf, 4 * sizeof(fmatrix_f), *buf_length, fp);
   if (stat != *buf_length) {
     printf("w_serial: node%d gauge configuration write error %d file %s\n",
            this_node, errno, gf->filename);
@@ -192,7 +187,7 @@ static void send_buf_to_node0(fmatrix_f *tbuf, int tbuf_length,
 
 // -----------------------------------------------------------------
 // Only node0 writes the gauge configuration to a binary file gf
-void w_serial(gauge_file *gf) {
+static void w_serial(gauge_file *gf) {
   register int i, j;
   int rank29, rank31, buf_length, tbuf_length;
   int x, y, z, t, currentnode, newnode;
@@ -240,7 +235,7 @@ void w_serial(gauge_file *gf) {
     offset = head_size + gauge_check_size;
 
     if (fseeko(fp, offset, SEEK_SET) < 0) {
-      printf("w_serial: node%d fseeko %lld failed error %d file %s\n",
+      printf("w_serial: node%d g_seek %lld failed error %d file %s\n",
              this_node, (long long)offset, errno, gf->filename);
       fflush(stdout);
       terminate(1);
@@ -278,7 +273,7 @@ void w_serial(gauge_file *gf) {
               // and writes lbuf if it is full
               if (this_node == 0) {
                 flush_tbuf_to_lbuf(gf, &rank29, &rank31, lbuf, &buf_length,
-                    tbuf, tbuf_length);
+                                                         tbuf, tbuf_length);
                 if (buf_length > MAX_BUF_LENGTH - nx)
                   flush_lbuf_to_file(gf, lbuf, &buf_length);
               }
@@ -288,9 +283,9 @@ void w_serial(gauge_file *gf) {
             // node0 sends a few bytes to newnode as a clear to send signal
             if (newnode != currentnode) {
               if (this_node == 0 && newnode != 0)
-                send_field((char *)tbuf, 4, newnode);
+                send_field((char *)tbuf, 32, newnode);
               if (this_node == newnode && newnode != 0)
-                get_field((char *)tbuf, 4, 0);
+                get_field((char *)tbuf, 32, 0);
               currentnode = newnode;
             }
           }
@@ -331,8 +326,8 @@ void w_serial(gauge_file *gf) {
 
     // Write checksum
     // Position file pointer
-    if (fseeko(fp, checksum_offset, SEEK_SET) < 0) {
-      printf("w_serial: node%d fseeko %lld failed error %d file %s\n",
+    if (g_seek(fp, checksum_offset, SEEK_SET) < 0) {
+      printf("w_serial: node%d g_seek %lld failed error %d file %s\n",
              this_node, (long long)checksum_offset, errno, gf->filename);
       fflush(stdout);
       terminate(1);
@@ -346,7 +341,7 @@ void w_serial(gauge_file *gf) {
 
 // -----------------------------------------------------------------
 // Only node 0 reads the gauge configuration gf from a binary file
-void r_serial(gauge_file *gf) {
+static void r_serial(gauge_file *gf) {
   FILE *fp = gf->fp;
   gauge_header *gh = gf->header;
   char *filename = gf->filename;
@@ -394,8 +389,8 @@ void r_serial(gauge_file *gf) {
     /* Position file for reading gauge configuration */
     offset = head_size;
 
-    if (fseeko(fp, offset, SEEK_SET) < 0) {
-      printf("r_serial: node0 fseeko %lld failed error %d file %s\n",
+    if (g_seek(fp, offset, SEEK_SET) < 0) {
+      printf("r_serial: node0 g_seek %lld failed error %d file %s\n",
              (long long)offset, errno, filename);
       fflush(stdout);
       terminate(1);
@@ -444,7 +439,7 @@ void r_serial(gauge_file *gf) {
           buf_length = MAX_BUF_LENGTH;
 
         // Now do read
-        stat = (int)fread(lbuf, 4 * sizeof(fmatrix_f), buf_length, fp);
+        stat = (int)g_read(lbuf, 4 * sizeof(fmatrix_f), buf_length, fp);
         if (stat != buf_length) {
           printf("r_serial: node%d gauge configuration read error %d file %s\n",
                  this_node, errno, filename);
@@ -515,8 +510,8 @@ void r_serial(gauge_file *gf) {
            filename);
     if (gh->magic_number == GAUGE_VERSION_NUMBER) {
       printf("Time stamp %s\n", gh->time_stamp);
-      if (fseeko(fp, checksum_offset, SEEK_SET) < 0) {
-        printf("r_serial: node0 fseeko %lld failed error %d file %s\n",
+      if (g_seek(fp, checksum_offset, SEEK_SET) < 0) {
+        printf("r_serial: node0 g_seek %lld failed error %d file %s\n",
                (long long)offset, errno, filename);
         fflush(stdout);
         terminate(1);
@@ -533,7 +528,7 @@ void r_serial(gauge_file *gf) {
 
 // -----------------------------------------------------------------
 // Write parallel gauge configuration gf in coordinate natural order
-void w_parallel(gauge_file *gf) {
+static void w_parallel(gauge_file *gf) {
   register int i;
   FILE *fp = gf->fp;
   int buf_length, where_in_buf;
@@ -718,8 +713,8 @@ void w_parallel(gauge_file *gf) {
 
 // -----------------------------------------------------------------
 // Write parallel gauge configuration gf in node dump order
-// C. McNeile's algorithm, changed slightl
-void w_checkpoint(gauge_file *gf) {
+// C. McNeile's algorithm, changed slightly
+static void w_checkpoint(gauge_file *gf) {
   register site *s;
   register int i;
   FILE *fp = gf->fp;
@@ -799,7 +794,7 @@ void w_checkpoint(gauge_file *gf) {
 
 // -----------------------------------------------------------------
 // Return file descriptor for opened file
-gauge_file *r_parallel_i(char *filename) {
+static gauge_file *r_parallel_i(char *filename) {
   gauge_header *gh;
   gauge_file *gf;
   FILE *fp;
@@ -847,7 +842,7 @@ gauge_file *r_parallel_i(char *filename) {
 
 // -----------------------------------------------------------------
 // Read gauge configuration in parallel from a single file
-void r_parallel(gauge_file *gf) {
+static void r_parallel(gauge_file *gf) {
   /* gf  = gauge configuration file structure */
   register int i, k;
 
@@ -1270,9 +1265,9 @@ gauge_file *save_ascii(char *filename) {
       /**g_sync();**/
       /* tell newnode it's OK to send */
       if (this_node == 0 && newnode != 0)
-        send_field((char *)lbuf, 4, newnode);
+        send_field((char *)lbuf, 32, newnode);
       if (this_node == newnode && newnode != 0)
-        get_field((char *)lbuf, 4, 0);
+        get_field((char *)lbuf, 32, 0);
       currentnode = newnode;
     }
 
@@ -1305,7 +1300,7 @@ gauge_file *save_ascii(char *filename) {
     fflush(fp);
     printf("Saved gauge configuration to ascii file %s\n", gf->filename);
     printf("Time stamp %s\n", gh->time_stamp);
-    fclose(fp);
+    g_close(fp);
     fflush(stdout);
   }
   return gf;

@@ -206,7 +206,7 @@ gauge_file *save_scidac(char *filename, int volfmt, int serpar, int ildgstyle,
   QIO_Filesystem fs;
   QIO_Writer *outfile;
   int status;
-  field_offset src = F_OFFSET(link[0]);
+  field_offset src = F_OFFSET(linkf[0]);
   gauge_file *gf;
   char *info;
   QIO_String *filexml;
@@ -365,7 +365,7 @@ gauge_file *restore_scidac(char *filename, int serpar) {
   QIO_String *recxml;
   int status;
   int typesize;
-  field_offset dest = F_OFFSET(link[0]);
+  field_offset dest = F_OFFSET(linkf[0]);
   gauge_file *gf;
 
   QIO_verbose(QIO_VERB_OFF);
@@ -478,7 +478,7 @@ void restore_color_matrix_scidac_to_site(char *filename,
 // -----------------------------------------------------------------
 // Read color matrices in SciDAC format to a field
 void restore_color_matrix_scidac_to_field(char *filename,
-        matrix *dest, int count) {
+                                          matrix_f *dest, int count) {
   QIO_Layout layout;
   QIO_Filesystem fs;
   QIO_Reader *infile;
@@ -515,7 +515,8 @@ void restore_color_matrix_scidac_to_field(char *filename,
 // Write a set of color matrices in SciDAC format,
 // taking data from the site structure
 void save_color_matrix_scidac_from_site(char *filename, char *fileinfo,
-      char *recinfo, int volfmt,  field_offset src, int count) {
+                                        char *recinfo, int volfmt,
+                                        field_offset src, int count) {
 
   QIO_Layout layout;
   QIO_Filesystem fs;
@@ -535,7 +536,7 @@ void save_color_matrix_scidac_from_site(char *filename, char *fileinfo,
   filexml = QIO_string_create();
   QIO_string_set(filexml,fileinfo);
   outfile = open_scidac_output(filename, volfmt, QIO_SERIAL,
-             QIO_ILDGNO, NULL, &layout, &fs, filexml);
+                               QIO_ILDGNO, NULL, &layout, &fs, filexml);
   if (outfile == NULL)terminate(1);
   QIO_string_destroy(filexml);
 
@@ -574,7 +575,7 @@ void save_color_matrix_scidac_from_site(char *filename, char *fileinfo,
 // Save a set of color matrices
 void save_color_matrix_scidac_from_field(char *filename, char *fileinfo,
                                          char *recinfo, int volfmt,
-                                         matrix *src, int count) {
+                                         matrix_f *src, int count) {
 
   QIO_Layout layout;
   QIO_Writer *outfile;

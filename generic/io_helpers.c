@@ -36,6 +36,38 @@ gauge_file *save_lattice(int flag, char *filename, char *stringLFN) {
     case SAVE_CHECKPOINT:
       gf = save_checkpoint(filename);
       break;
+    case SAVE_SERIAL_SCIDAC:
+#ifdef HAVE_QIO
+      gf = save_serial_scidac(filename);
+#else
+      node0_printf("save_serial_scidac requires QIO compilation\n");
+      terminate(1);
+#endif
+      break;
+    case SAVE_PARALLEL_SCIDAC:
+#ifdef HAVE_QIO
+      gf = save_parallel_scidac(filename);
+#else
+      node0_printf("save_parallel_scidac requires QIO compilation\n");
+      terminate(1);
+#endif
+      break;
+    case SAVE_MULTIFILE_SCIDAC:
+#ifdef HAVE_QIO
+      gf = save_multifile_scidac(filename);
+#else
+      node0_printf("save_multifile_scidac requires QIO compilation\n");
+      terminate(1);
+#endif
+      break;
+    case SAVE_PARTFILE_SCIDAC:
+#ifdef HAVE_QIO
+      gf = save_partfile_scidac(filename);
+#else
+      node0_printf("save_partfile_scidac requires QIO compilation\n");
+      terminate(1);
+#endif
+      break;
     default:
       node0_printf("\nsave_lattice: ERROR: unknown type for saving lattice\n");
       terminate(1);
@@ -156,7 +188,7 @@ gauge_file *reload_lattice(int flag, char *filename) {
     node0_printf("CHECK NERSC LINKTR: %e CKSUM: %x\n",
                  linktr.real / (Real)NCOL, nersc_checksum);
 #else     // Double precision
-    node0_printf("CHECK PLAQ: %.16e %.16e\n",g_ssplaq, g_stplaq);
+    node0_printf("CHECK PLAQ: %.16e %.16e\n", g_ssplaq, g_stplaq);
     node0_printf("CHECK NERSC LINKTR: %.16e CKSUM: %x\n",
                  linktr.real / (Real)NCOL, nersc_checksum);
 #endif
@@ -227,11 +259,11 @@ int ask_starting_lattice(FILE *fp, int prompt, int *flag, char *filename) {
   /*read name of file and load it */
   if (*flag != FRESH && *flag != CONTINUE) {
     if (prompt!=0)printf("enter name of file containing lattice\n");
-    status=fscanf(fp,"%s",filename);
+    status=fscanf(fp,"%s", filename);
     if (status !=1) {
       printf("\nask_starting_lattice: ERROR IN INPUT: error reading file name\n"); return 1;
     }
-    printf("%s\n",filename);
+    printf("%s\n", filename);
   }
   return 0;
 }
@@ -244,7 +276,7 @@ int ask_ending_lattice(FILE *fp, int prompt, int *flag, char *filename) {
   int status;
 
   if (prompt != 0)
-    printf("'forget' lattice at end,  'save_ascii', 'save_serial', 'save_parallel' or 'save_checkpoint'\n");
+    printf("'forget' lattice at end,  'save_ascii', 'save_serial', 'save_parallel', 'save_checkpoint', 'save_serial_fm', 'save_serial_scidac', 'save_parallel_scidac', 'save_multifile_scidac', 'save_partfile_scidac', 'save_serial_archive', 'save_serial_ildg', 'save_parallel_ildg', 'save_partfile_ildg' or 'save_multifile_ildg'\n");
 
   status = fscanf(fp, "%s", savebuf);
   if (status != 1) {
@@ -260,6 +292,34 @@ int ask_ending_lattice(FILE *fp, int prompt, int *flag, char *filename) {
     *flag = SAVE_PARALLEL;
   else if (strcmp("save_checkpoint", savebuf) == 0)
     *flag = SAVE_CHECKPOINT;
+  else if (strcmp("save_serial_scidac", savebuf) == 0) {
+    *flag = SAVE_SERIAL_SCIDAC;
+#ifndef HAVE_QIO
+    node0_printf("requires QIO compilation!\n");
+    terminate(1);
+#endif
+  }
+  else if (strcmp("save_parallel_scidac", savebuf) == 0) {
+    *flag = SAVE_PARALLEL_SCIDAC;
+#ifndef HAVE_QIO
+    node0_printf("requires QIO compilation!\n");
+    terminate(1);
+#endif
+  }
+  else if (strcmp("save_multifile_scidac", savebuf) == 0) {
+    *flag = SAVE_MULTIFILE_SCIDAC;
+#ifndef HAVE_QIO
+    node0_printf("requires QIO compilation!\n");
+    terminate(1);
+#endif
+  }
+  else if (strcmp("save_partfile_scidac", savebuf) == 0) {
+    *flag = SAVE_PARTFILE_SCIDAC;
+#ifndef HAVE_QIO
+    node0_printf("requires QIO compilation!\n");
+    terminate(1);
+#endif
+  }
   else if (strcmp("forget", savebuf) == 0) {
     *flag = FORGET;
     printf("\n");
@@ -277,7 +337,7 @@ int ask_ending_lattice(FILE *fp, int prompt, int *flag, char *filename) {
       printf("\nask_ending_lattice: ERROR reading filename\n");
       return 1;
     }
-    printf(" %s\n", filename);
+    printf("%s\n", filename);
   }
   return 0;
 }
@@ -292,7 +352,7 @@ int ask_ildg_LFN(FILE *fp, int prompt, int flag, char *stringLFN) {
   /* For ILDG output formats we require a logical file name next */
   if (flag == SAVE_SERIAL_ILDG ||
       flag == SAVE_PARALLEL_ILDG ||
-      flag == SAVE_PARTITION_ILDG ||
+      flag == SAVE_PARTFILE_ILDG ||
       flag == SAVE_MULTIFILE_ILDG) {
     status = get_s(fp, prompt, "ILDG_LFN", stringLFN);
   }
@@ -312,28 +372,28 @@ static int get_tag(FILE *fp, char *tag, char *myname) {
   while(1) {
     s = fscanf(fp,"%s",checktag);
     if (s == EOF) {
-      printf("%s(%d): EOF on input.\n",myname,this_node);
+      printf("%s(%d): EOF on input.\n", myname, this_node);
       return 1;
     }
     if (s == 0) {
-      printf("%s(%d) Error reading %s\n",myname,this_node,tag);
+      printf("%s(%d) Error reading %s\n", myname, this_node, tag);
       return 1;
     }
     if (strchr(checktag,'#')!=NULL) {
       printf("%s",checktag);
-      if (fgets(line,512,fp)==NULL) {
-  printf("%s(%d) EOF on input.\n",myname,this_node);
+      if (fgets(line,512, fp)==NULL) {
+  printf("%s(%d) EOF on input.\n", myname, this_node);
   return 1;
       }
       printf("%s",line);
     }
     else{
-      if (strcmp(checktag,tag) != 0) {
+      if (strcmp(checktag, tag) != 0) {
   printf("\n%s: ERROR IN INPUT: expected %s but found %s\n",
-         myname,tag,checktag);
+         myname, tag,checktag);
   return 1;
       }
-      printf("%s ",tag);
+      printf("%s ", tag);
       return 0;
     }
   }
@@ -344,12 +404,12 @@ static int check_read(int s, char *myname, char *tag) {
 
   if (s == EOF) {
     printf("\n%s: Expecting value for %s but found EOF.\n",
-     myname,tag);
+     myname, tag);
     return 1;
   }
   else if (s == 0) {
     printf("\n%s: Format error reading value for %s\n",
-     myname,tag);
+     myname, tag);
     return 1;
   }
   else
@@ -370,7 +430,7 @@ int get_f(FILE *fp, int prompt, char *tag, Real *value) {
     if (prompt) {
   s = 0;
   while(s != 1) {
-    printf("enter %s ",tag);
+    printf("enter %s ", tag);
     fscanf(fp,"%s",checkvalue);
 #if PRECISION == 1
     s = sscanf(checkvalue, "%e", value);
@@ -381,7 +441,7 @@ int get_f(FILE *fp, int prompt, char *tag, Real *value) {
       return 1;
     if (s == 0)
       printf("Data format error.\n");
-    else printf("%s %g\n",tag,*value);
+    else printf("%s %g\n", tag,*value);
   }
     }
     else  {
@@ -389,11 +449,11 @@ int get_f(FILE *fp, int prompt, char *tag, Real *value) {
         return 1;
 
 #if PRECISION == 1
-      s = fscanf(fp,"%e",value);
+      s = fscanf(fp,"%e", value);
 #else
-      s = fscanf(fp,"%le",value);
+      s = fscanf(fp,"%le", value);
 #endif
-      if (check_read(s,myname,tag) == 1)return 1;
+      if (check_read(s, myname, tag) == 1)return 1;
       printf("%g\n",*value);
     }
 
@@ -439,8 +499,8 @@ int get_s(FILE *fp, int prompt, char *tag, char *value) {
     if (prompt) {
       s = 0;
       while(s != 1) {
-      printf("enter %s ",tag);
-      s=fscanf(fp,"%s",value);
+      printf("enter %s ", tag);
+      s=fscanf(fp,"%s", value);
   if (s == EOF)
     return 1;
   if (s == 0)
@@ -451,9 +511,9 @@ int get_s(FILE *fp, int prompt, char *tag, char *value) {
     else  {
       if (get_tag(fp, tag, myname) == 1)return 1;
 
-      s = fscanf(fp,"%s",value);
-      if (check_read(s,myname,tag) == 1)return 1;
-      printf("%s\n",value);
+      s = fscanf(fp,"%s", value);
+      if (check_read(s, myname, tag) == 1)return 1;
+      printf("%s\n", value);
     }
     return 0;
 }
@@ -466,14 +526,14 @@ int get_vi(FILE* fp, int prompt, char *tag,
 
     if (prompt) {
       s = 0;
-      printf("enter %s with %d values",tag, nvalues);
+      printf("enter %s with %d values", tag, nvalues);
       for (i = 0; i < nvalues; i++) {
   while(s != 1) {
     printf("\n[%d] ",i);
-    s=fscanf(fp,"%d",value+i);
+    s=fscanf(fp,"%d", value+i);
     if (s==EOF)return 1;
     if (s==0)printf("Data format error.\n");
-    printf("%s %d\n",tag,value[i]);
+    printf("%s %d\n", tag, value[i]);
   }
       }
     }
@@ -481,9 +541,9 @@ int get_vi(FILE* fp, int prompt, char *tag,
       if (get_tag(fp, tag, myname) == 1)return 1;
 
       for (i = 0; i < nvalues; i++) {
-  s = fscanf(fp,"%d",value + i);
-  if (check_read(s,myname,tag) == 1)return 1;
-  printf("%d ",value[i]);
+  s = fscanf(fp,"%d", value + i);
+  if (check_read(s, myname, tag) == 1)return 1;
+  printf("%d ", value[i]);
       }
       printf("\n");
     }
@@ -500,18 +560,18 @@ int get_vf(FILE* fp, int prompt, char *tag,
 
     if (prompt) {
       s = 0;
-      printf("enter %s with %d values",tag, nvalues);
+      printf("enter %s with %d values", tag, nvalues);
       for (i = 0; i < nvalues; i++) {
   while(s != 1) {
     printf("\n[%d] ",i);
 #if PRECISION == 1
-    s=scanf("%e",value+i);
+    s=scanf("%e", value+i);
 #else
-    s=scanf("%le",value+i);
+    s=scanf("%le", value+i);
 #endif
     if (s==EOF)return 1;
     if (s==0)printf("Data format error.\n");
-    printf("%s %g\n",tag,*(value+i));
+    printf("%s %g\n", tag,*(value+i));
   }
       }
     }
@@ -521,12 +581,12 @@ int get_vf(FILE* fp, int prompt, char *tag,
 
       for (i = 0; i < nvalues; i++) {
 #if PRECISION == 1
-  s = fscanf(fp,"%e",value + i);
+  s = fscanf(fp,"%e", value + i);
 #else
-  s = fscanf(fp,"%le",value + i);
+  s = fscanf(fp,"%le", value + i);
 #endif
-  if (check_read(s,myname,tag) == 1)return 1;
-  printf("%g ",value[i]);
+  if (check_read(s, myname, tag) == 1)return 1;
+  printf("%g ", value[i]);
       }
       printf("\n");
     }
