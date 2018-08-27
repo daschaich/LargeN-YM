@@ -12,7 +12,7 @@ void QIO_set_trelease(double t_in, double t_out);
 
 
 // -----------------------------------------------------------------
-// Map QIO layout functions to MILC functions
+// Map QIO layout functions
 int qio_node_number(const int x[]) {
   return node_number(x[0], x[1], x[2], x[3]);
 }
@@ -190,18 +190,16 @@ void close_scidac_input(QIO_Reader *infile)
 
 
 // -----------------------------------------------------------------
-#ifdef NO_GAUGE_FIELD
-gauge_file *save_scidac(char *filename, int volfmt, int serpar, int ildgstyle,
-      char *stringLFN) {
-  printf("Can't save a lattice if we compile with -DNO_GAUGE_FIELD\n");
-  terminate(1);
-  return NULL;
-}
-#else
 // Save the single precision lattice in SciDAC format
 // The QIO file is closed after writing the lattice
 gauge_file *save_scidac(char *filename, int volfmt, int serpar, int ildgstyle,
-      char *stringLFN) {
+                        char *stringLFN) {
+#ifdef NO_GAUGE_FIELD
+
+  printf("Can't save a lattice if we compile with -DNO_GAUGE_FIELD\n");
+  terminate(1);
+  return NULL;
+#else
   QIO_Layout layout;
   QIO_Filesystem fs;
   QIO_Writer *outfile;
@@ -228,8 +226,9 @@ gauge_file *save_scidac(char *filename, int volfmt, int serpar, int ildgstyle,
   filexml = QIO_string_create();
   QIO_string_set(filexml, default_file_xml);
   outfile = open_scidac_output(filename, volfmt, serpar, ildgstyle,
-             stringLFN, &layout, &fs, filexml);
-  if (outfile == NULL)terminate(1);
+                               stringLFN, &layout, &fs, filexml);
+  if (outfile == NULL)
+    terminate(1);
   QIO_string_destroy(filexml);
 
   // Create the QCDML string for this configuration
@@ -238,8 +237,9 @@ gauge_file *save_scidac(char *filename, int volfmt, int serpar, int ildgstyle,
   QIO_string_set(recxml, info);
 
   // Write the lattice field
-  status = write_F3_M_from_site(outfile, recxml, src, LATDIM);
-  if (status)terminate(1);
+  status = write_FN_M_from_site(outfile, recxml, src, LATDIM);
+  if (status)
+    terminate(1);
 
   // Discard for now
   QIO_string_destroy(recxml);
@@ -259,17 +259,16 @@ gauge_file *save_scidac(char *filename, int volfmt, int serpar, int ildgstyle,
   }
 
   node0_printf("Time stamp %s\n",gf->header->time_stamp);
-  node0_printf("Checksums %x %x\n",
-         QIO_get_writer_last_checksuma(outfile),
-         QIO_get_writer_last_checksumb(outfile));
+  node0_printf("Checksums %x %x\n", QIO_get_writer_last_checksuma(outfile),
+                                    QIO_get_writer_last_checksumb(outfile));
 
   // Close the file
   QIO_close_write(outfile);
 
   free_QCDML(info);
   return gf;
+#endif
 }
-#endif // NO_GAUGE_FIELD
 // -----------------------------------------------------------------
 
 
@@ -350,21 +349,18 @@ gauge_file *save_partfile_ildg(char *filename, char *stringLFN) {
 
 // -----------------------------------------------------------------
 // The QIO file is closed after reading the lattice
-#ifdef NO_GAUGE_FIELD
 gauge_file *restore_scidac(char *filename, int serpar) {
+#ifdef NO_GAUGE_FIELD
   printf("Can't restore a lattice if we compile with -DNO_GAUGE_FIELD\n");
   terminate(1);
   return NULL;
-}
 #else
-gauge_file *restore_scidac(char *filename, int serpar) {
   QIO_Layout layout;
   QIO_Filesystem fs;
   QIO_Reader *infile;
   QIO_RecordInfo recinfo;
   QIO_String *recxml;
-  int status;
-  int typesize;
+  int status, typesize, bytes = 2 * 4 * NCOL * NCOL;
   field_offset dest = F_OFFSET(linkf[0]);
   gauge_file *gf;
 
@@ -395,11 +391,11 @@ gauge_file *restore_scidac(char *filename, int serpar) {
   typesize = QIO_get_typesize(&recinfo);
 
   // Read the lattice field as single or double precision according to
-  // the type size (bytes in a single SU(3) matrix)
-  if (typesize == 72)
-    status = read_F3_M_to_site(infile, recxml, dest, LATDIM);
-  else if (typesize == 144)
-    status = read_D3_M_to_site(infile, recxml, dest, LATDIM);
+  // the type size (bytes in a single SU(N) matrix)
+  if (typesize == bytes)
+    status = read_FN_M_to_site(infile, recxml, dest, LATDIM);
+  else if (typesize == 2 * bytes)
+    status = read_DN_M_to_site(infile, recxml, dest, LATDIM);
   else {
     node0_printf("restore_scidac: Bad typesize %d\n", typesize);
     terminate(1);
@@ -414,8 +410,8 @@ gauge_file *restore_scidac(char *filename, int serpar) {
   QIO_close_read(infile);
 
   return gf;
-}
 #endif
+}
 // -----------------------------------------------------------------
 
 
@@ -463,12 +459,11 @@ void restore_color_matrix_scidac_to_site(char *filename,
 
   // Read the lattice field
   recxml = QIO_string_create();
-  status = read_F3_M_to_site(infile, recxml, dest, count);
+  status = read_FN_M_to_site(infile, recxml, dest, count);
   if (status)terminate(1);
 
   // Discard for now
   QIO_string_destroy(recxml);
-
   close_scidac_input(infile);
 }
 // -----------------------------------------------------------------
@@ -479,6 +474,7 @@ void restore_color_matrix_scidac_to_site(char *filename,
 // Read color matrices in SciDAC format to a field
 void restore_color_matrix_scidac_to_field(char *filename,
                                           matrix_f *dest, int count) {
+
   QIO_Layout layout;
   QIO_Filesystem fs;
   QIO_Reader *infile;
@@ -499,8 +495,9 @@ void restore_color_matrix_scidac_to_field(char *filename,
 
   // Read the lattice field
   recxml = QIO_string_create();
-  status = read_F3_M_to_field(infile, recxml, dest, count);
-  if (status)terminate(1);
+  status = read_FN_M_to_field(infile, recxml, dest, count);
+  if (status)
+    terminate(1);
 
   // Discard for now
   QIO_string_destroy(recxml);
@@ -543,7 +540,7 @@ void save_color_matrix_scidac_from_site(char *filename, char *fileinfo,
   // Write the lattice field
   recxml = QIO_string_create();
   QIO_string_set(recxml, recinfo);
-  status = write_F3_M_from_site(outfile, recxml, src, count);
+  status = write_FN_M_from_site(outfile, recxml, src, count);
   if (status)terminate(1);
   QIO_string_destroy(recxml);
 
@@ -561,9 +558,8 @@ void save_color_matrix_scidac_from_site(char *filename, char *fileinfo,
      filename);
   }
 
-  node0_printf("Checksums %x %x\n",
-         QIO_get_writer_last_checksuma(outfile),
-         QIO_get_writer_last_checksumb(outfile));
+  node0_printf("Checksums %x %x\n", QIO_get_writer_last_checksuma(outfile),
+                                    QIO_get_writer_last_checksumb(outfile));
 
   close_scidac_output(outfile);
 }
@@ -602,8 +598,9 @@ void save_color_matrix_scidac_from_field(char *filename, char *fileinfo,
   // Write the lattice field
   recxml = QIO_string_create();
   QIO_string_set(recxml, recinfo);
-  status = write_F3_M_from_field(outfile, recxml, src, count);
-  if (status)terminate(1);
+  status = write_FN_M_from_field(outfile, recxml, src, count);
+  if (status)
+    terminate(1);
   QIO_string_destroy(recxml);
 
   // Write information
@@ -613,16 +610,15 @@ void save_color_matrix_scidac_from_field(char *filename, char *fileinfo,
   }
   else if (volfmt == QIO_MULTIFILE) {
     node0_printf("Saved KS matrix as multifile to binary file %s\n",
-           filename);
+                 filename);
   }
   else if (volfmt == QIO_PARTFILE) {
     node0_printf("Saved KS matrix in partition format to binary file %s\n",
-           filename);
+                 filename);
   }
 
-  node0_printf("Checksums %x %x\n",
-               QIO_get_writer_last_checksuma(outfile),
-               QIO_get_writer_last_checksumb(outfile));
+  node0_printf("Checksums %x %x\n", QIO_get_writer_last_checksuma(outfile),
+                                    QIO_get_writer_last_checksumb(outfile));
 
   close_scidac_output(outfile);
 }
@@ -640,8 +636,9 @@ void restore_random_state_scidac_to_site(char *filename, field_offset dest) {
   int status;
 
 #ifndef SITERAND
-  node0_printf("restore_random_state_scidac_to_site: requires SITERAND. Save skipped\n");
-  if (1)return;
+  node0_printf("restore_random_state_scidac_to_site: requires SITERAND. ");
+  node0_printf("Save skipped\n");
+  return;
 #endif
 
   QIO_verbose(QIO_VERB_OFF);
@@ -654,12 +651,14 @@ void restore_random_state_scidac_to_site(char *filename, field_offset dest) {
 
   // Open file for reading
   infile = open_scidac_input(filename, &layout, &fs, QIO_SERIAL);
-  if (infile == NULL)terminate(1);
+  if (infile == NULL)
+    terminate(1);
 
   // Read the lattice field
   recxml = QIO_string_create();
   status = read_S_to_site(infile, recxml, dest);
-  if (status)terminate(1);
+  if (status)
+    terminate(1);
 
   // Discard for now
   QIO_string_destroy(recxml);
@@ -683,8 +682,8 @@ void save_random_state_scidac_from_site(char *filename, char *fileinfo,
   int status;
 
 #ifndef SITERAND
-  node0_printf("save_random_state_scidac_from_site: ");
-  node0_printf("requires SITERAND. Save skipped\n");
+  node0_printf("save_random_state_scidac_from_site: requires SITERAND. ");
+  node0_printf("Save skipped\n");
   return;
 #endif
 
@@ -699,9 +698,10 @@ void save_random_state_scidac_from_site(char *filename, char *fileinfo,
   // Open file for writing
   filexml = QIO_string_create();
   QIO_string_set(filexml, fileinfo);
-  outfile = open_scidac_output(filename, volfmt, QIO_SERIAL,
-             QIO_ILDGNO, NULL, &layout, &fs, filexml);
-  if (outfile == NULL)terminate(1);
+  outfile = open_scidac_output(filename, volfmt, QIO_SERIAL, QIO_ILDGNO,
+                               NULL, &layout, &fs, filexml);
+  if (outfile == NULL)
+    terminate(1);
   QIO_string_destroy(filexml);
 
   // Write the lattice field
@@ -709,25 +709,24 @@ void save_random_state_scidac_from_site(char *filename, char *fileinfo,
   QIO_string_set(recxml, recinfo);
   status = write_S_from_site(outfile, recxml, src);
   QIO_string_destroy(recxml);
-  if (status)terminate(1);
+  if (status)
+    terminate(1);
 
   // Write information
-  if (volfmt == QIO_SINGLEFILE) {
-    node0_printf("Saved random state serially to binary file %s\n",
-     filename);
+  if (volfmt == QIO_SINGLEFILE) {   // Suppress compiler warning
+    node0_printf("Saved random state serially to binary file %s\n", filename);
   }
   else if (volfmt == QIO_MULTIFILE) {
     node0_printf("Saved random state multifile to binary file %s\n",
-     filename);
+                 filename);
   }
   else if (volfmt == QIO_PARTFILE) {
     node0_printf("Saved random state in partition format to binary file %s\n",
-     filename);
+                 filename);
   }
 
-  node0_printf("Checksums %x %x\n",
-         QIO_get_writer_last_checksuma(outfile),
-         QIO_get_writer_last_checksumb(outfile));
+  node0_printf("Checksums %x %x\n", QIO_get_writer_last_checksuma(outfile),
+                                    QIO_get_writer_last_checksumb(outfile));
 
   close_scidac_output(outfile);
 }
@@ -754,16 +753,17 @@ void restore_real_scidac_to_field(char *filename, Real *dest, int count) {
 
   // Open file for reading
   infile = open_scidac_input(filename, &layout, &fs, QIO_SERIAL);
-  if (infile == NULL)terminate(1);
+  if (infile == NULL)
+    terminate(1);
 
   // Read the lattice field
   recxml = QIO_string_create();
-  status = read_F_R_to_field(infile, recxml, dest, count);
-  if (status)terminate(1);
+  status = read_FN_R_to_field(infile, recxml, dest, count);
+  if (status)
+    terminate(1);
 
   // Discard for now
   QIO_string_destroy(recxml);
-
   close_scidac_input(infile);
 }
 // -----------------------------------------------------------------
@@ -790,7 +790,7 @@ QIO_Writer *w_open_complex_scidac_file(char *filename, char *fileinfo,
   filexml = QIO_string_create();
   QIO_string_set(filexml, fileinfo);
   outfile = open_scidac_output(filename, volfmt, serpar, QIO_ILDGNO,
-             NULL, &layout, &fs, filexml);
+                               NULL, &layout, &fs, filexml);
   QIO_string_destroy(filexml);
   return outfile;
 }
@@ -808,27 +808,27 @@ int save_complex_scidac(QIO_Writer *outfile, char *filename, char *recinfo,
 
   recxml = QIO_string_create();
   QIO_string_set(recxml, recinfo);
-  status = write_F_C_from_field(outfile, recxml, src, count);
+  status = write_FN_C_from_field(outfile, recxml, src, count);
   QIO_string_destroy(recxml);
-  if (status)return status;
+  if (status)
+    return status;
 
   // Write information
   if (volfmt == QIO_SINGLEFILE) {
     node0_printf("Saved complex field serially to binary file %s\n",
-     filename);
+                 filename);
   }
   else if (volfmt == QIO_MULTIFILE) {
     node0_printf("Saved complex field as multifile to binary file %s\n",
-     filename);
+                 filename);
   }
   else if (volfmt == QIO_PARTFILE) {
     node0_printf("Saved complex field in partition format to binary file %s\n",
-     filename);
+                 filename);
   }
 
-  node0_printf("Checksums %x %x\n",
-         QIO_get_writer_last_checksuma(outfile),
-         QIO_get_writer_last_checksumb(outfile));
+  node0_printf("Checksums %x %x\n", QIO_get_writer_last_checksuma(outfile),
+                                    QIO_get_writer_last_checksumb(outfile));
 
   return status;
 }
@@ -847,12 +847,14 @@ void save_complex_scidac_from_field(char *filename, char *fileinfo,
     QIO_verbose(QIO_VERB_OFF);
 
     outfile = w_open_complex_scidac_file(filename, fileinfo, volfmt, serpar);
-    if (outfile == NULL)terminate(1);
+    if (outfile == NULL)
+      terminate(1);
 
-    // Write the lattice field: "count" complex numbers per site
+    // Write the lattice field: count complex numbers per site
     status = save_complex_scidac(outfile, filename, recinfo,
-         volfmt, src, count);
-    if (status)terminate(1);
+                                 volfmt, src, count);
+    if (status)
+      terminate(1);
 
     w_close_complex_scidac_file(outfile);
 }
@@ -897,11 +899,10 @@ int read_complex_scidac(QIO_Reader *infile, complex *dest, int count) {
 
   // Read the lattice field: "count" complex numbers per site
   recxml = QIO_string_create();
-  status = read_F_C_to_field(infile, recxml, dest, count);
+  status = read_FN_C_to_field(infile, recxml, dest, count);
 
   // Discard for now
   QIO_string_destroy(recxml);
-
   return status;
 }
 
@@ -917,11 +918,13 @@ void restore_complex_scidac_to_field(char *filename, int serpar,
   QIO_verbose(QIO_VERB_OFF);
 
   infile = r_open_complex_scidac_file(filename, serpar);
-  if (infile == NULL)terminate(1);
+  if (infile == NULL)
+    terminate(1);
 
   // Read the lattice field: "count" complex numbers per site
   status = read_complex_scidac(infile, dest, count);
-  if (status)terminate(1);
+  if (status)
+    terminate(1);
 
   r_close_complex_scidac_file(infile);
 }
@@ -950,12 +953,14 @@ void restore_real_scidac_to_site(char *filename, field_offset dest,
 
   // Open file for reading
   infile = open_scidac_input(filename, &layout, &fs, QIO_SERIAL);
-  if (infile == NULL)terminate(1);
+  if (infile == NULL)
+    terminate(1);
 
   // Read the lattice field
   recxml = QIO_string_create();
-  status = read_F_R_to_site(infile, recxml, dest, count);
-  if (status)terminate(1);
+  status = read_FN_R_to_site(infile, recxml, dest, count);
+  if (status)
+    terminate(1);
 
   // Discard for now
   QIO_string_destroy(recxml);
@@ -989,35 +994,35 @@ void save_real_scidac_from_field(char *filename, char *fileinfo,
   // Open file for writing
   filexml = QIO_string_create();
   QIO_string_set(filexml,fileinfo);
-  outfile = open_scidac_output(filename, volfmt, QIO_SERIAL,
-             QIO_ILDGNO, NULL, &layout, &fs, filexml);
-  if (outfile == NULL)terminate(1);
+  outfile = open_scidac_output(filename, volfmt, QIO_SERIAL, QIO_ILDGNO,
+                               NULL, &layout, &fs, filexml);
+  if (outfile == NULL)
+    terminate(1);
   QIO_string_destroy(filexml);
 
   // Write the lattice field
   recxml = QIO_string_create();
   QIO_string_set(recxml,recinfo);
-  status = write_F_R_from_field(outfile, recxml, src, count);
-  if (status)terminate(1);
+  status = write_FN_R_from_field(outfile, recxml, src, count);
+  if (status)
+    terminate(1);
   QIO_string_destroy(recxml);
 
   // Write information
-  if (volfmt == QIO_SINGLEFILE) {
-    node0_printf("Saved real field serially to binary file %s\n",
-     filename);
+  if (volfmt == QIO_SINGLEFILE) {   // Suppress compiler warning
+    node0_printf("Saved real field serially to binary file %s\n", filename);
   }
   else if (volfmt == QIO_MULTIFILE) {
     node0_printf("Saved real field in multifile format to binary file %s\n",
-     filename);
+                 filename);
   }
   else if (volfmt == QIO_PARTFILE) {
     node0_printf("Saved real field in partition format to binary file %s\n",
-     filename);
+                 filename);
   }
 
-  node0_printf("Checksums %x %x\n",
-         QIO_get_writer_last_checksuma(outfile),
-         QIO_get_writer_last_checksumb(outfile));
+  node0_printf("Checksums %x %x\n", QIO_get_writer_last_checksuma(outfile),
+                                    QIO_get_writer_last_checksumb(outfile));
 
   close_scidac_output(outfile);
 }
@@ -1057,7 +1062,7 @@ void save_real_scidac_from_site(char *filename, char *fileinfo,
   // Write the lattice field
   recxml = QIO_string_create();
   QIO_string_set(recxml,recinfo);
-  status = write_F_R_from_site(outfile, recxml, src, count);
+  status = write_FN_R_from_site(outfile, recxml, src, count);
   if (status)
     terminate(1);
   QIO_string_destroy(recxml);
@@ -1074,9 +1079,8 @@ void save_real_scidac_from_site(char *filename, char *fileinfo,
     node0_printf("Saved real field in partition format to binary file %s\n",
                  filename);
 
-  node0_printf("Checksums %x %x\n",
-               QIO_get_writer_last_checksuma(outfile),
-               QIO_get_writer_last_checksumb(outfile));
+  node0_printf("Checksums %x %x\n", QIO_get_writer_last_checksuma(outfile),
+                                    QIO_get_writer_last_checksumb(outfile));
 
   close_scidac_output(outfile);
 }
