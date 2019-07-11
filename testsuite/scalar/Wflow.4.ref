@@ -1,14 +1,13 @@
 SU(4) Wilson flow with optional measurements
-Machine = QMP (portable), with 1 nodes
-start: Mon Aug 27 20:01:37 2018
+Machine = Scalar processor, with 1 nodes
+start: Thu Jul 11 22:18:38 2019
 
 type 0 for no prompts or 1 for prompts
 nx 4
 ny 4
 nz 4
 nt 4
-LAYOUT = Hypercubes, options = hyper_prime,
-QMP with automatic hyper_prime layout
+LAYOUT = Hypercubes, options = with fixed node_geometry
 ON EACH NODE 4 x 4 x 4 x 4
 Mallocing 0.8 MBytes per core for lattice
 
@@ -28,11 +27,11 @@ forget
 Restored binary gauge configuration serially from file config.4F.4444
 Time stamp Tue Jan 24 09:08:59 2017
 Checksums ff508162 bfb64808 OK
-Time to reload gauge configuration = 0.000205 seconds
+Time to reload gauge configuration = 0.0002301 seconds
 CHECK PLAQ: 1.6623868341873844e+00 1.6452447726390467e+00
 CHECK NERSC LINKTR: -1.2434277158519080e-02 CKSUM: 0
 Reunitarized for double precision.  Max deviation 6e-08 changed to 5.6e-16
-Time to check unitarity = 0.0008981 seconds
+Time to check unitarity = 0.0009031 seconds
 Loop coefficients: nloop, rep, loop_coeff, multiplicity
 0 0 1 6
 1 0 -0.07225 12
@@ -134,6 +133,6 @@ LOOPS 0.5 4 0 0 0 2.672683
 LOOPS 0.5 5 0 0 0 1.2114064
 POLYA ORIG 0.5 0.0512103 -0.0316396 -0.243091 -0.0702162
 RUNNING COMPLETED
-Time = 1.914 seconds
-exit: Mon Aug 27 20:01:39 2018
+Time = 1.917 seconds
+exit: Thu Jul 11 22:18:40 2019
 

@@ -1,7 +1,7 @@
 # ------------------------------------------------------------------
 MAKEFILE = Make_scalar
 
-MPP            = # true
+MPP            =
 PRECISION      = 2
 CC             = gcc
 OPT            = -O3 -Wall
