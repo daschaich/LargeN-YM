@@ -6,6 +6,7 @@
 
 # Targets:
 #   su3_Wflow
+#   su3_printpoly
 
 MYINCLUDEDIR = .
 INCLUDEDIR = ../include
@@ -107,6 +108,11 @@ DARCH = ${DHAVE_QMP} ${DHAVE_QIO}
 ##### Targets:
 su3_Wflow::
 	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@"
+
+su3_printpoly::
+	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" \
+	"DEFINES = ${DEFINES} -DLOCALPOLY " \
+	"EXTRA_OBJECTS = print_var3.o "
 
 clean:
 	-/bin/rm -f *.o

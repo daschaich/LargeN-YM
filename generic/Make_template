@@ -31,6 +31,7 @@ G_ALL = \
  make_lattice.o \
  nersc_cksum.o \
  ploop.o \
+ print_var3.o \
  project_su3_hit.o \
  rand_gauge.o \
  ranmom.o \
@@ -106,6 +107,8 @@ plaquette.o: ../generic/plaquette.c
 plaquette_lcl.o: ../generic/plaquette_lcl.c
 	${CC} -c ${CFLAGS} $<
 ploop.o: ../generic/ploop.c
+	${CC} -c ${CFLAGS} $<
+print_var3.o: ../generic/print_var3.c
 	${CC} -c ${CFLAGS} $<
 ranmom.o: ../generic/ranmom.c
 	${CC} -c ${CFLAGS} $<

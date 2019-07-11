@@ -20,6 +20,7 @@ void meas(Real t) {
 
   // Polyakov loop and one spatial Wilson line
   // Keep "ORIG" in output for analysis script backward compatibility
+  // First call will print PL(x, y, z) if LOCALPOLY defined
   plp = ploop(TUP);
   xplp = ploop(XUP);
   node0_printf("POLYA ORIG %g %.6g %.6g %.6g %.6g\n",

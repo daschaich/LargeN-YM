@@ -2,23 +2,26 @@
 # This script needs to be run from the testsuite/scalar directory
 
 # TODO: Should eventually merge into a single script
-# For now user just needs to specify NCOL
-if [ $# -lt 1 ]; then
-  echo "Usage: $0 <N>"
+# User just needs to specify NCOL and tag
+# Available targets are Wflow and printpoly for targets su3_$tag
+if [ $# -lt 2 ]; then
+  echo "Usage: $0 <tag> <N>"
   exit 0
 fi
 
-N=$1
+tag=$1
+target=su3_$1
+N=$2
 
 # Change N in include/su3.h
 cd ../../wilson_flow/
 sed -i -E "s/(#define NCOL) .*/\1 $N/" ../include/su3.h
 
 # Compile
-echo "Compiling su3_Wflow..."
-if ! make -f Make_scalar su3_Wflow >& /dev/null ; then
-  echo "ERROR: su3_Wflow compilation failed"
-  make -f Make_scalar su3_Wflow
+echo "Compiling $target..."
+if ! make -f Make_scalar $target >& /dev/null ; then
+  echo "ERROR: $target compilation failed"
+  make -f Make_scalar $target
   exit
 fi
 
@@ -27,17 +30,17 @@ sed -i -E "s/(#define NCOL) .*/\1 3/" ../include/su3.h
 
 # Run
 cd ../testsuite/
-rm -f scalar/Wflow.$N.out
-echo "Running su3_Wflow..."
-../wilson_flow/su3_Wflow < in.$N.Wflow > scalar/Wflow.$N.out
+rm -f scalar/$tag.$N.out
+echo "Running $target..."
+../wilson_flow/$target < in.$N.$tag > scalar/$tag.$N.out
 
 # Check
 cd scalar/
-d="`diff -I'Time' -I'time' -I'seconds' -I'secs' -I'^start' -I'^exit:' Wflow.$N.ref Wflow.$N.out`"
+d="`diff -I'Time' -I'time' -I'seconds' -I'secs' -I'^start' -I'^exit:' $tag.$N.ref $tag.$N.out`"
 if [ -n "$d" ] ; then   # Non-zero string length
-  echo "Wflow.$N.ref and Wflow.$N.out differ:"
+  echo "$tag.$N.ref and $tag.$N.out differ:"
   echo "$d"
 else
-  echo "PASS: su3_Wflow reproduces reference output for SU($N) $rep"
+  echo "PASS: $target reproduces reference output for SU($N) $rep"
 fi
 exit

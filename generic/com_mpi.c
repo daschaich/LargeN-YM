@@ -1,11 +1,8 @@
 // -----------------------------------------------------------------
-/* Communications routines for the SU3 program
-   This file is communications-scheme dependent.
-   MPI version - allegedly machine independent
-*/
+// Communications routines for parallel machines
+// MPI version---allegedly machine independent
 /*
   Exported Functions:
-
    initialize_machine()  does any machine dependent setup at the
                            very beginning.
    normal_exit()         closes communications and exits

@@ -61,6 +61,29 @@ complex ploop(int dir) {
   g_complexsum(&plp);
   plp.real *= Ndir * one_ov_vol;
   plp.imag *= Ndir * one_ov_vol;
+
+  // Before returning plp, print out spatial distribution if requested
+#ifdef LOCALPOLY
+  // Printing both real and imaginary parts to be parsed offline
+  // Keep usual normalization (magnitude from 0 to N)
+  // Only print if considering dir=TUP Polyakov loop
+  if (dir == TUP) {
+    // First collect all t=1 even-site tempmatf entries
+    // to odd sites on timeslice t=0
+    tag = start_gather_field(tempmatf, sizeof(matrix_f), TUP, ODD, gen_pt[0]);
+    wait_gather(tag);
+    FORODDSITES(i, s) {
+      if (s->t > 0)
+        continue;
+      mat_copy_f((matrix_f *)gen_pt[0][i], &(tempmatf[i]));
+    }
+
+    // Now we can just call print_var3
+    // Checked that printed output reproduces separately printed average
+    print_var3();
+  }
+#endif
+
   return plp;
 }
 // -----------------------------------------------------------------
