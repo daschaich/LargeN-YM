@@ -1,15 +1,15 @@
 prompt 0
-nx 4
-ny 4
-nz 4
-nt 4
+nx 24
+ny 24
+nz 24
+nt 8
 
 start_eps 0.01
 max_eps 0.1
-tmax 0.5
+tmax 2
 
 num_meas 1
-tmeas 0.5
+tmeas 2
 
-reload_serial config.4F.4444
+reload_serial 0f_24nt8_b15.0_high_m0.1_config.9000.lime
 forget

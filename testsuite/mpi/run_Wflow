@@ -1,0 +1,50 @@
+#!/bin/bash
+# This script needs to be run from the testsuite/mpidirectory
+
+# May need to be customized for different platforms
+makefile=Make_mpi
+run="mpirun -np 2"
+
+# TODO: Should eventually merge into a single script
+# User just needs to specify NCOL and tag
+# Available targets are Wflow and printpoly for targets su3_$tag
+if [ $# -lt 2 ]; then
+  echo "Usage: $0 <tag> <N>"
+  exit 0
+fi
+
+tag=$1
+target=su3_$1
+N=$2
+
+# Change N in include/su3.h
+cd ../../wilson_flow/
+sed -i -E "s/(#define NCOL) .*/\1 $N/" ../include/su3.h
+
+# Compile
+echo "Compiling $target..."
+if ! make -f $makefile $target >& /dev/null ; then
+  echo "ERROR: $target compilation failed"
+  make -f $makefile $target
+  exit
+fi
+
+# Reset N to 3
+sed -i -E "s/(#define NCOL) .*/\1 3/" ../include/su3.h
+
+# Run
+cd ../testsuite/
+rm -f mpi/$tag.$N.out
+echo "Running $target..."
+$run ../wilson_flow/$target < in.$N.$tag > mpi/$tag.$N.out
+
+# Check
+cd mpi/
+d="`diff -I'Time' -I'time' -I'seconds' -I'secs' -I'^start' -I'^exit:' $tag.$N.ref $tag.$N.out`"
+if [ -n "$d" ] ; then   # Non-zero string length
+  echo "$tag.$N.ref and $tag.$N.out differ:"
+  echo "$d"
+else
+  echo "PASS: $target reproduces reference output for SU($N) $rep"
+fi
+exit
