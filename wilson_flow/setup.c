@@ -70,7 +70,6 @@ int setup() {
   // Allocate temporary fields and Wilson flow stuff
   FIELD_ALLOC(tempmatf, matrix_f);
   FIELD_ALLOC(tempmatf2, matrix_f);
-  FIELD_ALLOC(tempmatf, matrix);
   FIELD_ALLOC_VEC(S, matrix_f, NDIMS);
   FIELD_ALLOC_VEC(A, anti_hermitmat, NDIMS);
 

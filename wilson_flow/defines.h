@@ -3,6 +3,9 @@
 #ifndef _DEFINES_H
 #define _DEFINES_H
 
+// No fermions
+#define PURE_GAUGE
+
 // No random numbers
 #endif
 // -----------------------------------------------------------------

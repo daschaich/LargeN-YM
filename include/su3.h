@@ -331,6 +331,7 @@ void compress_anti_hermitian(matrix_f *m, anti_hermitmat *ah);
 // -----------------------------------------------------------------
 
 
+
 // -----------------------------------------------------------------
 // Fundamental matrix operations
 // In file dump_mat_f.c

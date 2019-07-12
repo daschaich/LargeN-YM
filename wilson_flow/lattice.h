@@ -30,9 +30,6 @@ typedef struct {
   // No random numbers
   // Gauge links and field strength for F^2 and topological charge
   matrix_f linkf[4], FS[6];
-
-  // Need this for ../generic/plaquette.c
-  matrix link[4];
 } site;
 // -----------------------------------------------------------------
 
@@ -92,9 +89,8 @@ EXTERN site *lattice;
 #define N_POINTERS 8   // Needed by ../generic/make_lattice.c
 EXTERN char **gen_pt[N_POINTERS];
 
-// Temporary fields---need latter for ../generic/plaquette.c
+// Temporary fields
 EXTERN matrix_f *tempmatf, *tempmatf2;
-EXTERN matrix *tempmat;
 
 // Wilson flow stuff
 EXTERN Real tmax, start_eps, max_eps, epsilon;

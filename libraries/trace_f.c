@@ -15,7 +15,7 @@ complex trace_f(matrix_f *m) {
   CSUM(tc, m->e[3][3]);
 #if NCOL > 4
   register int i;
-  for (i = 4; i < DIMF; i++)
+  for (i = 4; i < NCOL; i++)
     CSUM(tc, m->e[i][i]);
 #endif
 #endif
@@ -32,7 +32,7 @@ void trace_sum_f(matrix_f *m, complex *c) {
   CSUM(*c, m->e[3][3]);
 #if NCOL > 4
   register int i;
-  for (i = 4; i < DIMF; i++)
+  for (i = 4; i < NCOL; i++)
     CSUM(*c, m->e[i][i]);
 #endif
 #endif
