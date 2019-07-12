@@ -1,6 +1,6 @@
 SU(3) Wilson flow with optional measurements
 Machine = Scalar processor, with 1 nodes
-start: Thu Jul 11 22:24:59 2019
+start: Fri Jul 12 11:34:32 2019
 
 type 0 for no prompts or 1 for prompts
 nx 4
@@ -9,7 +9,7 @@ nz 4
 nt 4
 LAYOUT = Hypercubes, options = with fixed node_geometry
 ON EACH NODE 4 x 4 x 4 x 4
-Mallocing 0.5 MBytes per core for lattice
+Mallocing 0.4 MBytes per core for lattice
 
 
 start_eps 0.01
@@ -22,11 +22,11 @@ forget
 Restored binary gauge configuration serially from file config.3F.4444
 Time stamp Tue Jan 24 11:31:01 2017
 Checksums 1f0df83 afc22265 OK
-Time to reload gauge configuration = 0.0001571 seconds
+Time to reload gauge configuration = 0.0004861 seconds
 CHECK PLAQ: 1.5941514601839692e+00 1.5811129947216720e+00
 CHECK NERSC LINKTR: -1.2799688810294660e-02 CKSUM: 0
 Reunitarized for double precision.  Max deviation 6e-08 changed to 4.4e-16
-Time to check unitarity = 0.0004139 seconds
+Time to check unitarity = 0.0003691 seconds
 Loop coefficients: nloop, rep, loop_coeff, multiplicity
 0 0 1 6
 1 0 -0.07225 12
@@ -157,6 +157,6 @@ POLYDIST 2 3 3 1.7198801 -0.010642573
 POLYDIST 3 3 3 1.7578016 -0.22273337
 POLYA ORIG 0.5 1.08209 -0.234381 -0.681406 1.30239
 RUNNING COMPLETED
-Time = 0.7329 seconds
-exit: Thu Jul 11 22:24:59 2019
+Time = 0.1998 seconds
+exit: Fri Jul 12 11:34:32 2019
 
