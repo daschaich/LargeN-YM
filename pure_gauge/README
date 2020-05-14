@@ -1,0 +1,11 @@
+SU(N) pure gauge evolution using over-relaxed quasi-heat bath algorithm
+
+Sample input file:
++++
+prompt 0
+nx 4
+ny 4
+nz 4
+nt 4
+
+...
