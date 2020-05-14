@@ -1,0 +1,54 @@
+# ------------------------------------------------------------------
+MAKEFILE = Make_scalar
+
+MPP            =
+PRECISION      = 2
+CC             = gcc
+OPT            = -O3 -DP4 -DPREFETCH -Wall -fno-strict-aliasing
+CLFS           = -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE64
+                 # Large files gcc only
+MACHINE_DEP_IO = io_ansi.o
+
+LD             = ${CC}
+LIBADD         =
+INLINEOPT      =
+CTIME          = # -DCGTIME -DFFTIME -DLLTIME -DGFTIME -DREMAP
+CPROF          =
+CDEBUG         =
+CPREFETCH      =
+
+CODETYPE       = ${CTIME} ${CPROF} ${CDEBUG} ${CPREFETCH}
+
+MAKELIBRARIES  = Make_vanilla
+
+# Also check include/config.h
+# ------------------------------------------------------------------
+
+
+
+# ------------------------------------------------------------------
+# Stuff below shouldn't change
+ifeq ($(strip ${MPP}),true)
+  COMMTYPE = MPI
+  COMMPKG = com_mpi.o
+else
+  COMMTYPE = SINGLE
+  COMMPKG = com_vanilla.o
+endif
+
+PREC = -DPRECISION=${PRECISION}
+
+# Complete set of compiler flags - do not change
+CFLAGS = ${OPT} -D${COMMTYPE} ${CODETYPE} ${INLINEOPT} ${PREC} ${CLFS} \
+         -I${MYINCLUDEDIR} ${DEFINES}
+
+ILIB = ${LIBADD}
+
+check:
+	make -f Make_test check
+
+test_clean:
+	make -f Make_test test_clean
+
+include Make_template
+# ------------------------------------------------------------------

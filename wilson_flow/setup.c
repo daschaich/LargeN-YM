@@ -1,5 +1,5 @@
 // -----------------------------------------------------------------
-// SU(3) Wilson flow setup
+// SU(N) Wilson flow setup
 #include <string.h>
 #include "wflow_includes.h"
 
