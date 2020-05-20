@@ -2,11 +2,7 @@
 // Main procedure for nHYP-smeared Wilson-clover SU(N) evolation
 #define CONTROL
 #include "cl_dyn_includes.h"
-// -----------------------------------------------------------------
 
-
-
-// -----------------------------------------------------------------
 int main(int argc, char *argv[]) {
   int traj_done, m_iters, s_iters, avm_iters = 0, avs_iters = 0, Nmeas = 0;
   int prompt;
@@ -19,15 +15,13 @@ int main(int argc, char *argv[]) {
 
   // Set up
   setlinebuf(stdout); // DEBUG
-  // Remap standard I/O
+  initialize_machine(&argc, &argv);
+  g_sync();
   if (remap_stdio_from_args(argc, argv) == 1)
     terminate(1);
 
-  initialize_machine(&argc, &argv);
-  g_sync();
-  prompt = setup();
-
   // Load input and run (loop removed)
+  prompt = setup();
   if (readin(prompt) != 0) {
     node0_printf("ERROR in readin, aborting\n");
     terminate(1);
@@ -76,7 +70,7 @@ int main(int argc, char *argv[]) {
                  plp.real, plp.imag, s_iters, m_iters,
                  ss_plaq, st_plaq, ss_plaq_frep, st_plaq_frep);
 
-    // Measure every "propinterval" trajectories
+    // More expensive measurements every "propinterval" trajectories
     if ((traj_done % propinterval) == (propinterval - 1)) {
       Nmeas++;
 #ifdef SPECTRUM
@@ -90,8 +84,7 @@ int main(int argc, char *argv[]) {
 
   // Check: compute final plaquette
   plaquette(&ss_plaq, &st_plaq);
-  node0_printf("STOP %.8g %.8g %.8g\n",
-               ss_plaq, st_plaq, ss_plaq + st_plaq);
+  node0_printf("STOP %.8g %.8g %.8g\n", ss_plaq, st_plaq, ss_plaq + st_plaq);
 
   node0_printf("Average cg iters for steps: %.4g\n",
                (double)avs_iters / trajecs);
@@ -122,6 +115,7 @@ int main(int argc, char *argv[]) {
     save_lattice(saveflag, savefile, stringLFN);
 
   normal_exit(0);
+  g_sync();         // Needed by at least some clusters
   return 0;
 }
 // -----------------------------------------------------------------

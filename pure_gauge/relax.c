@@ -3,12 +3,13 @@
 #include "pg_includes.h"
 
 void relax(int NumStp) {
-  int NumTrj,Nhit, index1, ina, inb,ii;
+  register int dir, i;
+  register site *st;
+  int NumTrj, Nhit, index1, ina, inb,ii;
   int parity;
   Real a0,a1,a2,a3,asq,r;
-  register int dir,i;
-  register site *st;
-  su3_matrix action;  su2_matrix u;
+  su2_matrix u;
+  matrix_f action;
 
   Nhit = 3;
   for( NumTrj = 0 ; NumTrj < NumStp; NumTrj++) {
@@ -17,14 +18,14 @@ void relax(int NumStp) {
         /* compute the gauge force */
         dsdu_qhb(dir,parity);
         /* now for the overrelaxed updating */
-        for(index1=0;index1<Nhit;index1++){
+        for(index1=0;index1<Nhit;index1++) {
           /*  pick out an SU(2) subgroup */
           ina=(index1+1) % NCOL;
           inb=(index1+2) % NCOL;
-          if(ina > inb){ ii=ina; ina=inb; inb=ii;}
+          if(ina > inb) { ii=ina; ina=inb; inb=ii;}
 
-          FORSOMEPARITY(i,st,parity){
-            mult_su3_na( &(st->link[dir]), &(st->staple), &action );
+          FORSOMEPARITY(i, st, parity) {
+            mult_na_f(&(st->linkf[dir]), &(st->staple), &action);
 
             /*decompose the action into SU(2) subgroups using Pauli matrix expansion */
             /* The SU(2) hit matrix is represented as a0 + i * Sum j (sigma j * aj)*/
@@ -45,8 +46,8 @@ void relax(int NumStp) {
             u.e[1][1] = cmplx( a0,-a3);
 
             /* Do SU(2) hit on all links twice (to overrelax)  */
-            left_su2_hit_n(&u,ina,inb,&(st->link[dir]));
-            left_su2_hit_n(&u,ina,inb,&(st->link[dir]));
+            left_su2_hit_n_f(&u,ina,inb,&(st->linkf[dir]));
+            left_su2_hit_n_f(&u,ina,inb,&(st->linkf[dir]));
           } /*   st */
         } /*  hits */
       } /*  direction */

@@ -6,84 +6,70 @@
 #include "pg_includes.h"
 
 int main(int argc, char *argv[]) {
-  int meascount,todo;
+  int traj_done;//, Nmeas = 0;
   int prompt;
-  double dssplaq,dstplaq;
-  complex plp;
-  double dtime;
+  double ss_plaq, st_plaq, dtime;
+  complex plp = cmplx(99.0, 99.0);
 
+  // Set up
+  setlinebuf(stdout); // DEBUG
   initialize_machine(&argc,&argv);
-
-  /* Remap standard I/O */
-  if(remap_stdio_from_args(argc, argv) == 1)
+  g_sync();
+  if (remap_stdio_from_args(argc, argv) == 1)
     terminate(1);
 
-  g_sync();
-  /* set up */
+  // Load input and run (loop removed)
   prompt = setup();
+  if (readin(prompt) != 0) {
+    node0_printf("ERROR in readin, aborting\n");
+    terminate(1);
+  }
+  dtime = -dclock();
 
-  /* loop over input sets */
-  while( readin(prompt) == 0) {
+  // Check: compute initial plaquette
+  plaquette(&ss_plaq, &st_plaq);
+  node0_printf("START %.8g %.8g %.8g\n", ss_plaq, st_plaq, ss_plaq + st_plaq);
 
-    /* perform warmup trajectories */
-    dtime = -dclock();
+  // Perform warmup trajectories
+  for (traj_done = 0; traj_done < warms; traj_done++)
+    update();
+  node0_printf("WARMUPS COMPLETED\n");
 
-    for(todo=warms; todo > 0; --todo)
-      update();
+  // Perform trajectories, reunitarizations and measurements
+  for (traj_done = 0; traj_done < trajecs; traj_done++) {
+    update();
 
-    if(this_node==0)printf("WARMUPS COMPLETED\n");
-
-    /* perform measuring trajectories, reunitarizing and measuring  */
-    meascount=0;            /* number of measurements               */
-    plp = cmplx(99.9, 99.9);
-    for(todo=trajecs; todo > 0; --todo ) {
-
-      /* do the trajectories */
-      update();
-
-      /* measure every "propinterval" trajectories */
-      if((todo%propinterval) == 0){
-        /* call plaquette measuring process */
-        d_plaquette(&dssplaq,&dstplaq);
-
-        /* call the Polyakov loop measuring program */
-        plp = ploop();
-        ++meascount;
-        if(this_node==0)printf("GMES %e %e %e %e %e\n",
-            (double)plp.real,(double)plp.imag,99.9,dssplaq,dstplaq);
-        /* Re(Polyakov) Im(Poyakov) cg_iters ss_plaq st_plaq */
-        fflush(stdout);
-      }
-    }       /* end loop over trajectories */
-
-#ifdef ORA_ALGORITHM
-    /* gaugefix if requested */
-    if( fixflag == COULOMB_GAUGE_FIX){
-      gaugefix(TUP,(Real)1.8,600,(Real)GAUGE_FIX_TOL);
-      if(this_node==0)printf("FIXED TO COULOMB GAUGE\n");
-      fflush(stdout);
-    }
-    else if( fixflag == LANDAU_GAUGE_FIX){
-      gaugefix(8,(Real)1.8,600,(Real)GAUGE_FIX_TOL);
-      if(this_node==0)printf("FIXED TO LANDAU GAUGE\n");
-      fflush(stdout);
-    }
-#endif
-
-    if(this_node==0)printf("RUNNING COMPLETED\n");
-
-    dtime += dclock();
-    if(this_node==0){
-      printf("Time = %e seconds\n",dtime);
-    }
+    // Measure and print Polyakov loop and plaquette
+    // after every trajectory
+    plaquette(&ss_plaq, &st_plaq);
+    plp = ploop(TUP);
+    node0_printf("GMES %.8g %.8g %.8g %.8g\n",
+                 plp.real, plp.imag, ss_plaq, st_plaq);
     fflush(stdout);
-    dtime = -dclock();
 
-    /* save lattice if requested */
-    if( saveflag != FORGET ){
-      save_lattice( saveflag, savefile, stringLFN );
+    // More expensive measurements every "propinterval" trajectories
+    // Measure every "propinterval" trajectories
+    if ((traj_done % propinterval) == (propinterval - 1)) {
+//      Nmeas++;
+      // Nothing yet...
     }
   }
+  node0_printf("RUNNING COMPLETED\n");
+
+  // Check: compute final plaquette
+  plaquette(&ss_plaq, &st_plaq);
+  node0_printf("STOP %.8g %.8g %.8g\n", ss_plaq, st_plaq, ss_plaq + st_plaq);
+
+  dtime += dclock();
+  node0_printf("Time = %.4g seconds\n", dtime);
+  fflush(stdout);
+
+  // Save lattice if requested
+  if (saveflag != FORGET)
+    save_lattice(saveflag, savefile, stringLFN);
+
+  normal_exit(0);
+  g_sync();         // Needed by at least some clusters
   return 0;
 }
 // -----------------------------------------------------------------

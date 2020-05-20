@@ -1,5 +1,5 @@
 // -----------------------------------------------------------------
-// Include files for SU(3) Wilson flow measurements
+// Include files for SU(N) Wilson flow measurements
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>             // For strlen

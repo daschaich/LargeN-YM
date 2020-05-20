@@ -12,7 +12,6 @@
 #include "../include/comdefs.h"
 #include "../include/io_lat.h"
 #include "../include/generic.h"
-#include "../include/generic_pg.h"
 #include "../include/dirs.h"
 #include "../include/field_alloc.h"
 // -----------------------------------------------------------------

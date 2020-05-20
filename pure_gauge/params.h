@@ -15,11 +15,10 @@ typedef struct {
   int stepsQ; /* number of steps for qhb */
   int propinterval;     /* number of trajectories between measurements */
   int startflag;  /* what to do for beginning lattice */
-  int fixflag;    /* whether to gauge fix */
   int saveflag;   /* what to do with lattice at end */
   Real beta;  /* gauge coupling */
   Real epsilon; /* time step */
-  char startfile[MAXFILENAME],savefile[MAXFILENAME];
+  char startfile[MAXFILENAME], savefile[MAXFILENAME];
   char stringLFN[MAXFILENAME];  /** ILDG LFN if applicable ***/
 }  params;
 #endif

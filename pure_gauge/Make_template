@@ -12,15 +12,24 @@ INCLUDEDIR = ../include
 # Where the complex and su3 libraries are
 LIBDIR = ../libraries
 
-GLOBAL_HEADERS = ${INCLUDEDIR} ../libraries/include
+GLOBAL_HEADERS = ${INCLUDEDIR}/config.h      \
+                 ${INCLUDEDIR}/complex.h     \
+                 ${INCLUDEDIR}/su3.h         \
+                 ${INCLUDEDIR}/comdefs.h     \
+                 ${INCLUDEDIR}/macros.h      \
+                 ${INCLUDEDIR}/field_alloc.h \
+                 ${INCLUDEDIR}/generic.h     \
+                 ${INCLUDEDIR}/io_lat.h
 
 MY_HEADERS = lattice.h \
              params.h  \
              defines.h \
              pg_includes.h
 
-HEADERS = ${GLOBAL_HEADERS} ${MY_HEADERS} ${INLINE_HEADERS} ${SCIDAC_HEADERS}
+HEADERS = ${GLOBAL_HEADERS} ${MY_HEADERS}
 
+# All required object files
+# Basic set from current directory
 MY_OBJECTS = control.o  \
              dsdu_qhb.o \
              monte.o    \
@@ -31,9 +40,8 @@ MY_OBJECTS = control.o  \
 
 # Basic set from generic directory
 G_OBJECTS = check_unitarity.o \
-            field_utilities.o \
+            field_strength.o  \
             gaugefix.o        \
-            io_detect.o       \
             io_helpers.o      \
             io_lat.o          \
             io_lat_utils.o    \
@@ -52,25 +60,7 @@ endif
 # Selection of layout
 LAYOUT = layout_hyper_prime.o
 
-# Selection of the gauge force algorithm
-ifeq ($(strip ${HAVEQOP}),true)
-# Interface to access QOP
-  SYMZK1FORCE = gauge_force_symzk1_qop.o
-  SYMZK1FORCE += ${SYMZK1FORCEQOP}
-else
-  ifeq ($(strip ${HAVEQDP}),true)
-    SYMZK1FORCE = gauge_force_symzk1_qdp.o
-  else
-    SYMZK1FORCE = gauge_force_imp.o
-  endif
-endif
-
-ADD_OBJECTS = ${MACHINE_DEP_IO} ${COMMPKG} ${QDP_OBJECTS} ${SCIDAC_OBJECTS}
-
-# Generic QOP objects
-ifeq ($(strip ${HAVEQOP}),true)
-  ADD_OBJECTS += ${GENERICQOP}
-endif
+ADD_OBJECTS = ${MACHINE_DEP_IO} ${COMMPKG}
 
 OBJECTS = ${MY_OBJECTS} ${G_OBJECTS} \
           ${LAYOUT} ${ADD_OBJECTS} ${EXTRA_OBJECTS}
@@ -78,7 +68,7 @@ OBJECTS = ${MY_OBJECTS} ${G_OBJECTS} \
 # Libraries for complex numbers and su3 functions
 QCDLIB = ${LIBDIR}/su3.${PRECISION}.a ${LIBDIR}/complex.${PRECISION}.a
 
-LIBRARIES = ${QCDLIB} ${SCIDAC_LIBRARIES}
+LIBRARIES = ${QCDLIB}
 
 # Default rule for C compilation
 .c.o: ; ${CC} -c ${CFLAGS} $<
@@ -100,6 +90,16 @@ ALL_MAKES = Make_template           \
 
 # To force a remake when changing any make file, header, or target
 ${OBJECTS} : ${HEADERS} ${LASTMAKE} ${ALL_MAKES}
+
+ifeq ($(strip ${HAVEQMP}),true)
+  DHAVE_QMP = -DHAVE_QMP
+endif
+
+ifeq ($(strip ${HAVEQIO}),true)
+  DHAVE_QIO = -DHAVE_QIO
+endif
+
+DARCH = ${DHAVE_QMP} ${DHAVE_QIO}
 
 ##### Targets:
 su3_ora::
