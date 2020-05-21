@@ -2,20 +2,19 @@
 # This script needs to be run from the testsuite/scalar directory
 
 # TODO: Should eventually merge into a single script
-# User just needs to specify NCOL and tag
-# Available targets are Wflow and printpoly for targets su3_$tag
-if [ $# -lt 2 ]; then
-  echo "Usage: $0 <tag> <N>"
+# User just needs to specify NCOL
+if [ $# -lt 1 ]; then
+  echo "Usage: $0 <N>"
   exit 0
 fi
 
-tag=$1
-target=su3_$1
-N=$2
+tag=ora
+target=pg_ora
+N=$1
 
 # Change N in include/su3.h
 # Set DIMF to 99 to make sure it doesn't matter
-cd ../../wilson_flow/
+cd ../../pure_gauge/
 sed -i -E "s/(#define NCOL) .*/\1 $N/" ../include/su3.h
 sed -i -E "s/(#define DIMF) .*/\1 99/" ../include/su3.h
 
@@ -35,7 +34,7 @@ sed -i -E "s/(#define DIMF) .*/\1 3/" ../include/su3.h
 cd ../testsuite/
 rm -f scalar/$tag.$N.out
 echo "Running $target..."
-../wilson_flow/$target < in.$N.$tag > scalar/$tag.$N.out
+../pure_gauge/$target < in.$N.$tag > scalar/$tag.$N.out
 
 # Check
 cd scalar/

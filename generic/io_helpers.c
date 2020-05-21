@@ -276,7 +276,7 @@ int ask_ending_lattice(FILE *fp, int prompt, int *flag, char *filename) {
   int status;
 
   if (prompt != 0)
-    printf("'forget' lattice at end,  'save_ascii', 'save_serial', 'save_parallel', 'save_checkpoint', 'save_serial_fm', 'save_serial_scidac', 'save_parallel_scidac', 'save_multifile_scidac', 'save_partfile_scidac', 'save_serial_archive', 'save_serial_ildg', 'save_parallel_ildg', 'save_partfile_ildg' or 'save_multifile_ildg'\n");
+    printf("'forget' lattice at end,  'save_ascii', 'save_serial', 'save_parallel', 'save_checkpoint', 'save_serial_scidac', 'save_parallel_scidac', 'save_multifile_scidac', 'save_partfile_scidac'\n");
 
   status = fscanf(fp, "%s", savebuf);
   if (status != 1) {
@@ -349,7 +349,7 @@ int ask_ending_lattice(FILE *fp, int prompt, int *flag, char *filename) {
 int ask_ildg_LFN(FILE *fp, int prompt, int flag, char *stringLFN) {
   int status = 0;
 
-  /* For ILDG output formats we require a logical file name next */
+  // For ILDG output formats we require a logical file name next
   if (flag == SAVE_SERIAL_ILDG ||
       flag == SAVE_PARALLEL_ILDG ||
       flag == SAVE_PARTFILE_ILDG ||

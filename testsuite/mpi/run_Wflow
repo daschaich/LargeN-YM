@@ -1,5 +1,5 @@
 #!/bin/bash
-# This script needs to be run from the testsuite/mpidirectory
+# This script needs to be run from the testsuite/mpi directory
 
 # May need to be customized for different platforms
 makefile=Make_mpi
@@ -18,8 +18,10 @@ target=su3_$1
 N=$2
 
 # Change N in include/su3.h
+# Set DIMF to 99 to make sure it doesn't matter
 cd ../../wilson_flow/
 sed -i -E "s/(#define NCOL) .*/\1 $N/" ../include/su3.h
+sed -i -E "s/(#define DIMF) .*/\1 99/" ../include/su3.h
 
 # Compile
 echo "Compiling $target..."
@@ -29,8 +31,9 @@ if ! make -f $makefile $target >& /dev/null ; then
   exit
 fi
 
-# Reset N to 3
+# Reset N and DIMF to 3
 sed -i -E "s/(#define NCOL) .*/\1 3/" ../include/su3.h
+sed -i -E "s/(#define DIMF) .*/\1 3/" ../include/su3.h
 
 # Run
 cd ../testsuite/
@@ -45,6 +48,6 @@ if [ -n "$d" ] ; then   # Non-zero string length
   echo "$tag.$N.ref and $tag.$N.out differ:"
   echo "$d"
 else
-  echo "PASS: $target reproduces reference output for SU($N) $rep"
+  echo "PASS: $target reproduces reference output for SU($N)"
 fi
 exit

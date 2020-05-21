@@ -114,11 +114,11 @@ int readin(int prompt) {
     // beta
     IF_OK status += get_f(stdin, prompt, "beta", &par_buf.beta);
 
-    /*microcanonical steps per trajectory */
-    IF_OK status += get_i(stdin, prompt, "steps_per_trajectory", &par_buf.steps);
+    // Microcanonical steps per trajectory
+    IF_OK status += get_i(stdin, prompt, "steps_per_traj", &par_buf.steps);
 
 #ifdef ORA_ALGORITHM
-    /*qhb steps per trajectory */
+    // Quasi-heatbath steps per trajectory
     IF_OK status += get_i(stdin, prompt, "qhb_steps", &par_buf.stepsQ);
 #endif
 

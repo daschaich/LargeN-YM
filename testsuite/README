@@ -1,8 +1,10 @@
-This directory provides a suite of tests for Wilson-clover fermions.
+This directory provides a suite of tests for SU(N) lattice gauge theories with N=2, 3, 4
 
-Reference input and output files are provided for the following compilation targets (which are described in ../clover_hmc/README):
-susy_hmc
-susy_hmc_spectrum
+Reference input and output files are provided for the following compilation targets (which are described in ../clover_hmc/README, ../wilson_flow/README and ../pure_gauge/README):
+su3_hmc
+su3_hmc_spectrum
+su3_Wflow
+pg_ora
 
 Depending on the fermion rep, each target may be tested for SU(N) gauge theory with different numbers of colors:
 * N=2, 3 or 4 colors for the fundamental rep (2F, 3F, 4F)
