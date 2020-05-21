@@ -1,0 +1,43 @@
+SU(3) pure-gauge over-relaxed heatbath algorithm
+Machine = MPI (portable), with 2 nodes
+start: Thu May 21 11:22:04 2020
+
+type 0 for no prompts or 1 for prompts
+nx 4
+ny 4
+nz 4
+nt 4
+iseed 41
+LAYOUT = Hypercubes, options = hyper_prime,
+MPI with automatic hyper_prime layout
+ON EACH NODE 2 x 4 x 4 x 4
+Mallocing 0.1 MBytes per core for lattice
+Mallocing 0.0 MBytes per core for fields
+
+
+warms 0
+trajecs 3
+traj_between_meas 3
+beta 6
+steps_per_traj 4
+qhb_steps 4
+reload_serial config.3F.4444
+forget
+Restored binary gauge configuration serially from file config.3F.4444
+Time stamp Tue Jan 24 11:31:01 2017
+Checksums 1f0df83 afc22265 OK
+Time to reload gauge configuration = 0.0005929 seconds
+CHECK PLAQ: 1.5941514601839712e+00 1.5811129947216722e+00
+CHECK NERSC LINKTR: -1.2799688810294660e-02 CKSUM: 0
+Reunitarized for double precision.  Max deviation 6e-08 changed to 4.4e-16
+Time to check unitarity = 0.0001981 seconds
+START 1.5941515 1.581113 3.1752645
+WARMUPS COMPLETED
+GMES -0.17958439 0.17832387 1.7325024 1.714372
+GMES -0.29501053 0.5690955 1.8138051 1.8214612
+GMES -0.31108445 0.49273027 1.8375811 1.7602147
+RUNNING COMPLETED
+STOP 1.8375811 1.7602147 3.5977958
+Time = 0.02929 seconds
+exit: Thu May 21 11:22:04 2020
+
