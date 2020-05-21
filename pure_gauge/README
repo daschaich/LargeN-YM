@@ -2,6 +2,13 @@ SU(N) pure gauge evolution using over-relaxed quasi-heatbath algorithm
 
 For N=3 reproduces milc_qcd/pure_gauge/test/su3_ora.2 (blame for test su3_ora.1 mentions "new random number generator" from commit c05e59d)
 
+N=4 still needs debugging
+Compare plaquette with 0f/8nt4 HMC (arXiv:2002.00187):
+$ grep GMES ora.4.out | tail -n 1000 | awk '{plaq+=($4+$5)}END{print 0.5*plaq/NR}'
+beta hmc         ora
+10.0 1.27340(25) 2.71
+20.0 2.73177(17) 3.41
+
 Sample input file:
 +++
 prompt 0
