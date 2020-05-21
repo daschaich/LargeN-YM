@@ -1,8 +1,6 @@
 // -----------------------------------------------------------------
 // SU(N) pure-gauge setup
-#include <string.h>
 #include "pg_includes.h"
-
 #define IF_OK if (status == 0)
 
 // Each node has a params structure for passing simulation parameters
@@ -17,8 +15,8 @@ params par_buf;
 int initial_set() {
   int prompt = 0, status = 0;
   if (mynode() == 0) {
-    // print banner
-    printf("SU(%d) pure-gauge over-relaxed/quasi-heat bath algorithm\n", NCOL);
+    // Print banner
+    printf("SU(%d) pure-gauge over-relaxed heatbath algorithm\n", NCOL);
     printf("Machine = %s, with %d nodes\n", machine_type(), numnodes());
     time_stamp("start");
 
@@ -49,6 +47,8 @@ int initial_set() {
   this_node = mynode();
   number_of_nodes = numnodes();
   volume = nx * ny * nz * nt;
+  one_ov_vol = 1.0 / (Real)volume;
+  one_ov_N = 1.0 / (Real)NCOL;
   return prompt;
 }
 // -----------------------------------------------------------------
@@ -56,19 +56,35 @@ int initial_set() {
 
 
 // -----------------------------------------------------------------
-int  setup() {
+// Allocate all space for fields
+void make_fields() {
+  Real size = (Real)(2.0 * sizeof(matrix_f));
+  FIELD_ALLOC(tempmatf, matrix_f);
+  FIELD_ALLOC(tempmatf2, matrix_f);
+
+  size *= (Real)sites_on_node;
+  node0_printf("Mallocing %.1f MBytes per core for fields\n", size / 1e6);
+}
+// -----------------------------------------------------------------
+
+
+
+// -----------------------------------------------------------------
+int setup() {
   int prompt;
 
-  /* print banner, get volume, nflavors, seed */
-  prompt=initial_set();
-  /* initialize the node random number generator */
-  initialize_prn(&node_prn,iseed,volume+mynode());
-  /* Initialize the layout functions, which decide where sites live */
+  // Print banner, get volume, nflavors, seed
+  prompt = initial_set();
+  // Initialize the node random number generator
+  initialize_prn(&node_prn, iseed, volume + mynode());
+  // Initialize the layout functions, which decide where sites live
   setup_layout();
-  /* allocate space for lattice, set up coordinate fields */
+  // Allocate space for lattice, set up coordinate fields
   make_lattice();
-  /* set up neighbor pointers and comlink structures */
+  // Set up neighbor pointers and comlink structures
   make_nn_gathers();
+  // Allocate space for fields
+  make_fields();
 
   return prompt;
 }

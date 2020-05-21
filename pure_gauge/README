@@ -1,5 +1,7 @@
 SU(N) pure gauge evolution using over-relaxed quasi-heat bath algorithm
 
+For N=3 reproduces milc_qcd/pure_gauge/test/su3_ora.1 (blame for test su3_ora.2 mentions "new random number generator" from commit c05e59d)
+
 Sample input file:
 +++
 prompt 0
@@ -7,5 +9,15 @@ nx 4
 ny 4
 nz 4
 nt 4
+iseed 41
 
-...
+warms 0
+trajecs 3
+traj_between_meas 3
+
+beta 5.0
+steps_per_trajectory 20
+qhb_steps 6
+
+reload_serial config.3F.4444
+forget

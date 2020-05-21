@@ -36,7 +36,7 @@ typedef struct {
 
   // Gauge links and field strength
   matrix_f linkf[4];
-  matrix_f tempmat1, staple;
+  matrix_f tempmat1, staple;    // TODO: Convert these to fields
 } site;
 // -----------------------------------------------------------------
 
@@ -77,9 +77,9 @@ EXTERN int this_node;           // Node number of this node
 
 EXTERN gauge_file *startlat_p;
 
-/* Each node maintains a structure with the pseudorandom number
-   generator state */
-EXTERN double_prn node_prn ;
+// Each node maintains a structure with the pseudorandom number
+// generator state
+EXTERN double_prn node_prn;
 
 // The lattice is a single global variable
 // (actually this is the part of the lattice on this node)
