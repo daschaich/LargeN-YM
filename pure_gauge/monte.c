@@ -4,51 +4,73 @@
 #define INC 1.0e-10
 
 void monte(int NumStp) {
-  register int dir,i;
+  register int dir, i;
   register site *st;
-  int NumTrj, Nhit, index1, ina, inb, ii, parity;
+  int NumTrj, Nhit, subgrp, ina, inb, ii, parity, count;
+  int j, k, kp, cr, nacd, test, index_a[N_OFFDIAG], index_b[N_OFFDIAG];
   Real xr1, xr2, xr3, xr4;
   Real a0 = 0, a1, a2, a3;
   Real v0, v1, v2, v3, vsq;
   Real h0, h1, h2, h3;
   Real r, r2, rho, z;
   Real al, d, xl, xd;
-  int  k, kp, cr, nacd, test;
   Real pi2, b3;
   su2_matrix h;
   matrix_f action;
 
-  Nhit = 3;
+  Nhit = (int)N_OFFDIAG;    // NCOL * (NCOL - 1) / 2
   pi2 = 2.0 * PI;
   b3 = beta / 3.0; // TODO: NCOL or dim*(dim-1)/2?
 
+  // Set up SU(2) subgroup indices [a][b], always with a < b
+  count = 0;
+  for (i = 0; i < NCOL; i++) {
+    for (j = i + 1; j < NCOL; j++) {
+      index_a[count] = i;
+      index_b[count] = j;
+      count++;
+    }
+  }
+  if (count != Nhit) {      // Sanity check
+    node0_printf("ERROR: %d rather than %d subgroups found", count, Nhit);
+    terminate(1);
+  }
+  // Checked that this reproduces MILC SU(3) output
+  if (NCOL == 3) {
+    index_a[0] = 1;
+    index_a[1] = 0;
+    index_a[2] = 0;
+    index_b[0] = 2;
+    index_b[1] = 2;
+    index_b[2] = 1;
+  }
+
   /* fix bug by adding loop over NumTrj; before 1 (and only 1) heat bath
-     hit was dome, regardless of NumStp    */
-  for (NumTrj = 0 ; NumTrj < NumStp; NumTrj++) {
+     hit was done, regardless of NumStp    */
+  for (NumTrj = 0; NumTrj < NumStp; NumTrj++) {
     /* fix bug by looping over odd AND even parity */
     for (parity=ODD;parity<=EVEN;parity++) {
       FORALLUPDIR(dir) {
-        /* compute the gauge force */
-        dsdu_qhb(dir,parity);
-        /* now for the qhb updating */
-        for (index1=0;index1<Nhit;index1++) {
+        // Compute the gauge force
+        dsdu_qhb(dir, parity);
+
+        // Now for the qhb updating, looping over SU(2) subgroups
+        for (subgrp = 0; subgrp < Nhit; subgrp++) {
           kp=0;
           cr=0;
 
-          /*  pick out an SU(2) subgroup */
-          ina=(index1+1) % NCOL;
-          inb=(index1+2) % NCOL;
-          if (ina > inb) { ii=ina; ina=inb; inb=ii;}
-
+          // Pick out this SU(2) subgroup
+          ina = index_a[subgrp];
+          inb = index_b[subgrp];
           FORSOMEPARITY(i, st, parity) {
             mult_na_f(&(st->linkf[dir]), &(st->staple), &action);
 
             /*decompose the action into SU(2) subgroups using Pauli matrix expansion */
-            /* The SU(2) hit matrix is represented as a0 + i * Sum j (sigma j * aj)*/
-            v0 =  action.e[ina][ina].real + action.e[inb][inb].real;
-            v3 =  action.e[ina][ina].imag - action.e[inb][inb].imag;
-            v1 =  action.e[ina][inb].imag + action.e[inb][ina].imag;
-            v2 =  action.e[ina][inb].real - action.e[inb][ina].real;
+            /* The SU(2) hit matrix is represented as v0 + i * Sum j (sigma j * vj)*/
+            v0 = action.e[ina][ina].real + action.e[inb][inb].real;
+            v3 = action.e[ina][ina].imag - action.e[inb][inb].imag;
+            v1 = action.e[ina][inb].imag + action.e[inb][ina].imag;
+            v2 = action.e[ina][inb].real - action.e[inb][ina].real;
 
             vsq = v0*v0 + v1*v1 + v2*v2 + v3*v3;
             z = sqrt((double)vsq);
@@ -57,7 +79,7 @@ void monte(int NumStp) {
 
             /* end norm check--trial SU(2) matrix is a0 + i a(j)sigma(j)*/
 
-            /* test 
+            /* test
                if (this_node == 0)printf("v= %e %e %e %e\n",v0,v1,v2,v3);
                if (this_node == 0)printf("z= %e\n",z);
                */
@@ -85,7 +107,7 @@ void monte(int NumStp) {
                first consider generating an su(2) matrix h
                according to exp(bg/3 * re tr(h*s))
                rewrite re tr(h*s) as re tr(h*v)z where v is
-               an su(2) matrix and z is a real normalization constant 
+               an su(2) matrix and z is a real normalization constant
                let v = z*v. (z is 2*xi in Kennedy--Pendleton notation)
                v is represented in the form v(0) + i*sig*v (sig are pauli)
                v(0) and vector v are real
@@ -111,7 +133,7 @@ void monte(int NumStp) {
 
             /* now  beat each  site into submission */
             nacd = 0;
-            if ((1.00 - 0.5*d) > xr4*xr4)
+            if ((1.00 - 0.5 * d) > xr4 * xr4)
               nacd=1;
 
             // Kennedy--Pendleton algorithm
@@ -120,24 +142,23 @@ void monte(int NumStp) {
               for (k=0;k<20 && test == 0;k++) {
                 kp++;
                 /*  get four random numbers (add a small increment to prevent taking log(0.)*/
-                xr1=myrand(&(st->site_prn));
-                xr1 =  (log((double)(xr1+ INC)));
+                xr1 = myrand(&(st->site_prn));
+                xr1 = log((double)(xr1 + INC));
 
-                xr2=myrand(&(st->site_prn));
-                xr2 =  (log((double)(xr2+ INC)));
+                xr2 = myrand(&(st->site_prn));
+                xr2 = log((double)(xr2 + INC));
 
-                xr3=myrand(&(st->site_prn));
-                xr4=myrand(&(st->site_prn));
+                xr3 = myrand(&(st->site_prn));
+                xr3 = cos((double)pi2 * xr3);
+                d = -(xr2 + xr1 * xr3 * xr3) / al;
 
-                xr3=cos((double)pi2*xr3);
-
-                d = -(xr2 + xr1*xr3*xr3)/al;
-                if ((1.00 - 0.5*d) > xr4*xr4)
+                xr4 = myrand(&(st->site_prn));
+                if ((1.0 - 0.5 * d) > xr4 * xr4)
                   test = 1;
               }
-              if (this_node == 0 && test !=1)
-                printf("site took 20 kp hits\n");
-            } /* endif nacd */
+              if (test != 1)
+                node0_printf("site took 20 kp hits\n");
+            }
 
             if (nacd == 0 && al <= 2.0) {/* creutz algorithm */
               cr++;
@@ -145,18 +166,18 @@ void monte(int NumStp) {
               xd = 1.0 - xl;
               test = 0;
               for (k = 0; k < 20 && test == 0; k++) {
-                /*        get two random numbers */
+                // Get two random numbers
                 xr1 = myrand(&(st->site_prn));
                 xr2 = myrand(&(st->site_prn));
 
-                r = xl + xd*xr1; 
+                r = xl + xd * xr1;
                 a0 = 1.00 + log((double)r) / al;
-                if ((1.0 -a0*a0) > xr2*xr2)
+                if ((1.0 - a0 * a0) > xr2 * xr2)
                   test = 1;
               }
               d = 1.0 - a0;
-              if (this_node == 0 && test !=1) 
-                printf("site took 20 creutz hits\n");
+              if (test != 1)
+                node0_printf("site took 20 Creutz hits\n");
             } /* endif nacd */
 
             /*  generate full su(2) matrix and update link matrix*/
@@ -174,7 +195,7 @@ void monte(int NumStp) {
             /* compute a1 and a2 */
             rho = r2 - a3*a3;
             rho = fabs((double)rho);
-            rho= sqrt((double)rho);
+            rho = sqrt((double)rho);
 
             /*xr2 is a random number between 0 and 2*pi */
             xr2=pi2*myrand(&(st->site_prn));
@@ -206,8 +227,9 @@ void monte(int NumStp) {
              (double)avekp,(double)avecr);
              }
              */
-        } /*  hits */
-      } /*  direction */
-    }} /* parity and NumTrj */
+        }
+      }
+    }
+  }
 }
 // -----------------------------------------------------------------
