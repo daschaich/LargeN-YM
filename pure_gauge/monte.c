@@ -35,15 +35,6 @@ void monte(int NumStp) {
     node0_printf("ERROR: %d rather than %d subgroups found", count, Nhit);
     terminate(1);
   }
-  // Checked that this reproduces MILC SU(3) output
-  if (NCOL == 3) {
-    index_a[0] = 1;
-    index_a[1] = 0;
-    index_a[2] = 0;
-    index_b[0] = 2;
-    index_b[1] = 2;
-    index_b[2] = 1;
-  }
 
   /* fix bug by adding loop over NumTrj; before 1 (and only 1) heat bath
      hit was done, regardless of NumStp    */
