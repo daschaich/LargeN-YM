@@ -20,7 +20,7 @@ void monte(int NumStp) {
 
   Nhit = (int)N_OFFDIAG;    // NCOL * (NCOL - 1) / 2
   pi2 = 2.0 * PI;
-  b3 = beta / 3.0; // TODO: NCOL or dim*(dim-1)/2?
+  b3 = beta * one_ov_N;
 
   // Set up SU(2) subgroup indices [a][b], always with a < b
   count = 0;
