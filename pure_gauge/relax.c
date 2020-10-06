@@ -5,25 +5,38 @@
 void relax(int NumStp) {
   register int dir, i;
   register site *st;
-  int NumTrj, Nhit, index1, ina, inb,ii;
-  int parity;
+  int NumTrj, Nhit, subgrp, ina, inb, j, count;
+  int parity, index_a[N_OFFDIAG], index_b[N_OFFDIAG];
   Real a0,a1,a2,a3,asq,r;
   su2_matrix u;
   matrix_f action;
 
-  Nhit = 3;
+  Nhit = (int)N_OFFDIAG;    // NCOL * (NCOL - 1) / 2
+  // Set up SU(2) subgroup indices [a][b], always with a < b
+  count = 0;
+  for (i = 0; i < NCOL; i++) {
+    for (j = i + 1; j < NCOL; j++) {
+      index_a[count] = i;
+      index_b[count] = j;
+      count++;
+    }
+  }
+  if (count != Nhit) {      // Sanity check
+    node0_printf("ERROR: %d rather than %d subgroups found", count, Nhit);
+    terminate(1);
+  }
+
   for( NumTrj = 0 ; NumTrj < NumStp; NumTrj++) {
     for(parity=ODD;parity<=EVEN;parity++) {
       FORALLUPDIR(dir) {
-        /* compute the gauge force */
-        dsdu_qhb(dir,parity);
-        /* now for the overrelaxed updating */
-        for(index1=0;index1<Nhit;index1++) {
-          /*  pick out an SU(2) subgroup */
-          ina=(index1+1) % NCOL;
-          inb=(index1+2) % NCOL;
-          if(ina > inb) { ii=ina; ina=inb; inb=ii;}
+        // Compute the gauge force
+        dsdu_qhb(dir, parity);
 
+        // Now for the overrelaxed updating
+        for (subgrp = 0; subgrp < Nhit; subgrp++) {
+          // Pick out this SU(2) subgroup
+          ina = index_a[subgrp];
+          inb = index_b[subgrp];
           FORSOMEPARITY(i, st, parity) {
             mult_na_f(&(st->linkf[dir]), &(st->staple), &action);
 
