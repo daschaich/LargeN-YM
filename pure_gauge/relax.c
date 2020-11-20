@@ -2,10 +2,10 @@
 // Microcanonical over-relaxation by doing successive SU(2) gauge hits
 #include "pg_includes.h"
 
-void relax(int NumStp) {
+void relax() {
   register int dir, i;
   register site *s;
-  int NumTrj, Nhit, subgrp, ina, inb, count;
+  int istep, Nhit, subgrp, ina, inb, count;
   int parity, index_a[N_OFFDIAG], index_b[N_OFFDIAG];
   Real a0, a1, a2, a3, asq, norm;
   su2_matrix u;
@@ -26,7 +26,7 @@ void relax(int NumStp) {
     terminate(1);
   }
 
-  for (NumTrj = 0 ; NumTrj < NumStp; NumTrj++) {
+  for (istep = 0 ; istep < steps; istep++) {
     for (parity = ODD; parity <= EVEN; parity++) {
       FORALLUPDIR(dir) {
         // Compute the gauge force (updating every s->staple)

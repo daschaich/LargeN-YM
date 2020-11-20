@@ -1,7 +1,5 @@
 // -----------------------------------------------------------------
-// Main procedure for pure-gauge evolution
-// Removed hybrid Monte Carlo updates,
-// keeping just over-relaxed quasi-heat bath
+// Main procedure for pure-gauge over-relaxed quasi-heatbath
 #define CONTROL
 #include "pg_includes.h"
 

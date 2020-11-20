@@ -1,13 +1,10 @@
 // -----------------------------------------------------------------
-// Main procedure for pure-gauge evolution
-// Removed hybrid Monte Carlo updates,
-// keeping just over-relaxed quasi-heat bath
+// Main procedure for pure-gauge over-relaxed quasi-heatbath
 #define CONTROL
 #include "pg_includes.h"
 
 
 double action();
-double actionref(double betaref);
 void findEint(double Eint, double delta);
 void findEintsmooth(double Eint, double delta);
 
@@ -147,25 +144,11 @@ int main(int argc, char *argv[]) {
   return 0;
 }
 
-
 double action() {
-  double ssplaq, stplaq, g_act;
-
+  double ssplaq, stplaq;
   plaquette(&ssplaq, &stplaq);
-  g_act = -beta * volume * (ssplaq + stplaq);
-
-  return g_act;
+  return -beta * volume * (ssplaq + stplaq);
 }
-
-double actionref(double betaref) {
-  double ssplaq, stplaq, g_act;
-
-  plaquette(&ssplaq, &stplaq);
-  g_act = -betaref * volume * (ssplaq + stplaq);
-
-  return g_act;
-}
-
 
 void findEintsmooth(double Eint, double delta) {
   bool Efound = false;
@@ -174,7 +157,7 @@ void findEintsmooth(double Eint, double delta) {
   double betaref = beta;
   energy = action();
   int counter = 0;
-  node0_printf("Eint = %.4g \n", Eint);
+  node0_printf("Eint = %.4g\n", Eint);
   if(energy>=Eint && energy <= (Eint+delta))
   {
     Efound = true;
@@ -185,12 +168,11 @@ void findEintsmooth(double Eint, double delta) {
   {
     update();
     //energy = action();
-    energyref = actionref(betaref);
-    //node0_printf("energy %.8g %.8g %.8g\n",
-      //           energyref, beta, counter);
-    //node0_printf("Eint = %.4g \n", Eint);
-    //node0_printf("energy %.8g %.8g %.8g\n", energy, Eint, counter);
-    //node0_printf("energyref %.8g %.8g %.8g\n", energyref, beta, counter);
+    energyref = action() * betaref / beta;
+    //node0_printf("energy %.8g %.8g %d\n", energyref, beta, counter);
+    //node0_printf("Eint = %.4g\n", Eint);
+    //node0_printf("energy %.8g %.8g %d\n", energy, Eint, counter);
+    //node0_printf("energyref %.8g %.8g %d\n", energyref, beta, counter);
     if(energyref>=Eint && energyref <= (Eint+delta))
     {
       Efound = true;
@@ -204,12 +186,7 @@ void findEintsmooth(double Eint, double delta) {
 
     counter++;
   }
-  //beta = betaref;
 }
-
-
-
-
 
 void findEint(double Eint, double delta) {
   bool Efound = false;

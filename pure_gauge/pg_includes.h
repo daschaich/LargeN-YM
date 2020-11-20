@@ -26,14 +26,15 @@
 int setup();
 int readin(int prompt);
 
-// Evolution stuff
-int update(void);
-int updateconst_e(double Eint, double a);
-void update_h(Real eps);
-void update_u(Real eps);
-void relax(int NumStp);
-void monte(int NumStp);
-void monteconst_e(int NumStp, double Eint, double a);
+// Over-relaxed quasi-heatbath stuff
+void relax();
 void dsdu_qhb(int dir1, int parity);    // Gauge force for quasi-heat bath
-void gauge_field_copy(field_offset src, field_offset dest);
+void monte();
+void update();
+
+#ifdef LLR
+// Impose constraint that energy remains within interval under consideration
+void updateconst_e(double Eint, double a);
+void monteconst_e(double Eint, double a);
+#endif
 // -----------------------------------------------------------------

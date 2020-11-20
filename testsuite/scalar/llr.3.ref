@@ -40,16 +40,16 @@ index 0 1
 unit gauge configuration loaded
 Eint = -140 
 energyref -138.9991 1 19
-a = 1.422 off 
-a = 1.739 off 
-a = 1.908 off 
-a = 1.791 off 
-a = 1.79 off 
-a = 1.918 off 
-a = 1.678 off 
-a = 0.7785 off 
-a = 0.9463 off 
-a = 1.226 off 
+a = 1.422 off
+a = 1.739 off
+a = 1.908 off
+a = 1.791 off
+a = 1.79 off
+a = 1.918 off
+a = 1.678 off
+a = 0.7785 off
+a = 0.9463 off
+a = 1.226 off
 RUNNING COMPLETED
 STOP 0.239989 0.29064315 0.53063215
 Time = 1.611 seconds

@@ -10,7 +10,8 @@
 
 // -----------------------------------------------------------------
 // Constants
-#define PI 3.14159265358979323846
+#define    PI 3.14159265358979323846
+#define TWOPI 6.283185307179586
 
 // Conventions for defining checkerboard parity of inversions
 #define EVEN 0x02

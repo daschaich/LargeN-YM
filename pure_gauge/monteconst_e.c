@@ -3,47 +3,28 @@
 #include "pg_includes.h"
 #define INC 1.0e-10
 
-double action1() {
-  double ssplaq, stplaq;
-  plaquette(&ssplaq, &stplaq);
-  return -beta * volume * (ssplaq + stplaq);
-}
-
-void monteconst_e(int NumStp, double Eint, double a) {
+void monteconst_e(double Eint, double a) {
   register int dir, i;
   register site *s;
-  int NumTrj, Nhit, subgrp, ina, inb, parity, count;
-  int j, k, kp, cr, nacd, test, index_a[N_OFFDIAG], index_b[N_OFFDIAG];
+  int istep, Nhit, subgrp, ina, inb, parity, count;
+  int k, kp, cr, nacd, test, index_a[N_OFFDIAG], index_b[N_OFFDIAG];
   Real xr1, xr2, xr3, xr4;
   Real a0 = 0, a1, a2, a3;
   Real v0, v1, v2, v3, vsq;
   Real h0, h1, h2, h3;
   Real r, r2, rho, z;
-  Real al, d, xl, xd;
-  Real pi2, b3;
+  Real al, d, xl, xd, b3 = beta * a * one_ov_N;
+  double ssplaq, stplaq, energy;
   su2_matrix h;
   matrix_f action;
-  matrix_f oldlinkvalue;
-  matrix_f oldvalue;
-  //matrix_f oldvalueneg;
-  matrix_f tracematrix;
 
-  complex trace;
-  double Energydiff;
-  double Energy;
-//  double Energyref;
-//  double betareference = 9.6;
-
-  Nhit = (int)N_OFFDIAG;    // NCOL * (NCOL - 1) / 2
-  pi2 = 2.0 * PI;
-  b3 = beta * a * one_ov_N;
-
-  // Set up SU(2) subgroup indices [a][b], always with a < b
+  // Set up SU(2) subgroup indices [a][b] with a < b
   count = 0;
-  for (i = 0; i < NCOL; i++) {
-    for (j = i + 1; j < NCOL; j++) {
-      index_a[count] = i;
-      index_b[count] = j;
+  Nhit = (int)N_OFFDIAG;    // NCOL * (NCOL - 1) / 2
+  for (ina = 0; ina < NCOL; ina++) {
+    for (inb = ina + 1; inb < NCOL; inb++) {
+      index_a[count] = ina;
+      index_b[count] = inb;
       count++;
     }
   }
@@ -51,29 +32,30 @@ void monteconst_e(int NumStp, double Eint, double a) {
     node0_printf("ERROR: %d rather than %d subgroups found", count, Nhit);
     terminate(1);
   }
-  Energy = action1();
-//  Energyref = action1();
-  /* fix bug by adding loop over NumTrj; before 1 (and only 1) heat bath
-     hit was done, regardless of NumStp    */
-  for (NumTrj = 0; NumTrj < NumStp; NumTrj++) {
-    /* fix bug by looping over odd AND even parity */
-    for (parity=ODD;parity<=EVEN;parity++) {
+
+  // Loop over quasi-heatbath sweeps
+  for (istep = 0; istep < stepsQ; istep++) {
+    // Checkerboard for parallelization
+    for (parity = ODD; parity <= EVEN; parity++) {
       FORALLUPDIR(dir) {
         // Compute the gauge force
         dsdu_qhb(dir, parity);
 
         // Now for the qhb updating, looping over SU(2) subgroups
         for (subgrp = 0; subgrp < Nhit; subgrp++) {
-          kp=0;
-          cr=0;
+          kp = 0;
+          cr = 0;
 
           // Pick out this SU(2) subgroup
           ina = index_a[subgrp];
           inb = index_b[subgrp];
+
+          // Save current links
+          FORSOMEPARITY(i, s, parity)
+            mat_copy_f(&(s->linkf[dir]), &(s->old_linkf[dir]));
+
           FORSOMEPARITY(i, s, parity) {
             mult_na_f(&(s->linkf[dir]), &(s->staple), &action);
-            mat_copy_f(&(s->linkf[dir]), &oldlinkvalue);
-            mult_an_f(&(s->linkf[dir]), &(s->staple), &oldvalue);
 
             /*decompose the action into SU(2) subgroups using Pauli matrix expansion */
             /* The SU(2) hit matrix is represented as v0 + i * Sum j (sigma j * vj)*/
@@ -90,23 +72,18 @@ void monteconst_e(int NumStp, double Eint, double a) {
             /* end norm check--trial SU(2) matrix is a0 + i a(j)sigma(j)*/
 
             /* test
-               if (this_node == 0)printf("v= %e %e %e %e\n",v0,v1,v2,v3);
-               if (this_node == 0)printf("z= %e\n",z);
+               node0_printf("v= %.4g %.4g %.4g %.4g\n", v0, v1, v2, v3);
+               node0_printf("z= %.4g\n", z);
                */
-            /* now begin qhb */
-            /* get four random numbers */
 
-            /*  get four random numbers (add a small increment to prevent taking log(0.)*/
-            xr1 = myrand(&(s->site_prn));
-            xr1 = (log((double)(xr1 + INC)));
-
-            xr2 = myrand(&(s->site_prn));
-            xr2 = (log((double)(xr2 + INC)));
-
-            xr3 = myrand(&(s->site_prn));
+            // Now begin quasi-heatbath
+            // Get four random numbers
+            // Add a small increment to avoid log(0)
+            xr1 = log((double)(myrand(&(s->site_prn)) + INC));
+            xr2 = log((double)(myrand(&(s->site_prn)) + INC));
+            xr3 = cos((double)TWOPI * myrand(&(s->site_prn)));
             xr4 = myrand(&(s->site_prn));
 
-            xr3 = cos((double)pi2 * xr3);
             /*
                node0_printf("rand= %e %e %e %e\n", xr1, xr2, xr3, xr4);
                */
@@ -141,9 +118,9 @@ void monteconst_e(int NumStp, double Eint, double a) {
                    then prob(a0) = n3 * prob1(a0)*prob2(a0)
                    */
 
-            /* now  beat each  site into submission */
+            // Now beat each site into submission
             nacd = 0;
-            if ((1.00 - 0.5 * d) > xr4 * xr4)
+            if ((1.0 - 0.5 * d) > xr4 * xr4)
               nacd=1;
 
             // Kennedy--Pendleton algorithm
@@ -159,7 +136,7 @@ void monteconst_e(int NumStp, double Eint, double a) {
                 xr2 = log((double)(xr2 + INC));
 
                 xr3 = myrand(&(s->site_prn));
-                xr3 = cos((double)pi2 * xr3);
+                xr3 = cos((double)TWOPI * xr3);
                 d = -(xr2 + xr1 * xr3 * xr3) / al;
 
                 xr4 = myrand(&(s->site_prn));
@@ -200,50 +177,41 @@ void monteconst_e(int NumStp, double Eint, double a) {
             r = sqrt((double)r2);
 
             /* compute a3 */
-            a3=(2.0*myrand(&(s->site_prn)) - 1.0)*r;
+            a3 = (2.0*myrand(&(s->site_prn)) - 1.0)*r;
 
             /* compute a1 and a2 */
             rho = r2 - a3*a3;
             rho = fabs((double)rho);
             rho = sqrt((double)rho);
 
-            /*xr2 is a random number between 0 and 2*pi */
-            xr2=pi2*myrand(&(s->site_prn));
+            // xr2 is a random number between 0 and 2pi
+            xr2 = TWOPI * myrand(&(s->site_prn));
 
-            a1= rho*cos((double)xr2);
-            a2= rho*sin((double)xr2);
+            a1 = rho * cos((double)xr2);
+            a2 = rho * sin((double)xr2);
 
-            /* now do the updating.  h = a*v^dagger, new u = h*u */
-            h0 = a0*v0 + a1*v1 + a2*v2 + a3*v3;
-            h1 = a1*v0 - a0*v1 + a2*v3 - a3*v2;
-            h2 = a2*v0 - a0*v2 + a3*v1 - a1*v3;
-            h3 = a3*v0 - a0*v3 + a1*v2 - a2*v1;
+            // Now update u --> h * u with h = a * v^dag
+            h0 = a0 * v0 + a1 * v1 + a2 * v2 + a3 * v3;
+            h1 = a1 * v0 - a0 * v1 + a2 * v3 - a3 * v2;
+            h2 = a2 * v0 - a0 * v2 + a3 * v1 - a1 * v3;
+            h3 = a3 * v0 - a0 * v3 + a1 * v2 - a2 * v1;
 
-            /* Elements of SU(2) matrix */
+            // Elements of SU(2) matrix
             h.e[0][0] = cmplx( h0, h3);
             h.e[0][1] = cmplx( h2, h1);
             h.e[1][0] = cmplx(-h2, h1);
             h.e[1][1] = cmplx( h0,-h3);
 
-            /* update the link */
+            // Update the link
             left_su2_hit_n_f(&h, ina, inb, &(s->linkf[dir]));
-            mult_an_f(&(s->linkf[dir]), &(s->staple), &tracematrix);
-            dif_mat_f(&oldvalue, &tracematrix);
-            trace = trace_f(&tracematrix);
+          }
 
-            Energydiff = -beta * trace.real / 3.0;
-            Energy += Energydiff;
-//            Energyref = action1();
-//            node0_printf("energy %.8g %.8g %.8g\n",
-//                         Energyref, Energy, Energydiff);
-
-            // Reset original link if we have left the energy interval
-            if (Energy < Eint || Energy > (Eint + delta))
-            {
-              mat_copy_f(&oldlinkvalue, &(s->linkf[dir]));
-              Energy -= Energydiff;
-            }
-
+          // If we have exited the energy interval, restore old links
+          plaquette(&ssplaq, &stplaq);
+          energy = -beta * volume * (ssplaq + stplaq);
+          if (energy < Eint || energy > (Eint + delta)) {
+            FORSOMEPARITY(i, s, parity)
+              mat_copy_f(&(s->old_linkf[dir]), &(s->linkf[dir]));
           }
           /* diagnostics
              {Real avekp, avecr;
@@ -257,8 +225,6 @@ void monteconst_e(int NumStp, double Eint, double a) {
         }
       }
     }
-   // node0_printf("energy %.8g %.8g %.8g\n",
-   //              Energyref, Energy, Energydiff);
   }
 }
 // -----------------------------------------------------------------
