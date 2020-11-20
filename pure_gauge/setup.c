@@ -131,7 +131,15 @@ int readin(int prompt) {
                                        par_buf.savefile);
     IF_OK status += ask_ildg_LFN(stdin,  prompt, par_buf.saveflag,
                                  par_buf.stringLFN);
-
+                                 
+                                 
+    //Find out what min/max Energy, number of robsonmonroe iterations, size of delta                             
+    IF_OK status += get_f(stdin, prompt, "Emin", &par_buf.Emin);
+    IF_OK status += get_f(stdin, prompt, "Emax", &par_buf.Emax);
+    IF_OK status += get_f(stdin, prompt, "delta", &par_buf.delta);
+    IF_OK status += get_i(stdin, prompt, "ait", &par_buf.ait);
+    IF_OK status += get_i(stdin, prompt, "Njacknife", &par_buf.Njacknife);
+    
     if (status > 0)
       par_buf.stopflag = 1;
     else
@@ -155,6 +163,11 @@ int readin(int prompt) {
   strcpy(startfile, par_buf.startfile);
   strcpy(savefile, par_buf.savefile);
   strcpy(stringLFN, par_buf.stringLFN);
+  Emin = par_buf.Emin;
+  Emax = par_buf.Emax;
+  delta = par_buf.delta;
+  ait = par_buf.ait;
+  Njacknife = par_buf.Njacknife;
 
   // Do whatever is needed to get lattice
   startlat_p = reload_lattice(startflag, startfile);

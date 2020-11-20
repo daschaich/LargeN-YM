@@ -33,9 +33,6 @@ void dsdu_qhb(int dir, int parity) {
                              dir2, parity, gen_pt[2]);
 
     /* Lower staple (computed at backward site) */
-    /* Note: For SCHROED_FUN we don't care if we get this wrong for
-       dir<TUP and t=0, since then the staple will not be used,
-       as those links are frozen */
     wait_gather(tag0);
     FORSOMEPARITY(i, st, otherparity) {
       mult_an_f(&(st->linkf[dir2]), &(st->linkf[dir]), &tmat);

@@ -33,9 +33,11 @@ HEADERS = ${GLOBAL_HEADERS} ${MY_HEADERS}
 MY_OBJECTS = control.o  \
              dsdu_qhb.o \
              monte.o    \
+             monteconst_e.o \
              relax.o    \
              setup.o    \
              update.o   \
+             updateconst_e.o \
              gauge_info.o
 
 # Basic set from generic directory

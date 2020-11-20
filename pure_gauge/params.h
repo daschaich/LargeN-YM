@@ -20,6 +20,11 @@ typedef struct {
   Real epsilon; /* time step */
   char startfile[MAXFILENAME], savefile[MAXFILENAME];
   char stringLFN[MAXFILENAME];  /** ILDG LFN if applicable ***/
+  double Emin;
+  double Emax;
+  double delta;
+  int ait;
+  int Njacknife;
 }  params;
 #endif
 // -----------------------------------------------------------------

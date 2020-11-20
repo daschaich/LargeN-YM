@@ -67,6 +67,12 @@ EXTERN int fixflag;   // Either NO_GAUGE_FIX or COULOMB_GAUGE_FIX
 EXTERN int saveflag;  // 1 if we will save the lattice
 EXTERN int total_iters;
 
+EXTERN double Emax;
+EXTERN double Emin;
+EXTERN double delta;
+EXTERN int ait;
+EXTERN int Njacknife;
+
 // Some of these global variables are node dependent
 // They are set in "make_lattice()"
 EXTERN int sites_on_node;       // Number of sites on this node

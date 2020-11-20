@@ -3,9 +3,9 @@
 #include "pg_includes.h"
 #define INC 1.0e-10
 
-//double action1();
+double action1();
 
-void monte(int NumStp) {
+void monteconst_e(int NumStp, double Eint, double delta, double a) {
   register int dir, i;
   register site *st;
   int NumTrj, Nhit, subgrp, ina, inb, ii, parity, count;
@@ -19,26 +19,25 @@ void monte(int NumStp) {
   Real pi2, b3;
   su2_matrix h;
   matrix_f action;
-  //matrix_f oldlinkvalue;
-  //matrix_f oldvalue;
+  matrix_f oldlinkvalue;
+  matrix_f oldvalue;
   //matrix_f oldvalueneg;
-  //matrix_f newvalue;
-  //matrix_f tracematrix;
+  matrix_f newvalue;
+  matrix_f tracematrix;
   
-  //complex trace;
-  //double realtrace;
-  //double Energydiff;
-  //double Energy;
-  //double Energyref;
+  complex trace;
+  double realtrace;
+  double Energydiff;
+  double Energy;
+  double Energyref;
   
-  //double Eint = -19660;
-  //double delta=100.0;
+  
   
   //double betareference = 9.6;
 
   Nhit = (int)N_OFFDIAG;    // NCOL * (NCOL - 1) / 2
   pi2 = 2.0 * PI;
-  b3 = beta * one_ov_N;
+  b3 = beta * a* one_ov_N;
 
   // Set up SU(2) subgroup indices [a][b], always with a < b
   count = 0;
@@ -53,8 +52,8 @@ void monte(int NumStp) {
     node0_printf("ERROR: %d rather than %d subgroups found", count, Nhit);
     terminate(1);
   }
-  //Energy = action1();
-  //Energyref = action1();
+  Energy = action1();
+  Energyref = action1();
   /* fix bug by adding loop over NumTrj; before 1 (and only 1) heat bath
      hit was done, regardless of NumStp    */
   for (NumTrj = 0; NumTrj < NumStp; NumTrj++) {
@@ -75,10 +74,10 @@ void monte(int NumStp) {
           FORSOMEPARITY(i, st, parity) {
             // st = &(lattice.[i])
             //scalar_mult_mat(&(st->linkf[dir]), 1, &oldlinkvalue);
-            //mat_copy_f(&(lattice[i].linkf[dir]), &oldlinkvalue);
+            mat_copy_f(&(lattice[i].linkf[dir]), &oldlinkvalue);
             mult_na_f(&(st->linkf[dir]), &(st->staple), &action);
             //mult_na_f(&(st->linkf[dir]), &(st->staple), &oldvalue);
-            //mult_an_f(&(lattice[i].linkf[dir]), &(lattice[i].staple), &oldvalue);
+            mult_an_f(&(lattice[i].linkf[dir]), &(lattice[i].staple), &oldvalue);
             //scalar_mult_mat_f(&oldvalue, -1, &oldvalueneg);
             
             /*decompose the action into SU(2) subgroups using Pauli matrix expansion */
@@ -234,24 +233,24 @@ void monte(int NumStp) {
             /* update the link */
             left_su2_hit_n_f(&h, ina, inb, &(st->linkf[dir]));
             
-            //mult_an_f(&(st->linkf[dir]), &(st->staple), &newvalue);
-            //sub_mat_f(&newvalue,&oldvalue,&tracematrix);
-            //(trace).real=0;
-            //(trace).imag=0;
-            //trace_sum_f(&tracematrix, &trace);
-            //realtrace=(trace).real;
+            mult_an_f(&(st->linkf[dir]), &(st->staple), &newvalue);
+            sub_mat_f(&newvalue,&oldvalue,&tracematrix);
+            (trace).real=0;
+            (trace).imag=0;
+            trace_sum_f(&tracematrix, &trace);
+            realtrace=(trace).real;
             
-            //Energydiff = -beta*realtrace;
-            //Energy = Energy + Energydiff/3.0;
+            Energydiff = -beta*realtrace;
+            Energy = Energy + Energydiff/3.0;
             //Energyref = action1();
             //node0_printf("energy %.8g %.8g %.8g\n",
             //     Energyref, Energy, Energydiff/3.0);
             
-            //if((Energy>=Eint && Energy <= (Eint+delta))==false)
-            //{
-            //  mat_copy_f(&oldlinkvalue,&(lattice[i].linkf[dir]));
-            //  Energy = Energy - Energydiff/3.0;
-            //}    
+            if((Energy>=Eint && Energy <= (Eint+delta))==false)
+            {
+              mat_copy_f(&oldlinkvalue,&(lattice[i].linkf[dir]));
+              Energy = Energy - Energydiff/3.0;
+            }    
             
           }
           /* diagnostics
@@ -266,10 +265,10 @@ void monte(int NumStp) {
         }
       }
     }
+   // node0_printf("energy %.8g %.8g %.8g\n",
+   //       Energyref, Energy, Energydiff/3.0);
   }
 }
-
-/*
 double action1() {
   double ssplaq, stplaq, g_act;
   //double betareference=9.6;
@@ -278,5 +277,5 @@ double action1() {
   
   return g_act;
 }
-*/
+
 // -----------------------------------------------------------------
