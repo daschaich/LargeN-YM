@@ -8,7 +8,7 @@
 void monte(int NumStp) {
   register int dir, i;
   register site *st;
-  int NumTrj, Nhit, subgrp, ina, inb, ii, parity, count;
+  int NumTrj, Nhit, subgrp, ina, inb, parity, count;
   int j, k, kp, cr, nacd, test, index_a[N_OFFDIAG], index_b[N_OFFDIAG];
   Real xr1, xr2, xr3, xr4;
   Real a0 = 0, a1, a2, a3;
@@ -24,16 +24,16 @@ void monte(int NumStp) {
   //matrix_f oldvalueneg;
   //matrix_f newvalue;
   //matrix_f tracematrix;
-  
+
   //complex trace;
   //double realtrace;
   //double Energydiff;
   //double Energy;
   //double Energyref;
-  
+
   //double Eint = -19660;
   //double delta=100.0;
-  
+
   //double betareference = 9.6;
 
   Nhit = (int)N_OFFDIAG;    // NCOL * (NCOL - 1) / 2
@@ -80,7 +80,7 @@ void monte(int NumStp) {
             //mult_na_f(&(st->linkf[dir]), &(st->staple), &oldvalue);
             //mult_an_f(&(lattice[i].linkf[dir]), &(lattice[i].staple), &oldvalue);
             //scalar_mult_mat_f(&oldvalue, -1, &oldvalueneg);
-            
+
             /*decompose the action into SU(2) subgroups using Pauli matrix expansion */
             /* The SU(2) hit matrix is represented as v0 + i * Sum j (sigma j * vj)*/
             v0 = action.e[ina][ina].real + action.e[inb][inb].real;
@@ -233,26 +233,26 @@ void monte(int NumStp) {
 
             /* update the link */
             left_su2_hit_n_f(&h, ina, inb, &(st->linkf[dir]));
-            
+
             //mult_an_f(&(st->linkf[dir]), &(st->staple), &newvalue);
             //sub_mat_f(&newvalue,&oldvalue,&tracematrix);
             //(trace).real=0;
             //(trace).imag=0;
             //trace_sum_f(&tracematrix, &trace);
             //realtrace=(trace).real;
-            
+
             //Energydiff = -beta*realtrace;
             //Energy = Energy + Energydiff/3.0;
             //Energyref = action1();
             //node0_printf("energy %.8g %.8g %.8g\n",
             //     Energyref, Energy, Energydiff/3.0);
-            
+
             //if((Energy>=Eint && Energy <= (Eint+delta))==false)
             //{
             //  mat_copy_f(&oldlinkvalue,&(lattice[i].linkf[dir]));
             //  Energy = Energy - Energydiff/3.0;
-            //}    
-            
+            //}
+
           }
           /* diagnostics
              {Real avekp, avecr;
@@ -275,7 +275,7 @@ double action1() {
   //double betareference=9.6;
   plaquette(&ssplaq, &stplaq);
   g_act = -beta * volume * (ssplaq + stplaq);
-  
+
   return g_act;
 }
 */

@@ -230,11 +230,12 @@ int ask_starting_lattice(FILE *fp, int prompt, int *flag, char *filename) {
     return 1;
   }
   if (status != 1) {
-    printf("\nask_starting_lattice: ERROR IN INPUT: can't read starting lattice command\n");
+    printf("\nask_starting_lattice: ERROR IN INPUT: ");
+    printf("can't read starting lattice option\n");
     return 1;
   }
 
-  printf("%s ", savebuf);
+  printf("%s", savebuf);
   if (strcmp("fresh", savebuf) == 0) {
     *flag = FRESH;
     printf("\n");
@@ -253,18 +254,21 @@ int ask_starting_lattice(FILE *fp, int prompt, int *flag, char *filename) {
     *flag = RELOAD_PARALLEL;
   }
   else {
-    printf(" is not a valid starting lattice command. INPUT ERROR.\n");
+    printf(" is not a valid starting lattice option. INPUT ERROR.\n");
     return 1;
   }
 
-  /*read name of file and load it */
+  // Read name of file and load it
   if (*flag != FRESH && *flag != CONTINUE) {
-    if (prompt!=0)printf("enter name of file containing lattice\n");
-    status=fscanf(fp,"%s", filename);
-    if (status !=1) {
-      printf("\nask_starting_lattice: ERROR IN INPUT: error reading file name\n"); return 1;
+    if (prompt != 0)
+      printf("enter name of file containing lattice\n");
+    status = fscanf(fp, " %s", filename);
+    if (status != 1) {
+      printf("\nask_starting_lattice: ERROR IN INPUT: ");
+      printf("error reading file name\n");
+      return 1;
     }
-    printf("%s\n", filename);
+    printf(" %s\n", filename);
   }
   return 0;
 }

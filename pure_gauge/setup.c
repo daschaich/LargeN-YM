@@ -16,7 +16,11 @@ int initial_set() {
   int prompt = 0, status = 0;
   if (mynode() == 0) {
     // Print banner
+#ifndef LLR
     printf("SU(%d) pure-gauge over-relaxed heatbath algorithm\n", NCOL);
+#else
+    printf("SU(%d) pure-gauge log-linear relaxation algorithm\n", NCOL);
+#endif
     printf("Machine = %s, with %d nodes\n", machine_type(), numnodes());
     time_stamp("start");
 
@@ -107,19 +111,33 @@ int readin(int prompt) {
     IF_OK status += get_i(stdin, prompt, "warms", &par_buf.warms);
     IF_OK status += get_i(stdin, prompt, "trajecs", &par_buf.trajecs);
 
-    /* trajectories between more expensive measurements */
+    // Trajectories between more expensive measurements
     IF_OK status += get_i(stdin, prompt, "traj_between_meas",
                           &par_buf.propinterval);
 
     // beta
     IF_OK status += get_f(stdin, prompt, "beta", &par_buf.beta);
 
-    // Microcanonical steps per trajectory
+    // Over-relaxation steps per trajectory
     IF_OK status += get_i(stdin, prompt, "steps_per_traj", &par_buf.steps);
 
-#ifdef ORA_ALGORITHM
     // Quasi-heatbath steps per trajectory
     IF_OK status += get_i(stdin, prompt, "qhb_steps", &par_buf.stepsQ);
+
+#ifdef LLR
+    // LLR stuff
+    // Energy range to scan (min to max)
+    IF_OK status += get_f(stdin, prompt, "Emin", &par_buf.Emin);
+    IF_OK status += get_f(stdin, prompt, "Emax", &par_buf.Emax);
+
+    // Size of energy interval delta
+    IF_OK status += get_f(stdin, prompt, "delta", &par_buf.delta);
+
+    // Number of iterations for Robbins--Monro algorithm
+    IF_OK status += get_i(stdin, prompt, "ait", &par_buf.ait);
+
+    // Number of repetitions to jackknife or bootstrap
+    IF_OK status += get_i(stdin, prompt, "Njacknife", &par_buf.Njacknife);
 #endif
 
     // Find out what kind of starting lattice to use
@@ -131,15 +149,7 @@ int readin(int prompt) {
                                        par_buf.savefile);
     IF_OK status += ask_ildg_LFN(stdin,  prompt, par_buf.saveflag,
                                  par_buf.stringLFN);
-                                 
-                                 
-    //Find out what min/max Energy, number of robsonmonroe iterations, size of delta                             
-    IF_OK status += get_f(stdin, prompt, "Emin", &par_buf.Emin);
-    IF_OK status += get_f(stdin, prompt, "Emax", &par_buf.Emax);
-    IF_OK status += get_f(stdin, prompt, "delta", &par_buf.delta);
-    IF_OK status += get_i(stdin, prompt, "ait", &par_buf.ait);
-    IF_OK status += get_i(stdin, prompt, "Njacknife", &par_buf.Njacknife);
-    
+
     if (status > 0)
       par_buf.stopflag = 1;
     else
@@ -153,21 +163,24 @@ int readin(int prompt) {
 
   warms = par_buf.warms;
   trajecs = par_buf.trajecs;
+  propinterval = par_buf.propinterval;
+  beta = par_buf.beta;
   steps = par_buf.steps;
   stepsQ = par_buf.stepsQ;
-  propinterval = par_buf.propinterval;
   startflag = par_buf.startflag;
   saveflag = par_buf.saveflag;
-  epsilon = par_buf.epsilon;
-  beta = par_buf.beta;
-  strcpy(startfile, par_buf.startfile);
-  strcpy(savefile, par_buf.savefile);
-  strcpy(stringLFN, par_buf.stringLFN);
+
+#ifdef LLR
   Emin = par_buf.Emin;
   Emax = par_buf.Emax;
   delta = par_buf.delta;
   ait = par_buf.ait;
   Njacknife = par_buf.Njacknife;
+#endif
+
+  strcpy(startfile, par_buf.startfile);
+  strcpy(savefile, par_buf.savefile);
+  strcpy(stringLFN, par_buf.stringLFN);
 
   // Do whatever is needed to get lattice
   startlat_p = reload_lattice(startflag, startfile);
