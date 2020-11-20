@@ -3,11 +3,9 @@
 #include "pg_includes.h"
 #define INC 1.0e-10
 
-//double action1();
-
 void monte(int NumStp) {
   register int dir, i;
-  register site *st;
+  register site *s;
   int NumTrj, Nhit, subgrp, ina, inb, parity, count;
   int j, k, kp, cr, nacd, test, index_a[N_OFFDIAG], index_b[N_OFFDIAG];
   Real xr1, xr2, xr3, xr4;
@@ -19,22 +17,6 @@ void monte(int NumStp) {
   Real pi2, b3;
   su2_matrix h;
   matrix_f action;
-  //matrix_f oldlinkvalue;
-  //matrix_f oldvalue;
-  //matrix_f oldvalueneg;
-  //matrix_f newvalue;
-  //matrix_f tracematrix;
-
-  //complex trace;
-  //double realtrace;
-  //double Energydiff;
-  //double Energy;
-  //double Energyref;
-
-  //double Eint = -19660;
-  //double delta=100.0;
-
-  //double betareference = 9.6;
 
   Nhit = (int)N_OFFDIAG;    // NCOL * (NCOL - 1) / 2
   pi2 = 2.0 * PI;
@@ -53,8 +35,6 @@ void monte(int NumStp) {
     node0_printf("ERROR: %d rather than %d subgroups found", count, Nhit);
     terminate(1);
   }
-  //Energy = action1();
-  //Energyref = action1();
   /* fix bug by adding loop over NumTrj; before 1 (and only 1) heat bath
      hit was done, regardless of NumStp    */
   for (NumTrj = 0; NumTrj < NumStp; NumTrj++) {
@@ -72,14 +52,8 @@ void monte(int NumStp) {
           // Pick out this SU(2) subgroup
           ina = index_a[subgrp];
           inb = index_b[subgrp];
-          FORSOMEPARITY(i, st, parity) {
-            // st = &(lattice.[i])
-            //scalar_mult_mat(&(st->linkf[dir]), 1, &oldlinkvalue);
-            //mat_copy_f(&(lattice[i].linkf[dir]), &oldlinkvalue);
-            mult_na_f(&(st->linkf[dir]), &(st->staple), &action);
-            //mult_na_f(&(st->linkf[dir]), &(st->staple), &oldvalue);
-            //mult_an_f(&(lattice[i].linkf[dir]), &(lattice[i].staple), &oldvalue);
-            //scalar_mult_mat_f(&oldvalue, -1, &oldvalueneg);
+          FORSOMEPARITY(i, s, parity) {
+            mult_na_f(&(s->linkf[dir]), &(s->staple), &action);
 
             /*decompose the action into SU(2) subgroups using Pauli matrix expansion */
             /* The SU(2) hit matrix is represented as v0 + i * Sum j (sigma j * vj)*/
@@ -103,14 +77,14 @@ void monte(int NumStp) {
             /* get four random numbers */
 
             /*  get four random numbers (add a small increment to prevent taking log(0.)*/
-            xr1 = myrand(&(st->site_prn));
+            xr1 = myrand(&(s->site_prn));
             xr1 = (log((double)(xr1 + INC)));
 
-            xr2 = myrand(&(st->site_prn));
+            xr2 = myrand(&(s->site_prn));
             xr2 = (log((double)(xr2 + INC)));
 
-            xr3 = myrand(&(st->site_prn));
-            xr4 = myrand(&(st->site_prn));
+            xr3 = myrand(&(s->site_prn));
+            xr4 = myrand(&(s->site_prn));
 
             xr3 = cos((double)pi2 * xr3);
             /*
@@ -158,17 +132,17 @@ void monte(int NumStp) {
               for (k=0;k<20 && test == 0;k++) {
                 kp++;
                 /*  get four random numbers (add a small increment to prevent taking log(0.)*/
-                xr1 = myrand(&(st->site_prn));
+                xr1 = myrand(&(s->site_prn));
                 xr1 = log((double)(xr1 + INC));
 
-                xr2 = myrand(&(st->site_prn));
+                xr2 = myrand(&(s->site_prn));
                 xr2 = log((double)(xr2 + INC));
 
-                xr3 = myrand(&(st->site_prn));
+                xr3 = myrand(&(s->site_prn));
                 xr3 = cos((double)pi2 * xr3);
                 d = -(xr2 + xr1 * xr3 * xr3) / al;
 
-                xr4 = myrand(&(st->site_prn));
+                xr4 = myrand(&(s->site_prn));
                 if ((1.0 - 0.5 * d) > xr4 * xr4)
                   test = 1;
               }
@@ -183,8 +157,8 @@ void monte(int NumStp) {
               test = 0;
               for (k = 0; k < 20 && test == 0; k++) {
                 // Get two random numbers
-                xr1 = myrand(&(st->site_prn));
-                xr2 = myrand(&(st->site_prn));
+                xr1 = myrand(&(s->site_prn));
+                xr2 = myrand(&(s->site_prn));
 
                 r = xl + xd * xr1;
                 a0 = 1.00 + log((double)r) / al;
@@ -206,7 +180,7 @@ void monte(int NumStp) {
             r = sqrt((double)r2);
 
             /* compute a3 */
-            a3=(2.0*myrand(&(st->site_prn)) - 1.0)*r;
+            a3=(2.0*myrand(&(s->site_prn)) - 1.0)*r;
 
             /* compute a1 and a2 */
             rho = r2 - a3*a3;
@@ -214,7 +188,7 @@ void monte(int NumStp) {
             rho = sqrt((double)rho);
 
             /*xr2 is a random number between 0 and 2*pi */
-            xr2=pi2*myrand(&(st->site_prn));
+            xr2=pi2*myrand(&(s->site_prn));
 
             a1= rho*cos((double)xr2);
             a2= rho*sin((double)xr2);
@@ -232,27 +206,7 @@ void monte(int NumStp) {
             h.e[1][1] = cmplx( h0,-h3);
 
             /* update the link */
-            left_su2_hit_n_f(&h, ina, inb, &(st->linkf[dir]));
-
-            //mult_an_f(&(st->linkf[dir]), &(st->staple), &newvalue);
-            //sub_mat_f(&newvalue,&oldvalue,&tracematrix);
-            //(trace).real=0;
-            //(trace).imag=0;
-            //trace_sum_f(&tracematrix, &trace);
-            //realtrace=(trace).real;
-
-            //Energydiff = -beta*realtrace;
-            //Energy = Energy + Energydiff/3.0;
-            //Energyref = action1();
-            //node0_printf("energy %.8g %.8g %.8g\n",
-            //     Energyref, Energy, Energydiff/3.0);
-
-            //if((Energy>=Eint && Energy <= (Eint+delta))==false)
-            //{
-            //  mat_copy_f(&oldlinkvalue,&(lattice[i].linkf[dir]));
-            //  Energy = Energy - Energydiff/3.0;
-            //}
-
+            left_su2_hit_n_f(&h, ina, inb, &(s->linkf[dir]));
           }
           /* diagnostics
              {Real avekp, avecr;
@@ -268,15 +222,4 @@ void monte(int NumStp) {
     }
   }
 }
-
-/*
-double action1() {
-  double ssplaq, stplaq, g_act;
-  //double betareference=9.6;
-  plaquette(&ssplaq, &stplaq);
-  g_act = -beta * volume * (ssplaq + stplaq);
-
-  return g_act;
-}
-*/
 // -----------------------------------------------------------------

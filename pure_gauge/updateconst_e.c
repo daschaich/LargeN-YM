@@ -2,7 +2,7 @@
 // Update lattice with microcanonical over-relaxed quasi-heat bath (qhb)
 #include "pg_includes.h"
 
-int updateconst_e(double Eint, double delta, double a) {
+int updateconst_e(double Eint, double a) {
   int iters=0;
 
   // Check unitarity before doing anything
@@ -10,7 +10,7 @@ int updateconst_e(double Eint, double delta, double a) {
 
   // Do over-relaxation and quasi-heat bath steps
   relax(steps);
-  monteconst_e(stepsQ,Eint,delta,a);
+  monteconst_e(stepsQ, Eint, a);
 
   // Reunitarize the gauge field
   reunitarize();

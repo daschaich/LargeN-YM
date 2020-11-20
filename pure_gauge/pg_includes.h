@@ -28,12 +28,12 @@ int readin(int prompt);
 
 // Evolution stuff
 int update(void);
-int updateconst_e(double Eint, double delta,double a);
+int updateconst_e(double Eint, double a);
 void update_h(Real eps);
 void update_u(Real eps);
 void relax(int NumStp);
 void monte(int NumStp);
-void monteconst_e(int NumStp, double Eint, double delta,double a);
+void monteconst_e(int NumStp, double Eint, double a);
 void dsdu_qhb(int dir1, int parity);    // Gauge force for quasi-heat bath
 void gauge_field_copy(field_offset src, field_offset dest);
 // -----------------------------------------------------------------

@@ -14,7 +14,7 @@ void findEintsmooth(double Eint, double delta);
 int main(int argc, char *argv[]) {
   int traj_done, Nint;//, Nmeas = 0;
   int prompt;
-  double ss_plaq, st_plaq, dtime, energy;//, plp_abs = 0.0;
+  double ss_plaq, st_plaq, dtime, energy;
   complex plp = cmplx(99.0, 99.0);
 
   // Set up
@@ -82,18 +82,18 @@ int main(int argc, char *argv[]) {
           Einterval = true;
 
           for (traj_done = 0; traj_done < (2*warms); traj_done++)
-            updateconst_e(x0[Eint],delta,1.0);
+            updateconst_e(x0[Eint], 1.0);
         }
 
-        for (traj_done = 0; traj_done < (warms); traj_done++)
-          updateconst_e(x0[Eint],delta,1.0);
+        for (traj_done = 0; traj_done < warms; traj_done++)
+          updateconst_e(x0[Eint], 1.0);
 
         Reweightexpect=0;
         for(k = 0;k<trajecs;k++)
         {
           measurement[k] = action();
           Reweightexpect += measurement[k];
-          updateconst_e(x0[Eint],delta,a_i[jcount]);
+          updateconst_e(x0[Eint], a_i[jcount]);
         }
         Reweightexpect /= trajecs;
         /*
@@ -113,12 +113,12 @@ int main(int argc, char *argv[]) {
         if(RMcount<100)
         {
           a_i_new = a_i[jcount] + 12/(delta*delta)*Reweightexpect;
-          node0_printf("a = %.4g off \n", a_i_new);
+          node0_printf("a = %.4g off\n", a_i_new);
         }
         else
         {
           a_i_new = a_i[jcount] + 12/(delta*delta*(RMcount+1))*Reweightexpect;
-          node0_printf("a = %.4g \n", a_i_new);
+          node0_printf("a = %.4g\n", a_i_new);
         }
         RMcount++;
       }
@@ -127,43 +127,6 @@ int main(int argc, char *argv[]) {
     //node0_printf("a = %.4g \n", a[Eint]);
     //printf("%d \n",1.0);
   }
-  /*
-  for (traj_done = 0; traj_done < warms; traj_done++)
-  {
-    update();
-    energy = action();
-    node0_printf("GMES %.8g %.8g %.8g %.8g %.8g\n",
-                 plp.real, plp.imag, ss_plaq, st_plaq, energy);
-  }
-  node0_printf("WARMUPS COMPLETED\n");
-
-  // Perform trajectories, reunitarizations and measurements
-  for (traj_done = 0; traj_done < trajecs; traj_done++) {
-//    updateconst_e(-3000.0,delta);
-//    update();
-    energy = action();
-
-    if (traj_done > 499)
-      plp_abs = plp_abs + sqrt(plp.real*plp.real + plp.imag*plp.imag);
-
-    // Measure and print Polyakov loop and plaquette
-    // after every trajectory
-    plaquette(&ss_plaq, &st_plaq);
-    plp = ploop(TUP);
-    node0_printf("GMES %.8g %.8g %.8g %.8g %.8g\n",
-                 plp.real, plp.imag, ss_plaq, st_plaq, energy);
-    fflush(stdout);
-
-    // More expensive measurements every "propinterval" trajectories
-    // Measure every "propinterval" trajectories
-    if ((traj_done % propinterval) == (propinterval - 1)) {
-//      Nmeas++;
-      // Nothing yet...
-    }
-  }
-  plp_abs = plp_abs/500;
-  node0_printf("Polabsolute %.8g\n", plp_abs);
-  */
   node0_printf("RUNNING COMPLETED\n");
 
   // Check: compute final plaquette

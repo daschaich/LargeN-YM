@@ -3,11 +3,15 @@
 #include "pg_includes.h"
 #define INC 1.0e-10
 
-double action1();
+double action1() {
+  double ssplaq, stplaq;
+  plaquette(&ssplaq, &stplaq);
+  return -beta * volume * (ssplaq + stplaq);
+}
 
-void monteconst_e(int NumStp, double Eint, double delta, double a) {
+void monteconst_e(int NumStp, double Eint, double a) {
   register int dir, i;
-  register site *st;
+  register site *s;
   int NumTrj, Nhit, subgrp, ina, inb, parity, count;
   int j, k, kp, cr, nacd, test, index_a[N_OFFDIAG], index_b[N_OFFDIAG];
   Real xr1, xr2, xr3, xr4;
@@ -22,11 +26,9 @@ void monteconst_e(int NumStp, double Eint, double delta, double a) {
   matrix_f oldlinkvalue;
   matrix_f oldvalue;
   //matrix_f oldvalueneg;
-  matrix_f newvalue;
   matrix_f tracematrix;
 
   complex trace;
-  double realtrace;
   double Energydiff;
   double Energy;
 //  double Energyref;
@@ -34,7 +36,7 @@ void monteconst_e(int NumStp, double Eint, double delta, double a) {
 
   Nhit = (int)N_OFFDIAG;    // NCOL * (NCOL - 1) / 2
   pi2 = 2.0 * PI;
-  b3 = beta * a* one_ov_N;
+  b3 = beta * a * one_ov_N;
 
   // Set up SU(2) subgroup indices [a][b], always with a < b
   count = 0;
@@ -68,14 +70,10 @@ void monteconst_e(int NumStp, double Eint, double delta, double a) {
           // Pick out this SU(2) subgroup
           ina = index_a[subgrp];
           inb = index_b[subgrp];
-          FORSOMEPARITY(i, st, parity) {
-            // st = &(lattice.[i])
-            //scalar_mult_mat(&(st->linkf[dir]), 1, &oldlinkvalue);
-            mat_copy_f(&(lattice[i].linkf[dir]), &oldlinkvalue);
-            mult_na_f(&(st->linkf[dir]), &(st->staple), &action);
-            //mult_na_f(&(st->linkf[dir]), &(st->staple), &oldvalue);
-            mult_an_f(&(lattice[i].linkf[dir]), &(lattice[i].staple), &oldvalue);
-            //scalar_mult_mat_f(&oldvalue, -1, &oldvalueneg);
+          FORSOMEPARITY(i, s, parity) {
+            mult_na_f(&(s->linkf[dir]), &(s->staple), &action);
+            mat_copy_f(&(s->linkf[dir]), &oldlinkvalue);
+            mult_an_f(&(s->linkf[dir]), &(s->staple), &oldvalue);
 
             /*decompose the action into SU(2) subgroups using Pauli matrix expansion */
             /* The SU(2) hit matrix is represented as v0 + i * Sum j (sigma j * vj)*/
@@ -99,14 +97,14 @@ void monteconst_e(int NumStp, double Eint, double delta, double a) {
             /* get four random numbers */
 
             /*  get four random numbers (add a small increment to prevent taking log(0.)*/
-            xr1 = myrand(&(st->site_prn));
+            xr1 = myrand(&(s->site_prn));
             xr1 = (log((double)(xr1 + INC)));
 
-            xr2 = myrand(&(st->site_prn));
+            xr2 = myrand(&(s->site_prn));
             xr2 = (log((double)(xr2 + INC)));
 
-            xr3 = myrand(&(st->site_prn));
-            xr4 = myrand(&(st->site_prn));
+            xr3 = myrand(&(s->site_prn));
+            xr4 = myrand(&(s->site_prn));
 
             xr3 = cos((double)pi2 * xr3);
             /*
@@ -154,17 +152,17 @@ void monteconst_e(int NumStp, double Eint, double delta, double a) {
               for (k=0;k<20 && test == 0;k++) {
                 kp++;
                 /*  get four random numbers (add a small increment to prevent taking log(0.)*/
-                xr1 = myrand(&(st->site_prn));
+                xr1 = myrand(&(s->site_prn));
                 xr1 = log((double)(xr1 + INC));
 
-                xr2 = myrand(&(st->site_prn));
+                xr2 = myrand(&(s->site_prn));
                 xr2 = log((double)(xr2 + INC));
 
-                xr3 = myrand(&(st->site_prn));
+                xr3 = myrand(&(s->site_prn));
                 xr3 = cos((double)pi2 * xr3);
                 d = -(xr2 + xr1 * xr3 * xr3) / al;
 
-                xr4 = myrand(&(st->site_prn));
+                xr4 = myrand(&(s->site_prn));
                 if ((1.0 - 0.5 * d) > xr4 * xr4)
                   test = 1;
               }
@@ -179,8 +177,8 @@ void monteconst_e(int NumStp, double Eint, double delta, double a) {
               test = 0;
               for (k = 0; k < 20 && test == 0; k++) {
                 // Get two random numbers
-                xr1 = myrand(&(st->site_prn));
-                xr2 = myrand(&(st->site_prn));
+                xr1 = myrand(&(s->site_prn));
+                xr2 = myrand(&(s->site_prn));
 
                 r = xl + xd * xr1;
                 a0 = 1.00 + log((double)r) / al;
@@ -202,7 +200,7 @@ void monteconst_e(int NumStp, double Eint, double delta, double a) {
             r = sqrt((double)r2);
 
             /* compute a3 */
-            a3=(2.0*myrand(&(st->site_prn)) - 1.0)*r;
+            a3=(2.0*myrand(&(s->site_prn)) - 1.0)*r;
 
             /* compute a1 and a2 */
             rho = r2 - a3*a3;
@@ -210,7 +208,7 @@ void monteconst_e(int NumStp, double Eint, double delta, double a) {
             rho = sqrt((double)rho);
 
             /*xr2 is a random number between 0 and 2*pi */
-            xr2=pi2*myrand(&(st->site_prn));
+            xr2=pi2*myrand(&(s->site_prn));
 
             a1= rho*cos((double)xr2);
             a2= rho*sin((double)xr2);
@@ -228,25 +226,22 @@ void monteconst_e(int NumStp, double Eint, double delta, double a) {
             h.e[1][1] = cmplx( h0,-h3);
 
             /* update the link */
-            left_su2_hit_n_f(&h, ina, inb, &(st->linkf[dir]));
+            left_su2_hit_n_f(&h, ina, inb, &(s->linkf[dir]));
+            mult_an_f(&(s->linkf[dir]), &(s->staple), &tracematrix);
+            dif_mat_f(&oldvalue, &tracematrix);
+            trace = trace_f(&tracematrix);
 
-            mult_an_f(&(st->linkf[dir]), &(st->staple), &newvalue);
-            sub_mat_f(&newvalue,&oldvalue,&tracematrix);
-            (trace).real=0;
-            (trace).imag=0;
-            trace_sum_f(&tracematrix, &trace);
-            realtrace=(trace).real;
-
-            Energydiff = -beta*realtrace;
-            Energy = Energy + Energydiff/3.0;
+            Energydiff = -beta * trace.real / 3.0;
+            Energy += Energydiff;
 //            Energyref = action1();
 //            node0_printf("energy %.8g %.8g %.8g\n",
-//                 Energyref, Energy, Energydiff/3.0);
+//                         Energyref, Energy, Energydiff);
 
-            if((Energy>=Eint && Energy <= (Eint+delta))==false)
+            // Reset original link if we have left the energy interval
+            if (Energy < Eint || Energy > (Eint + delta))
             {
-              mat_copy_f(&oldlinkvalue,&(lattice[i].linkf[dir]));
-              Energy = Energy - Energydiff/3.0;
+              mat_copy_f(&oldlinkvalue, &(s->linkf[dir]));
+              Energy -= Energydiff;
             }
 
           }
@@ -263,16 +258,7 @@ void monteconst_e(int NumStp, double Eint, double delta, double a) {
       }
     }
    // node0_printf("energy %.8g %.8g %.8g\n",
-   //       Energyref, Energy, Energydiff/3.0);
+   //              Energyref, Energy, Energydiff);
   }
 }
-double action1() {
-  double ssplaq, stplaq, g_act;
-  //double betareference=9.6;
-  plaquette(&ssplaq, &stplaq);
-  g_act = -beta * volume * (ssplaq + stplaq);
-
-  return g_act;
-}
-
 // -----------------------------------------------------------------
