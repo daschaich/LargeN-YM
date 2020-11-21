@@ -38,7 +38,7 @@ void monteconst_e(double Eint, double a) {
     // Checkerboard for parallelization
     for (parity = ODD; parity <= EVEN; parity++) {
       FORALLUPDIR(dir) {
-        // Compute the gauge force
+        // Compute the gauge force (updating s->staple)
         dsdu_qhb(dir, parity);
 
         // Now for the qhb updating, looping over SU(2) subgroups
@@ -52,7 +52,7 @@ void monteconst_e(double Eint, double a) {
 
           // Save current links
           FORSOMEPARITY(i, s, parity)
-            mat_copy_f(&(s->linkf[dir]), &(s->old_linkf[dir]));
+            mat_copy_f(&(s->linkf[dir]), &(s->tempmat));
 
           FORSOMEPARITY(i, s, parity) {
             mult_na_f(&(s->linkf[dir]), &(s->staple), &action);
@@ -211,7 +211,7 @@ void monteconst_e(double Eint, double a) {
           energy = -beta * volume * (ssplaq + stplaq);
           if (energy < Eint || energy > (Eint + delta)) {
             FORSOMEPARITY(i, s, parity)
-              mat_copy_f(&(s->old_linkf[dir]), &(s->linkf[dir]));
+              mat_copy_f(&(s->tempmat), &(s->linkf[dir]));
           }
           /* diagnostics
              {Real avekp, avecr;

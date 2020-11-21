@@ -37,7 +37,7 @@ void monte() {
     // Checkerboard for parallelization
     for (parity = ODD; parity <= EVEN; parity++) {
       FORALLUPDIR(dir) {
-        // Compute the gauge force
+        // Compute the gauge force (updating s->staple)
         dsdu_qhb(dir, parity);
 
         // Now for the qhb updating, looping over SU(2) subgroups

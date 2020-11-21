@@ -139,8 +139,7 @@ int main(int argc, char *argv[]) {
     save_lattice(saveflag, savefile, stringLFN);
 
   free(measurement);
-  normal_exit(0);
-  g_sync();         // Needed by at least some clusters
+  normal_exit(0);         // Needed by at least some clusters
   return 0;
 }
 

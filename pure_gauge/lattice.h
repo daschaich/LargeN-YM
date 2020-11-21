@@ -36,12 +36,7 @@ typedef struct {
 
   // Gauge links and field strength
   matrix_f linkf[4];
-  matrix_f tempmat1, staple;    // TODO: Convert these to fields
-
-#ifdef LLR
-  // Save links while checking energy interval
-  matrix_f old_linkf[4];
-#endif
+  matrix_f tempmat, staple;    // TODO: Convert these to fields
 } site;
 // -----------------------------------------------------------------
 
