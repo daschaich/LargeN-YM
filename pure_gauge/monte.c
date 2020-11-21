@@ -49,10 +49,11 @@ void monte() {
           ina = index_a[subgrp];
           inb = index_b[subgrp];
           FORSOMEPARITY(i, s, parity) {
+            // Decompose the action into SU(2) subgroups
+            // using Pauli matrix expansion
+            // The SU(2) hit matrix is represented as
+            //   v0 + i * Sum j (sigma j * vj)
             mult_na_f(&(s->linkf[dir]), &(s->staple), &action);
-
-            /*decompose the action into SU(2) subgroups using Pauli matrix expansion */
-            /* The SU(2) hit matrix is represented as v0 + i * Sum j (sigma j * vj)*/
             v0 = action.e[ina][ina].real + action.e[inb][inb].real;
             v3 = action.e[ina][ina].imag - action.e[inb][inb].imag;
             v1 = action.e[ina][inb].imag + action.e[inb][ina].imag;
