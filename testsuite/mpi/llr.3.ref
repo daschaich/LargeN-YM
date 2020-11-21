@@ -1,6 +1,6 @@
 SU(3) pure-gauge log-linear relaxation algorithm
 Machine = MPI (portable), with 2 nodes
-start: Fri Nov 20 23:40:32 2020
+start: Sat Nov 21 00:26:53 2020
 
 type 0 for no prompts or 1 for prompts
 nx 4
@@ -11,7 +11,7 @@ iseed 41
 LAYOUT = Hypercubes, options = hyper_prime,
 MPI with automatic hyper_prime layout
 ON EACH NODE 2 x 4 x 4 x 4
-Mallocing 0.2 MBytes per core for lattice
+Mallocing 0.1 MBytes per core for lattice
 Mallocing 0.0 MBytes per core for fields
 
 
@@ -33,7 +33,7 @@ Starting with cold lattice
 CHECK PLAQ: 3.0000000000000000e+00 3.0000000000000000e+00
 CHECK NERSC LINKTR: 1.0000000000000000e+00 CKSUM: 0
 Reunitarized for double precision.  Max deviation 0 changed to 0
-Time to check unitarity = 8.011e-05 seconds
+Time to check unitarity = 9.203e-05 seconds
 START 3 3 6
 index 0 1
 GMES 99 99 3 3 -1536
@@ -53,6 +53,6 @@ a = 1.55 off
 a = 1.442 off
 RUNNING COMPLETED
 STOP 0.26628651 0.26840756 0.53469407
-Time = 0.6197 seconds
-exit: Fri Nov 20 23:40:32 2020
+Time = 0.6089 seconds
+exit: Sat Nov 21 00:26:54 2020
 

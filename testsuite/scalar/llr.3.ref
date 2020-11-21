@@ -1,6 +1,6 @@
 SU(3) pure-gauge log-linear relaxation algorithm
 Machine = Scalar processor, with 1 nodes
-start: Fri Nov 20 23:38:15 2020
+start: Sat Nov 21 00:25:20 2020
 
 type 0 for no prompts or 1 for prompts
 nx 4
@@ -10,7 +10,7 @@ nt 4
 iseed 41
 LAYOUT = Hypercubes, options = with fixed node_geometry
 ON EACH NODE 4 x 4 x 4 x 4
-Mallocing 0.4 MBytes per core for lattice
+Mallocing 0.2 MBytes per core for lattice
 Mallocing 0.1 MBytes per core for fields
 
 
@@ -32,7 +32,7 @@ Starting with cold lattice
 CHECK PLAQ: 3.0000000000000000e+00 3.0000000000000000e+00
 CHECK NERSC LINKTR: 1.0000000000000000e+00 CKSUM: 0
 Reunitarized for double precision.  Max deviation 0 changed to 0
-Time to check unitarity = 0.000387 seconds
+Time to check unitarity = 0.0001581 seconds
 START 3 3 6
 index 0 1
 GMES 99 99 3 3 -1536
@@ -52,6 +52,6 @@ a = 1.554 off
 a = 1.606 off
 RUNNING COMPLETED
 STOP 0.26832049 0.26865149 0.53697198
-Time = 1.029 seconds
-exit: Fri Nov 20 23:38:16 2020
+Time = 0.9508 seconds
+exit: Sat Nov 21 00:25:21 2020
 
