@@ -146,7 +146,7 @@ int main(int argc, char *argv[]) {
 				}
 				else
 				{
-					a_i_new = a_i[jcount] + 12/(delta*delta*(RobMarchcount+1))*Reweightexpect;
+					a_i_new = a_i[jcount] + 12/(delta*delta*(RobMarchcount+1-100)/2)*Reweightexpect;
            node0_printf("a = %.4g \n", a_i_new);
 				}
         RobMarchcount = RobMarchcount + 1;
