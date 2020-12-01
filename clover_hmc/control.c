@@ -114,8 +114,7 @@ int main(int argc, char *argv[]) {
   if (saveflag != FORGET)
     save_lattice(saveflag, savefile, stringLFN);
 
-  normal_exit(0);
-  g_sync();         // Needed by at least some clusters
+  normal_exit(0);         // Needed by at least some clusters
   return 0;
 }
 // -----------------------------------------------------------------

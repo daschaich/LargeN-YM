@@ -6,6 +6,7 @@
 
 # Target:
 #   pg_ora uses over-relaxed quasi-heat bath algorithm
+#   pg_llr uses log-linear relaxation to compute density of states
 
 MYINCLUDEDIR = .
 INCLUDEDIR = ../include
@@ -30,14 +31,11 @@ HEADERS = ${GLOBAL_HEADERS} ${MY_HEADERS}
 
 # All required object files
 # Basic set from current directory
-MY_OBJECTS = control.o  \
-             dsdu_qhb.o \
+MY_OBJECTS = dsdu_qhb.o \
              monte.o    \
-             monteconst_e.o \
              relax.o    \
              setup.o    \
              update.o   \
-             updateconst_e.o \
              gauge_info.o
 
 # Basic set from generic directory
@@ -105,7 +103,11 @@ DARCH = ${DHAVE_QMP} ${DHAVE_QIO}
 
 ##### Targets:
 pg_ora::
-	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" "DEFINES = -DORA_ALGORITHM"
+	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" "EXTRA_OBJECTS = control.o "
+
+pg_llr::
+	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" "DEFINES = -DLLR" \
+	"EXTRA_OBJECTS = control_llr.o monteconst_e.o updateconst_e.o "
 
 clean:
 	-/bin/rm -f *.o

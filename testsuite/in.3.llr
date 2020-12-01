@@ -9,9 +9,15 @@ warms 0
 trajecs 3
 traj_between_meas 3
 
-beta 10.6
+beta 1.0
 steps_per_traj 4
 qhb_steps 4
 
-reload_serial config.4F.4444
+Emin -140.0
+Emax -140.0
+delta 5.0
+ait 10
+Njacknife 1
+
+fresh
 forget

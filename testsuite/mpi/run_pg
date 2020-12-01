@@ -6,15 +6,16 @@ makefile=Make_mpi
 run="mpirun -np 2"
 
 # TODO: Should eventually merge into a single script
-# User just needs to specify NCOL
-if [ $# -lt 1 ]; then
-  echo "Usage: $0 <N>"
+# User just needs to specify NCOL and tag
+# Available targets are ora and llr for targets pg_$tag
+if [ $# -lt 2 ]; then
+  echo "Usage: $0 <tag> <N>"
   exit 0
 fi
 
-tag=ora
-target=pg_ora
-N=$1
+tag=$1
+target=pg_$1
+N=$2
 
 # Change N in include/su3.h
 # Set DIMF to 99 to make sure it doesn't matter

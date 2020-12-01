@@ -7,7 +7,7 @@ run="mpirun -np 2"
 
 # TODO: Should eventually merge into a single script
 # User just needs to specify NCOL and tag
-# Available targets are Wflow and printpoly for targets su3_$tag
+# Available tags are Wflow and printpoly for targets su3_$tag
 if [ $# -lt 2 ]; then
   echo "Usage: $0 <tag> <N>"
   exit 0

@@ -2,22 +2,22 @@
 // Microcanonical over-relaxation by doing successive SU(2) gauge hits
 #include "pg_includes.h"
 
-void relax(int NumStp) {
+void relax() {
   register int dir, i;
-  register site *st;
-  int NumTrj, Nhit, subgrp, ina, inb, j, count;
+  register site *s;
+  int istep, Nhit, subgrp, ina, inb, count;
   int parity, index_a[N_OFFDIAG], index_b[N_OFFDIAG];
-  Real a0,a1,a2,a3,asq,r;
+  Real a0, a1, a2, a3, asq, norm;
   su2_matrix u;
   matrix_f action;
 
   Nhit = (int)N_OFFDIAG;    // NCOL * (NCOL - 1) / 2
   // Set up SU(2) subgroup indices [a][b], always with a < b
   count = 0;
-  for (i = 0; i < NCOL; i++) {
-    for (j = i + 1; j < NCOL; j++) {
-      index_a[count] = i;
-      index_b[count] = j;
+  for (ina = 0; ina < NCOL; ina++) {
+    for (inb = ina + 1; inb < NCOL; inb++) {
+      index_a[count] = ina;
+      index_b[count] = inb;
       count++;
     }
   }
@@ -26,10 +26,10 @@ void relax(int NumStp) {
     terminate(1);
   }
 
-  for( NumTrj = 0 ; NumTrj < NumStp; NumTrj++) {
-    for(parity=ODD;parity<=EVEN;parity++) {
+  for (istep = 0 ; istep < steps; istep++) {
+    for (parity = ODD; parity <= EVEN; parity++) {
       FORALLUPDIR(dir) {
-        // Compute the gauge force
+        // Compute the gauge force (updating every s->staple)
         dsdu_qhb(dir, parity);
 
         // Now for the overrelaxed updating
@@ -37,33 +37,39 @@ void relax(int NumStp) {
           // Pick out this SU(2) subgroup
           ina = index_a[subgrp];
           inb = index_b[subgrp];
-          FORSOMEPARITY(i, st, parity) {
-            mult_na_f(&(st->linkf[dir]), &(st->staple), &action);
+          FORSOMEPARITY(i, s, parity) {
+            mult_na_f(&(s->linkf[dir]), &(s->staple), &action);
 
-            /*decompose the action into SU(2) subgroups using Pauli matrix expansion */
-            /* The SU(2) hit matrix is represented as a0 + i * Sum j (sigma j * aj)*/
-            a0 =  action.e[ina][ina].real + action.e[inb][inb].real;
-            a3 =  action.e[ina][ina].imag - action.e[inb][inb].imag;
-            a1 =  action.e[ina][inb].imag + action.e[inb][ina].imag;
-            a2 =  action.e[ina][inb].real - action.e[inb][ina].real;
+            // Decompose the action into SU(2) subgroups
+            // using Pauli matrix expansion
+            // The SU(2) hit matrix is represented as
+            //    a0 + i * Sum j (sigma j * aj)
+            a0 = action.e[ina][ina].real + action.e[inb][inb].real;
+            a3 = action.e[ina][ina].imag - action.e[inb][inb].imag;
+            a1 = action.e[ina][inb].imag + action.e[inb][ina].imag;
+            a2 = action.e[ina][inb].real - action.e[inb][ina].real;
 
-            /* Normalize and complex conjugate u */
-            asq = a0*a0 + a1*a1 + a2*a2 + a3*a3;
-            r = sqrt((double)asq );
-            a0 = a0/r; a1 = -a1/r; a2 = -a2/r; a3 = -a3/r;
+            // Normalize and complex conjugate u
+            asq = a0 * a0 + a1 * a1 + a2 * a2 + a3 * a3;
+            norm = 1.0 / sqrt((double)asq);
+            a0 *=  norm;
+            a1 *= -norm;
+            a2 *= -norm;
+            a3 *= -norm;
 
-            /* Elements of SU(2) matrix */
+            // Elements of SU(2) matrix
             u.e[0][0] = cmplx( a0, a3);
             u.e[0][1] = cmplx( a2, a1);
             u.e[1][0] = cmplx(-a2, a1);
             u.e[1][1] = cmplx( a0,-a3);
 
-            /* Do SU(2) hit on all links twice (to overrelax)  */
-            left_su2_hit_n_f(&u,ina,inb,&(st->linkf[dir]));
-            left_su2_hit_n_f(&u,ina,inb,&(st->linkf[dir]));
-          } /*   st */
-        } /*  hits */
-      } /*  direction */
-    }} /* parity, NumTrj*/
-} /* relax */
+            // Do SU(2) hit on all links twice (to overrelax)
+            left_su2_hit_n_f(&u, ina, inb, &(s->linkf[dir]));
+            left_su2_hit_n_f(&u, ina, inb, &(s->linkf[dir]));
+          }
+        }
+      }
+    }
+  }
+}
 // -----------------------------------------------------------------

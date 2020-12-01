@@ -36,7 +36,7 @@ typedef struct {
 
   // Gauge links and field strength
   matrix_f linkf[4];
-  matrix_f tempmat1, staple;    // TODO: Convert these to fields
+  matrix_f tempmat, staple;    // TODO: Convert these to fields
 } site;
 // -----------------------------------------------------------------
 
@@ -56,7 +56,7 @@ EXTERN int iseed;           // Random number seed
 EXTERN int warms, trajecs, steps, stepsQ, propinterval;
 
 EXTERN Real beta;
-EXTERN Real epsilon, one_ov_N, one_ov_vol;
+EXTERN Real one_ov_N, one_ov_vol;
 EXTERN char startfile[MAXFILENAME], savefile[MAXFILENAME];
 EXTERN double g_ssplaq, g_stplaq;
 EXTERN double_complex linktr;
