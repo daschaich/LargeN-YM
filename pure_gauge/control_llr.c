@@ -114,7 +114,7 @@ int main(int argc, char *argv[]) {
         }
         else
         {
-          a_i_new = a_i[jcount] + 12/(delta*delta*(RMcount+1))*Reweightexpect;
+          a_i_new = a_i[jcount] + 12/(delta*delta*(RMcount+1-100))*Reweightexpect;
           node0_printf("a = %.4g\n", a_i_new);
         }
         RMcount++;
@@ -146,7 +146,7 @@ int main(int argc, char *argv[]) {
 double action() {
   double ssplaq, stplaq;
   plaquette(&ssplaq, &stplaq);
-  return -beta * volume * (ssplaq + stplaq);
+  return -beta * volume * (ssplaq + stplaq)*3;
 }
 
 void findEintsmooth(double Eint, double delta) {
@@ -163,7 +163,7 @@ void findEintsmooth(double Eint, double delta) {
     beta = betaref;
   }
 
-  while(Efound == false && counter<200)
+  while(Efound == false && counter<2000)
   {
     update();
     //energy = action();
@@ -179,9 +179,15 @@ void findEintsmooth(double Eint, double delta) {
       node0_printf("energyref %.8g %.8g %d\n", energyref, beta, counter);
     }
     else if(energyref>(Eint+delta))
+    {
       beta += 0.1;
+      node0_printf("energyref %.8g %.8g %d\n", energyref, beta, counter);
+    }
     else
+    {
       beta -= 0.1;
+      node0_printf("energyref %.8g %.8g %d\n", energyref, beta, counter);
+    }
 
     counter++;
   }

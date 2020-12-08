@@ -40,6 +40,7 @@ void monteconst_e(double Eint, double a) {
       FORALLUPDIR(dir) {
         // Compute the gauge force (updating s->staple)
         dsdu_qhb(dir, parity);
+        
 
         // Now for the qhb updating, looping over SU(2) subgroups
         for (subgrp = 0; subgrp < Nhit; subgrp++) {
@@ -52,8 +53,8 @@ void monteconst_e(double Eint, double a) {
 
           // Save current links
           FORSOMEPARITY(i, s, parity)
-            mat_copy_f(&(s->linkf[dir]), &(s->tempmat));
-
+                mat_copy_f(&(s->linkf[dir]), &(s->tempmat));
+          
           FORSOMEPARITY(i, s, parity) {
             mult_na_f(&(s->linkf[dir]), &(s->staple), &action);
 
@@ -208,10 +209,10 @@ void monteconst_e(double Eint, double a) {
 
           // If we have exited the energy interval, restore old links
           plaquette(&ssplaq, &stplaq);
-          energy = -beta * volume * (ssplaq + stplaq);
+          energy = -beta * volume * (ssplaq + stplaq)*3;
           if (energy < Eint || energy > (Eint + delta)) {
-            FORSOMEPARITY(i, s, parity)
-              mat_copy_f(&(s->tempmat), &(s->linkf[dir]));
+              FORSOMEPARITY(i, s, parity)
+                mat_copy_f(&(s->tempmat), &(s->linkf[dir]));
           }
           /* diagnostics
              {Real avekp, avecr;
@@ -222,7 +223,7 @@ void monteconst_e(double Eint, double a) {
              (double)avekp,(double)avecr);
              }
              */
-        }
+        } 
       }
     }
   }

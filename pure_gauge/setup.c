@@ -171,9 +171,9 @@ int readin(int prompt) {
   saveflag = par_buf.saveflag;
 
 #ifdef LLR
-  Emin = par_buf.Emin;
-  Emax = par_buf.Emax;
-  delta = par_buf.delta;
+  Emin = par_buf.Emin * volume;
+  Emax = par_buf.Emax * volume;
+  delta = par_buf.delta * volume;
   ait = par_buf.ait;
   Njacknife = par_buf.Njacknife;
 #endif

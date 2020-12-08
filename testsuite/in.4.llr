@@ -13,9 +13,9 @@ beta 1.0
 steps_per_traj 4
 qhb_steps 4
 
-Emin -140.0
-Emax -140.0
-delta 5.0
+Emin -1.0
+Emax -1.0
+delta 0.5
 ait 10
 Njacknife 1
 
