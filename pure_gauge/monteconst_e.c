@@ -51,15 +51,16 @@ void monteconst_e(double Eint, double a) {
           ina = index_a[subgrp];
           inb = index_b[subgrp];
 
-          // Save current links
-          FORSOMEPARITY(i, s, parity)
-                mat_copy_f(&(s->linkf[dir]), &(s->tempmat));
-          
           FORSOMEPARITY(i, s, parity) {
-            mult_na_f(&(s->linkf[dir]), &(s->staple), &action);
+            // Save starting links
+            mat_copy_f(&(s->linkf[dir]), &(s->tempmat));
 
-            /*decompose the action into SU(2) subgroups using Pauli matrix expansion */
-            /* The SU(2) hit matrix is represented as v0 + i * Sum j (sigma j * vj)*/
+            // Decompose the action into SU(2) subgroups
+            // using Pauli matrix expansion
+            // The SU(2) hit matrix is represented as
+            //   v0 + i * Sum j (sigma j * vj)
+
+            mult_na_f(&(s->linkf[dir]), &(s->staple), &action);
             v0 = action.e[ina][ina].real + action.e[inb][inb].real;
             v3 = action.e[ina][ina].imag - action.e[inb][inb].imag;
             v1 = action.e[ina][inb].imag + action.e[inb][ina].imag;
@@ -207,7 +208,7 @@ void monteconst_e(double Eint, double a) {
             left_su2_hit_n_f(&h, ina, inb, &(s->linkf[dir]));
           }
 
-          // If we have exited the energy interval, restore old links
+          // If we have exited the energy interval, restore starting links
           plaquette(&ssplaq, &stplaq);
           energy = -beta * volume * (ssplaq + stplaq)*3;
           if (energy < Eint || energy > (Eint + delta)) {
