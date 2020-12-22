@@ -2,6 +2,7 @@
 // Kennedy--Pendleton quasi-heat bath (qhb) on SU(2) subgroups
 #include "pg_includes.h"
 #define INC 1.0e-10
+//#define DEBUG_PRINT
 
 void monteconst_e(double Eint, double a) {
   register int dir, i;
@@ -40,7 +41,6 @@ void monteconst_e(double Eint, double a) {
       FORALLUPDIR(dir) {
         // Compute the gauge force (updating s->staple)
         dsdu_qhb(dir, parity);
-        
 
         // Now for the qhb updating, looping over SU(2) subgroups
         for (subgrp = 0; subgrp < Nhit; subgrp++) {
@@ -210,11 +210,21 @@ void monteconst_e(double Eint, double a) {
 
           // If we have exited the energy interval, restore starting links
           plaquette(&ssplaq, &stplaq);
-          energy = -beta * volume * (ssplaq + stplaq)*3;
+          energy = -3.0 * beta * volume * (ssplaq + stplaq);
           if (energy < Eint || energy > (Eint + delta)) {
-              FORSOMEPARITY(i, s, parity)
-                mat_copy_f(&(s->tempmat), &(s->linkf[dir]));
+#ifdef DEBUG_PRINT
+            node0_printf("Reject subgroup %d for parity %d: ", subgrp, parity);
+            node0_printf("Energy %.4g leaves [%.4g, %.4g]\n",
+                         energy, Eint, Eint + delta);
+#endif
+            FORSOMEPARITY(i, s, parity)
+              mat_copy_f(&(s->tempmat), &(s->linkf[dir]));
           }
+#ifdef DEBUG_PRINT
+          else {
+            node0_printf("Accept new energy %.4g\n", energy);
+          }
+#endif
           /* diagnostics
              {Real avekp, avecr;
              avekp=(Real)kp / (Real)(nx*ny*nz*nt/2);
@@ -224,7 +234,7 @@ void monteconst_e(double Eint, double a) {
              (double)avekp,(double)avecr);
              }
              */
-        } 
+        }
       }
     }
   }

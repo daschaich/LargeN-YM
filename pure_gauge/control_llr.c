@@ -1,18 +1,77 @@
 // -----------------------------------------------------------------
-// Main procedure for pure-gauge over-relaxed quasi-heatbath
+// Main procedure and helpers for pure-gauge over-relaxed quasi-heatbath
 #define CONTROL
 #include "pg_includes.h"
+//#define DEBUG_PRINT
+
+// Helper routine to convert average plaquette to (negative) total energy
+double action() {
+  double ssplaq, stplaq;
+  plaquette(&ssplaq, &stplaq);
+  return -3.0 * beta * volume * (ssplaq + stplaq);
+}
+// -----------------------------------------------------------------
 
 
-double action();
-void findEint(double Eint, double delta);
-void findEintsmooth(double Eint, double delta);
 
+// -----------------------------------------------------------------
+// Find initial configuration in desired energy interval
+void findEint(double Eint, double delta) {
+  bool Efound = false;
+  int counter = 0, count_max = 2000;
+  double energy, energyref, betaref = beta;
+  double dtime;
+
+  node0_printf("Searching for energy interval [%.4g, %.4g]\n",
+               Eint, Eint + delta);
+  dtime = -dclock();
+  energy = action();
+  if (energy >= Eint && energy <= (Eint + delta))
+  {
+    Efound = true;
+    beta = betaref;
+  }
+
+  while(Efound == false && counter < count_max) {
+    update();
+    energyref = action() * betaref / beta;
+    if (energyref >= Eint && energyref <= (Eint + delta))
+    {
+      Efound = true;
+      beta = betaref;
+    }
+    else if (energyref>(Eint+delta))
+      beta += 0.1;
+    else
+      beta -= 0.1;
+#ifdef DEBUG_PRINt
+    node0_printf("energyref %.8g %.8g %d\n", energyref, beta, counter);
+#endif
+
+    counter++;
+  }
+
+  dtime += dclock();
+  if (Efound) {
+    node0_printf("Energy %.4g in interval found ", energy);
+    node0_printf("after %d updates in %.4g seconds\n", counter, dtime);
+  }
+  else {
+    node0_printf("ERROR: Energy interval not found ");
+    node0_printf("after %d updates in %.4g seconds\n", counter, dtime);
+    node0_printf("Ended up with energy %.4g\n", energy);
+    terminate(1);
+  }
+}
+// -----------------------------------------------------------------
+
+
+
+// -----------------------------------------------------------------
 int main(int argc, char *argv[]) {
   int traj_done, Nint;//, Nmeas = 0;
   int prompt;
   double ss_plaq, st_plaq, dtime, energy;
-  complex plp = cmplx(99.0, 99.0);
 
   // Set up
   setlinebuf(stdout); // DEBUG
@@ -29,19 +88,13 @@ int main(int argc, char *argv[]) {
   }
   dtime = -dclock();
 
-  // Check: compute initial plaquette
+  // Check: compute initial plaquette and corresponding energy
   plaquette(&ss_plaq, &st_plaq);
   node0_printf("START %.8g %.8g %.8g\n", ss_plaq, st_plaq, ss_plaq + st_plaq);
+  energy = -3.0 * beta * volume * (ss_plaq + st_plaq);
+  node0_printf("ENERGY %.8g\n", energy);
 
-  // Perform warmup trajectories
-  node0_printf("index 0 %.8g\n", lattice[0].linkf[1].e[0][0].real);
-  energy = action();
-  node0_printf("GMES %.8g %.8g %.8g %.8g %.8g\n",
-               plp.real, plp.imag, ss_plaq, st_plaq, energy);
-  //findEintsmooth(Eint,delta);
-  node0_printf("index 0 %.8g\n", lattice[0].linkf[1].e[0][0].real);
-
-  srand(iseed);
+  srand(iseed); // !!!TODO: Shouldn't be needed...
 
   // Number of energy intervals, include interval starting at Emax
   Nint = (int)((Emax - Emin) / delta) + 1;
@@ -73,9 +126,9 @@ int main(int argc, char *argv[]) {
       {
         a_i[jcount] = a_i_new;
 
-        if(Einterval == false)
+        if (Einterval == false)
         {
-          findEintsmooth(x0[Eint],delta);
+          findEint(x0[Eint],delta);
           Einterval = true;
 
           for (traj_done = 0; traj_done < (2*warms); traj_done++)
@@ -107,7 +160,7 @@ int main(int argc, char *argv[]) {
 
         Reweightexpect -= x0[Eint] + 0.5*delta;
 
-        if(RMcount<100)
+        if (RMcount<100)
         {
           a_i_new = a_i[jcount] + 12/(delta*delta)*Reweightexpect;
           node0_printf("a = %.4g off\n", a_i_new);
@@ -141,84 +194,5 @@ int main(int argc, char *argv[]) {
   free(measurement);
   normal_exit(0);         // Needed by at least some clusters
   return 0;
-}
-
-double action() {
-  double ssplaq, stplaq;
-  plaquette(&ssplaq, &stplaq);
-  return -beta * volume * (ssplaq + stplaq)*3;
-}
-
-void findEintsmooth(double Eint, double delta) {
-  bool Efound = false;
-  double energy;
-  double energyref;
-  double betaref = beta;
-  energy = action();
-  int counter = 0;
-  node0_printf("Eint = %.4g\n", Eint);
-  if(energy>=Eint && energy <= (Eint+delta))
-  {
-    Efound = true;
-    beta = betaref;
-  }
-
-  while(Efound == false && counter<2000)
-  {
-    update();
-    //energy = action();
-    energyref = action() * betaref / beta;
-    //node0_printf("energy %.8g %.8g %d\n", energyref, beta, counter);
-    //node0_printf("Eint = %.4g\n", Eint);
-    //node0_printf("energy %.8g %.8g %d\n", energy, Eint, counter);
-    //node0_printf("energyref %.8g %.8g %d\n", energyref, beta, counter);
-    if(energyref>=Eint && energyref <= (Eint+delta))
-    {
-      Efound = true;
-      beta = betaref;
-      node0_printf("energyref %.8g %.8g %d\n", energyref, beta, counter);
-    }
-    else if(energyref>(Eint+delta))
-    {
-      beta += 0.1;
-      node0_printf("energyref %.8g %.8g %d\n", energyref, beta, counter);
-    }
-    else
-    {
-      beta -= 0.1;
-      node0_printf("energyref %.8g %.8g %d\n", energyref, beta, counter);
-    }
-
-    counter++;
-  }
-}
-
-void findEint(double Eint, double delta) {
-  bool Efound = false;
-  double energy;
-  int i, j, a;
-  register site *s;
-  check_unitarity();
-  if(Efound == false)
-  {
-    FOREVENSITES(i,s)
-    {
-      for( j = 0;j<4;j++)
-      {
-        for(a=0;a <NCOL;a++)
-          lattice[i].linkf[j].e[a][a] = cmplx(-1.0, 0.0);;
-
-        energy = action();
-        node0_printf("energy %.8g\n", energy);
-        if(energy>=Eint && energy <= (Eint+delta))
-        {
-          a=NCOL;
-          j=4;
-          i=even_sites_on_node;
-          Efound = true;
-        }
-      }
-    }
-  }
 }
 // -----------------------------------------------------------------
