@@ -4,6 +4,7 @@
 #include "pg_includes.h"
 //#define DEBUG_PRINT
 
+// TODO: Can move this into generic/plaquette.c
 // Helper routine to convert average plaquette to (negative) total energy
 double action() {
   double ssplaq, stplaq;
@@ -24,6 +25,7 @@ void findEint(double Eint, double delta) {
 
   node0_printf("Searching for energy interval [%.4g, %.4g]\n",
                Eint, Eint + delta);
+
   dtime = -dclock();
   energy = action();
   if (energy >= Eint && energy <= (Eint + delta))
@@ -42,7 +44,7 @@ void findEint(double Eint, double delta) {
     }
     else if (energyref>(Eint+delta))
       beta += 0.1;
-    else
+    else  // energyref < Eint
       beta -= 0.1;
 #ifdef DEBUG_PRINt
     node0_printf("energyref %.8g %.8g %d\n", energyref, beta, counter);
@@ -69,8 +71,10 @@ void findEint(double Eint, double delta) {
 
 // -----------------------------------------------------------------
 int main(int argc, char *argv[]) {
-  int traj_done, Nint;//, Nmeas = 0;
+  bool Einterval = false;
   int prompt;
+  int swp_done, Nint, Eint, jcount, acounter;
+  int RMcount;      // Count Robbins--Monro iterations
   double ss_plaq, st_plaq, dtime, energy;
 
   // Set up
@@ -96,18 +100,13 @@ int main(int argc, char *argv[]) {
 
   srand(iseed); // !!!TODO: Shouldn't be needed...
 
+  // Declarations that depend on input
   // Number of energy intervals, include interval starting at Emax
   Nint = (int)((Emax - Emin) / delta) + 1;
-  int Eint, jcount, acounter, k;
-  int RMcount;      // Count Robbins--Monro iterations
   double x0[Nint];  // Lower end of energy interval
-  double a[Nint];
-  double a_i[Njacknife];
-  double a_i_new;
+  double a[Nint], a_i[Njacknife], a_i_new;
   double Reweightexpect; // Reweighted expectation value of the energy
-  double *measurement = malloc(trajecs * sizeof(double));
-//  double varianz;
-  bool Einterval = false;
+  double *measurement = malloc(sweeps * sizeof(double));
 
   for(Eint=0;Eint<Nint;Eint++)
   {
@@ -117,10 +116,14 @@ int main(int argc, char *argv[]) {
     {
       a_i[jcount] = 1.0;
       a_i_new = 1.0;
-
       RMcount = 0;
-      coldlat();
       Einterval = false;
+
+      // Perform warmup sweeps before searching for energy interval
+      coldlat();
+      for (swp_done = 0; swp_done < warms; swp_done++)
+        update();
+      node0_printf("%d WARMUPS COMPLETED FOR jcount=%d\n", warms, jcount);
 
       for(acounter=0;acounter<ait;acounter++)
       {
@@ -128,38 +131,28 @@ int main(int argc, char *argv[]) {
 
         if (Einterval == false)
         {
+          // Terminates if interval not found
           findEint(x0[Eint],delta);
           Einterval = true;
 
-          for (traj_done = 0; traj_done < (2*warms); traj_done++)
+          for (swp_done = 0; swp_done < (2*warms); swp_done++)
             updateconst_e(x0[Eint], 1.0);
         }
 
-        for (traj_done = 0; traj_done < warms; traj_done++)
+        for (swp_done = 0; swp_done < warms; swp_done++)
           updateconst_e(x0[Eint], 1.0);
 
-        Reweightexpect=0;
-        for(k = 0;k<trajecs;k++)
-        {
-          measurement[k] = action();
-          Reweightexpect += measurement[k];
+        // TODO: Compute variance from <O> and <O^2>
+        Reweightexpect = 0;
+        for (swp_done = 0; swp_done < sweeps; swp_done++) {
+          measurement[swp_done] = action();
+          Reweightexpect += measurement[swp_done];
           updateconst_e(x0[Eint], a_i[jcount]);
         }
-        Reweightexpect /= trajecs;
-        /*
-        // TODO: Should be able to compute this
-        //       just by monitoring both <O> and <O^2>
-        varianz=0;
-        for(k=0;k<trajecs;k++)
-        {
+        Reweightexpect /= sweeps;
 
-        varianz = varianz + pow(measurement[k]-Reweightexpect,2);
-        }
-        varianz = varianz/trajecs;
-        */
 
         Reweightexpect -= x0[Eint] + 0.5*delta;
-
         if (RMcount<100)
         {
           a_i_new = a_i[jcount] + 12/(delta*delta)*Reweightexpect;

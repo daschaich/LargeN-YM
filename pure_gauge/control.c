@@ -4,7 +4,7 @@
 #include "pg_includes.h"
 
 int main(int argc, char *argv[]) {
-  int traj_done;//, Nmeas = 0;
+  int swp_done;//, Nmeas = 0;
   int prompt;
   double ss_plaq, st_plaq, dtime;
   complex plp = cmplx(99.0, 99.0);
@@ -28,26 +28,24 @@ int main(int argc, char *argv[]) {
   plaquette(&ss_plaq, &st_plaq);
   node0_printf("START %.8g %.8g %.8g\n", ss_plaq, st_plaq, ss_plaq + st_plaq);
 
-  // Perform warmup trajectories
-  for (traj_done = 0; traj_done < warms; traj_done++)
+  // Perform warmup sweeps
+  for (swp_done = 0; swp_done < warms; swp_done++)
     update();
   node0_printf("WARMUPS COMPLETED\n");
 
-  // Perform trajectories, reunitarizations and measurements
-  for (traj_done = 0; traj_done < trajecs; traj_done++) {
+  // Perform sweeps, reunitarizations and measurements
+  for (swp_done = 0; swp_done < sweeps; swp_done++) {
     update();
 
-    // Measure and print Polyakov loop and plaquette
-    // after every trajectory
+    // Measure and print Polyakov loop and plaquette after every sweep
     plaquette(&ss_plaq, &st_plaq);
     plp = ploop(TUP);
     node0_printf("GMES %.8g %.8g %.8g %.8g\n",
                  plp.real, plp.imag, ss_plaq, st_plaq);
     fflush(stdout);
 
-    // More expensive measurements every "propinterval" trajectories
-    // Measure every "propinterval" trajectories
-    if ((traj_done % propinterval) == (propinterval - 1)) {
+    // More expensive measurements every "measinterval" sweeps
+    if ((swp_done % measinterval) == (measinterval - 1)) {
 //      Nmeas++;
       // Nothing yet...
     }

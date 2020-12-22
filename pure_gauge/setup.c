@@ -107,21 +107,23 @@ int readin(int prompt) {
     printf("\n\n");
     status = 0;
 
-    // Warms, trajecs
+    // Warms, sweeps
     IF_OK status += get_i(stdin, prompt, "warms", &par_buf.warms);
-    IF_OK status += get_i(stdin, prompt, "trajecs", &par_buf.trajecs);
+    IF_OK status += get_i(stdin, prompt, "sweeps", &par_buf.sweeps);
 
+#ifndef LLR
     // Trajectories between more expensive measurements
-    IF_OK status += get_i(stdin, prompt, "traj_between_meas",
-                          &par_buf.propinterval);
+    IF_OK status += get_i(stdin, prompt, "swp_between_meas",
+                          &par_buf.measinterval);
+#endif
 
     // beta
     IF_OK status += get_f(stdin, prompt, "beta", &par_buf.beta);
 
-    // Over-relaxation steps per trajectory
-    IF_OK status += get_i(stdin, prompt, "steps_per_traj", &par_buf.steps);
+    // Over-relaxation steps per sweep
+    IF_OK status += get_i(stdin, prompt, "ora_steps", &par_buf.steps);
 
-    // Quasi-heatbath steps per trajectory
+    // Quasi-heatbath steps per sweep
     IF_OK status += get_i(stdin, prompt, "qhb_steps", &par_buf.stepsQ);
 
 #ifdef LLR
@@ -162,8 +164,7 @@ int readin(int prompt) {
     normal_exit(0);
 
   warms = par_buf.warms;
-  trajecs = par_buf.trajecs;
-  propinterval = par_buf.propinterval;
+  sweeps = par_buf.sweeps;
   beta = par_buf.beta;
   steps = par_buf.steps;
   stepsQ = par_buf.stepsQ;
@@ -176,6 +177,8 @@ int readin(int prompt) {
   delta = par_buf.delta * volume;
   ait = par_buf.ait;
   Njacknife = par_buf.Njacknife;
+#else
+  measinterval = par_buf.measinterval;
 #endif
 
   strcpy(startfile, par_buf.startfile);

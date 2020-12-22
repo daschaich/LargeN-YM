@@ -53,7 +53,7 @@ typedef struct {
 EXTERN int nx, ny, nz, nt;  // Lattice dimensions
 EXTERN int volume;          // Volume of lattice
 EXTERN int iseed;           // Random number seed
-EXTERN int warms, trajecs, steps, stepsQ, propinterval;
+EXTERN int warms, sweeps, steps, stepsQ, measinterval;
 
 EXTERN Real beta;
 EXTERN Real one_ov_N, one_ov_vol;

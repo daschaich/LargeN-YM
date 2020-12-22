@@ -1,6 +1,6 @@
 SU(4) pure-gauge log-linear relaxation algorithm
 Machine = Scalar processor, with 1 nodes
-start: Sat Nov 21 00:25:29 2020
+start: Tue Dec 22 21:06:15 2020
 
 type 0 for no prompts or 1 for prompts
 nx 4
@@ -14,15 +14,14 @@ Mallocing 0.4 MBytes per core for lattice
 Mallocing 0.1 MBytes per core for fields
 
 
-warms 0
-trajecs 3
-traj_between_meas 3
-beta 1
-steps_per_traj 4
+warms 3
+sweeps 3
+beta 10
+ora_steps 4
 qhb_steps 4
-Emin -140
-Emax -140
-delta 5
+Emin -80
+Emax -80
+delta 8
 ait 10
 Njacknife 1
 fresh
@@ -32,26 +31,25 @@ Starting with cold lattice
 CHECK PLAQ: 4.0000000000000000e+00 4.0000000000000000e+00
 CHECK NERSC LINKTR: 1.0000000000000000e+00 CKSUM: 0
 Reunitarized for double precision.  Max deviation 0 changed to 0
-Time to check unitarity = 0.000447 seconds
+Time to check unitarity = 0.0005481 seconds
 START 4 4 8
-index 0 1
-GMES 99 99 4 4 -2048
-index 0 1
+ENERGY -61440
 unit gauge configuration loaded
-Eint = -140
-energyref -138.34881 1 20
-a = 1.108 off
-a = 1.646 off
-a = 1.985 off
-a = 1.606 off
-a = 1.693 off
-a = 2.207 off
-a = 1.862 off
-a = 2.021 off
-a = 2.758 off
-a = 2.853 off
+3 WARMUPS COMPLETED FOR jcount=0
+Searching for energy interval [-2.048e+04, -1.843e+04]
+Energy -2.991e+04 in interval found after 13 updates in 0.3288 seconds
+a = 0.9971 off
+a = 0.9944 off
+a = 0.9916 off
+a = 0.9888 off
+a = 0.986 off
+a = 0.9832 off
+a = 0.9803 off
+a = 0.9775 off
+a = 0.9747 off
+a = 0.9718 off
 RUNNING COMPLETED
-STOP 0.28477051 0.25869555 0.54346607
-Time = 3.262 seconds
-exit: Sat Nov 21 00:25:33 2020
+STOP 1.3430977 1.3145551 2.6576528
+Time = 6.472 seconds
+exit: Tue Dec 22 21:06:21 2020
 

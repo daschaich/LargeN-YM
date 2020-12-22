@@ -12,16 +12,19 @@ typedef struct {
   int iseed;              // For random numbers
 
   // Over-relaxation parameters
-  int warms;              // The number of warmup trajectories
-  int trajecs;            // The number of real trajectories
-  int steps;              // Number of over-relaxation steps per trajectory
-  int stepsQ;             // Number of quasi-heatbath steps per trajectory
-  int propinterval;       // Number of trajectories between measurements
+  int warms;              // The number of warmup sweeps
+  int sweeps;             // The number of sweeps with measurements
+  int steps;              // Number of over-relaxation steps per sweep
+  int stepsQ;             // Number of quasi-heatbath steps per sweep
   int startflag;          // What to do for beginning lattice
   int saveflag;           // What to do with lattice at end
   Real beta;              // Gauge coupling
   char startfile[MAXFILENAME], savefile[MAXFILENAME];
   char stringLFN[MAXFILENAME];  // ILDG LFN if applicable
+
+#ifndef LLR
+  int measinterval;       // Number of sweepsbetween measurements
+#endif
 
 #ifdef LLR
   // LLR parameters
