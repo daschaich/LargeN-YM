@@ -88,8 +88,6 @@ int main(int argc, char *argv[]) {
   node0_printf("START %.8g %.8g %.8g %.8g\n",
                ss_plaq, st_plaq, ss_plaq + st_plaq, energy);
 
-  srand(iseed); // !!!TODO: Shouldn't be needed...
-
   // Declarations that depend on input
   // Number of energy intervals, include interval starting at Emax
   Nint = (int)((Emax - Emin) / delta) + 1;
