@@ -1,6 +1,6 @@
 SU(3) pure-gauge log-linear relaxation algorithm
 Machine = MPI (portable), with 2 nodes
-start: Tue Dec 22 21:06:50 2020
+start: Tue Jan  5 02:45:02 2021
 
 type 0 for no prompts or 1 for prompts
 nx 4
@@ -32,13 +32,12 @@ Starting with cold lattice
 CHECK PLAQ: 3.0000000000000000e+00 3.0000000000000000e+00
 CHECK NERSC LINKTR: 1.0000000000000000e+00 CKSUM: 0
 Reunitarized for double precision.  Max deviation 0 changed to 0
-Time to check unitarity = 0.000195 seconds
-START 3 3 6
-ENERGY -27648
+Time to check unitarity = 0.000191 seconds
+START 3 3 6 -27648
 unit gauge configuration loaded
 3 WARMUPS COMPLETED FOR jcount=0
-Searching for energy interval [-1.536e+04, -1.382e+04]
-Energy -1.633e+04 in interval found after 5 updates in 0.04832 seconds
+Searching for energy interval [-15360, -13824]
+Energy -1.633e+04 in interval found after 5 updates in 0.04992 seconds
 a = 0.9962 off
 a = 0.9924 off
 a = 0.9886 off
@@ -48,9 +47,9 @@ a = 0.9782 off
 a = 0.9744 off
 a = 0.9708 off
 a = 0.9671 off
-a = 0.9635 off
+a = 0.9637 off
 RUNNING COMPLETED
-STOP 1.6435222 1.6439208 3.287443
-Time = 1.125 seconds
-exit: Tue Dec 22 21:06:51 2020
+STOP 1.6607503 1.6652538 3.3260042 -15326.227
+Time = 1.16 seconds
+exit: Tue Jan  5 02:45:03 2021
 

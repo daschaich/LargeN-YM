@@ -17,7 +17,7 @@ void monteconst_e(double Eint, double a) {
   Real al, d, xl, xd, b3 = beta * a * one_ov_N;
   double ssplaq, stplaq, energy;
   su2_matrix h;
-  matrix_f action;
+  matrix_f actmat;
 
   // Set up SU(2) subgroup indices [a][b] with a < b
   count = 0;
@@ -59,12 +59,11 @@ void monteconst_e(double Eint, double a) {
             // using Pauli matrix expansion
             // The SU(2) hit matrix is represented as
             //   v0 + i * Sum j (sigma j * vj)
-
-            mult_na_f(&(s->linkf[dir]), &(s->staple), &action);
-            v0 = action.e[ina][ina].real + action.e[inb][inb].real;
-            v3 = action.e[ina][ina].imag - action.e[inb][inb].imag;
-            v1 = action.e[ina][inb].imag + action.e[inb][ina].imag;
-            v2 = action.e[ina][inb].real - action.e[inb][ina].real;
+            mult_na_f(&(s->linkf[dir]), &(s->staple), &actmat);
+            v0 = actmat.e[ina][ina].real + actmat.e[inb][inb].real;
+            v3 = actmat.e[ina][ina].imag - actmat.e[inb][inb].imag;
+            v1 = actmat.e[ina][inb].imag + actmat.e[inb][ina].imag;
+            v2 = actmat.e[ina][inb].real - actmat.e[inb][ina].real;
 
             vsq = v0*v0 + v1*v1 + v2*v2 + v3*v3;
             z = sqrt((double)vsq);
@@ -87,10 +86,6 @@ void monteconst_e(double Eint, double a) {
             xr4 = myrand(&(s->site_prn));
 
             /*
-               node0_printf("rand= %e %e %e %e\n", xr1, xr2, xr3, xr4);
-               */
-
-            /*
                generate a0 component of su3 matrix
 
                first consider generating an su(2) matrix h
@@ -105,8 +100,14 @@ void monteconst_e(double Eint, double a) {
                rewrite beta/3 * re tr(h*v) * z as al*a0
                a0 has prob(a0) = n0 * sqrt(1 - a0**2) * exp(al * a0)
                */
-            al=b3*z;
-            /*if (this_node == 0)printf("al= %e\n",al);*/
+            al = b3 * z;
+#ifdef DEBUG_PRINT
+            if (lattice[i].x == 1 && lattice[i].y == 2 &&
+                lattice[i].z == 0 && lattice[i].t == 1) {
+              printf("rand = %.8g %.8g %.8g %.8g and al = %.8g on node %d\n",
+                     xr1, xr2, xr3, xr4, al, this_node);
+            }
+#endif
 
             /*
                let a0 = 1 - del**2
@@ -209,12 +210,15 @@ void monteconst_e(double Eint, double a) {
           }
 
           // If we have exited the energy interval, restore starting links
-          plaquette(&ssplaq, &stplaq);
-          energy = -3.0 * beta * volume * (ssplaq + stplaq);
+#ifdef DEBUG_PRINT
+//            node0_printf("Reunitarizing...\n",
+//          reunitarize();
+#endif
+          energy = action(&ssplaq, &stplaq);
           if (energy < Eint || energy > (Eint + delta)) {
 #ifdef DEBUG_PRINT
             node0_printf("Reject subgroup %d for parity %d: ", subgrp, parity);
-            node0_printf("Energy %.4g leaves [%.4g, %.4g]\n",
+            node0_printf("Energy %.8g leaves [%.8g, %.8g]\n",
                          energy, Eint, Eint + delta);
 #endif
             FORSOMEPARITY(i, s, parity)
@@ -222,7 +226,7 @@ void monteconst_e(double Eint, double a) {
           }
 #ifdef DEBUG_PRINT
           else {
-            node0_printf("Accept new energy %.4g\n", energy);
+            node0_printf("Accept new energy %.8g\n", energy);
           }
 #endif
           /* diagnostics

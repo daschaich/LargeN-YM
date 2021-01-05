@@ -3,14 +3,6 @@
 #define CONTROL
 #include "pg_includes.h"
 //#define DEBUG_PRINT
-
-// TODO: Can move this into generic/plaquette.c
-// Helper routine to convert average plaquette to (negative) total energy
-double action() {
-  double ssplaq, stplaq;
-  plaquette(&ssplaq, &stplaq);
-  return -3.0 * beta * volume * (ssplaq + stplaq);
-}
 // -----------------------------------------------------------------
 
 
@@ -20,14 +12,13 @@ double action() {
 void findEint(double Eint, double delta) {
   bool Efound = false;
   int counter = 0, count_max = 2000;
-  double energy, energyref, betaref = beta;
-  double dtime;
+  double ss_plaq, st_plaq, dtime, energy, energyref, betaref = beta;
 
-  node0_printf("Searching for energy interval [%.4g, %.4g]\n",
+  node0_printf("Searching for energy interval [%.8g, %.8g]\n",
                Eint, Eint + delta);
 
   dtime = -dclock();
-  energy = action();
+  energy = action(&ss_plaq, &st_plaq);
   if (energy >= Eint && energy <= (Eint + delta))
   {
     Efound = true;
@@ -36,7 +27,7 @@ void findEint(double Eint, double delta) {
 
   while(Efound == false && counter < count_max) {
     update();
-    energyref = action() * betaref / beta;
+    energyref = action(&ss_plaq, &st_plaq) * betaref / beta;
     if (energyref >= Eint && energyref <= (Eint + delta))
     {
       Efound = true;
@@ -92,11 +83,10 @@ int main(int argc, char *argv[]) {
   }
   dtime = -dclock();
 
-  // Check: compute initial plaquette and corresponding energy
-  plaquette(&ss_plaq, &st_plaq);
-  node0_printf("START %.8g %.8g %.8g\n", ss_plaq, st_plaq, ss_plaq + st_plaq);
-  energy = -3.0 * beta * volume * (ss_plaq + st_plaq);
-  node0_printf("ENERGY %.8g\n", energy);
+  // Check: compute initial plaquette and energy
+  energy = action(&ss_plaq, &st_plaq);
+  node0_printf("START %.8g %.8g %.8g %.8g\n",
+               ss_plaq, st_plaq, ss_plaq + st_plaq, energy);
 
   srand(iseed); // !!!TODO: Shouldn't be needed...
 
@@ -145,12 +135,11 @@ int main(int argc, char *argv[]) {
         // TODO: Compute variance from <O> and <O^2>
         Reweightexpect = 0;
         for (swp_done = 0; swp_done < sweeps; swp_done++) {
-          measurement[swp_done] = action();
+          measurement[swp_done] = action(&ss_plaq, &st_plaq);
           Reweightexpect += measurement[swp_done];
           updateconst_e(x0[Eint], a_i[jcount]);
         }
         Reweightexpect /= sweeps;
-
 
         Reweightexpect -= x0[Eint] + 0.5*delta;
         if (RMcount<100)
@@ -172,9 +161,10 @@ int main(int argc, char *argv[]) {
   }
   node0_printf("RUNNING COMPLETED\n");
 
-  // Check: compute final plaquette
-  plaquette(&ss_plaq, &st_plaq);
-  node0_printf("STOP %.8g %.8g %.8g\n", ss_plaq, st_plaq, ss_plaq + st_plaq);
+  // Check: compute final plaquette and energy
+  energy = action(&ss_plaq, &st_plaq);
+  node0_printf("STOP %.8g %.8g %.8g %.8g\n",
+               ss_plaq, st_plaq, ss_plaq + st_plaq, energy);
 
   dtime += dclock();
   node0_printf("Time = %.4g seconds\n", dtime);
