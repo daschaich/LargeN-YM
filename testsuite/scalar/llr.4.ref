@@ -1,6 +1,6 @@
 SU(4) pure-gauge log-linear relaxation algorithm
 Machine = Scalar processor, with 1 nodes
-start: Tue Dec 22 21:06:15 2020
+start: Mon Jan 11 22:23:25 2021
 
 type 0 for no prompts or 1 for prompts
 nx 4
@@ -31,13 +31,12 @@ Starting with cold lattice
 CHECK PLAQ: 4.0000000000000000e+00 4.0000000000000000e+00
 CHECK NERSC LINKTR: 1.0000000000000000e+00 CKSUM: 0
 Reunitarized for double precision.  Max deviation 0 changed to 0
-Time to check unitarity = 0.0005481 seconds
-START 4 4 8
-ENERGY -61440
+Time to check unitarity = 0.00067 seconds
+START 4 4 8 -61440
 unit gauge configuration loaded
 3 WARMUPS COMPLETED FOR jcount=0
-Searching for energy interval [-2.048e+04, -1.843e+04]
-Energy -2.991e+04 in interval found after 13 updates in 0.3288 seconds
+Searching for energy interval [-20480, -18432]
+Energy -2.991e+04 in interval found after 13 updates in 0.3082 seconds
 a = 0.9971 off
 a = 0.9944 off
 a = 0.9916 off
@@ -49,7 +48,8 @@ a = 0.9775 off
 a = 0.9747 off
 a = 0.9718 off
 RUNNING COMPLETED
-STOP 1.3430977 1.3145551 2.6576528
-Time = 6.472 seconds
-exit: Tue Dec 22 21:06:21 2020
+STOP 1.3430977 1.3145551 2.6576528 -20410.774
+Overall acceptance 3453 of 12672 = 0.2725
+Time = 6.491 seconds
+exit: Mon Jan 11 22:23:32 2021
 

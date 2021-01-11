@@ -66,7 +66,7 @@ int main(int argc, char *argv[]) {
   int prompt;
   int swp_done, Nint, Eint, jcount, acounter;
   int RMcount;      // Count Robbins--Monro iterations
-  double ss_plaq, st_plaq, dtime, energy;
+  double ss_plaq, st_plaq, dtime, rate, energy;
 
   // Set up
   setlinebuf(stdout); // DEBUG
@@ -82,6 +82,10 @@ int main(int argc, char *argv[]) {
     terminate(1);
   }
   dtime = -dclock();
+
+  // Monitor overall acceptance in monteconst_e.c
+  accept = 0;
+  reject = 0;
 
   // Check: compute initial plaquette and energy
   energy = action(&ss_plaq, &st_plaq);
@@ -164,6 +168,9 @@ int main(int argc, char *argv[]) {
   node0_printf("STOP %.8g %.8g %.8g %.8g\n",
                ss_plaq, st_plaq, ss_plaq + st_plaq, energy);
 
+  rate = (double)accept / ((double)(accept + reject));
+  node0_printf("Overall acceptance %d of %d = %.4g\n",
+               accept, accept + reject, rate);
   dtime += dclock();
   node0_printf("Time = %.4g seconds\n", dtime);
   fflush(stdout);

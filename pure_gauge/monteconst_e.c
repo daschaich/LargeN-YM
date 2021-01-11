@@ -9,13 +9,14 @@ void monteconst_e(double Eint, double a) {
   register site *s;
   int istep, Nhit, subgrp, ina, inb, parity, count;
   int k, kp, cr, nacd, test, index_a[N_OFFDIAG], index_b[N_OFFDIAG];
+  int this_accept = 0, this_reject = 0;
   Real xr1, xr2, xr3, xr4;
   Real a0 = 0, a1, a2, a3;
   Real v0, v1, v2, v3, vsq;
   Real h0, h1, h2, h3;
   Real r, r2, rho, z;
   Real al, d, xl, xd, b3 = beta * a * one_ov_N;
-  double ssplaq, stplaq, energy;
+  double ssplaq, stplaq, energy, rate;
   su2_matrix h;
   matrix_f actmat;
 
@@ -216,6 +217,7 @@ void monteconst_e(double Eint, double a) {
 #endif
           energy = action(&ssplaq, &stplaq);
           if (energy < Eint || energy > (Eint + delta)) {
+            this_reject++;
 #ifdef DEBUG_PRINT
             node0_printf("Reject subgroup %d for parity %d: ", subgrp, parity);
             node0_printf("Energy %.8g leaves [%.8g, %.8g]\n",
@@ -224,11 +226,12 @@ void monteconst_e(double Eint, double a) {
             FORSOMEPARITY(i, s, parity)
               mat_copy_f(&(s->tempmat), &(s->linkf[dir]));
           }
-#ifdef DEBUG_PRINT
           else {
+            this_accept++;
+#ifdef DEBUG_PRINT
             node0_printf("Accept new energy %.8g\n", energy);
-          }
 #endif
+          }
           /* diagnostics
              {Real avekp, avecr;
              avekp=(Real)kp / (Real)(nx*ny*nz*nt/2);
@@ -242,5 +245,14 @@ void monteconst_e(double Eint, double a) {
       }
     }
   }
+  // Update overall acceptance
+  accept += this_accept;
+  reject += this_reject;
+
+#ifdef DEBUG_PRINT
+  rate = (double)this_accept / ((double)(this_accept + this_reject));
+  node0_printf("Acceptance %d of %d = %.4g\n",
+               this_accept, this_accept + this_reject, rate);
+#endif
 }
 // -----------------------------------------------------------------
