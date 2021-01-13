@@ -1,18 +1,13 @@
 MILC-based code for SU(N) lattice gauge theories with N=2, 3, 4
 
-The original goal of this repo was to investigate determinant reduction for Wilson-clover fermions, so there are some legacy clover applications that may not be fully reliable
-
 Top-level directories follow the MILC layout
 generic        -- Procedures common to most applications: communications, I/O, data layout, pure-gauge computations, etc.
-generic_wilson -- Procedures common to Wilson-fermion applications
-generic_clover -- Procedures common to Wilson-clover applications
-generic_nhyp   -- Procedures common to nHYP-smeared applications
+generic_nhyp   -- Procedures common to nHYP-smeared applications, needed for Wilson flow
 include        -- Header files for common procedures
 libraries      -- Single processor linear algebra routines
 
 Then there are various application directories, each with more detailed READMEs:
-clover_hmc -- Wilson-clover HMC with nHYP smearing and multilevel Omelyan integrator
-pure_gauge -- Pure-gauge evolution using over-relaxed quasi-heat bath algorithm
+pure_gauge -- Pure-gauge evolution and LLR density of states using over-relaxed quasi-heat bath algorithm
 wilson_flow -- Wilson flow with optional RG-blocking and measurements
 
 Finally, the testsuite directory contains some sample input files and corresponding output for testing

@@ -40,5 +40,5 @@ tmeas 0.15
 tmeas 0.2
 tmeas 0.3
 
-reload_serial testsuite/config.3F.4444
+reload_serial testsuite/config.SU3.4444
 forget

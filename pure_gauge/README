@@ -1,13 +1,8 @@
-SU(N) pure gauge evolution using over-relaxed quasi-heatbath algorithm
+SU(N) pure gauge density of states computations including evolution using over-relaxed quasi-heatbath algorithm
 
-For N=3 reproduces milc_qcd/pure_gauge/test/su3_ora.2 (blame for test su3_ora.1 mentions "new random number generator" from commit c05e59d)
+For N=3 pg_ora reproduces milc_qcd/pure_gauge/test/su3_ora.2 (blame for test su3_ora.1 mentions "new random number generator" from commit c05e59d)
 
-N=4 still needs debugging
-Compare plaquette with 0f/8nt4 HMC (arXiv:2002.00187):
-$ grep GMES ora.4.out | tail -n 1000 | awk '{plaq+=($4+$5)}END{print 0.5*plaq/NR}'
-beta hmc         ora
-10.0 1.27340(25) 2.71
-20.0 2.73177(17) 3.41
+N=4 seems strangely sensitive to roundoff accumulation
 
 Sample input file:
 +++
@@ -26,5 +21,5 @@ beta 6.0
 steps_per_traj 4
 qhb_steps 4
 
-reload_serial config.3F.4444
+reload_serial config.SU3.4444
 forget

@@ -16,5 +16,5 @@ tmeas 0.3
 tmeas 0.4
 tmeas 0.5
 
-reload_serial config.3F.4444
+reload_serial config.SU3.4444
 forget

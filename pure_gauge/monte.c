@@ -20,7 +20,7 @@ void monte() {
   // Set up SU(2) subgroup indices [a][b] with a < b
   count = 0;
   Nhit = (int)N_OFFDIAG;    // NCOL * (NCOL - 1) / 2
-  for (ina = 0; ina < NCOL; ina++) {
+  for (ina = 0; ina < NCOL - 1; ina++) {
     for (inb = ina + 1; inb < NCOL; inb++) {
       index_a[count] = ina;
       index_b[count] = inb;

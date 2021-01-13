@@ -13,5 +13,5 @@ beta 10.6
 ora_steps 4
 qhb_steps 4
 
-reload_serial config.4F.4444
+reload_serial config.SU4.4444
 forget

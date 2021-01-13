@@ -57,6 +57,7 @@ void plaquette(double *ss_plaq, double *st_plaq) {
   *st_plaq = st_sum / (double)(3.0 * volume);
 }
 
+#ifdef LLR
 // Alternate version for pure-gauge LLR that returns (negative) total energy
 double action(double *ss_plaq, double *st_plaq) {
   register int i, dir, dir2;
@@ -110,6 +111,7 @@ double action(double *ss_plaq, double *st_plaq) {
   // Return (negative) total energy
   return (double)(-beta) * (ss_sum + st_sum);
 }
+#endif
 // -----------------------------------------------------------------
 
 
