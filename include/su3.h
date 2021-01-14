@@ -1,7 +1,6 @@
 // -----------------------------------------------------------------
 // Defines and subroutine declarations for SU(N) gauge theory
-// with various dimension-DIMF fermion reps
-// The original names now refer to objects of dimension DIMF or DIMFxDIMF
+// There is legacy code to be cleaned up that involves DIMF or FREP
 // New objects with suffix _f have dimension NCOL or NCOLxNCOL
 #ifndef _SUN_H
 #define _SUN_H
@@ -13,18 +12,7 @@
 
 
 // -----------------------------------------------------------------
-// Irrep stuff
-// I'm having some trouble #defining FREP as <text>
-// Let's make an integer code for each irrep, as in macros.h and io_lat.h
-#define FUNDAMENTAL    90
-#define SYMMETRIC2     91
-#define ANTISYMMETRIC2 92
-// -----------------------------------------------------------------
-
-
-
-// -----------------------------------------------------------------
-// FREP can take the values: FUNDAMENTAL, SYMMETRIC2, ANTISYMMETRIC2
+// Set number of colors
 #define NCOL 3
 #define DIMF 3
 #define FREP FUNDAMENTAL
@@ -35,8 +23,8 @@
   #error "NCOL > 4 not yet implemented!"
 #endif
 
-#if (NCOL != 3 || DIMF != 3)
-  #ifdef FAST
+#ifdef FAST
+  #if (NCOL != 3 || DIMF != 3)
     #error "FAST only works if NCOL = DIMF = 3"
   #endif
 #endif
