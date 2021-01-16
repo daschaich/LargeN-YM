@@ -2,6 +2,7 @@
 // Kennedy--Pendleton quasi-heat bath (qhb) on SU(2) subgroups
 #include "pg_includes.h"
 #define INC 1.0e-10
+#define DEBUG_PRINT
 
 void monte() {
   register int dir, i;
@@ -16,6 +17,9 @@ void monte() {
   Real al, d, xl, xd, b3 = beta * one_ov_N;
   su2_matrix h;
   matrix_f action;
+#ifdef DEBUG_PRINT
+  double ss_plaq, st_plaq;
+#endif
 
   // Set up SU(2) subgroup indices [a][b] with a < b
   count = 0;
@@ -44,6 +48,14 @@ void monte() {
         for (subgrp = 0; subgrp < Nhit; subgrp++) {
           kp = 0;
           cr = 0;
+
+          // Reunitarize before each sweep
+//          reunitarize();
+#ifdef DEBUG_PRINT
+          plaquette(&ss_plaq, &st_plaq);
+          node0_printf("PLAQ %.8g %.8g %.8g\n",
+                       ss_plaq, st_plaq, ss_plaq + st_plaq);
+#endif
 
           // Pick out this SU(2) subgroup
           ina = index_a[subgrp];
@@ -98,7 +110,7 @@ void monte() {
                rewrite beta/3 * re tr(h*v) * z as al*a0
                a0 has prob(a0) = n0 * sqrt(1 - a0**2) * exp(al * a0)
                */
-            al=b3*z;
+            al = b3 * z;
             /*if (this_node == 0)printf("al= %e\n",al);*/
 
             /*
@@ -200,6 +212,7 @@ void monte() {
             // Update the link
             left_su2_hit_n_f(&h, ina, inb, &(s->linkf[dir]));
           }
+
           /* diagnostics
              {Real avekp, avecr;
              avekp=(Real)kp / (Real)(nx*ny*nz*nt/2);
