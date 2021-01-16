@@ -1,8 +1,7 @@
-/* Fix Coulomb or Lorentz gauge by doing successive SU(2) gauge hits */
-/* Uses double precision global sums */
-/* This version does automatic reunitarization at preset intervals */
-
-/* This version for arbitrary NCOL and does gauge fixing via relaxation in full SU(N) group */
+// -----------------------------------------------------------------
+// Fix Coulomb or Lorentz gauge for arbitrary NCOL
+// Do relaxation in full SU(N) group
+// Automatically reunitarize at preset intervals
 
 /* development version does not use field_offset diffmat, field_offset sumvec */
 /* Prototype...
@@ -13,10 +12,6 @@
         int nantiherm, field_offset antiherm_offset[],
         int antiherm_parity[] )
    -------------------------------------------------------------------
-
-   NOTE: For staggered fermion applications, it is necessary to remove
-   the KS phases from the gauge links before calling this procedure.
-   See "rephase" in setup.c.
 
    -------------------------------------------------------------------
    EXAMPLE:  Fixing only the link matrices to Coulomb gauge with scratch
@@ -88,7 +83,7 @@ void gaugefix(int gauge_dir,Real relax_boost,int max_gauge_iter,
         int antiherm_parity[] );
 #if (NCOL != DIMF)
   /* Gauge fixing with matter fields in higher reps NOT implemented. -bqs 12/07 */
-  if(nvector>0){
+  if(nvector>0) {
     if(this_node==0)printf("gaugefix: nvector must be zero if not in fund rep!\n"); fflush(stdout); terminate(1);}
 #endif
 
@@ -277,7 +272,7 @@ void do_hit_full(int gauge_dir, int parity, Real relax_boost,
       /* compute Q^(-1/2) via Eq. (3.8)  */
       scalar_mult_mat_f(&Q[1],f[1],&eQ);
 
-      for(j=2;j<NCOL;j++){
+      for(j=2;j<NCOL;j++) {
   mult_nn_f(&Q[1],&Q[j-1],&Q[j]);
   scalar_mult_add_mat_f(&eQ,&Q[j],f[j],&eQ);
       }
@@ -288,27 +283,26 @@ void do_hit_full(int gauge_dir, int parity, Real relax_boost,
 #endif
 
       /* check det...*/
-      det=find_det(&u);
+      det = find_det(&u);
 
       /* spread the phase over everybody */
-      theta=atan(det.imag/(det.real+EPS_SQ));
-      phase=ce_itheta(-theta/NCOL);
+      // !!! Tom DeGrand mentioned atan vs. atan2 bug
+      theta = atan2(det.imag / (det.real + EPS_SQ));
+      phase = ce_itheta(-theta * one_on_N);
 
-      for(j=0;j<NCOL;j++)for(k=0;k<NCOL;k++){
+      for(j=0;j<NCOL;j++)for(k=0;k<NCOL;k++) {
   CMUL(phase,u.e[j][k],tt1);
   u.e[j][k]=tt1;
       }
 
       /* Do gauge transformation on all upward links */
-
-      FORALLUPDIR(dir){
+      FORALLUPDIR(dir) {
   mult_nn_f(&u,&(s->linkf[dir]),&Omega);
   mat_copy_f(&Omega,&(s->linkf[dir]));
       }
 
       /* Do gauge transformation hit on all downward links */
-
-      FORALLUPDIR(dir){
+      FORALLUPDIR(dir) {
   mult_na_f((matrix_f *)gen_pt[dir][i],&u,&Omega);
   mat_copy_f(&Omega,(matrix_f *)gen_pt[dir][i]);
       }
@@ -345,7 +339,7 @@ void accum_gauge_hit(int gauge_dir,int parity)
       FORALLUPDIRBUT(gauge_dir,dir) {
     /* Upward link matrix */
     m1 = &(s->linkf[dir]);
-    for(j=0;j<NCOL;j++)for(k=0;k<NCOL;k++){
+    for(j=0;j<NCOL;j++)for(k=0;k<NCOL;k++) {
       m11.e[j][k]  = conjg(&(m1->e[k][j]));
     }
     add_mat_f( &diffmatp[i], &m11, &diffmatp[i]);
@@ -396,14 +390,16 @@ double get_gauge_fix_action(int gauge_dir,int parity)
     }
 
   /* Count number of terms to average */
-  ndir = 0; FORALLUPDIRBUT(gauge_dir,dir)ndir++;
+  ndir = 0;
+  FORALLUPDIRBUT(gauge_dir, dir)
+    ndir++;
 
   /* Sum over all sites of this parity */
-  g_doublesum( &gauge_fix_action);
+  g_doublesum(&gauge_fix_action);
 
   /* Average is normalized to max of 1/2 on sites of one parity */
   return(gauge_fix_action /((double)(2*NCOL*ndir*nx*ny*nz*nt)));
-} /* get_gauge_fix_action */
+}
 
 void gaugefixscratch(field_offset diffmat, field_offset sumvec) {
   diffmat_offset = diffmat;
@@ -415,5 +411,5 @@ void gaugefixscratch(field_offset diffmat, field_offset sumvec) {
       node0_printf("gaugefix: Can't malloc diffmat\n");
       fflush(stdout);terminate(1);
     }
-} /* gaugefixscratch */
-
+}
+// -----------------------------------------------------------------

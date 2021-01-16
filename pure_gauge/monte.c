@@ -2,7 +2,7 @@
 // Kennedy--Pendleton quasi-heat bath (qhb) on SU(2) subgroups
 #include "pg_includes.h"
 #define INC 1.0e-10
-#define DEBUG_PRINT
+//#define DEBUG_PRINT
 
 void monte() {
   register int dir, i;
@@ -13,12 +13,12 @@ void monte() {
   Real a0 = 0, a1, a2, a3;
   Real v0, v1, v2, v3, vsq;
   Real h0, h1, h2, h3;
-  Real r, r2, rho, z;
+  Real r, r2, rho, z, norm;
   Real al, d, xl, xd, b3 = beta * one_ov_N;
   su2_matrix h;
   matrix_f action;
 #ifdef DEBUG_PRINT
-  double ss_plaq, st_plaq;
+  double ss_plaq, st_plaq, check;
 #endif
 
   // Set up SU(2) subgroup indices [a][b] with a < b
@@ -38,7 +38,6 @@ void monte() {
 
   // Loop over quasi-heatbath sweeps
   for (istep = 0; istep < stepsQ; istep++) {
-    // Checkerboard for parallelization
     for (parity = ODD; parity <= EVEN; parity++) {
       FORALLUPDIR(dir) {
         // Compute the gauge force (updating s->staple)
@@ -49,14 +48,6 @@ void monte() {
           kp = 0;
           cr = 0;
 
-          // Reunitarize before each sweep
-//          reunitarize();
-#ifdef DEBUG_PRINT
-          plaquette(&ss_plaq, &st_plaq);
-          node0_printf("PLAQ %.8g %.8g %.8g\n",
-                       ss_plaq, st_plaq, ss_plaq + st_plaq);
-#endif
-
           // Pick out this SU(2) subgroup
           ina = index_a[subgrp];
           inb = index_b[subgrp];
@@ -66,15 +57,41 @@ void monte() {
             // The SU(2) hit matrix is represented as
             //   v0 + i * Sum j (sigma j * vj)
             mult_na_f(&(s->linkf[dir]), &(s->staple), &action);
+#ifdef DEBUG_PRINT
             v0 = action.e[ina][ina].real + action.e[inb][inb].real;
             v3 = action.e[ina][ina].imag - action.e[inb][inb].imag;
             v1 = action.e[ina][inb].imag + action.e[inb][ina].imag;
             v2 = action.e[ina][inb].real - action.e[inb][ina].real;
 
-            vsq = v0*v0 + v1*v1 + v2*v2 + v3*v3;
+            // Normalize u
+            vsq = v0 * v0 + v1 * v1 + v2 * v2 + v3 * v3;
             z = sqrt((double)vsq);
-            /* Normalize   u */
             v0 = v0/z; v1 = v1/z; v2 = v2/z; v3 = v3/z;
+            check = 1.0 - v0 * v0 - v1 * v1 - v2 * v2 - v3 * v3;
+            node0_printf("TEST %e ", check);
+#endif
+
+            v0 = action.e[ina][ina].real + action.e[inb][inb].real;
+            v3 = action.e[ina][ina].imag - action.e[inb][inb].imag;
+            v1 = action.e[ina][inb].imag + action.e[inb][ina].imag;
+            v2 = action.e[ina][inb].real - action.e[inb][ina].real;
+            vsq = v0 * v0 + v1 * v1 + v2 * v2 + v3 * v3;
+            z = sqrt((double)vsq);
+            norm = 1.0 / sqrt((double)vsq);
+            v0 *= norm;
+            v1 *= norm;
+            v2 *= norm;
+            v3 *= norm;
+#ifdef DEBUG_PRINT
+//            check = 1.0 - v0 * v0 - v1 * v1 - v2 * v2 - v3 * v3;
+//            node0_printf("%e\n", check);
+//			vsq = v0*v0 + v1*v1 + v2*v2 + v3*v3;
+//			z = sqrt((double)vsq );
+//			v0 = v0/z; v1 = v1/z; v2 = v2/z; v3 = v3/z;
+// test
+//node0_printf("v= %e %e %e %e\n",v0,v1,v2,v3);
+//node0_printf("z= %e\n",z);
+#endif
 
             /* end norm check--trial SU(2) matrix is a0 + i a(j)sigma(j)*/
 
@@ -119,7 +136,7 @@ void monte() {
                such that prob2(del) = n1 * del**2 * exp(-al*del**2)
                */
 
-            d= -(xr2  + xr1*xr3*xr3)/al;
+            d = -(xr2  + xr1 * xr3 * xr3) / al;
 
             /*     monte carlo prob1(del) = n2 * sqrt(1 - 0.5*del**2)
                    then prob(a0) = n3 * prob1(a0)*prob2(a0)
@@ -135,18 +152,13 @@ void monte() {
               test=0;
               for (k=0;k<20 && test == 0;k++) {
                 kp++;
-                /*  get four random numbers (add a small increment to prevent taking log(0.)*/
-                xr1 = myrand(&(s->site_prn));
-                xr1 = log((double)(xr1 + INC));
-
-                xr2 = myrand(&(s->site_prn));
-                xr2 = log((double)(xr2 + INC));
-
-                xr3 = myrand(&(s->site_prn));
-                xr3 = cos((double)TWOPI * xr3);
-                d = -(xr2 + xr1 * xr3 * xr3) / al;
-
+                /*  get four random numbers
+                 *  (add a small increment to prevent taking log(0.)*/
+                xr1 = log((double)(myrand(&(s->site_prn)) + INC));
+                xr2 = log((double)(myrand(&(s->site_prn)) + INC));
+                xr3 = cos((double)TWOPI * myrand(&(s->site_prn)));
                 xr4 = myrand(&(s->site_prn));
+                d = -(xr2 + xr1 * xr3 * xr3) / al;
                 if ((1.0 - 0.5 * d) > xr4 * xr4)
                   test = 1;
               }
@@ -165,7 +177,7 @@ void monte() {
                 xr2 = myrand(&(s->site_prn));
 
                 r = xl + xd * xr1;
-                a0 = 1.00 + log((double)r) / al;
+                a0 = 1.0 + log((double)r) / al;
                 if ((1.0 - a0 * a0) > xr2 * xr2)
                   test = 1;
               }
@@ -179,17 +191,13 @@ void monte() {
             /* find a0  = 1 - d*/
             a0 = 1.0 - d;
             /* compute r */
-            r2 = 1.0 - a0*a0;
-            r2 = fabs((double)r2);
-            r = sqrt((double)r2);
+            r = sqrt(fabs(1.0 - a0 * a0));
 
             /* compute a3 */
             a3 = (2.0*myrand(&(s->site_prn)) - 1.0)*r;
 
             /* compute a1 and a2 */
-            rho = r2 - a3*a3;
-            rho = fabs((double)rho);
-            rho = sqrt((double)rho);
+            rho = sqrt(fabs(r * r - a3 * a3));
 
             // xr2 is a random number between 0 and 2pi
             xr2 = TWOPI * myrand(&(s->site_prn));
@@ -212,6 +220,16 @@ void monte() {
             // Update the link
             left_su2_hit_n_f(&h, ina, inb, &(s->linkf[dir]));
           }
+
+          // Reunitarize after each SU(2) subgroup sweep
+//          reunitarize();
+
+#ifdef DEBUG_PRINT
+          // Monitor plaquette after each SU(2) subgroup sweep
+          plaquette(&ss_plaq, &st_plaq);
+          node0_printf("PLAQ %.8g %.8g %.8g\n",
+                       ss_plaq, st_plaq, ss_plaq + st_plaq);
+#endif
 
           /* diagnostics
              {Real avekp, avecr;

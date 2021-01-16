@@ -139,7 +139,8 @@ void monteconst_e(double Eint, double a) {
               test=0;
               for (k=0;k<20 && test == 0;k++) {
                 kp++;
-                /*  get four random numbers (add a small increment to prevent taking log(0.)*/
+                /*  get four random numbers
+                 *  (add a small increment to prevent taking log(0.)*/
                 xr1 = myrand(&(s->site_prn));
                 xr1 = log((double)(xr1 + INC));
 

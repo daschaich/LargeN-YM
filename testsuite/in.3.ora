@@ -6,8 +6,8 @@ nt 4
 iseed 41
 
 warms 0
-sweeps 3
-swp_between_meas 3
+sweeps 10
+swp_between_meas 10
 
 beta 6.0
 ora_steps 4

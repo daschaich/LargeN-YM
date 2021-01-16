@@ -16,6 +16,9 @@ void dsdu_qhb(int dir, int parity) {
     case EVENANDODD: otherparity = EVENANDODD; break;
   }
 
+  // Reunitarize before computing staple
+//  reunitarize();
+
   /* Loop over other directions, computing force from plaquettes in
      the dir,dir2 plane */
   start = 1; /* indicates staple sum not initialized */
