@@ -109,10 +109,6 @@ void monte() {
             xr4 = myrand(&(s->site_prn));
 
             /*
-               node0_printf("rand= %e %e %e %e\n", xr1, xr2, xr3, xr4);
-               */
-
-            /*
                generate a0 component of su3 matrix
 
                first consider generating an su(2) matrix h
@@ -128,7 +124,13 @@ void monte() {
                a0 has prob(a0) = n0 * sqrt(1 - a0**2) * exp(al * a0)
                */
             al = b3 * z;
-            /*if (this_node == 0)printf("al= %e\n",al);*/
+#ifdef DEBUG_PRINT
+            if (lattice[i].x == 1 && lattice[i].y == 2 &&
+                lattice[i].z == 0 && lattice[i].t == 1) {
+              printf("rand = %.8g %.8g %.8g %.8g and al = %.8g on node %d\n",
+                     xr1, xr2, xr3, xr4, al, this_node);
+            }
+#endif
 
             /*
                let a0 = 1 - del**2
@@ -191,13 +193,14 @@ void monte() {
             /* find a0  = 1 - d*/
             a0 = 1.0 - d;
             /* compute r */
-            r = sqrt(fabs(1.0 - a0 * a0));
+            r2 = fabs(1.0 - a0 * a0);
+            r = sqrt(r2);
 
             /* compute a3 */
             a3 = (2.0*myrand(&(s->site_prn)) - 1.0)*r;
 
             /* compute a1 and a2 */
-            rho = sqrt(fabs(r * r - a3 * a3));
+            rho = sqrt(fabs(r2 - a3 * a3));
 
             // xr2 is a random number between 0 and 2pi
             xr2 = TWOPI * myrand(&(s->site_prn));
