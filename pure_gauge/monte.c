@@ -120,7 +120,7 @@ void monte() {
                v(0) and vector v are real
 
                let a = h*v and now generate a
-               rewrite beta/3 * re tr(h*v) * z as al*a0
+               rewrite beta/NCOL * re tr(h*v) * z as al*a0
                a0 has prob(a0) = n0 * sqrt(1 - a0**2) * exp(al * a0)
                */
             al = b3 * z;

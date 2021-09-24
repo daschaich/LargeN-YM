@@ -1,10 +1,11 @@
-SU(N) pure gauge density of states computations including evolution using over-relaxed quasi-heatbath algorithm
+SU(N) pure-gauge density-of-states computations including evolution
+Can use either over-relaxed quasi-heatbath or hybrid Monte Carlo for updates
 
 For N=3 pg_ora reproduces milc_qcd/pure_gauge/test/su3_ora.2 (blame for test su3_ora.1 mentions "new random number generator" from commit c05e59d)
 
-N=4 seems strangely sensitive to roundoff accumulation
+N=4 pg_ora seems strangely sensitive to roundoff accumulation --- HMC to be checked...
 
-Sample input file:
+Sample input file for ora:
 +++
 prompt 0
 nx 4

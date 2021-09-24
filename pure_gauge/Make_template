@@ -6,6 +6,7 @@
 
 # Target:
 #   pg_ora uses over-relaxed quasi-heat bath algorithm
+#   pg_hmc uses the hybrid Monte Carlo algorithm
 #   pg_llr uses log-linear relaxation to compute density of states
 
 MYINCLUDEDIR = .
@@ -31,10 +32,7 @@ HEADERS = ${GLOBAL_HEADERS} ${MY_HEADERS}
 
 # All required object files
 # Basic set from current directory
-MY_OBJECTS = dsdu_qhb.o \
-             monte.o    \
-             relax.o    \
-             setup.o    \
+MY_OBJECTS = setup.o    \
              update.o   \
              gauge_info.o
 
@@ -103,11 +101,17 @@ DARCH = ${DHAVE_QMP} ${DHAVE_QIO}
 
 ##### Targets:
 pg_ora::
-	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" "EXTRA_OBJECTS = control.o "
+	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" \
+	"EXTRA_OBJECTS = control.o dsdu_qhb.o monte.o relax.o "
+
+pg_hmc::
+	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" "DEFINES = -DHMC" \
+	"EXTRA_OBJECTS = control.o update_hmc.o "
 
 pg_llr::
 	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" "DEFINES = -DLLR" \
-	"EXTRA_OBJECTS = control_llr.o monteconst_e.o updateconst_e.o "
+	"EXTRA_OBJECTS = control_llr.o dsdu_qhb.o monte.o relax.o \
+                   monteconst_e.o updateconst_e.o "
 
 clean:
 	-/bin/rm -f *.o
