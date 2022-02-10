@@ -6,6 +6,7 @@
 .lastmake*
 gmon.out
 localmake
+pg_hmc
 pg_ora
 pg_llr
 su3_hmc*

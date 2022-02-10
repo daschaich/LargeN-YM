@@ -7,9 +7,9 @@ void update() {
   // Check unitarity before doing anything
   check_unitarity();
 
-#ifdef HMC_ALGORITHM
+#ifdef HMC
   // Do HMC updates if specified
-  
+  update_hmc();
 #else
   // Otherwise do over-relaxation and quasi-heat bath steps
   relax();

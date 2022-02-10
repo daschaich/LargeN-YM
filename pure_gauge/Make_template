@@ -38,7 +38,6 @@ MY_OBJECTS = setup.o    \
 
 # Basic set from generic directory
 G_OBJECTS = check_unitarity.o \
-            field_strength.o  \
             gaugefix.o        \
             io_helpers.o      \
             io_lat.o          \
@@ -49,6 +48,7 @@ G_OBJECTS = check_unitarity.o \
             ploop.o           \
             reunitarize.o     \
             ranstuff.o        \
+            ranmom.o          \
             remap_stdio_from_args.o
 
 ifeq ($(strip ${HAVEQIO}),true)
@@ -106,7 +106,7 @@ pg_ora::
 
 pg_hmc::
 	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" "DEFINES = -DHMC" \
-	"EXTRA_OBJECTS = control.o update_hmc.o "
+	"EXTRA_OBJECTS = control.o action.o update_hmc.o update_h.o update_u.o "
 
 pg_llr::
 	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" "DEFINES = -DLLR" \

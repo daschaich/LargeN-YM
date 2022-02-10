@@ -32,6 +32,13 @@ void dsdu_qhb(int dir1, int parity);    // Gauge force for quasi-heat bath
 void monte();
 void update();
 
+// HMC stuff
+ void gauge_field_copy(field_offset src, field_offset dest);
+double action();
+int update_hmc();
+void update_u();
+double update_h();
+
 #ifdef LLR
 // Impose constraint that energy remains within interval under consideration
 void updateconst_e(double Eint, double a);

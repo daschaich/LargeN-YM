@@ -8,14 +8,6 @@
 #include "../include/io_lat.h"    // For gauge_file
 #include "../include/random.h"    // For double_prn
 #include "../include/su3.h"
-
-// Defines for index on field_strength
-#define FS_XY 0
-#define FS_XZ 1
-#define FS_YZ 2
-#define FS_XT 3
-#define FS_YT 4
-#define FS_ZT 5
 // -----------------------------------------------------------------
 
 
@@ -34,9 +26,17 @@ typedef struct {
   int space1;
 #endif
 
-  // Gauge links and field strength
+  // Gauge links
   matrix_f linkf[4];
-  matrix_f tempmat, staple;    // TODO: Convert these to fields
+#ifdef HMC
+  matrix old_linkf[4];  // For accept/reject
+
+  // Antihermitian momentum matrices in each direction
+  anti_hermitmat mom[4];
+#endif
+
+  // Temporary storage
+  matrix_f tempmat, staple;    // TODO: Replace with tempmatf and tempmatf2
 } site;
 // -----------------------------------------------------------------
 
@@ -53,7 +53,10 @@ typedef struct {
 EXTERN int nx, ny, nz, nt;  // Lattice dimensions
 EXTERN int volume;          // Volume of lattice
 EXTERN int iseed;           // Random number seed
-EXTERN int warms, sweeps, steps, stepsQ, measinterval;
+EXTERN int warms, measinterval;   // Common stuff
+EXTERN int sweeps, steps, stepsQ; // ORA stuff
+EXTERN int trajecs, nsteps;       // HMC stuff
+EXTERN Real traj_length, eps, fnorm, max_f;
 
 EXTERN Real beta;
 EXTERN Real one_ov_N, one_ov_vol;
