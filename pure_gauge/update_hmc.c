@@ -67,12 +67,12 @@ int update_hmc() {
     if (traj_length > 0.0)
       gauge_field_copy(F_OFFSET(old_linkf[0]), F_OFFSET(linkf[0]));
 
-    node0_printf("REJECT: delta S = %.4g start S = %.12g end S = %.12g\n",
-                 change, startaction, endaction);
+    node0_printf("REJECT: delta S = %.4g start S = %.12g end S = %.12g  nsteps = %.4g\n",
+                 change, startaction, endaction, (double)(exp(-change)));
   }
   else {
-    node0_printf("ACCEPT: delta S = %.4g start S = %.12g end S = %.12g\n",
-                 change, startaction, endaction);
+    node0_printf("ACCEPT: delta S = %.4g start S = %.12g end S = %.12g nsteps = %.4g\n",
+                 change, startaction, endaction, (double)(exp(-change)));
   }
 
   if (traj_length > 0.0) {

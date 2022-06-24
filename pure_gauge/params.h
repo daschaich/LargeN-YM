@@ -16,6 +16,9 @@ typedef struct {
   int sweeps;             // The number of sweeps with measurements
   int steps;              // Number of over-relaxation steps per sweep
   int stepsQ;             // Number of quasi-heatbath steps per sweep
+  int nsteps;             // Number of hmc steps per trajectory
+  Real traj_length;       // Length of trajectory of hmc
+  Real eps;
   int startflag;          // What to do for beginning lattice
   int saveflag;           // What to do with lattice at end
   Real beta;              // Gauge coupling

@@ -23,11 +23,11 @@ int main(int argc, char *argv[]) {
     terminate(1);
   }
   dtime = -dclock();
-
+  coldlat();
   // Check: compute initial plaquette
   plaquette(&ss_plaq, &st_plaq);
   node0_printf("START %.8g %.8g %.8g\n", ss_plaq, st_plaq, ss_plaq + st_plaq);
-
+  
   // Perform warmup sweeps
   for (swp_done = 0; swp_done < warms; swp_done++)
     update();

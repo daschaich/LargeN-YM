@@ -125,6 +125,12 @@ int readin(int prompt) {
 
     // Quasi-heatbath steps per sweep
     IF_OK status += get_i(stdin, prompt, "qhb_steps", &par_buf.stepsQ);
+    
+    // HMC steps per sweep
+    IF_OK status += get_i(stdin, prompt, "hmc_steps", &par_buf.nsteps);
+    
+    // HMC trajectory length
+    IF_OK status += get_f(stdin, prompt, "traj_length", &par_buf.traj_length);
 
 #ifdef LLR
     // LLR stuff
@@ -168,6 +174,9 @@ int readin(int prompt) {
   beta = par_buf.beta;
   steps = par_buf.steps;
   stepsQ = par_buf.stepsQ;
+  nsteps = par_buf.nsteps;
+  traj_length = par_buf.traj_length;
+  eps = (Real)traj_length/(Real)nsteps;
   startflag = par_buf.startflag;
   saveflag = par_buf.saveflag;
 
