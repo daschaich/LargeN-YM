@@ -109,60 +109,42 @@ int readin(int prompt) {
 
     // Warms, sweeps
     IF_OK status += get_i(stdin, prompt, "warms", &par_buf.warms);
-    IF_OK status += get_i(stdin, prompt, "sweeps", &par_buf.sweeps);
+    IF_OK status += get_i(stdin, prompt, "trajecs", &par_buf.trajecs);
 
-#ifndef LLR
     // Trajectories between more expensive measurements
-    IF_OK status += get_i(stdin, prompt, "swp_between_meas",
+    IF_OK status += get_i(stdin, prompt, "traj_between_meas",
                           &par_buf.measinterval);
-#endif
 
     // beta
     IF_OK status += get_f(stdin, prompt, "beta", &par_buf.beta);
 
+#ifndef HMC
     // Over-relaxation steps per sweep
-    IF_OK status += get_i(stdin, prompt, "ora_steps", &par_buf.steps);
+    IF_OK status += get_i(stdin, prompt, "ora_steps", &par_buf.ora_steps);
 
     // Quasi-heatbath steps per sweep
-    IF_OK status += get_i(stdin, prompt, "qhb_steps", &par_buf.stepsQ);
-    
+    IF_OK status += get_i(stdin, prompt, "qhb_steps", &par_buf.qhb_steps);
+#else
     // HMC steps per sweep
-    IF_OK status += get_i(stdin, prompt, "hmc_steps", &par_buf.nsteps);
-    
+    IF_OK status += get_i(stdin, prompt, "hmc_steps", &par_buf.hmc_steps);
+
     // HMC trajectory length
     IF_OK status += get_f(stdin, prompt, "traj_length", &par_buf.traj_length);
-    
-    // Size of energy interval delta
-    IF_OK status += get_f(stdin, prompt, "delta", &par_buf.delta);
+#endif
 
 #ifdef LLR
     // LLR stuff
     // Energy range to scan (min to max)
     IF_OK status += get_f(stdin, prompt, "Emin", &par_buf.Emin);
-    IF_OK status += get_f(stdin, prompt, "Emax", &par_buf.Emax);
 
-    
+    // Size of energy interval delta
+    IF_OK status += get_f(stdin, prompt, "delta", &par_buf.delta);
 
-    // Number of iterations for Robbins--Monro algorithm
-    IF_OK status += get_i(stdin, prompt, "ait", &par_buf.ait);
-
-    // Number of repetitions to jackknife or bootstrap
-    IF_OK status += get_i(stdin, prompt, "Njacknife", &par_buf.Njacknife);
-#endif
-
-#ifdef HMCLLR
-    // LLR stuff
-    // Energy range to scan (min to max)
-    IF_OK status += get_f(stdin, prompt, "Emin", &par_buf.Emin);
-    IF_OK status += get_f(stdin, prompt, "Emax", &par_buf.Emax);
-
-    
+    // Starting value for LLR observable 'a'
+    IF_OK status += get_f(stdin, prompt, "a", &par_buf.a);
 
     // Number of iterations for Robbins--Monro algorithm
     IF_OK status += get_i(stdin, prompt, "ait", &par_buf.ait);
-
-    // Number of repetitions to jackknife or bootstrap
-    IF_OK status += get_i(stdin, prompt, "Njacknife", &par_buf.Njacknife);
 #endif
 
     // Find out what kind of starting lattice to use
@@ -187,32 +169,30 @@ int readin(int prompt) {
     normal_exit(0);
 
   warms = par_buf.warms;
-  sweeps = par_buf.sweeps;
+  trajecs = par_buf.trajecs;
+  measinterval = par_buf.measinterval;
   beta = par_buf.beta;
-  steps = par_buf.steps;
-  stepsQ = par_buf.stepsQ;
-  nsteps = par_buf.nsteps;
+  a = par_buf.a;
+
+#ifndef HMC
+  ora_steps = par_buf.ora_steps;
+  qhb_steps = par_buf.qhb_steps;
+#else
+  hmc_steps = par_buf.hmc_steps;
   traj_length = par_buf.traj_length;
-  delta = par_buf.delta * volume;
-  eps = (Real)traj_length/(Real)nsteps;
-  startflag = par_buf.startflag;
-  saveflag = par_buf.saveflag;
+  eps = traj_length / (Real)nsteps;
+#endif
 
 #ifdef LLR
   Emin = par_buf.Emin * volume;
-  Emax = par_buf.Emax * volume;
+  delta = par_buf.delta * volume;
+  Emax = Emin + delta;
+  deltaSq = delta * delta;
   ait = par_buf.ait;
-  Njacknife = par_buf.Njacknife;
-#else
-  measinterval = par_buf.measinterval;
 #endif
-#ifdef HMCLLR
-  Emin = par_buf.Emin * volume;
-  Emax = par_buf.Emax * volume;
-  ait = par_buf.ait;
-  Njacknife = par_buf.Njacknife;
-#endif
- 
+
+  startflag = par_buf.startflag;
+  saveflag = par_buf.saveflag;
   strcpy(startfile, par_buf.startfile);
   strcpy(savefile, par_buf.savefile);
   strcpy(stringLFN, par_buf.stringLFN);

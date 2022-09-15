@@ -1,5 +1,5 @@
 // -----------------------------------------------------------------
-// Kennedy--Pendleton quasi-heat bath (qhb) on SU(2) subgroups
+// Kennedy--Pendleton quasi-heatbath (qhb) on SU(2) subgroups
 #include "pg_includes.h"
 #define INC 1.0e-10
 //#define DEBUG_PRINT
@@ -37,7 +37,7 @@ void monte() {
   }
 
   // Loop over quasi-heatbath sweeps
-  for (istep = 0; istep < stepsQ; istep++) {
+  for (istep = 0; istep < qhb_steps; istep++) {
     for (parity = ODD; parity <= EVEN; parity++) {
       FORALLUPDIR(dir) {
         // Compute the gauge force (updating s->staple)

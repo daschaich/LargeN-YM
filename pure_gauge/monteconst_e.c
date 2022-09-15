@@ -1,10 +1,10 @@
 // -----------------------------------------------------------------
-// Kennedy--Pendleton quasi-heat bath (qhb) on SU(2) subgroups
+// Kennedy--Pendleton quasi-heatbath (qhb) on SU(2) subgroups
 #include "pg_includes.h"
 #define INC 1.0e-10
 //#define DEBUG_PRINT
 
-void monteconst_e(double Eint, double a) {
+void monteconst_e() {
   register int dir, i;
   register site *s;
   int istep, Nhit, subgrp, ina, inb, parity, count;
@@ -16,7 +16,7 @@ void monteconst_e(double Eint, double a) {
   Real h0, h1, h2, h3;
   Real r, r2, rho, z, norm;
   Real al, d, xl, xd, b3 = beta * a * one_ov_N;
-  double ss_plaq, st_plaq, energy;
+  double E, ss_plaq, st_plaq;
   su2_matrix h;
   matrix_f actmat;
 #ifdef DEBUG_PRINT
@@ -39,7 +39,7 @@ void monteconst_e(double Eint, double a) {
   }
 
   // Loop over quasi-heatbath sweeps
-  for (istep = 0; istep < stepsQ; istep++) {
+  for (istep = 0; istep < qhb_steps; istep++) {
     for (parity = ODD; parity <= EVEN; parity++) {
       FORALLUPDIR(dir) {
         // Compute the gauge force (updating s->staple)
@@ -90,12 +90,11 @@ void monteconst_e(double Eint, double a) {
 #ifdef DEBUG_PRINT
 //            check = 1.0 - v0 * v0 - v1 * v1 - v2 * v2 - v3 * v3;
 //            node0_printf("%e\n", check);
-//			vsq = v0*v0 + v1*v1 + v2*v2 + v3*v3;
-//			z = sqrt((double)vsq );
-//			v0 = v0/z; v1 = v1/z; v2 = v2/z; v3 = v3/z;
-// test
-//node0_printf("v= %e %e %e %e\n",v0,v1,v2,v3);
-//node0_printf("z= %e\n",z);
+//            vsq = v0*v0 + v1*v1 + v2*v2 + v3*v3;
+//            z = sqrt((double)vsq );
+//            v0 = v0/z; v1 = v1/z; v2 = v2/z; v3 = v3/z;
+//            node0_printf("v= %e %e %e %e\n",v0,v1,v2,v3);
+//            node0_printf("z= %e\n",z);
 #endif
 
             /* end norm check--trial SU(2) matrix is a0 + i a(j)sigma(j)*/
@@ -233,18 +232,17 @@ void monteconst_e(double Eint, double a) {
 //          reunitarize();
 
           // If we have exited the energy interval, restore starting links
-          energy = action(&ss_plaq, &st_plaq);
+          E = energy(&ss_plaq, &st_plaq);
           // Monitor plaquette after each SU(2) subgroup sweep
 #ifdef DEBUG_PRINT
           node0_printf("PLAQ %.8g %.8g %.8g\n",
                        ss_plaq, st_plaq, ss_plaq + st_plaq);
 #endif
-          if (energy < Eint || energy > (Eint + delta)) {
+          if (E < Emin || E > Emax) {
             this_reject++;
 #ifdef DEBUG_PRINT
-            node0_printf("Reject subgroup %d for parity %d: ", subgrp, parity);
-            node0_printf("Energy %.8g leaves [%.8g, %.8g]\n",
-                         energy, Eint, Eint + delta);
+            node0_printf("Reject subgrp %d for parity %d: ", subgrp, parity);
+            node0_printf("Energy %.8g leaves [%.8g, %.8g]\n", E, Emin, Emax);
 #endif
             FORSOMEPARITY(i, s, parity)
               mat_copy_f(&(s->tempmat), &(s->linkf[dir]));
@@ -252,7 +250,7 @@ void monteconst_e(double Eint, double a) {
           else {
             this_accept++;
 #ifdef DEBUG_PRINT
-            node0_printf("Accept new energy %.8g\n", energy);
+            node0_printf("Accept new energy %.8g\n", E);
 #endif
           }
           /* diagnostics

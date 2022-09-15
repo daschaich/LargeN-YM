@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------
-// Update lattice, choose between hybrid Monte Carlo trajectories
-// or over-relaxed quasi-heat bath (qhb) sweeps
+// Update lattice, choosing between hybrid Monte Carlo trajectories
+// or over-relaxed quasi-heatbath (qhb) sweeps
 #include "pg_includes.h"
 
 void update() {
@@ -11,7 +11,7 @@ void update() {
   // Do HMC updates if specified
   update_hmc();
 #else
-  // Otherwise do over-relaxation and quasi-heat bath steps
+  // Otherwise do over-relaxation and quasi-heatbath steps
   relax();
   monte();
 #endif

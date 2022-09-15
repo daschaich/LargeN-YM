@@ -7,8 +7,8 @@
 gmon.out
 localmake
 pg_ora
-pg_hmc*
-pg_llr
+pg_hmc
+pg_llr*
 su3_hmc*
 su3_Wflow
 su3_printpoly

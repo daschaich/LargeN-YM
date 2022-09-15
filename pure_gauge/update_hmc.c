@@ -9,6 +9,27 @@
 
 
 
+// -----------------------------------------------------------------
+// Helper function copies a gauge field as an array of four matrices
+void gauge_field_copy(field_offset src, field_offset dest) {
+  register int i, dir, src2, dest2;
+  register site *s;
+
+  FORALLSITES(i, s) {
+    src2 = src;
+    dest2 = dest;
+    FORALLUPDIR(dir) {
+      mat_copy_f((matrix_f *)F_PT(s, src2), (matrix_f *)F_PT(s, dest2));
+      src2 += sizeof(matrix_f);
+      dest2 += sizeof(matrix_f);
+    }
+  }
+}
+// -----------------------------------------------------------------
+
+
+
+// -----------------------------------------------------------------
 int update_hmc() {
   int step, iters = 0;
   Real xrandom, tr;
@@ -28,13 +49,13 @@ int update_hmc() {
   update_u(0.5 * eps);
 
   // Inner steps p(t) u(t)
-  for (step = 0; step < nsteps; step++) {
+  for (step = 0; step < hmc_steps; step++) {
     tr = update_h(eps);
     fnorm += tr;
     if (tr > max_f)
       max_f = tr;
 
-    if (step < nsteps - 1)
+    if (step < hmc_steps - 1)
       update_u(eps);
     else
       update_u(0.5 * eps);    // Final u(t/2)
@@ -63,31 +84,31 @@ int update_hmc() {
   if (this_node == 0)
     xrandom = myrand(&node_prn);
   broadcast_float(&xrandom);
-  if ((double)xrandom < exp(-change)) {
+  if (exp(-change) < (double)xrandom) {
     if (traj_length > 0.0)
       gauge_field_copy(F_OFFSET(old_linkf[0]), F_OFFSET(linkf[0]));
 
-    //node0_printf("REJECT: delta S = %.4g start S = %.12g end S = %.12g  nsteps = %.4g\n",
-                 //change, startaction, endaction, (double)(exp(-change)));
-    node0_printf("REJECT: delta S = %.4g start S = %.12g end S = %.12g  nsteps = %.4g\n",
-                 change, startaction, endaction, U_action());
+    node0_printf("REJECT: delta S = %.4g start S = %.12g end S = %.12g\n",
+                 change, startaction, endaction);
   }
   else {
-    node0_printf("ACCEPT: delta S = %.4g start S = %.12g end S = %.12g nsteps = %.4g\n",
-                 change, startaction, endaction,  U_action());
+    node0_printf("ACCEPT: delta S = %.4g start S = %.12g end S = %.12g\n",
+                 change, startaction, endaction;
   }
 
   if (traj_length > 0.0) {
     node0_printf("IT_PER_TRAJ %d\n", iters);
     node0_printf("MONITOR_FORCE %.4g %.4g\n",
-                 fnorm / (double)(2 * nsteps), max_f);
+                 fnorm / (double)(2 * hmc_steps), max_f);
     return iters;
   }
   else
     return(-99);
 }
 
+// TODO: Should be able to use update_hmc with modified action()...
 int update_hmc_const(double Eint, double a) {
+#if 0
   int step, iters = 0;
   Real xrandom, tr;
   double fnorm = 0.0, startaction = 0.0, endaction, change;
@@ -111,13 +132,13 @@ int update_hmc_const(double Eint, double a) {
   update_u(0.5 * eps);
 
   // Inner steps p(t) u(t)
-  for (step = 0; step < nsteps; step++) {
+  for (step = 0; step < hmc_steps; step++) {
     tr = update_h_const(eps,Eint,a);
     fnorm += tr;
     if (tr > max_f)
       max_f = tr;
 
-    if (step < nsteps - 1)
+    if (step < hmc_steps - 1)
       update_u(eps);
     else
       update_u(0.5 * eps);    // Final u(t/2)
@@ -154,25 +175,22 @@ int update_hmc_const(double Eint, double a) {
     if (traj_length > 0.0)
       gauge_field_copy(F_OFFSET(old_linkf[0]), F_OFFSET(linkf[0]));
 
-    //node0_printf("REJECT: delta S = %.4g start S = %.12g end S = %.12g  nsteps = %.4g\n",
-                 //change, startaction, endaction, (double)(exp(-change)));
-    node0_printf("REJECT: delta S = %.4g start S = %.12g end S = %.12g  nsteps = %.4g\n",
-                 change, startactionHMC, endactionHMC, U_action());
+    node0_printf("REJECT: delta S = %.4g start S = %.12g end S = %.12g\n",
+                 change, startactionHMC, endactionHMC);
   }
   else {
-    //node0_printf("ACCEPT: delta S = %.4g start S = %.12g end S = %.12g nsteps = %.4g\n",
-                 //change, startaction, endaction, (double)(exp(-change)));
-    node0_printf("ACCEPT: delta S = %.4g start S = %.12g end S = %.12g nsteps = %.4g\n",
-                 change, startactionHMC, endactionHMC, U_action());
+    node0_printf("ACCEPT: delta S = %.4g start S = %.12g end S = %.12g\n",
+                 change, startactionHMC, endactionHMC);
   }
 
   if (traj_length > 0.0) {
     node0_printf("IT_PER_TRAJ %d\n", iters);
     node0_printf("MONITOR_FORCE %.4g %.4g\n",
-                 fnorm / (double)(2 * nsteps), max_f);
+                 fnorm / (double)(2 * hmc_steps), max_f);
     return iters;
   }
   else
     return(-99);
+#endif
 }
 // -----------------------------------------------------------------

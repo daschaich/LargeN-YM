@@ -1,20 +1,25 @@
 // -----------------------------------------------------------------
-// Update lattice with over-relaxed quasi-heat bath (qhb)
+// Update lattice
+// Choose between hybrid Monte Carlo trajectories
+// or over-relaxed quasi-heatbath (qhb) sweeps
 #include "pg_includes.h"
 
 void updateconst_e(double Eint, double a) {
+#ifdef LLR
   // Check unitarity before doing anything
   check_unitarity();
 
-#ifdef HMCLLR
+#ifdef HMC
   // Do HMC updates if specified
-  update_hmc_const(Eint, a);
+  update_hmc_const();
 #else
-  // Otherwise do over-relaxation and quasi-heat bath steps
+  // Otherwise do over-relaxation and quasi-heatbath steps
   relax();
-  monteconst_e(Eint, a);
+  monteconst_e();
 #endif
+
   // Reunitarize the gauge field
   reunitarize();
+#endif
 }
 // -----------------------------------------------------------------

@@ -34,18 +34,6 @@ typedef struct {
   // Antihermitian momentum matrices in each direction
   anti_hermitmat mom[4];
 #endif
-#ifdef LLR
-  matrix old_linkf[4];  // For accept/reject
-
-  // Antihermitian momentum matrices in each direction
-  anti_hermitmat mom[4];
-#endif
-#ifdef HMCLLR
-  matrix old_linkf[4];  // For accept/reject
-
-  // Antihermitian momentum matrices in each direction
-  anti_hermitmat mom[4];
-#endif
 
   // Temporary storage
   matrix_f tempmat, staple;    // TODO: Replace with tempmatf and tempmatf2
@@ -65,12 +53,16 @@ typedef struct {
 EXTERN int nx, ny, nz, nt;  // Lattice dimensions
 EXTERN int volume;          // Volume of lattice
 EXTERN int iseed;           // Random number seed
-EXTERN int warms, measinterval;   // Common stuff
-EXTERN int sweeps, steps, stepsQ; // ORA stuff
-EXTERN int trajecs, nsteps;       // HMC stuff
-EXTERN Real traj_length, eps, fnorm, max_f;
+EXTERN int warms, trajecs;  // Common stuff
+EXTERN int measinterval;
+#ifndef HMC
+EXTERN int ora_steps, qhb_steps;    // ORA stuff
+#else
+EXTERN int hmc_steps, traj_length;  // HMC stuff
+EXTERN Real eps, fnorm, max_f;
+#endif
 
-EXTERN Real beta;
+EXTERN Real beta, a;        // Fix a = 1 without LLR
 EXTERN Real one_ov_N, one_ov_vol;
 EXTERN char startfile[MAXFILENAME], savefile[MAXFILENAME];
 EXTERN double g_ssplaq, g_stplaq;
@@ -81,17 +73,11 @@ EXTERN int startflag; // Beginning lattice: CONTINUE, RELOAD, FRESH
 EXTERN int fixflag;   // Either NO_GAUGE_FIX or COULOMB_GAUGE_FIX
 EXTERN int saveflag;  // 1 if we will save the lattice
 EXTERN int total_iters;
-EXTERN Real delta;
 
 #ifdef LLR
 // LLR parameters
-EXTERN int ait, Njacknife, accept, reject;
-EXTERN double Emax, Emin, delta;
-#endif
-#ifdef HMCLLR
-// LLR parameters
-EXTERN int ait, Njacknife, accept, reject;
-EXTERN double Emax, Emin, delta;
+EXTERN int ait, accept, reject;
+EXTERN double Emin, Emax, delta, deltaSq;
 #endif
 
 // Some of these global variables are node dependent

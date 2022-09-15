@@ -7,9 +7,13 @@ void relax() {
   register site *s;
   int istep, Nhit, subgrp, ina, inb, count;
   int parity, index_a[N_OFFDIAG], index_b[N_OFFDIAG];
-  Real a0, a1, a2, a3, asq, r, norm, test;
+  Real a0, a1, a2, a3, asq, norm;
   su2_matrix u;
   matrix_f action;
+
+#ifdef DEBUG_PRINT
+  Real r, test
+#endif
 
   Nhit = (int)N_OFFDIAG;    // NCOL * (NCOL - 1) / 2
   // Set up SU(2) subgroup indices [a][b], always with a < b
@@ -27,7 +31,7 @@ void relax() {
   }
 
   // Loop over over-relaxation sweeps
-  for (istep = 0 ; istep < steps; istep++) {
+  for (istep = 0 ; istep < ora_steps; istep++) {
     for (parity = ODD; parity <= EVEN; parity++) {
       FORALLUPDIR(dir) {
         // Compute the gauge force (updating every s->staple)

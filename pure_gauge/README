@@ -56,7 +56,7 @@ forget
 
 
 # ------------------------------------------------------------------
-# Sample input file for hmcllr:
+# Sample input file for llr:
 prompt 0
 nx 4
 ny 4

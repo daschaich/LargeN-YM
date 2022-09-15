@@ -6,8 +6,8 @@ nt 4
 iseed 41
 
 warms 0
-sweeps 10
-swp_between_meas 10
+trajecs 3
+traj_between_meas 3
 
 beta 6.0
 ora_steps 4

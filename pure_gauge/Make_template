@@ -5,10 +5,10 @@
 # Don't use it by itself!
 
 # Target:
-#   pg_ora uses over-relaxed quasi-heat bath algorithm
+#   pg_ora uses the over-relaxed quasi-heat bath algorithm
 #   pg_hmc uses the hybrid Monte Carlo algorithm
 #   pg_llr uses log-linear relaxation to compute density of states
-#   pg_hmcllr uses log-linear relaxation to compute density of states with hmc
+#   pg_hmcllr uses log-linear relaxation to compute density of states with HMC
 
 MYINCLUDEDIR = .
 INCLUDEDIR = ../include
@@ -104,19 +104,19 @@ pg_ora::
 	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" \
 	"EXTRA_OBJECTS = control.o dsdu_qhb.o monte.o relax.o "
 
+pg_llr_ora::
+	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" "DEFINES = -DLLR" \
+	"EXTRA_OBJECTS = control_llr.o dsdu_qhb.o monte.o relax.o \
+                   monteconst_e.o updateconst_e.o find_interval.o "
+
 pg_hmc::
 	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" "DEFINES = -DHMC" \
 	"EXTRA_OBJECTS = control.o ranmom.o action.o update_hmc.o update_h.o update_u.o "
 
 pg_llr::
-	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" "DEFINES = -DLLR" \
-	"EXTRA_OBJECTS = control_llr.o ranmom.o action.o dsdu_qhb.o monte.o relax.o \
-                   monteconst_e.o updateconst_e.o "
-
-pg_hmcllr::
-	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" "DEFINES = -DHMCLLR" \
-	"EXTRA_OBJECTS = control.o ranmom.o action.o update_hmc.o update_h.o update_u.o dsdu_qhb.o monte.o relax.o \
-                   monteconst_e.o updateconst_e.o "
+	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" "DEFINES = -DHMC -DLLR" \
+	"EXTRA_OBJECTS = control.o ranmom.o action.o update_hmc.o update_h.o update_u.o \
+	                 monteconst_e.o updateconst_e.o find_interval.o "
 
 clean:
 	-/bin/rm -f *.o

@@ -2,71 +2,12 @@
 // Main procedure and helpers for pure-gauge over-relaxed quasi-heatbath
 #define CONTROL
 #include "pg_includes.h"
-//#define DEBUG_PRINT
-// -----------------------------------------------------------------
 
-
-
-// -----------------------------------------------------------------
-// Find initial configuration in desired energy interval
-void findEint(double Eint, double delta) {
-  bool Efound = false;
-  int counter = 0, count_max = 2000;
-  double ss_plaq, st_plaq, dtime, energy, energyref, betaref = beta;
-
-  node0_printf("Searching for energy interval [%.8g, %.8g]\n",
-               Eint, Eint + delta);
-
-  dtime = -dclock();
-  energy = U_action();
-  if (energy >= Eint && energy <= (Eint + delta))
-  {
-    Efound = true;
-    beta = betaref;
-  }
-
-  while(Efound == false && counter < count_max) {
-    update();
-    energyref = U_action() * betaref / beta;
-    if (energyref >= Eint && energyref <= (Eint + delta))
-    {
-      Efound = true;
-      beta = betaref;
-    }
-    else if (energyref>(Eint+delta))
-      beta += 0.1;
-    else  // energyref < Eint
-      beta -= 0.1;
-#ifdef DEBUG_PRINt
-    node0_printf("energyref %.8g %.8g %d\n", energyref, beta, counter);
-#endif
-
-    counter++;
-  }
-
-  dtime += dclock();
-  if (Efound) {
-    node0_printf("Energy %.4g in interval found ", energyref);
-    node0_printf("after %d updates in %.4g seconds\n", counter, dtime);
-  }
-  else {
-    node0_printf("ERROR: Energy interval not found ");
-    node0_printf("after %d updates in %.4g seconds\n", counter, dtime);
-    node0_printf("Ended up with energy %.4g\n", energyref);
-    terminate(1);
-  }
-}
-// -----------------------------------------------------------------
-
-
-
-// -----------------------------------------------------------------
 int main(int argc, char *argv[]) {
-  bool Einterval = false;
   int prompt;
-  int swp_done, Nint, Eint, jcount, acounter;
-  int RMcount;      // Count Robbins--Monro iterations
-  double ss_plaq, st_plaq, dtime, rate, energy;
+  int traj_done, RMcount;//, Nmeas = 0;
+  double ss_plaq, st_plaq, E, dtime, save_a, rate;
+  double Reweightexpect;    // Reweighted expectation value of the energy
 
   // Set up
   setlinebuf(stdout); // DEBUG
@@ -88,85 +29,58 @@ int main(int argc, char *argv[]) {
   reject = 0;
 
   // Check: compute initial plaquette and energy
-  energy = U_action();
+  E = energy(&ss_plaq, &st_plaq);
   node0_printf("START %.8g %.8g %.8g %.8g\n",
-               ss_plaq, st_plaq, ss_plaq + st_plaq, energy);
+               ss_plaq, st_plaq, ss_plaq + st_plaq, E);
 
-  // Declarations that depend on input
-  // Number of energy intervals, include interval starting at Emax
-  Nint = (int)((Emax - Emin) / delta) + 1;
-  double x0[Nint];  // Lower end of energy interval
-  double a[Nint], a_i[Njacknife], a_i_new;
-  double Reweightexpect; // Reweighted expectation value of the energy
-  double *measurement = malloc(sweeps * sizeof(double));
+  // Unconstrained warmup sweeps before searching for energy interval
+  for (traj_done = 0; traj_done < warms; traj_done++)
+    update();
+  node0_printf("WARMUPS COMPLETED\n");
 
-  for(Eint=0;Eint<Nint;Eint++)
-  {
-    x0[Eint] = (double)(Eint)*delta + Emin;
-    a[Eint] = 0.0;
-    for(jcount = 0;jcount<Njacknife;jcount++)
-    {
-      a_i[jcount] = 1.0;
-      a_i_new = 1.0;
-      RMcount = 0;
-      Einterval = false;
+  // Terminates if interval not found
+  findEint();
 
-      // Perform warmup sweeps before searching for energy interval
-      coldlat();
-      for (swp_done = 0; swp_done < warms; swp_done++)
-        update();
-      node0_printf("%d WARMUPS COMPLETED FOR jcount=%d\n", warms, jcount);
+  // Robbins--Monro (RM) iterations
+  for (RMcount = 0; RMcount < ait; RMcount++) {
+    // Constrained warm-up sweeps in each RM iteration, with a=1
+    save_a = a;
+    a = 1.0;
+    for (traj_done = 0; traj_done < warms; traj_done++)
+      updateconst_e();
+    a = save_a;
 
-      for(acounter=0;acounter<ait;acounter++)
-      {
-        a_i[jcount] = a_i_new;
+    Reweightexpect = 0.0;
+    for (traj_done = 0; traj_done < trajecs; traj_done++) {
+      updateconst_e();
+      // Accumulate after update
+      Reweightexpect += energy(&ss_plaq, &st_plaq);
 
-        if (Einterval == false)
-        {
-          // Terminates if interval not found
-          findEint(x0[Eint],delta);
-          Einterval = true;
-
-          for (swp_done = 0; swp_done < (2*warms); swp_done++)
-            updateconst_e(x0[Eint], 1.0);
-        }
-
-        for (swp_done = 0; swp_done < warms; swp_done++)
-          updateconst_e(x0[Eint], 1.0);
-
-        // TODO: Compute variance from <O> and <O^2>
-        Reweightexpect = 0;
-        for (swp_done = 0; swp_done < sweeps; swp_done++) {
-          measurement[swp_done] = U_action();
-          Reweightexpect += measurement[swp_done];
-          updateconst_e(x0[Eint], a_i[jcount]);
-        }
-        Reweightexpect /= sweeps;
-
-        Reweightexpect -= x0[Eint] + 0.5*delta;
-        if (RMcount<100)
-        {
-          a_i_new = a_i[jcount] + 12/(delta*delta)*Reweightexpect;
-          node0_printf("a = %.4g off\n", a_i_new);
-        }
-        else
-        {
-          a_i_new = a_i[jcount] + 12/(delta*delta*(RMcount+1-100))*Reweightexpect;
-          node0_printf("a = %.4g\n", a_i_new);
-        }
-        RMcount++;
+      // More expensive measurements every "measinterval" sweeps
+      if ((traj_done % measinterval) == (measinterval - 1)) {
+//        Nmeas++;
+        // Nothing yet...
       }
-      a[Eint] += a_i_new / Njacknife;
     }
-    //node0_printf("a = %.4g \n", a[Eint]);
-    //printf("%d \n",1.0);
+    Reweightexpect /= trajecs;
+    Reweightexpect -= Emin + 0.5 * delta;
+
+    // Hard-code under-relaxation to begin after 100 RM iterations
+    if (RMcount < 100)
+      a += 12.0 * Reweightexpect / deltaSq;
+    else
+      a += 12.0 * Reweightexpect / (deltaSq * (RMcount - 99));
+    node0_printf("RM ITER %d a %.8g\n", RMcount + 1, a);
+    // TODO: I think acceptance rate for each RM iteration
+    //       would be more interesting than the overall one below...
   }
   node0_printf("RUNNING COMPLETED\n");
 
   // Check: compute final plaquette and energy
-  energy = U_action();
+  plaquette(&ss_plaq, &st_plaq);
+  E = energy(&ss_plaq, &st_plaq);
   node0_printf("STOP %.8g %.8g %.8g %.8g\n",
-               ss_plaq, st_plaq, ss_plaq + st_plaq, energy);
+               ss_plaq, st_plaq, ss_plaq + st_plaq, E);
 
   rate = (double)accept / ((double)(accept + reject));
   node0_printf("Overall acceptance %d of %d = %.4g\n",
@@ -179,7 +93,6 @@ int main(int argc, char *argv[]) {
   if (saveflag != FORGET)
     save_lattice(saveflag, savefile, stringLFN);
 
-  free(measurement);
   normal_exit(0);         // Needed by at least some clusters
   return 0;
 }

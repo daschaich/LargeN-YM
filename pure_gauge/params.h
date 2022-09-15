@@ -11,36 +11,33 @@ typedef struct {
   int nx, ny, nz, nt;     // Lattice dimensions
   int iseed;              // For random numbers
 
-  // Over-relaxation and HMC parameters
-  int warms;              // The number of warmup sweeps
-  int sweeps;             // The number of sweeps with measurements
-  int steps;              // Number of over-relaxation steps per sweep
-  int stepsQ;             // Number of quasi-heatbath steps per sweep
-  int nsteps;             // Number of hmc steps per trajectory
-  Real traj_length;       // Length of trajectory of hmc
-  Real delta;         // Size of energy interval
-  Real eps;
+  // Generic update parameters
+  int warms;              // The number of warmup trajectories/sweeps
+  int trajecs;            // The number of trajectories with measurements
+  int measinterval;       // Number of trajectories between measurements
+  Real beta;              // Gauge coupling
+  Real a;                 // LLR observable, otherwise fixed to a=1
   int startflag;          // What to do for beginning lattice
   int saveflag;           // What to do with lattice at end
-  Real beta;              // Gauge coupling
   char startfile[MAXFILENAME], savefile[MAXFILENAME];
   char stringLFN[MAXFILENAME];  // ILDG LFN if applicable
 
-#ifndef LLR
-  int measinterval;       // Number of sweepsbetween measurements
+#ifndef HMC
+  // Over-relaxation parameters
+  int ora_steps;              // Number of over-relaxation steps per sweep
+  int qhb_steps;              // Number of quasi-heatbath steps per sweep
+#else
+  // HMC parameters
+  int hmc_steps;              // Number of hmc steps per trajectory
+  Real traj_length;           // Trajectory length
+  Real eps;
 #endif
 
 #ifdef LLR
   // LLR parameters
-  Real Emin, Emax;    // Energy range to scan
+  Real Emin;          // Lower edge of energy interval
+  Real delta;         // Size of energy interval
   int ait;            // Number of Robbins--Monro iterations
-  int Njacknife;      // Number of repetitions to jackknife or bootstrap
-#endif
-#ifdef HMCLLR
-  // LLR parameters
-  Real Emin, Emax;    // Energy range to scan
-  int ait;            // Number of Robbins--Monro iterations
-  int Njacknife;      // Number of repetitions to jackknife or bootstrap
 #endif
 }  params;
 #endif

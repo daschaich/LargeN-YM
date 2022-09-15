@@ -26,26 +26,35 @@
 int setup();
 int readin(int prompt);
 
+#ifndef HMC
 // Over-relaxed quasi-heatbath stuff
 void relax();
-void dsdu_qhb(int dir1, int parity);    // Gauge force for quasi-heat bath
+void dsdu_qhb(int dir, int parity);    // Gauge force for quasi-heatbath
 void monte();
 void update();
-
+#else
 // HMC stuff
-void gauge_field_copy(field_offset src, field_offset dest);
 double U_action();
 double action();
-double action_HMC(double a);
-int update_hmc();
+double action_HMC();
 void update_u();
 double update_h();
-int update_hmc_const(double Eint,double a);
-double update_h_const(Real eps, double Eint, double a);
+int update_hmc();
+#endif
 
+// LLR stuff
 #ifdef LLR
-// Impose constraint that energy remains within interval under consideration
-void updateconst_e(double Eint, double a);
-void monteconst_e(double Eint, double a);
+double energy(double *ss_plaq, double *st_plaq);
+void findEint();
+
+void updateconst_e();
+#ifdef HMC
+  // HMC updates with gaussian window
+double update_h_const();
+int update_hmc_const();
+#else
+  // Over-relaxed quasi-heatbath updates with hard constraints
+void monteconst_e();
+#endif
 #endif
 // -----------------------------------------------------------------
