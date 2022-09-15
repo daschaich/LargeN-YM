@@ -1,12 +1,16 @@
+# ------------------------------------------------------------------
 SU(N) pure-gauge density-of-states computations including evolution
 Can use either over-relaxed quasi-heatbath or hybrid Monte Carlo for updates
 
 For N=3 pg_ora reproduces milc_qcd/pure_gauge/test/su3_ora.2 (blame for test su3_ora.1 mentions "new random number generator" from commit c05e59d)
 
-N=4 pg_ora seems strangely sensitive to roundoff accumulation --- HMC to be checked...
+However, pg_ora seems strangely sensitive to roundoff accumulation --- see github.com/milc-qcd/milc_qcd/issues/44
+# ------------------------------------------------------------------
 
-Sample input file for ora:
-+++
+
+
+# ------------------------------------------------------------------
+# Sample input file for ora:
 prompt 0
 nx 4
 ny 4
@@ -19,8 +23,60 @@ trajecs 3
 traj_between_meas 3
 
 beta 6.0
-steps_per_traj 4
+ora_steps 4
 qhb_steps 4
 
 reload_serial config.SU3.4444
 forget
+# ------------------------------------------------------------------
+
+
+
+# ------------------------------------------------------------------
+# Sample input file for hmc:
+prompt 0
+nx 4
+ny 4
+nz 4
+nt 4
+iseed 41
+
+warms 0
+trajecs 3
+traj_between_meas 3
+
+beta 6.0
+hmc_steps 4
+traj_length 1.0
+
+reload_serial config.SU3.4444
+forget
+# ------------------------------------------------------------------
+
+
+
+# ------------------------------------------------------------------
+# Sample input file for hmcllr:
+prompt 0
+nx 4
+ny 4
+nz 4
+nt 4
+iseed 41
+
+warms 0
+trajecs 100
+traj_between_meas 10
+
+beta 1.0
+hmc_steps 4
+traj_length 1.0
+
+Emin -80.0
+delta 8.0
+a = 10
+ait 10
+
+fresh
+forget
+# ------------------------------------------------------------------
