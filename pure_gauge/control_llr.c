@@ -18,7 +18,7 @@ void findEint(double Eint, double delta) {
                Eint, Eint + delta);
 
   dtime = -dclock();
-  energy = action(&ss_plaq, &st_plaq);
+  energy = U_action();
   if (energy >= Eint && energy <= (Eint + delta))
   {
     Efound = true;
@@ -27,7 +27,7 @@ void findEint(double Eint, double delta) {
 
   while(Efound == false && counter < count_max) {
     update();
-    energyref = action(&ss_plaq, &st_plaq) * betaref / beta;
+    energyref = U_action() * betaref / beta;
     if (energyref >= Eint && energyref <= (Eint + delta))
     {
       Efound = true;
@@ -46,13 +46,13 @@ void findEint(double Eint, double delta) {
 
   dtime += dclock();
   if (Efound) {
-    node0_printf("Energy %.4g in interval found ", energy);
+    node0_printf("Energy %.4g in interval found ", energyref);
     node0_printf("after %d updates in %.4g seconds\n", counter, dtime);
   }
   else {
     node0_printf("ERROR: Energy interval not found ");
     node0_printf("after %d updates in %.4g seconds\n", counter, dtime);
-    node0_printf("Ended up with energy %.4g\n", energy);
+    node0_printf("Ended up with energy %.4g\n", energyref);
     terminate(1);
   }
 }
@@ -88,7 +88,7 @@ int main(int argc, char *argv[]) {
   reject = 0;
 
   // Check: compute initial plaquette and energy
-  energy = action(&ss_plaq, &st_plaq);
+  energy = U_action();
   node0_printf("START %.8g %.8g %.8g %.8g\n",
                ss_plaq, st_plaq, ss_plaq + st_plaq, energy);
 
@@ -137,7 +137,7 @@ int main(int argc, char *argv[]) {
         // TODO: Compute variance from <O> and <O^2>
         Reweightexpect = 0;
         for (swp_done = 0; swp_done < sweeps; swp_done++) {
-          measurement[swp_done] = action(&ss_plaq, &st_plaq);
+          measurement[swp_done] = U_action();
           Reweightexpect += measurement[swp_done];
           updateconst_e(x0[Eint], a_i[jcount]);
         }
@@ -164,7 +164,7 @@ int main(int argc, char *argv[]) {
   node0_printf("RUNNING COMPLETED\n");
 
   // Check: compute final plaquette and energy
-  energy = action(&ss_plaq, &st_plaq);
+  energy = U_action();
   node0_printf("STOP %.8g %.8g %.8g %.8g\n",
                ss_plaq, st_plaq, ss_plaq + st_plaq, energy);
 

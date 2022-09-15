@@ -1,0 +1,30 @@
+SU(4) pure-gauge log-linear relaxation algorithm
+Machine = Scalar processor, with 1 nodes
+start: Thu Sep 15 08:26:35 2022
+
+type 0 for no prompts or 1 for prompts
+nx 4
+ny 4
+nz 4
+nt 4
+iseed 41
+LAYOUT = Hypercubes, options = with fixed node_geometry
+ON EACH NODE 4 x 4 x 4 x 4
+Mallocing 161.1 MBytes per core for lattice
+Mallocing 0.1 MBytes per core for fields
+
+
+warms 0
+sweeps 50
+beta 10.6
+ora_steps 4
+qhb_steps 4
+hmc_steps 100
+traj_length 1
+delta 8
+Emin -80
+Emax -80
+
+get_i: ERROR IN INPUT: expected ait but found delta
+exit: Thu Sep 15 08:26:35 2022
+

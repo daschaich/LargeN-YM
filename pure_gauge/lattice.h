@@ -34,6 +34,18 @@ typedef struct {
   // Antihermitian momentum matrices in each direction
   anti_hermitmat mom[4];
 #endif
+#ifdef LLR
+  matrix old_linkf[4];  // For accept/reject
+
+  // Antihermitian momentum matrices in each direction
+  anti_hermitmat mom[4];
+#endif
+#ifdef HMCLLR
+  matrix old_linkf[4];  // For accept/reject
+
+  // Antihermitian momentum matrices in each direction
+  anti_hermitmat mom[4];
+#endif
 
   // Temporary storage
   matrix_f tempmat, staple;    // TODO: Replace with tempmatf and tempmatf2
@@ -69,8 +81,14 @@ EXTERN int startflag; // Beginning lattice: CONTINUE, RELOAD, FRESH
 EXTERN int fixflag;   // Either NO_GAUGE_FIX or COULOMB_GAUGE_FIX
 EXTERN int saveflag;  // 1 if we will save the lattice
 EXTERN int total_iters;
+EXTERN Real delta;
 
 #ifdef LLR
+// LLR parameters
+EXTERN int ait, Njacknife, accept, reject;
+EXTERN double Emax, Emin, delta;
+#endif
+#ifdef HMCLLR
 // LLR parameters
 EXTERN int ait, Njacknife, accept, reject;
 EXTERN double Emax, Emin, delta;

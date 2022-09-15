@@ -6,10 +6,14 @@ void updateconst_e(double Eint, double a) {
   // Check unitarity before doing anything
   check_unitarity();
 
-  // Do over-relaxation and quasi-heat bath steps
+#ifdef HMCLLR
+  // Do HMC updates if specified
+  update_hmc_const(Eint, a);
+#else
+  // Otherwise do over-relaxation and quasi-heat bath steps
   relax();
   monteconst_e(Eint, a);
-
+#endif
   // Reunitarize the gauge field
   reunitarize();
 }

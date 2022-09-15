@@ -11,6 +11,8 @@ sweeps 3
 beta 10.0
 ora_steps 4
 qhb_steps 4
+hmc_steps 100
+traj_length 1.0
 
 Emin -80.0
 Emax -80.0

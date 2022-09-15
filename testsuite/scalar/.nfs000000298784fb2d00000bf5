@@ -1,0 +1,57 @@
+SU(4) pure-gauge log-linear relaxation algorithm
+Machine = Scalar processor, with 1 nodes
+start: Thu Sep 15 08:29:28 2022
+
+type 0 for no prompts or 1 for prompts
+nx 4
+ny 4
+nz 4
+nt 4
+iseed 41
+LAYOUT = Hypercubes, options = with fixed node_geometry
+ON EACH NODE 4 x 4 x 4 x 4
+Mallocing 161.1 MBytes per core for lattice
+Mallocing 0.1 MBytes per core for fields
+
+
+warms 0
+sweeps 50
+beta 10.6
+ora_steps 4
+qhb_steps 4
+hmc_steps 100
+traj_length 1
+delta 8
+Emin -80
+Emax -80
+ait 10
+Njacknife 1
+fresh
+forget
+unit gauge configuration loaded
+Starting with cold lattice
+CHECK PLAQ: 4.0000000000000000e+00 4.0000000000000000e+00
+CHECK NERSC LINKTR: 1.0000000000000000e+00 CKSUM: 0
+Reunitarized for double precision.  Max deviation 0 changed to 0
+Time to check unitarity = 0.00073 seconds
+START 0 0 0 -21708.8
+unit gauge configuration loaded
+0 WARMUPS COMPLETED FOR jcount=0
+Searching for energy interval [-20480, -18432]
+Energy -1.844e+04 in interval found after 156 updates in 3.557 seconds
+a = 1.003 off
+a = 1.006 off
+a = 1.009 off
+a = 1.012 off
+a = 1.014 off
+a = 1.017 off
+a = 1.02 off
+a = 1.023 off
+a = 1.026 off
+a = 1.029 off
+RUNNING COMPLETED
+STOP 0 0 0 -18442.459
+Overall acceptance 0 of 96000 = 0
+Time = 55.53 seconds
+exit: Thu Sep 15 08:30:23 2022
+

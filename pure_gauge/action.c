@@ -43,7 +43,16 @@ double hmom_action() {
 }
 // -----------------------------------------------------------------
 
+// -----------------------------------------------------------------
+double U_action() {
+  double ssplaq, stplaq, g_act, h_act, tot;
 
+  plaquette(&ssplaq, &stplaq);
+  g_act = -beta * volume * (ssplaq + stplaq);
+  //node0_printf("ACTION: g, h, tot = %8g %.8g %.8g\n", g_act, h_act, tot);
+  return g_act;
+}
+// -----------------------------------------------------------------
 
 // -----------------------------------------------------------------
 double action() {
@@ -53,12 +62,23 @@ double action() {
   g_act = -beta * volume * (ssplaq + stplaq);
   h_act = hmom_action();
   tot = g_act + h_act;
-  node0_printf("ACTION: g, h, tot = %8g %.8g %.8g\n", g_act, h_act, tot);
+  //node0_printf("ACTION: g, h, tot = %8g %.8g %.8g\n", g_act, h_act, tot);
   return tot;
 }
 // -----------------------------------------------------------------
 
+// -----------------------------------------------------------------
+double action_HMC(double a) {
+  double ssplaq, stplaq, g_act, h_act, tot;
 
+  plaquette(&ssplaq, &stplaq);
+  g_act = -beta * volume * (ssplaq + stplaq);
+  h_act = hmom_action();
+  tot = a*g_act + h_act;
+  //node0_printf("ACTION: g, h, tot = %8g %.8g %.8g\n", g_act, h_act, tot);
+  return tot;
+}
+// -----------------------------------------------------------------
 
 // -----------------------------------------------------------------
 // Copy a gauge field as an array of four matrices

@@ -33,11 +33,15 @@ void monte();
 void update();
 
 // HMC stuff
- void gauge_field_copy(field_offset src, field_offset dest);
+void gauge_field_copy(field_offset src, field_offset dest);
+double U_action();
 double action();
+double action_HMC(double a);
 int update_hmc();
 void update_u();
 double update_h();
+int update_hmc_const(double Eint,double a);
+double update_h_const(Real eps, double Eint, double a);
 
 #ifdef LLR
 // Impose constraint that energy remains within interval under consideration

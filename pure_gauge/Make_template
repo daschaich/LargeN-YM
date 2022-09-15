@@ -8,6 +8,7 @@
 #   pg_ora uses over-relaxed quasi-heat bath algorithm
 #   pg_hmc uses the hybrid Monte Carlo algorithm
 #   pg_llr uses log-linear relaxation to compute density of states
+#   pg_hmcllr uses log-linear relaxation to compute density of states with hmc
 
 MYINCLUDEDIR = .
 INCLUDEDIR = ../include
@@ -48,7 +49,6 @@ G_OBJECTS = check_unitarity.o \
             ploop.o           \
             reunitarize.o     \
             ranstuff.o        \
-            ranmom.o          \
             remap_stdio_from_args.o
 
 ifeq ($(strip ${HAVEQIO}),true)
@@ -106,11 +106,16 @@ pg_ora::
 
 pg_hmc::
 	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" "DEFINES = -DHMC" \
-	"EXTRA_OBJECTS = control.o action.o update_hmc.o update_h.o update_u.o "
+	"EXTRA_OBJECTS = control.o ranmom.o action.o update_hmc.o update_h.o update_u.o "
 
 pg_llr::
 	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" "DEFINES = -DLLR" \
-	"EXTRA_OBJECTS = control_llr.o dsdu_qhb.o monte.o relax.o \
+	"EXTRA_OBJECTS = control_llr.o ranmom.o action.o dsdu_qhb.o monte.o relax.o \
+                   monteconst_e.o updateconst_e.o "
+
+pg_hmcllr::
+	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" "DEFINES = -DHMCLLR" \
+	"EXTRA_OBJECTS = control.o ranmom.o action.o update_hmc.o update_h.o update_u.o dsdu_qhb.o monte.o relax.o \
                    monteconst_e.o updateconst_e.o "
 
 clean:

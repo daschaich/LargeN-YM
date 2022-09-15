@@ -131,6 +131,9 @@ int readin(int prompt) {
     
     // HMC trajectory length
     IF_OK status += get_f(stdin, prompt, "traj_length", &par_buf.traj_length);
+    
+    // Size of energy interval delta
+    IF_OK status += get_f(stdin, prompt, "delta", &par_buf.delta);
 
 #ifdef LLR
     // LLR stuff
@@ -138,8 +141,22 @@ int readin(int prompt) {
     IF_OK status += get_f(stdin, prompt, "Emin", &par_buf.Emin);
     IF_OK status += get_f(stdin, prompt, "Emax", &par_buf.Emax);
 
-    // Size of energy interval delta
-    IF_OK status += get_f(stdin, prompt, "delta", &par_buf.delta);
+    
+
+    // Number of iterations for Robbins--Monro algorithm
+    IF_OK status += get_i(stdin, prompt, "ait", &par_buf.ait);
+
+    // Number of repetitions to jackknife or bootstrap
+    IF_OK status += get_i(stdin, prompt, "Njacknife", &par_buf.Njacknife);
+#endif
+
+#ifdef HMCLLR
+    // LLR stuff
+    // Energy range to scan (min to max)
+    IF_OK status += get_f(stdin, prompt, "Emin", &par_buf.Emin);
+    IF_OK status += get_f(stdin, prompt, "Emax", &par_buf.Emax);
+
+    
 
     // Number of iterations for Robbins--Monro algorithm
     IF_OK status += get_i(stdin, prompt, "ait", &par_buf.ait);
@@ -176,6 +193,7 @@ int readin(int prompt) {
   stepsQ = par_buf.stepsQ;
   nsteps = par_buf.nsteps;
   traj_length = par_buf.traj_length;
+  delta = par_buf.delta * volume;
   eps = (Real)traj_length/(Real)nsteps;
   startflag = par_buf.startflag;
   saveflag = par_buf.saveflag;
@@ -183,13 +201,18 @@ int readin(int prompt) {
 #ifdef LLR
   Emin = par_buf.Emin * volume;
   Emax = par_buf.Emax * volume;
-  delta = par_buf.delta * volume;
   ait = par_buf.ait;
   Njacknife = par_buf.Njacknife;
 #else
   measinterval = par_buf.measinterval;
 #endif
-
+#ifdef HMCLLR
+  Emin = par_buf.Emin * volume;
+  Emax = par_buf.Emax * volume;
+  ait = par_buf.ait;
+  Njacknife = par_buf.Njacknife;
+#endif
+ 
   strcpy(startfile, par_buf.startfile);
   strcpy(savefile, par_buf.savefile);
   strcpy(stringLFN, par_buf.stringLFN);
