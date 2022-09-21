@@ -92,6 +92,7 @@ double update_h() {
 // Should be possible to merge with routine above
 double update_h_const(Real eps, double Eint, double a) {
 #if 0
+#ifdef LLR
   register int i, dir, dir2;
   register site *s;
   register Real ebN = eps * beta * one_ov_N;
@@ -176,6 +177,7 @@ double update_h_const(Real eps, double Eint, double a) {
 
   g_doublesum(&norm);
   return ebN * sqrt(norm) / (double)volume;
+#endif
 #endif
 }
 // -----------------------------------------------------------------

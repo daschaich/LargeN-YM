@@ -93,7 +93,7 @@ int update_hmc() {
   }
   else {
     node0_printf("ACCEPT: delta S = %.4g start S = %.12g end S = %.12g\n",
-                 change, startaction, endaction;
+                 change, startaction, endaction);
   }
 
   if (traj_length > 0.0) {
@@ -108,6 +108,7 @@ int update_hmc() {
 
 // TODO: Should be able to use update_hmc with modified action()...
 int update_hmc_const(double Eint, double a) {
+#ifdef LLR
 #if 0
   int step, iters = 0;
   Real xrandom, tr;
@@ -190,7 +191,8 @@ int update_hmc_const(double Eint, double a) {
     return iters;
   }
   else
-    return(-99);
 #endif
+#endif
+    return(-99);
 }
 // -----------------------------------------------------------------

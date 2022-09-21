@@ -180,7 +180,7 @@ int readin(int prompt) {
 #else
   hmc_steps = par_buf.hmc_steps;
   traj_length = par_buf.traj_length;
-  eps = traj_length / (Real)nsteps;
+  eps = traj_length / (Real)hmc_steps;
 #endif
 
 #ifdef LLR

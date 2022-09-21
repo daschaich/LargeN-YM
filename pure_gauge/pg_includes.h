@@ -26,12 +26,14 @@
 int setup();
 int readin(int prompt);
 
+// Generic update routine switches between ora and HMC
+void update();
+
 #ifndef HMC
 // Over-relaxed quasi-heatbath stuff
 void relax();
 void dsdu_qhb(int dir, int parity);    // Gauge force for quasi-heatbath
 void monte();
-void update();
 #else
 // HMC stuff
 double U_action();
