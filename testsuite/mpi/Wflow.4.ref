@@ -1,6 +1,6 @@
 SU(4) Wilson flow with optional measurements
 Machine = MPI (portable), with 2 nodes
-start: Fri Jul 12 11:35:17 2019
+start: Wed Sep 21 23:46:03 2022
 
 type 0 for no prompts or 1 for prompts
 nx 4
@@ -23,16 +23,16 @@ tmeas 0.2
 tmeas 0.3
 tmeas 0.4
 tmeas 0.5
-reload_serial config.4F.4444
+reload_serial config.SU4.4444
 forget
-Restored binary gauge configuration serially from file config.4F.4444
+Restored binary gauge configuration serially from file config.SU4.4444
 Time stamp Tue Jan 24 09:08:59 2017
 Checksums ff508162 bfb64808 OK
-Time to reload gauge configuration = 0.0007539 seconds
+Time to reload gauge configuration = 0.000797 seconds
 CHECK PLAQ: 1.6623868341873866e+00 1.6452447726390365e+00
 CHECK NERSC LINKTR: -1.2434277158519080e-02 CKSUM: 0
 Reunitarized for double precision.  Max deviation 6e-08 changed to 5.6e-16
-Time to check unitarity = 0.000417 seconds
+Time to check unitarity = 0.0004129 seconds
 Loop coefficients: nloop, rep, loop_coeff, multiplicity
 0 0 1 6
 1 0 -0.07225 12
@@ -134,6 +134,6 @@ LOOPS 0.5 4 0 0 0 2.9939354
 LOOPS 0.5 5 0 0 0 1.5094855
 POLYA ORIG 0.5 0.0867493 -0.043576 -0.394714 -0.352291
 RUNNING COMPLETED
-Time = 0.2828 seconds
-exit: Fri Jul 12 11:35:18 2019
+Time = 0.2635 seconds
+exit: Wed Sep 21 23:46:03 2022
 

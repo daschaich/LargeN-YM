@@ -1,6 +1,6 @@
 SU(3) Wilson flow with optional measurements
 Machine = Scalar processor, with 1 nodes
-start: Fri Jul 12 11:34:05 2019
+start: Wed Sep 21 23:32:20 2022
 
 type 0 for no prompts or 1 for prompts
 nx 4
@@ -22,16 +22,16 @@ tmeas 0.2
 tmeas 0.3
 tmeas 0.4
 tmeas 0.5
-reload_serial config.3F.4444
+reload_serial config.SU3.4444
 forget
-Restored binary gauge configuration serially from file config.3F.4444
+Restored binary gauge configuration serially from file config.SU3.4444
 Time stamp Tue Jan 24 11:31:01 2017
 Checksums 1f0df83 afc22265 OK
-Time to reload gauge configuration = 0.001485 seconds
+Time to reload gauge configuration = 0.0003798 seconds
 CHECK PLAQ: 1.5941514601839692e+00 1.5811129947216720e+00
 CHECK NERSC LINKTR: -1.2799688810294660e-02 CKSUM: 0
 Reunitarized for double precision.  Max deviation 6e-08 changed to 4.4e-16
-Time to check unitarity = 0.0003841 seconds
+Time to check unitarity = 0.0003591 seconds
 Loop coefficients: nloop, rep, loop_coeff, multiplicity
 0 0 1 6
 1 0 -0.07225 12
@@ -133,6 +133,6 @@ LOOPS 0.5 4 0 0 0 2.8309535
 LOOPS 0.5 5 0 0 0 2.4353137
 POLYA ORIG 0.5 1.08209 -0.234381 -0.681406 1.30239
 RUNNING COMPLETED
-Time = 0.232 seconds
-exit: Fri Jul 12 11:34:06 2019
+Time = 0.2408 seconds
+exit: Wed Sep 21 23:32:20 2022
 

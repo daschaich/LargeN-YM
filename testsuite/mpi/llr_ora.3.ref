@@ -1,6 +1,6 @@
 SU(3) pure-gauge log-linear relaxation algorithm
 Machine = MPI (portable), with 2 nodes
-start: Mon Jan 11 22:26:42 2021
+start: Wed Sep 21 23:45:04 2022
 
 type 0 for no prompts or 1 for prompts
 nx 4
@@ -16,15 +16,15 @@ Mallocing 0.0 MBytes per core for fields
 
 
 warms 3
-sweeps 3
+trajecs 3
+traj_between_meas 10
 beta 6
 ora_steps 4
 qhb_steps 4
 Emin -60
-Emax -60
 delta 6
+a 1
 ait 10
-Njacknife 1
 fresh
 forget
 unit gauge configuration loaded
@@ -32,25 +32,24 @@ Starting with cold lattice
 CHECK PLAQ: 3.0000000000000000e+00 3.0000000000000000e+00
 CHECK NERSC LINKTR: 1.0000000000000000e+00 CKSUM: 0
 Reunitarized for double precision.  Max deviation 0 changed to 0
-Time to check unitarity = 0.000201 seconds
+Time to check unitarity = 0.0001891 seconds
 START 3 3 6 -27648
-unit gauge configuration loaded
-3 WARMUPS COMPLETED FOR jcount=0
+WARMUPS COMPLETED
 Searching for energy interval [-15360, -13824]
-Energy -1.633e+04 in interval found after 5 updates in 0.04995 seconds
-a = 0.9962 off
-a = 0.9924 off
-a = 0.9886 off
-a = 0.9852 off
-a = 0.9816 off
-a = 0.9782 off
-a = 0.9744 off
-a = 0.9708 off
-a = 0.9671 off
-a = 0.9637 off
+Energy -15257.912 in interval found after 5 updates in 0.02368 seconds
+RM ITER 1 a 0.99642379
+RM ITER 2 a 0.99266294
+RM ITER 3 a 0.98896845
+RM ITER 4 a 0.98535552
+RM ITER 5 a 0.9818677
+RM ITER 6 a 0.97839564
+RM ITER 7 a 0.97476633
+RM ITER 8 a 0.97119204
+RM ITER 9 a 0.96762096
+RM ITER 10 a 0.96382442
 RUNNING COMPLETED
-STOP 1.6607503 1.6652538 3.3260042 -15326.227
-Overall acceptance 3838 of 6336 = 0.6057
-Time = 1.109 seconds
-exit: Mon Jan 11 22:26:44 2021
+STOP 1.6580593 1.6698287 3.327888 -15334.908
+Overall acceptance 3469 of 5760 = 0.6023
+Time = 0.7809 seconds
+exit: Wed Sep 21 23:45:04 2022
 
