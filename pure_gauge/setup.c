@@ -17,9 +17,18 @@ int initial_set() {
   if (mynode() == 0) {
     // Print banner
 #ifndef LLR
+#ifndef HMC
     printf("SU(%d) pure-gauge over-relaxed heatbath algorithm\n", NCOL);
 #else
-    printf("SU(%d) pure-gauge log-linear relaxation algorithm\n", NCOL);
+    printf("SU(%d) pure-gauge hybrid Monte Carlo algorithm\n", NCOL);
+#endif
+#else
+    printf("SU(%d) pure-gauge log-linear relaxation algorithm ", NCOL);
+#ifndef HMC
+    printf("using over-relaxed heatbath updates\n");
+#else
+    printf("using hybrid Monte Carlo updates\n", NCOL);
+#endif
 #endif
     printf("Machine = %s, with %d nodes\n", machine_type(), numnodes());
     time_stamp("start");
@@ -180,7 +189,6 @@ int readin(int prompt) {
 #else
   hmc_steps = par_buf.hmc_steps;
   traj_length = par_buf.traj_length;
-  eps = traj_length / (Real)hmc_steps;
 #endif
 
 #ifdef LLR

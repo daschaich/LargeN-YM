@@ -33,6 +33,7 @@ void gauge_field_copy(field_offset src, field_offset dest) {
 int update_hmc() {
   int step, iters = 0;
   Real xrandom, tr;
+  Real eps = traj_length / (Real)hmc_steps;
   double fnorm = 0.0, startaction = 0.0, endaction, change;
 
   // Refresh the momenta

@@ -2,16 +2,33 @@
 // Update the momentum matrices
 // Use tempmatf and tempmatf2 for temporary storage
 #include "pg_includes.h"
+// -----------------------------------------------------------------
 
+
+
+// -----------------------------------------------------------------
+// Update the momenta --- note the difference rather than sum
+void update_anti_hermitian(site *s, int dir, Real eps, matrix_f *force) {
+  matrix_f tmat;
+
+  uncompress_anti_hermitian(&(s->mom[dir]), &tmat);
+  scalar_mult_dif_mat_f(force, eps, &tmat);
+  make_anti_hermitian(&tmat, &(s->mom[dir]));
+}
+// -----------------------------------------------------------------
+
+
+
+// -----------------------------------------------------------------
 // Update the momenta with the gauge force
-double update_h() {
+double update_h(Real eps) {
   register int i, dir, dir2;
   register site *s;
   register Real ebN = eps * beta * one_ov_N;
+  double norm = 0.0;
   msg_tag *tag0, *tag1, *tag2;
   int start;
-  matrix_f tmat, tmat2;
-  double norm = 0.0;
+  matrix_f tmat;
 
   // Loop over directions, update mom[dir]
   FORALLUPDIR(dir) {
@@ -57,11 +74,10 @@ double update_h() {
         }
         start = 0;
       }
-      else{
+      else {
         FORALLSITES(i, s) {
           mult_nn_f(&(s->linkf[dir2]), (matrix_f *)gen_pt[2][i], &tmat);
-          mult_na_f(&tmat, (matrix_f *)gen_pt[0][i], &tmat2);
-          sum_mat_f(&tmat2, &(tempmatf2[i]));
+          mult_na_sum_f(&tmat, (matrix_f *)gen_pt[0][i], &(tempmatf2[i]));
 
         }
       }
@@ -77,15 +93,12 @@ double update_h() {
     // Now multiply the staple sum by the link, then update momentum
     FORALLSITES(i, s) {
       mult_na_f(&(s->linkf[dir]), &(tempmatf2[i]), &tmat);
-      uncompress_anti_hermitian(&(s->mom[dir]), &tmat2);
-      scalar_mult_add_mat_f(&tmat2, &tmat, -1.0 * ebN, &(tempmatf2[i]));
-      make_anti_hermitian(&(tempmatf2[i]), &(s->mom[dir]));
-      norm += (double)realtrace_f(&tmat, &tmat);
+      update_anti_hermitian(s, dir, ebN, &tmat);
+      realtrace_sum_f(&tmat, &tmat, &norm);
     }
   }
-
   g_doublesum(&norm);
-  return ebN * sqrt(norm) / (double)volume;
+  return (ebN * sqrt(norm) / (double)volume);
 }
 
 // Adds gaussian window term to force
@@ -179,5 +192,6 @@ double update_h_const(Real eps, double Eint, double a) {
   return ebN * sqrt(norm) / (double)volume;
 #endif
 #endif
+  return(-99);
 }
 // -----------------------------------------------------------------

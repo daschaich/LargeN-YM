@@ -39,8 +39,8 @@ void monte();
 double U_action();
 double action();
 double action_HMC();
-void update_u();
-double update_h();
+void update_u(Real eps);
+double update_h(Real eps);
 int update_hmc();
 #endif
 

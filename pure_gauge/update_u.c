@@ -23,7 +23,7 @@ void update_u(Real eps) {
 
   FORALLSITES(i,s) {
     FORALLUPDIR(dir) {
-      uncompress_anti_hermitian( &(s->mom[dir]) , &htemp );
+      uncompress_anti_hermitian( &(s->mom[dir]) , &htemp);
       link = &(s->linkf[dir]);
 
       mult_nn_f(&htemp, link, &temp1);
@@ -48,7 +48,7 @@ void update_u(Real eps) {
       scalar_mult_add_mat_f(link, &temp1, t2, &temp2);
 
       mult_nn_f(&htemp, &temp2, &temp1);
-      scalar_mult_add_mat_f(link, &temp1,eps ,&temp2);
+      scalar_mult_add_mat_f(link, &temp1, eps, &temp2);
 
       mat_copy_f(&temp2, link);
     }

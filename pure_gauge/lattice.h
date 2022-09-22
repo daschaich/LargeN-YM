@@ -59,7 +59,7 @@ EXTERN int measinterval;
 EXTERN int ora_steps, qhb_steps;    // ORA stuff
 #else
 EXTERN int hmc_steps, traj_length;  // HMC stuff
-EXTERN Real eps, fnorm, max_f;
+EXTERN Real fnorm, max_f;           // Force monitoring
 #endif
 
 EXTERN Real beta, a;        // Fix a = 1 without LLR

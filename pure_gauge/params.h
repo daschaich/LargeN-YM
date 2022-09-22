@@ -30,7 +30,6 @@ typedef struct {
   // HMC parameters
   int hmc_steps;              // Number of hmc steps per trajectory
   Real traj_length;           // Trajectory length
-  Real eps;
 #endif
 
 #ifdef LLR
