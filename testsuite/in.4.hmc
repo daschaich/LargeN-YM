@@ -10,7 +10,7 @@ trajecs 3
 traj_between_meas 3
 
 beta 10.7
-hmc_steps 4
+hmc_steps 64
 traj_length 1.0
 
 reload_serial config.SU4.4444
