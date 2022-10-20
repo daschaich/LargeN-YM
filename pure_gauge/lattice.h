@@ -29,7 +29,7 @@ typedef struct {
   // Gauge links
   matrix_f linkf[4];
 #ifdef HMC
-  matrix old_linkf[4];  // For accept/reject
+  matrix_f old_linkf[4];  // For accept/reject
 
   // Antihermitian momentum matrices in each direction
   anti_hermitmat mom[4];
