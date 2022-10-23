@@ -9,7 +9,7 @@ void relax() {
   int parity, index_a[N_OFFDIAG], index_b[N_OFFDIAG];
   Real a0, a1, a2, a3, asq, norm;
   su2_matrix u;
-  matrix_f action;
+  matrix action;
 
   Nhit = (int)N_OFFDIAG;    // NCOL * (NCOL - 1) / 2
   // Set up SU(2) subgroup indices [a][b], always with a < b
@@ -38,7 +38,7 @@ void relax() {
           ina = index_a[subgrp];
           inb = index_b[subgrp];
           FORSOMEPARITY(i, s, parity) {
-            mult_na_f(&(s->linkf[dir]), &(s->staple), &action);
+            mult_na(&(s->linkf[dir]), &(s->staple), &action);
 
             // Decompose the action into SU(2) subgroups
             // using Pauli matrix expansion
@@ -64,8 +64,8 @@ void relax() {
             u.e[1][1] = cmplx( a0,-a3);
 
             // Do SU(2) hit on all links twice (to overrelax)
-            left_su2_hit_n_f(&u, ina, inb, &(s->linkf[dir]));
-            left_su2_hit_n_f(&u, ina, inb, &(s->linkf[dir]));
+            left_su2_hit_n(&u, ina, inb, &(s->linkf[dir]));
+            left_su2_hit_n(&u, ina, inb, &(s->linkf[dir]));
           }
         }
       }

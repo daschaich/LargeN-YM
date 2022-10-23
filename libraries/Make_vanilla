@@ -9,7 +9,7 @@ MAKEFILE = Make_vanilla
 CC       = gcc
 OPT      = -O3    # Keep optimization by itself to omit below
 OCFLAGS  = -Wall
-CODETYPE = # -DFAST # Only works if NCOL = DIMF = 3
+CODETYPE = # -DFAST # Only works if NCOL = 3
 AR       = ar
 
 # Also check include/config.h

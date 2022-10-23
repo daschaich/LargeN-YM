@@ -68,9 +68,9 @@ int setup() {
   // Set up neighbor pointers and comlink structures
   make_nn_gathers();
   // Allocate temporary fields and Wilson flow stuff
-  FIELD_ALLOC(tempmatf, matrix_f);
-  FIELD_ALLOC(tempmatf2, matrix_f);
-  FIELD_ALLOC_VEC(S, matrix_f, NDIMS);
+  FIELD_ALLOC(tempmat, matrix);
+  FIELD_ALLOC(tempmat2, matrix);
+  FIELD_ALLOC_VEC(S, matrix, NDIMS);
   FIELD_ALLOC_VEC(A, anti_hermitmat, NDIMS);
 
 #if NCOL == 4
@@ -87,7 +87,7 @@ int setup() {
 
 
 // -----------------------------------------------------------------
-// Read in parameters for SU(3) Wilson flow measurements
+// Read in parameters for SU(N) Wilson flow measurements
 // prompt=1 indicates prompts are to be given for input
 int readin(int prompt) {
   int status, i;

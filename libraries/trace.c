@@ -1,29 +1,41 @@
 // -----------------------------------------------------------------
-// Return complex trace of the given irrep matrix
+// Complex trace of the given matrix
+// Return Tr[m]
+// c <-- c + Tr[m]
 #include "../include/config.h"
 #include "../include/complex.h"
 #include "../include/su3.h"
 
-complex trace(matrix *a) {
+complex trace(matrix *m) {
   register complex tc;
-  CADD(a->e[0][0], a->e[1][1], tc);
-#if DIMF > 2
-  CSUM(tc, a->e[2][2]);
-#if DIMF > 3
-  CSUM(tc, a->e[3][3]);
-#if DIMF > 4
-  CSUM(tc, a->e[4][4]);
-#if DIMF > 5
-  CSUM(tc, a->e[5][5]);
-#if DIMF > 6
+  CADD(m->e[0][0], m->e[1][1], tc);
+#if NCOL > 2
+  CSUM(tc, m->e[2][2]);
+#if NCOL > 3
+  CSUM(tc, m->e[3][3]);
+#if NCOL > 4
   register int i;
-  for (i = 6; i < DIMF; i++)
-    CSUM(tc, a->e[i][i]);
-#endif
-#endif
+  for (i = 4; i < NCOL; i++)
+    CSUM(tc, m->e[i][i]);
 #endif
 #endif
 #endif
   return tc;
+}
+
+void trace_sum(matrix *m, complex *c) {
+  CSUM(*c, m->e[0][0]);
+  CSUM(*c, m->e[1][1]);
+#if NCOL > 2
+  CSUM(*c, m->e[2][2]);
+#if NCOL > 3
+  CSUM(*c, m->e[3][3]);
+#if NCOL > 4
+  register int i;
+  for (i = 4; i < NCOL; i++)
+    CSUM(*c, m->e[i][i]);
+#endif
+#endif
+#endif
 }
 // -----------------------------------------------------------------

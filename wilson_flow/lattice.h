@@ -29,7 +29,7 @@ typedef struct {
 
   // No random numbers
   // Gauge links and field strength for F^2 and topological charge
-  matrix_f linkf[4], FS[6];
+  matrix linkf[4], FS[6];
 } site;
 // -----------------------------------------------------------------
 
@@ -90,11 +90,11 @@ EXTERN site *lattice;
 EXTERN char **gen_pt[N_POINTERS];
 
 // Temporary fields
-EXTERN matrix_f *tempmatf, *tempmatf2;
+EXTERN matrix *tempmat, *tempmat2;
 
 // Wilson flow stuff
 EXTERN Real tmax, start_eps, max_eps, epsilon;
-EXTERN matrix_f *S[NDIMS];
+EXTERN matrix *S[NDIMS];
 EXTERN anti_hermitmat *A[NDIMS];
 
 // Measurement stuff

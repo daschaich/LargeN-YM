@@ -35,8 +35,8 @@ typedef struct {
 #endif
 
   // Gauge links and field strength
-  matrix_f linkf[4];
-  matrix_f tempmat, staple;    // TODO: Convert these to fields
+  matrix linkf[4];
+  matrix tempmat, staple;    // TODO: Convert these to fields
 } site;
 // -----------------------------------------------------------------
 
@@ -99,5 +99,5 @@ EXTERN char **gen_pt[N_POINTERS];
 #endif
 
 // Temporary fields for field_strength
-EXTERN matrix_f *tempmatf, *tempmatf2;
+EXTERN matrix *tempmat, *tempmat2;
 // -----------------------------------------------------------------

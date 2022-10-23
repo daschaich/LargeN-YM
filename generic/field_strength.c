@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------
 // Compute SU(NCOL) field strength tensor
 // Need to define six field strength indices
-// Use tempmatf and tempmatf2 for temporary storage
+// Use tempmat and tempmat2 for temporary storage
 
 // This cartoon shows how the plaquettes are calculated
 // The path begins and ends at the 'O' at the corner
@@ -34,18 +34,18 @@
 
 #include "generic_includes.h"
 
-#define LINK_OFFSET(dir) link_src + sizeof(matrix_f) * (dir)
-#define LINK(dir) (((matrix_f *)F_PT(s, link_src))[dir])
-#define FS(component) (((matrix_f *)F_PT(s, field_dest))[component])
+#define LINK_OFFSET(dir) link_src + sizeof(matrix) * (dir)
+#define LINK(dir) (((matrix *)F_PT(s, link_src))[dir])
+#define FS(component) (((matrix *)F_PT(s, field_dest))[component])
 
-// link_src is offset for matrix_f linkf[4] in site struct
-// field_dest is offset for matrix_f fieldstrength[6] in site struct
+// link_src is offset for matrix linkf[4] in site struct
+// field_dest is offset for matrix fieldstrength[6] in site struct
 void make_field_strength(field_offset link_src, field_offset field_dest) {
   register int i, component, dir = -99, dir2 = -99;
   register site *s;
   int j;
   complex tc;
-  matrix_f tmat, tmat2;
+  matrix tmat, tmat2;
   msg_tag *mtag, *mtag2;
 
   for (component = FS_XY; component <= FS_ZT; component++) {
@@ -59,97 +59,97 @@ void make_field_strength(field_offset link_src, field_offset field_dest) {
     }
 
     // +dir +dir2 plaquette
-    mtag  = start_gather_site(LINK_OFFSET(dir), sizeof(matrix_f),
+    mtag  = start_gather_site(LINK_OFFSET(dir), sizeof(matrix),
                               dir2, EVENANDODD, gen_pt[0]);
-    mtag2 = start_gather_site(LINK_OFFSET(dir2), sizeof(matrix_f),
+    mtag2 = start_gather_site(LINK_OFFSET(dir2), sizeof(matrix),
                               dir, EVENANDODD, gen_pt[1]);
 
     wait_gather(mtag);
     wait_gather(mtag2);
     FORALLSITES(i, s) {
-      mult_nn_f(&LINK(dir), (matrix_f *)(gen_pt[1][i]), &tmat);
-      mult_na_f(&tmat, (matrix_f *)(gen_pt[0][i]), &tmat2);
-      mult_na_f(&tmat2, &LINK(dir2), &tmat);
-      adjoint_f(&tmat, &tmat2);
-      sub_mat_f(&tmat, &tmat2, &FS(component));
+      mult_nn(&LINK(dir), (matrix *)(gen_pt[1][i]), &tmat);
+      mult_na(&tmat, (matrix *)(gen_pt[0][i]), &tmat2);
+      mult_na(&tmat2, &LINK(dir2), &tmat);
+      adjoint(&tmat, &tmat2);
+      sub_mat(&tmat, &tmat2, &FS(component));
     }
     cleanup_gather(mtag2);
 
     // -dir +dir2 plaquette
     // Reuse link[dir] gather from dir2 corresponding to mtag
     FORALLSITES(i, s) {
-      mult_an_f(&LINK(dir2), &LINK(dir), &tmat);
-      mult_an_f((matrix_f *)(gen_pt[0][i]), &tmat, &(tempmatf[i]));
+      mult_an(&LINK(dir2), &LINK(dir), &tmat);
+      mult_an((matrix *)(gen_pt[0][i]), &tmat, &(tempmat[i]));
     }
-    mtag2 = start_gather_field(tempmatf, sizeof(matrix_f),
+    mtag2 = start_gather_field(tempmat, sizeof(matrix),
                                OPP_DIR(dir), EVENANDODD, gen_pt[1]);
 
     wait_gather(mtag2);
     FORALLSITES(i, s) {
-      mult_nn_f(&LINK(dir2), (matrix_f *)(gen_pt[1][i]), &tmat);
-      adjoint_f(&tmat, &tmat2);
-      sum_mat_f(&tmat, &FS(component));
-      dif_mat_f(&tmat2, &FS(component));
+      mult_nn(&LINK(dir2), (matrix *)(gen_pt[1][i]), &tmat);
+      adjoint(&tmat, &tmat2);
+      sum_mat(&tmat, &FS(component));
+      dif_mat(&tmat2, &FS(component));
     }
     cleanup_gather(mtag);
     cleanup_gather(mtag2);
 
     // -dir -dir2 plaquette
-    mtag = start_gather_site(LINK_OFFSET(dir), sizeof(matrix_f),
+    mtag = start_gather_site(LINK_OFFSET(dir), sizeof(matrix),
                              OPP_DIR(dir), EVENANDODD, gen_pt[0]);
-    mtag2 = start_gather_site(LINK_OFFSET(dir2), sizeof(matrix_f),
+    mtag2 = start_gather_site(LINK_OFFSET(dir2), sizeof(matrix),
                               OPP_DIR(dir2), EVENANDODD, gen_pt[1]);
 
     wait_gather(mtag);
     wait_gather(mtag2);
     FORALLSITES(i, s) {
-      mult_nn_f((matrix_f *)(gen_pt[0][i]), &LINK(dir2), &(tempmatf[i]));
-      mult_nn_f((matrix_f *)(gen_pt[1][i]), &LINK(dir), &(tempmatf2[i]));
+      mult_nn((matrix *)(gen_pt[0][i]), &LINK(dir2), &(tempmat[i]));
+      mult_nn((matrix *)(gen_pt[1][i]), &LINK(dir), &(tempmat2[i]));
     }
     cleanup_gather(mtag);
     cleanup_gather(mtag2);
 
-    mtag = start_gather_field(tempmatf, sizeof(matrix_f),
+    mtag = start_gather_field(tempmat, sizeof(matrix),
                               OPP_DIR(dir2), EVENANDODD, gen_pt[0]);
-    mtag2 = start_gather_field(tempmatf2, sizeof(matrix_f),
+    mtag2 = start_gather_field(tempmat2, sizeof(matrix),
                                OPP_DIR(dir), EVENANDODD, gen_pt[1]);
 
     wait_gather(mtag);
     wait_gather(mtag2);
     FORALLSITES(i, s) {
-      mult_an_f((matrix_f *)(gen_pt[1][i]), (matrix_f *)(gen_pt[0][i]), &tmat);
-      adjoint_f(&tmat, &tmat2);
-      sum_mat_f(&tmat, &FS(component));
-      dif_mat_f(&tmat2, &FS(component));
+      mult_an((matrix *)(gen_pt[1][i]), (matrix *)(gen_pt[0][i]), &tmat);
+      adjoint(&tmat, &tmat2);
+      sum_mat(&tmat, &FS(component));
+      dif_mat(&tmat2, &FS(component));
     }
     cleanup_gather(mtag);
     cleanup_gather(mtag2);
 
     // +dir -dir2 plaquette
-    mtag2 = start_gather_site(LINK_OFFSET(dir2), sizeof(matrix_f),
+    mtag2 = start_gather_site(LINK_OFFSET(dir2), sizeof(matrix),
                               dir, EVENANDODD, gen_pt[1]);
 
     wait_gather(mtag2);
     FORALLSITES(i, s) {
-      mult_an_f(&LINK(dir2), &LINK(dir), &tmat);
-      mult_nn_f(&tmat, (matrix_f *)(gen_pt[1][i]), &tempmatf[i]);
+      mult_an(&LINK(dir2), &LINK(dir), &tmat);
+      mult_nn(&tmat, (matrix *)(gen_pt[1][i]), &tempmat[i]);
     }
     cleanup_gather(mtag2);
 
-    mtag = start_gather_field(tempmatf, sizeof(matrix_f),
+    mtag = start_gather_field(tempmat, sizeof(matrix),
                               OPP_DIR(dir2), EVENANDODD, gen_pt[0]);
     wait_gather(mtag);
     FORALLSITES(i, s) {
-      mult_na_f((matrix_f *)(gen_pt[0][i]), &LINK(dir), &tmat);
-      adjoint_f(&tmat, &tmat2);
-      sum_mat_f(&tmat, &FS(component));
-      dif_mat_f(&tmat2, &FS(component));
+      mult_na((matrix *)(gen_pt[0][i]), &LINK(dir), &tmat);
+      adjoint(&tmat, &tmat2);
+      sum_mat(&tmat, &FS(component));
+      dif_mat(&tmat2, &FS(component));
     }
     cleanup_gather(mtag);
 
     // Make traceless
     FORALLSITES(i, s) {
-      tc = trace_f(&FS(component));
+      tc = trace(&FS(component));
       CMULREAL(tc, one_ov_N, tc);
       for (j = 0; j < NCOL; j++)
         CSUB(FS(component).e[j][j], tc, FS(component).e[j][j]);

@@ -1,10 +1,10 @@
 // -----------------------------------------------------------------
-// Uncompress an anti-hermitian matrix into a fundamental matrix
+// Uncompress an anti-hermitian matrix
 #include "../include/config.h"
 #include "../include/complex.h"
 #include "../include/su3.h"
 
-void uncompress_anti_hermitian(anti_hermitmat *src, matrix_f *dest) {
+void uncompress_anti_hermitian(anti_hermitmat *src, matrix *dest) {
   int i, j, index = 0;
   Real tr;
 

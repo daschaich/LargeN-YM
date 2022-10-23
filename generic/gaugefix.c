@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------
 // Fix Coulomb or Lorenz gauge by doing successive SU(2) gauge hits
 // Double-precision global sums, as always
-// Reunitarize after a present interval defined below
+// Reunitarize after a pre-set interval defined below
 
 // Prototype:
 // void gaugefix(int gauge_dir, Real relax_boost, int max_gauge_iter,
@@ -9,7 +9,7 @@
 //
 // EXAMPLE: Fixing only the fundamental link matrices to Coulomb gauge,
 //          using scratch space in the site structure
-//          (matrix_f pm and vector_f chi)
+//          (matrix pm and vector chi)
 // gaugefix(TUP, 1.5, 500, 1.0e-7, F_OFFSET(mp), F_OFFSET(chi));
 //
 // gauge_dir is the "time" direction used to define Coulomb gauge:
@@ -20,15 +20,15 @@
 // relax_boost is the overrelaxation parameter
 // max_gauge_iter is the maximum number of gauge-fixing iterations
 // gfix_tol tells us to stop if the action change is less than this
-// diffmat is scratch space for an matrix_f
-// sumvec is scratch space for an vector_f
+// diffmat is scratch space for a matrix
+// sumvec is scratch space for a vector
 // If diffmat or sumvec are negative, scratch space is malloced here
 #include "generic_includes.h"
 #define REUNIT_INTERVAL 20
 
 // Scratch space
-static matrix_f *diffmatp;               // Malloced diffmat pointer
-static vector_f *sumvecp;                // Malloced sumvec pointer
+static matrix *diffmatp;               // Malloced diffmat pointer
+static vector *sumvecp;                // Malloced sumvec pointer
 field_offset diffmat_offset, sumvec_offset;   // Field offsets
 // -----------------------------------------------------------------
 
@@ -42,19 +42,19 @@ field_offset diffmat_offset, sumvec_offset;   // Field offsets
 // Downward links gathered to gen_pt[dir] in gaugefixstep()
 void accum_gauge_hit(int gauge_dir, int parity) {
   register int i, j, dir;
-  register matrix_f *m1, *m2;
+  register matrix *m1, *m2;
   register site *s;
 
   // Clear sumvec and diffmat
   FORSOMEPARITY(i, s, parity) {
     if (diffmat_offset >= 0)
-      clear_mat_f((matrix_f *)F_PT(s, diffmat_offset));
+      clear_mat((matrix *)F_PT(s, diffmat_offset));
     else
-      clear_mat_f(&diffmatp[i]);
+      clear_mat(&diffmatp[i]);
     if (sumvec_offset >= 0)
-      clear_vec_f((vector_f *)F_PT(s, sumvec_offset));
+      clearvec((vector *)F_PT(s, sumvec_offset));
     else
-      clear_vec_f(&sumvecp[i]);
+      clearvec(&sumvecp[i]);
   }
 
   // Subtract upward link contributions
@@ -63,13 +63,13 @@ void accum_gauge_hit(int gauge_dir, int parity) {
       // Upward link matrix
       m1 = &(s->linkf[dir]);
       if (diffmat_offset >= 0)
-        dif_mat_f(m1, (matrix_f *)F_PT(s, diffmat_offset));
+        dif_mat(m1, (matrix *)F_PT(s, diffmat_offset));
       else
-        dif_mat_f(m1, &diffmatp[i]);
+        dif_mat(m1, &diffmatp[i]);
 
       if (sumvec_offset >= 0) {
         for (j = 0; j < NCOL; j++)
-          CSUM(((vector_f *)F_PT(s, sumvec_offset))->c[j], m1->e[j][j]);
+          CSUM(((vector *)F_PT(s, sumvec_offset))->c[j], m1->e[j][j]);
       }
       else {
         for (j = 0; j < NCOL; j++)
@@ -82,16 +82,16 @@ void accum_gauge_hit(int gauge_dir, int parity) {
   FORSOMEPARITY(i, s, parity) {
     FORALLUPDIRBUT(gauge_dir, dir) {
       // Downward link matrix -- gathered in gaugefixstep()
-      m2 = (matrix_f *)gen_pt[dir][i];
+      m2 = (matrix *)gen_pt[dir][i];
 
       if (diffmat_offset >= 0)
-        sum_mat_f(m2, (matrix_f *)F_PT(s, diffmat_offset));
+        sum_mat(m2, (matrix *)F_PT(s, diffmat_offset));
       else
-        sum_mat_f(m2, &diffmatp[i]);
+        sum_mat(m2, &diffmatp[i]);
 
       if (sumvec_offset >= 0) {
         for (j = 0; j < NCOL; j++)
-          CSUM(((vector_f *)F_PT(s, sumvec_offset))->c[j], m2->e[j][j]);
+          CSUM(((vector *)F_PT(s, sumvec_offset))->c[j], m2->e[j][j]);
       }
       else {
         for (j = 0; j < NCOL; j++)
@@ -129,19 +129,19 @@ void do_hit(int gauge_dir, int parity, int p, int q, Real relax_boost) {
     // a2 = -s->diffmat.e[q][p].real + s->diffmat.e[p][q].real;
     // a3 =  s->diffmat.e[p][p].imag - s->diffmat.e[q][q].imag;
     if (sumvec_offset >= 0) {
-      a0 = ((vector_f *)F_PT(s, sumvec_offset))->c[p].real
-         + ((vector_f *)F_PT(s, sumvec_offset))->c[q].real;
+      a0 = ((vector *)F_PT(s, sumvec_offset))->c[p].real
+         + ((vector *)F_PT(s, sumvec_offset))->c[q].real;
     }
     else
       a0 = sumvecp[i].c[p].real + sumvecp[i].c[q].real;
 
     if (diffmat_offset >= 0) {
-      a1 =  ((matrix_f *)F_PT(s, diffmat_offset))->e[q][p].imag
-         +  ((matrix_f *)F_PT(s, diffmat_offset))->e[p][q].imag;
-      a2 = -((matrix_f *)F_PT(s, diffmat_offset))->e[q][p].real
-         +  ((matrix_f *)F_PT(s, diffmat_offset))->e[p][q].real;
-      a3 =  ((matrix_f *)F_PT(s, diffmat_offset))->e[p][p].imag
-         -  ((matrix_f *)F_PT(s, diffmat_offset))->e[q][q].imag;
+      a1 =  ((matrix *)F_PT(s, diffmat_offset))->e[q][p].imag
+         +  ((matrix *)F_PT(s, diffmat_offset))->e[p][q].imag;
+      a2 = -((matrix *)F_PT(s, diffmat_offset))->e[q][p].real
+         +  ((matrix *)F_PT(s, diffmat_offset))->e[p][q].real;
+      a3 =  ((matrix *)F_PT(s, diffmat_offset))->e[p][p].imag
+         -  ((matrix *)F_PT(s, diffmat_offset))->e[q][q].imag;
     }
     else {
       a1 =  diffmatp[i].e[q][p].imag + diffmatp[i].e[p][q].imag;
@@ -173,11 +173,11 @@ void do_hit(int gauge_dir, int parity, int p, int q, Real relax_boost) {
 
     // Do SU(2) hit on all upward links
     FORALLUPDIR(dir)
-      left_su2_hit_n_f(&u, p, q,&(s->linkf[dir]));
+      left_su2_hit_n(&u, p, q,&(s->linkf[dir]));
 
     // Do SU(2) hit on all downward links
     FORALLUPDIR(dir)
-      right_su2_hit_a_f(&u, p, q,(matrix_f *)gen_pt[dir][i]);
+      right_su2_hit_a(&u, p, q,(matrix *)gen_pt[dir][i]);
   }
   // Exit with modified downward links left in communications buffer
 }
@@ -196,10 +196,10 @@ double get_gauge_fix_action(int gauge_dir, int parity) {
 
   FORSOMEPARITY(i, s, parity) {
     FORALLUPDIRBUT(gauge_dir, dir) {
-      tc = trace_f(&(s->linkf[dir]));
+      tc = trace(&(s->linkf[dir]));
       gauge_fix_action += (double)tc.real;
 
-      tc = trace_f((matrix_f *)gen_pt[dir][i]);
+      tc = trace((matrix *)gen_pt[dir][i]);
       gauge_fix_action += (double)tc.real;
     }
   }
@@ -238,7 +238,7 @@ void gaugefixstep(int gauge_dir, double *av_gauge_fix_action,
   for (parity = ODD; parity <= EVEN; parity++) {
     // Gather all downward links at once
     FORALLUPDIR(dir) {
-      mtag[dir] = start_gather_site(F_OFFSET(linkf[dir]), sizeof(matrix_f),
+      mtag[dir] = start_gather_site(F_OFFSET(linkf[dir]), sizeof(matrix),
                                     OPP_DIR(dir), parity, gen_pt[dir]);
     }
     FORALLUPDIR(dir)
@@ -265,11 +265,11 @@ void gaugefixstep(int gauge_dir, double *av_gauge_fix_action,
       // from comm buffer or node to diffmat
       FORSOMEPARITY(i, s, parity) {
         if (diffmat_offset >= 0) {
-          mat_copy_f((matrix_f *)(gen_pt[dir][i]),
-                        (matrix_f *)F_PT(s, diffmat_offset));
+          mat_copy((matrix *)(gen_pt[dir][i]),
+                   (matrix *)F_PT(s, diffmat_offset));
         }
         else
-          mat_copy_f((matrix_f *)(gen_pt[dir][i]), &diffmatp[i]);
+          mat_copy((matrix *)(gen_pt[dir][i]), &diffmatp[i]);
       }
       cleanup_gather(mtag[dir]);    // Done with gen_pt[dir]
 
@@ -279,18 +279,18 @@ void gaugefixstep(int gauge_dir, double *av_gauge_fix_action,
 
       // Gather diffmat onto sites of opposite parity
       if (diffmat_offset >= 0) {
-        mtag[dir] = start_gather_site(diffmat_offset, sizeof(matrix_f),
+        mtag[dir] = start_gather_site(diffmat_offset, sizeof(matrix),
                                       dir, OPP_PAR(parity), gen_pt[dir]);
       }
       else {
-        mtag[dir] = start_gather_field(diffmatp, sizeof(matrix_f),
+        mtag[dir] = start_gather_field(diffmatp, sizeof(matrix),
                                        dir, OPP_PAR(parity), gen_pt[dir]);
       }
       wait_gather(mtag[dir]);
 
       // Copy modified matrices into proper location
       FORSOMEPARITY(i, s, OPP_PAR(parity))
-        mat_copy_f((matrix_f *)(gen_pt[dir][i]), &(s->linkf[dir]));
+        mat_copy((matrix *)(gen_pt[dir][i]), &(s->linkf[dir]));
 
       cleanup_gather(mtag[dir]);
     }

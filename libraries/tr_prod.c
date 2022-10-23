@@ -1,6 +1,7 @@
 // -----------------------------------------------------------------
-// Traces of two irrep matrices
+// Traces of two matrices
 // Return ReTr[adag.b]
+// Return ReTr[a.b]
 // c <-- c + ReTr[adag.b]
 // Return Tr[adag.b]
 #include "../include/config.h"
@@ -10,10 +11,24 @@
 Real realtrace(matrix *a, matrix *b) {
   register int i, j;
   register Real sum = 0.0;
-  for (i = 0; i < DIMF; i++) {
-    for (j = 0; j < DIMF; j++) {
-      sum += a->e[i][j].real * b->e[i][j].real;
-      sum += a->e[i][j].imag * b->e[i][j].imag;
+
+  for (i = 0; i < NCOL; i++) {
+    for (j = 0; j < NCOL; j++) {
+      sum += a->e[i][j].real * b->e[i][j].real
+           + a->e[i][j].imag * b->e[i][j].imag;
+    }
+  }
+  return sum;
+}
+
+Real realtrace_nn(matrix *a, matrix *b) {
+  register int i, j;
+  register Real sum = 0.0;
+
+  for (i = 0; i < NCOL; i++) {
+    for (j = 0; j < NCOL; j++) {
+      sum += a->e[i][j].real * b->e[j][i].real
+           - a->e[i][j].imag * b->e[j][i].imag;
     }
   }
   return sum;
@@ -21,10 +36,11 @@ Real realtrace(matrix *a, matrix *b) {
 
 void realtrace_sum(matrix *a, matrix *b, Real *c) {
   register int i, j;
-  for (i = 0; i < DIMF; i++) {
-    for (j = 0; j < DIMF; j++) {
-      *c += a->e[i][j].real * b->e[i][j].real;
-      *c += a->e[i][j].imag * b->e[i][j].imag;
+
+  for (i = 0; i < NCOL; i++) {
+    for (j = 0; j < NCOL; j++) {
+      *c += a->e[i][j].real * b->e[i][j].real
+          + a->e[i][j].imag * b->e[i][j].imag;
     }
   }
 }
@@ -32,12 +48,13 @@ void realtrace_sum(matrix *a, matrix *b, Real *c) {
 complex complextrace(matrix *a, matrix *b) {
   register int i,j;
   complex sum = cmplx(0.0, 0.0);
-  for (i = 0; i < DIMF; i++) {
-    for (j = 0; j < DIMF; j++) {
-      sum.real += a->e[i][j].real * b->e[i][j].real;
-      sum.real += a->e[i][j].imag * b->e[i][j].imag;
-      sum.imag += a->e[i][j].real * b->e[i][j].imag;
-      sum.imag -= a->e[i][j].imag * b->e[i][j].real;
+
+  for (i = 0; i < NCOL; i++) {
+    for (j = 0; j < NCOL; j++) {
+      sum.real += a->e[i][j].real * b->e[i][j].real
+                + a->e[i][j].imag * b->e[i][j].imag;
+      sum.imag += a->e[i][j].real * b->e[i][j].imag
+                - a->e[i][j].imag * b->e[i][j].real;
     }
   }
   return sum;
