@@ -1,16 +1,19 @@
 // -----------------------------------------------------------------
-// Clear the given fundamental matrix
+// Print the anti-hermitian part of the given matrix
 #include "../include/config.h"
+#include <stdio.h>
 #include "../include/complex.h"
 #include "../include/su3.h"
 
-void clear_mat_f(matrix_f *m) {
-  register int i, j;
+void dump_ahmat(matrix *m) {
+  int i, j;
   for (i = 0; i < NCOL; i++) {
     for (j = 0; j < NCOL; j++) {
-      m->e[i][j].real = 0.0;
-      m->e[i][j].imag = 0.0;
+      printf("  (%.4g, %.4g)",
+             0.5 * (m->e[i][j].real - m->e[j][i].real),
+             0.5 * (m->e[i][j].imag + m->e[j][i].imag));
     }
+    printf("\n");
   }
 }
 // -----------------------------------------------------------------

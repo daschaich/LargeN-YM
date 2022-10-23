@@ -205,7 +205,7 @@ void qcdhdr_destroy_hdr(QCDheader *hdr) {
 
 /*---------------------------------------------------------------------------*/
 /* Convert (or copy) four single precision matrices to generic precision */
-void f2d_4mat(fmatrix_f *a, matrix_f *b) {
+void f2d_4mat(fmatrix *a, matrix *b) {
   int dir, i, j;
 
   for (dir = 0; dir < 4; dir++) {
@@ -217,7 +217,7 @@ void f2d_4mat(fmatrix_f *a, matrix_f *b) {
 }
 
 /* Convert (or copy) four generic precision matrices to single precision */
-void d2f_4mat(matrix_f *a, fmatrix_f *b) {
+void d2f_4mat(matrix *a, fmatrix *b) {
   int dir, i, j;
 
   for (dir = 0; dir < 4; dir++) {
@@ -950,9 +950,9 @@ gauge_file *parallel_open(int order, char *filename) {
 /* Position gauge configuration file for writing in parallel */
 /* Returns pointer to malloc'ed write buffer */
 /* gf = file descriptor as opened by w_checkpoint_i */
-fmatrix_f *w_parallel_setup(gauge_file *gf, off_t *checksum_offset) {
+fmatrix *w_parallel_setup(gauge_file *gf, off_t *checksum_offset) {
   FILE *fp;
-  fmatrix_f *lbuf = malloc(MAX_BUF_LENGTH * 4 * sizeof(*lbuf));
+  fmatrix *lbuf = malloc(MAX_BUF_LENGTH * 4 * sizeof(*lbuf));
 
   off_t offset ;           /* File stream pointer */
   off_t gauge_node_size;   /* Size of a gauge configuration block for
@@ -973,7 +973,7 @@ fmatrix_f *w_parallel_setup(gauge_file *gf, off_t *checksum_offset) {
 
   fp = gf->fp;
 
-  gauge_node_size = sites_on_node*4*sizeof(fmatrix_f);
+  gauge_node_size = sites_on_node*4*sizeof(fmatrix);
 
   if (gf->header->order == NATURAL_ORDER)coord_list_size = 0;
   else coord_list_size = sizeof(int32type)*volume;

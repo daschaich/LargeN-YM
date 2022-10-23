@@ -4,7 +4,6 @@
 #define _IO_LAT_H
 
 // Definitions of restore and save lattice flags used in io_helpers.c
-// Some are also used for Wilson propagators
 #define CONTINUE              10
 #define FRESH                 11
 #define RELOAD_ASCII          12
@@ -146,22 +145,6 @@ char *gauge_info_keyword[] = {
       "gauge.smear.description",
       "gauge.smear.steps",
       "gauge.smear.factor",   /* (1-f)*link + f/6*staples */
-
-      "quark.description",
-      "quark.dyn_flavors",
-      "quark.dyn_mass",
-      "quark.flavors",
-      "quark.flavors1",
-      "quark.flavors2",
-      "quark.mass",
-      "quark.mass1",
-      "quark.mass2",
-      "quark.kappa",
-      "quark.link.c1",
-      "quark.link.c3",
-      "quark.staple.w3",      /* link + w3*staples */
-      "quark.clover.c0",
-      "quark.clover.u0",
       ""       /* Last entry MUST be a zero-length keyword */
 };
 #else
@@ -177,8 +160,6 @@ extern char *gauge_info_keyword[];
 
 #define MAX_GAUGE_FIELD_DESCRIPT 200
 #define MAX_GAUGE_FIELD_PARAM 2
-#define MAX_DIRAC_DESCRIPT 200
-#define MAX_DIRAC_PARAM 3
 #define MAX_SOURCE_DESCRIPT 200
 #define MAX_SOURCE_PARAM 2
 #define MAX_SOURCE_SPINS 4
@@ -360,8 +341,8 @@ int qcdhdr_get_float(char *s, QCDheader *hdr, Real *q);
 void error_exit(char *s);
 void complete_U(float *u);
 QCDheader * qcdhdr_get_hdr(FILE *in);
-void f2d_4mat(fmatrix_f *a, matrix_f *b);
-void d2f_4mat(matrix_f *a, fmatrix_f *b);
+void f2d_4mat(fmatrix *a, matrix *b);
+void d2f_4mat(matrix *a, fmatrix *b);
 void swrite_data(FILE* fp, void *src, size_t size, char *myname, char *descrip);
 void pwrite_data(FILE* fp, void *src, size_t size, char *myname, char *descrip);
 void pswrite_data(int parallel, FILE* fp, void *src, size_t size,
@@ -411,7 +392,7 @@ int read_fnal_gauge_hdr(gauge_file *gf, int parallel, int *byterevflag);
 int read_gauge_hdr(gauge_file *gf, int parallel);
 void write_site_list(FILE *fp, gauge_header *gh);
 gauge_file *parallel_open(int order, char *filename);
-fmatrix_f *w_parallel_setup(gauge_file *gf, off_t *checksum_offset);
+fmatrix *w_parallel_setup(gauge_file *gf, off_t *checksum_offset);
 gauge_file *w_parallel_i(char *filename);
 gauge_file *w_checkpoint_i(char *filename);
 gauge_file *r_serial_i(char *filename);

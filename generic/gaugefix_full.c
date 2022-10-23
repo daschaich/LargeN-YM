@@ -68,33 +68,26 @@
 #define EPS_SQ 1.0e-8
 
 /* Scratch space */
-
-static matrix_f *diffmatp;               /* malloced diffmat pointer */
-static vector_f *sumvecp;                /* malloced sumvec pointer */
+static matrix *diffmatp;               /* malloced diffmat pointer */
+static vector *sumvecp;                /* malloced sumvec pointer */
 field_offset diffmat_offset,sumvec_offset;  /* field offsets */
 
 void gaugefix(int gauge_dir,Real relax_boost,int max_gauge_iter,
-        Real gauge_fix_tol, field_offset diffmat, field_offset sumvec,
-        int nvector, field_offset vector_offset[], int vector_parity[],
-        int nantiherm, field_offset antiherm_offset[],
-        int antiherm_parity[] )
-{
+              Real gauge_fix_tol, field_offset diffmat, field_offset sumvec,
+              int nvector, field_offset vector_offset[], int vector_parity[],
+              int nantiherm, field_offset antiherm_offset[],
+              int antiherm_parity[]) {
+
   int gauge_iter;
   double current_av, old_av = 0, del_av = 0;
   void gaugefixscratch(field_offset diffmat, field_offset sumvec);
   void gaugefixstep(int gauge_dir,double *av_gauge_fix_action,Real relax_boost,
         int nvector, field_offset vector_offset[], int vector_parity[],
         int nantiherm, field_offset antiherm_offset[],
-        int antiherm_parity[] );
-#if (NCOL != DIMF)
-  /* Gauge fixing with matter fields in higher reps NOT implemented. -bqs 12/07 */
-  if(nvector>0){
-    if(this_node==0)printf("gaugefix: nvector must be zero if not in fund rep!\n"); fflush(stdout); terminate(1);}
-#endif
+        int antiherm_parity[]);
 
-  /* We require at least 8 gen_pt values for gauge fixing */
-  if(N_POINTERS < 8)
-    {
+  // We require at least 8 gen_pt values for gauge fixing
+  if(N_POINTERS < 8) {
       printf("gaugefix: N_POINTERS must be at least %d.  Fix the code.\n",
        N_POINTERS);
       fflush(stdout); terminate(1);
@@ -170,7 +163,7 @@ void gaugefixstep(int gauge_dir,double *av_gauge_fix_action,Real relax_boost,
 
       FORALLUPDIR(dir)
   {
-    mtag[dir] = start_gather_site( F_OFFSET(linkf[dir]), sizeof(matrix_f),
+    mtag[dir] = start_gather_site( F_OFFSET(linkf[dir]), sizeof(matrix),
            OPP_DIR(dir), parity, gen_pt[dir] );
   }
 
@@ -209,7 +202,7 @@ void gaugefixstep(int gauge_dir,double *av_gauge_fix_action,Real relax_boost,
 
     FORSOMEPARITY(i,s,parity)
       {
-        mat_copy_f((matrix_f *)(gen_pt[dir][i]), &diffmatp[i]);
+        mat_copy_f((matrix *)(gen_pt[dir][i]), &diffmatp[i]);
       }
 
     /* Now we are finished with gen_pt[dir] */
@@ -221,7 +214,7 @@ void gaugefixstep(int gauge_dir,double *av_gauge_fix_action,Real relax_boost,
 
     /* Gather diffmat onto sites of opposite parity */
 
-    mtag[dir] = start_gather_field( diffmatp, sizeof(matrix_f),
+    mtag[dir] = start_gather_field( diffmatp, sizeof(matrix),
             dir, OPP_PAR(parity), gen_pt[dir] );
 
     wait_gather(mtag[dir]);
@@ -229,7 +222,7 @@ void gaugefixstep(int gauge_dir,double *av_gauge_fix_action,Real relax_boost,
     /* Copy modified matrices into proper location */
 
     FORSOMEPARITY(i,s,OPP_PAR(parity))
-      mat_copy_f((matrix_f *)(gen_pt[dir][i]),&(s->linkf[dir]));
+      mat_copy_f((matrix *)(gen_pt[dir][i]),&(s->linkf[dir]));
 
     cleanup_gather(mtag[dir]);
   }
@@ -245,15 +238,15 @@ void do_hit_full(int gauge_dir, int parity, Real relax_boost,
   /* Do relaxation in SU(NCOL) */
   register int dir,i;
   register site *s;
-  matrix_f u;
+  matrix u;
   void accum_gauge_hit(int gauge_dir,int parity);
-  complex find_det(matrix_f *c);
+  complex find_det(matrix *c);
   Real f[NCOL],theta;
   complex tt1,phase,det;
   int j,k;
-  matrix_f  Omega, Q[NCOL];
+  matrix  Omega, Q[NCOL];
 #if (NCOL>2)
-  matrix_f eQ;
+  matrix eQ;
 #endif
 
 
@@ -309,8 +302,8 @@ void do_hit_full(int gauge_dir, int parity, Real relax_boost,
       /* Do gauge transformation hit on all downward links */
 
       FORALLUPDIR(dir){
-  mult_na_f((matrix_f *)gen_pt[dir][i],&u,&Omega);
-  mat_copy_f(&Omega,(matrix_f *)gen_pt[dir][i]);
+  mult_na_f((matrix *)gen_pt[dir][i],&u,&Omega);
+  mat_copy_f(&Omega,(matrix *)gen_pt[dir][i]);
       }
       /* code to transform other variables has been removed */
     }
@@ -329,10 +322,10 @@ void accum_gauge_hit(int gauge_dir,int parity)
      and our recycled nHYP code finds the U(N) matrix V ~ Sigma*/
 
   register int j,k;
-  register matrix_f *m1,*m2;
+  register matrix *m1,*m2;
   register int dir,i;
   register site *s;
-  matrix_f m11;
+  matrix m11;
 
   /* Clear diffmat */
 
@@ -356,7 +349,7 @@ void accum_gauge_hit(int gauge_dir,int parity)
   FORSOMEPARITYDOMAIN(i,s,parity) {
       FORALLUPDIRBUT(gauge_dir,dir) {
     /* Downward link matrix */
-    m2 = (matrix_f *)gen_pt[dir][i];
+    m2 = (matrix *)gen_pt[dir][i];
     add_mat_f( &diffmatp[i], m2, &diffmatp[i]);
   }
     }
@@ -374,7 +367,7 @@ double get_gauge_fix_action(int gauge_dir,int parity)
 
   register int dir,i,ndir;
   register site *s;
-  register matrix_f *m1, *m2;
+  register matrix *m1, *m2;
   double gauge_fix_action;
   complex trace;
 
@@ -385,7 +378,7 @@ double get_gauge_fix_action(int gauge_dir,int parity)
       FORALLUPDIRBUT(gauge_dir,dir)
   {
     m1 = &(s->linkf[dir]);
-    m2 = (matrix_f *)gen_pt[dir][i];
+    m2 = (matrix *)gen_pt[dir][i];
 
     trace = trace_f(m1);
     gauge_fix_action += (double)trace.real;
@@ -409,7 +402,7 @@ void gaugefixscratch(field_offset diffmat, field_offset sumvec) {
   diffmat_offset = diffmat;
   diffmatp = NULL;
 
-  diffmatp = (matrix_f *)malloc(sizeof(matrix_f)*sites_on_node);
+  diffmatp = (matrix *)malloc(sizeof(matrix)*sites_on_node);
   if(diffmatp == NULL)
     {
       node0_printf("gaugefix: Can't malloc diffmat\n");

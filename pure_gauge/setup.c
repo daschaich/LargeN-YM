@@ -24,7 +24,7 @@ int initial_set() {
     printf("Machine = %s, with %d nodes\n", machine_type(), numnodes());
     time_stamp("start");
 
-    status=get_prompt(stdin, &prompt);
+    status = get_prompt(stdin, &prompt);
     IF_OK status += get_i(stdin, prompt, "nx", &par_buf.nx);
     IF_OK status += get_i(stdin, prompt, "ny", &par_buf.ny);
     IF_OK status += get_i(stdin, prompt, "nz", &par_buf.nz);
@@ -38,7 +38,7 @@ int initial_set() {
   }
 
   // Broadcast parameter buffer from node 0 to all other nodes
-  broadcast_bytes((char *)&par_buf,sizeof(par_buf));
+  broadcast_bytes((char *)&par_buf, sizeof(par_buf));
   if (par_buf.stopflag != 0)
     normal_exit(0);
 
@@ -62,9 +62,9 @@ int initial_set() {
 // -----------------------------------------------------------------
 // Allocate all space for fields
 void make_fields() {
-  Real size = (Real)(2.0 * sizeof(matrix_f));
-  FIELD_ALLOC(tempmatf, matrix_f);
-  FIELD_ALLOC(tempmatf2, matrix_f);
+  Real size = (Real)(2.0 * sizeof(matrix));
+  FIELD_ALLOC(tempmat, matrix);
+  FIELD_ALLOC(tempmat2, matrix);
 
   size *= (Real)sites_on_node;
   node0_printf("Mallocing %.1f MBytes per core for fields\n", size / 1e6);
@@ -143,13 +143,13 @@ int readin(int prompt) {
 #endif
 
     // Find out what kind of starting lattice to use
-    IF_OK status += ask_starting_lattice(stdin,  prompt, &par_buf.startflag,
+    IF_OK status += ask_starting_lattice(stdin, prompt, &par_buf.startflag,
                                          par_buf.startfile);
 
     // Find out what to do with lattice at end
-    IF_OK status += ask_ending_lattice(stdin,  prompt, &(par_buf.saveflag),
+    IF_OK status += ask_ending_lattice(stdin, prompt, &(par_buf.saveflag),
                                        par_buf.savefile);
-    IF_OK status += ask_ildg_LFN(stdin,  prompt, par_buf.saveflag,
+    IF_OK status += ask_ildg_LFN(stdin, prompt, par_buf.saveflag,
                                  par_buf.stringLFN);
 
     if (status > 0)

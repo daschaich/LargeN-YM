@@ -32,14 +32,14 @@ void gauge_loops(double *result) {
         }
       }
 
-      // Both put the result in tempmatf2
-      // and use tempmatf for temporary storage
+      // Both put the result in tempmat2
+      // and use tempmat for temporary storage
       path(dirs, sign, length);
 
       FORALLSITES(i, s) {
         // Avoid excessively large numbers
         // Measure relative to some reasonable value of the loops
-        tc = trace_f(&(tempmatf2[i]));
+        tc = trace(&(tempmat2[i]));
         action = (double)tc.real;
         total_action = (double)loop_coeff[iloop][0] * action;
         act2 = action;

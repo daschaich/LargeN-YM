@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------
 // Evaluate Polyakov loops in arbitrary (even-length) direction
-// Use tempmatf and tempmatf2 for temporary storage
+// Use tempmat and tempmat2 for temporary storage
 // General gathers can be replaced, but probably don't matter
 #include "generic_includes.h"
 
@@ -23,20 +23,20 @@ complex ploop(int dir) {
   }
 
   // First multiply the link on every even site by the next link
-  tag = start_gather_site(F_OFFSET(linkf[dir]), sizeof(matrix_f),
+  tag = start_gather_site(F_OFFSET(linkf[dir]), sizeof(matrix),
                           dir, EVEN, gen_pt[0]);
   wait_gather(tag);
   FOREVENSITES(i, s)
-    mult_nn_f(&(s->linkf[dir]), (matrix_f *)gen_pt[0][i], &(tempmatf[i]));
+    mult_nn(&(s->linkf[dir]), (matrix *)gen_pt[0][i], &(tempmat[i]));
   cleanup_gather(tag);
 
   for (j = 2; j < Ndir; j += 2) {
     d[dir] = j;     // Distance from which to gather
-    tag = start_general_gather_field(tempmatf, sizeof(matrix_f),
+    tag = start_general_gather_field(tempmat, sizeof(matrix),
                                      d, EVEN, gen_pt[0]);
     wait_general_gather(tag);
     FOREVENSITES(i, s) {
-      // Overwrite tempmatf on the first two slices
+      // Overwrite tempmat on the first two slices
       // Leave other links undisturbed so we can still gather them
       switch(dir) {
         case XUP: if (s->x > 1) continue; break;
@@ -44,8 +44,8 @@ complex ploop(int dir) {
         case ZUP: if (s->z > 1) continue; break;
         case TUP: if (s->t > 1) continue; break;
       }
-      mult_nn_f(&(tempmatf[i]), (matrix_f *)gen_pt[0][i], &(tempmatf2[i]));
-      mat_copy_f(&(tempmatf2[i]), &(tempmatf[i]));
+      mult_nn(&(tempmat[i]), (matrix *)gen_pt[0][i], &(tempmat2[i]));
+      mat_copy(&(tempmat2[i]), &(tempmat[i]));
     }
     cleanup_general_gather(tag);
   }
@@ -56,7 +56,7 @@ complex ploop(int dir) {
       case ZUP: if (s->z > 1) continue; break;
       case TUP: if (s->t > 1) continue; break;
     }
-    trace_sum_f(&(tempmatf[i]), &plp);
+    trace_sum(&(tempmat[i]), &plp);
   }
   g_complexsum(&plp);
   plp.real *= Ndir * one_ov_vol;
@@ -68,14 +68,14 @@ complex ploop(int dir) {
   // Keep usual normalization (magnitude from 0 to N)
   // Only print if considering dir=TUP Polyakov loop
   if (dir == TUP) {
-    // First collect all t=1 even-site tempmatf entries
+    // First collect all t=1 even-site tempmat entries
     // to odd sites on timeslice t=0
-    tag = start_gather_field(tempmatf, sizeof(matrix_f), TUP, ODD, gen_pt[0]);
+    tag = start_gather_field(tempmat, sizeof(matrix), TUP, ODD, gen_pt[0]);
     wait_gather(tag);
     FORODDSITES(i, s) {
       if (s->t > 0)
         continue;
-      mat_copy_f((matrix_f *)gen_pt[0][i], &(tempmatf[i]));
+      mat_copy((matrix *)gen_pt[0][i], &(tempmat[i]));
     }
 
     // Now we can just call print_var3

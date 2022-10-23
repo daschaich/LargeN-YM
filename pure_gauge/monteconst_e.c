@@ -18,7 +18,7 @@ void monteconst_e(double Eint, double a) {
   Real al, d, xl, xd, b3 = beta * a * one_ov_N;
   double ssplaq, stplaq, energy, rate;
   su2_matrix h;
-  matrix_f actmat;
+  matrix actmat;
 
   // Set up SU(2) subgroup indices [a][b] with a < b
   count = 0;
@@ -54,13 +54,13 @@ void monteconst_e(double Eint, double a) {
 
           FORSOMEPARITY(i, s, parity) {
             // Save starting links
-            mat_copy_f(&(s->linkf[dir]), &(s->tempmat));
+            mat_copy(&(s->linkf[dir]), &(s->tempmat));
 
             // Decompose the action into SU(2) subgroups
             // using Pauli matrix expansion
             // The SU(2) hit matrix is represented as
             //   v0 + i * Sum j (sigma j * vj)
-            mult_na_f(&(s->linkf[dir]), &(s->staple), &actmat);
+            mult_na(&(s->linkf[dir]), &(s->staple), &actmat);
             v0 = actmat.e[ina][ina].real + actmat.e[inb][inb].real;
             v3 = actmat.e[ina][ina].imag - actmat.e[inb][inb].imag;
             v1 = actmat.e[ina][inb].imag + actmat.e[inb][ina].imag;
@@ -207,7 +207,7 @@ void monteconst_e(double Eint, double a) {
             h.e[1][1] = cmplx( h0,-h3);
 
             // Update the link
-            left_su2_hit_n_f(&h, ina, inb, &(s->linkf[dir]));
+            left_su2_hit_n(&h, ina, inb, &(s->linkf[dir]));
           }
 
           // If we have exited the energy interval, restore starting links
@@ -224,7 +224,7 @@ void monteconst_e(double Eint, double a) {
                          energy, Eint, Eint + delta);
 #endif
             FORSOMEPARITY(i, s, parity)
-              mat_copy_f(&(s->tempmat), &(s->linkf[dir]));
+              mat_copy(&(s->tempmat), &(s->linkf[dir]));
           }
           else {
             this_accept++;
