@@ -3,7 +3,7 @@ nx 4
 ny 4
 nz 4
 nt 4
-iseed 41
+iseed 43
 
 warms 3
 trajecs 3
@@ -13,10 +13,10 @@ beta 10.7
 ora_steps 4
 qhb_steps 4
 
-Emin -85.6
-delta 8.56
+Emin -142.7
+delta 14.3
 a 1.0
 ait 10
 
-fresh
+reload_serial config.SU4.4444
 forget

@@ -113,17 +113,15 @@ int update_hmc_const(double Eint, double a) {
 #if 0
   int step, iters = 0;
   Real xrandom, tr;
-  double fnorm = 0.0, startaction = 0.0, endaction, change;
+  Real eps = traj_length / (Real)hmc_steps;
+  double fnorm = 0.0, startactionHMC = 0.0, endactionHMC, change;
   double startlatticeaction = 0.0;
-  double startactionHMC = 0.0;
-  double endactionHMC;
   double endlatticeaction;
   double regulardelta;
   // Refresh the momenta
   ranmom();
 
   // Find initial action
-  startaction = action();
   startactionHMC = action_HMC(a);
   startlatticeaction = U_action();
   // Copy link field to old_link
@@ -150,7 +148,6 @@ int update_hmc_const(double Eint, double a) {
   reunitarize();
 
   // Find ending action
-  endaction = action();
   endactionHMC = action_HMC(a);
   endlatticeaction = U_action();
   change = endactionHMC - startactionHMC;

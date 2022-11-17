@@ -1,13 +1,13 @@
 SU(4) pure-gauge over-relaxed heatbath algorithm
 Machine = MPI (portable), with 2 nodes
-start: Wed Sep 21 23:44:49 2022
+start: Thu Nov 17 01:13:03 2022
 
 type 0 for no prompts or 1 for prompts
 nx 4
 ny 4
 nz 4
 nt 4
-iseed 41
+iseed 43
 LAYOUT = Hypercubes, options = hyper_prime,
 MPI with automatic hyper_prime layout
 ON EACH NODE 2 x 4 x 4 x 4
@@ -24,20 +24,20 @@ qhb_steps 4
 reload_serial config.SU4.4444
 forget
 Restored binary gauge configuration serially from file config.SU4.4444
-Time stamp Tue Jan 24 09:08:59 2017
-Checksums ff508162 bfb64808 OK
-Time to reload gauge configuration = 0.00186 seconds
-CHECK PLAQ: 1.6623868341873866e+00 1.6452447726390365e+00
-CHECK NERSC LINKTR: -1.2434277158519080e-02 CKSUM: 0
-Reunitarized for double precision.  Max deviation 6e-08 changed to 5.6e-16
-Time to check unitarity = 0.0004241 seconds
-START 1.6623868 1.6452448 3.3076316
+Time stamp Sat Oct  1 01:26:32 2022
+Checksums 754534d9 e683e357 OK
+Time to reload gauge configuration = 0.000783 seconds
+CHECK PLAQ: 2.2148399450929008e+00 2.2203971514700318e+00
+CHECK NERSC LINKTR: -6.0338394236065795e-03 CKSUM: 0
+Reunitarized for double precision.  Max deviation 5.6e-08 changed to 4.4e-16
+Time to check unitarity = 0.000469 seconds
+START 2.2148399 2.2203972 4.4352371
 WARMUPS COMPLETED
-GMES -0.078285428 0.088928775 1.8884085 1.8973637
-GMES -0.17190889 -0.056935098 1.9664612 1.958539
-GMES -0.037589601 -0.025046615 1.9953817 2.0249662
+GMES -0.0059449424 -0.69058374 2.2494198 2.2609777
+GMES -0.053511177 -0.7745212 2.1856663 2.2654885
+GMES 0.04164683 -0.7872434 2.2715261 2.2544903
 RUNNING COMPLETED
-STOP 1.9953817 2.0249662 4.020348
-Time = 0.04757 seconds
-exit: Wed Sep 21 23:44:49 2022
+STOP 2.2715261 2.2544903 4.5260164
+Time = 0.04356 seconds
+exit: Thu Nov 17 01:13:03 2022
 

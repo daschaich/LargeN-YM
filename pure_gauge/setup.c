@@ -27,7 +27,7 @@ int initial_set() {
 #ifndef HMC
     printf("using over-relaxed heatbath updates\n");
 #else
-    printf("using hybrid Monte Carlo updates\n", NCOL);
+    printf("using hybrid Monte Carlo updates\n");
 #endif
 #endif
     printf("Machine = %s, with %d nodes\n", machine_type(), numnodes());

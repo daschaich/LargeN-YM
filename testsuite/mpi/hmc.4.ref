@@ -1,6 +1,6 @@
 SU(4) pure-gauge hybrid Monte Carlo algorithm
-Machine = Scalar processor, with 1 nodes
-start: Tue Nov 15 15:53:24 2022
+Machine = MPI (portable), with 2 nodes
+start: Thu Nov 17 01:12:49 2022
 
 type 0 for no prompts or 1 for prompts
 nx 4
@@ -8,9 +8,10 @@ ny 4
 nz 4
 nt 4
 iseed 43
-LAYOUT = Hypercubes, options = with fixed node_geometry
-ON EACH NODE 4 x 4 x 4 x 4
-Mallocing 0.8 MBytes per core for lattice
+LAYOUT = Hypercubes, options = hyper_prime,
+MPI with automatic hyper_prime layout
+ON EACH NODE 2 x 4 x 4 x 4
+Mallocing 0.4 MBytes per core for lattice
 Mallocing 0.1 MBytes per core for fields
 
 
@@ -25,11 +26,11 @@ forget
 Restored binary gauge configuration serially from file config.SU4.4444
 Time stamp Sat Oct  1 01:26:32 2022
 Checksums 754534d9 e683e357 OK
-Time to reload gauge configuration = 0.0009081 seconds
-CHECK PLAQ: 2.2148399450929013e+00 2.2203971514700305e+00
+Time to reload gauge configuration = 0.001625 seconds
+CHECK PLAQ: 2.2148399450929008e+00 2.2203971514700318e+00
 CHECK NERSC LINKTR: -6.0338394236065795e-03 CKSUM: 0
 Reunitarized for double precision.  Max deviation 5.6e-08 changed to 4.4e-16
-Time to check unitarity = 0.000937 seconds
+Time to check unitarity = 0.0004671 seconds
 START 2.2148399 2.2203972 4.4352371
 WARMUPS COMPLETED
 ACTION: g, h, tot =  7323.45 7626.7072 14950.156
@@ -52,6 +53,6 @@ MONITOR_FORCE 0.06864 0.1383
 GMES -0.21688797 -0.51203654 2.2225863 2.2008351
 RUNNING COMPLETED
 STOP 2.2225863 2.2008351 4.4234214
-Time = 0.1333 seconds
-exit: Tue Nov 15 15:53:24 2022
+Time = 0.08042 seconds
+exit: Thu Nov 17 01:12:49 2022
 

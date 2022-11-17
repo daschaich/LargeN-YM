@@ -9,14 +9,14 @@ warms 3
 trajecs 3
 traj_between_meas 10
 
-beta 6.0
-ora_steps 4
-qhb_steps 4
+beta 2.7
+hmc_steps 12
+traj_length 1.0
 
-Emin -60.0
-delta 6.0
+Emin -18.0
+delta 1.8
 a 1.0
 ait 10
 
-reload_serial config.SU3.4444
+reload_serial config.SU2.4444
 forget

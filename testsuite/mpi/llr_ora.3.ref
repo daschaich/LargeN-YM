@@ -1,6 +1,6 @@
-SU(3) pure-gauge log-linear relaxation algorithm
+SU(3) pure-gauge log-linear relaxation algorithm using over-relaxed heatbath updates
 Machine = MPI (portable), with 2 nodes
-start: Wed Sep 21 23:45:04 2022
+start: Thu Nov 17 01:22:03 2022
 
 type 0 for no prompts or 1 for prompts
 nx 4
@@ -25,31 +25,33 @@ Emin -60
 delta 6
 a 1
 ait 10
-fresh
+reload_serial config.SU3.4444
 forget
-unit gauge configuration loaded
-Starting with cold lattice
-CHECK PLAQ: 3.0000000000000000e+00 3.0000000000000000e+00
-CHECK NERSC LINKTR: 1.0000000000000000e+00 CKSUM: 0
-Reunitarized for double precision.  Max deviation 0 changed to 0
-Time to check unitarity = 0.0001891 seconds
-START 3 3 6 -27648
+Restored binary gauge configuration serially from file config.SU3.4444
+Time stamp Sat Oct  1 01:24:08 2022
+Checksums ac6e1df0 1e9a6f1a OK
+Time to reload gauge configuration = 0.001704 seconds
+CHECK PLAQ: 1.7511526906430692e+00 1.7608072168014537e+00
+CHECK NERSC LINKTR: 2.5882006381721112e-03 CKSUM: 0
+Reunitarized for double precision.  Max deviation 5.7e-08 changed to 4.4e-16
+Time to check unitarity = 0.000206 seconds
+START 1.7511527 1.7608072 3.5119599 -16183.111
 WARMUPS COMPLETED
 Searching for energy interval [-15360, -13824]
-Energy -15257.912 in interval found after 5 updates in 0.02368 seconds
-RM ITER 1 a 0.99642379
-RM ITER 2 a 0.99266294
-RM ITER 3 a 0.98896845
-RM ITER 4 a 0.98535552
-RM ITER 5 a 0.9818677
-RM ITER 6 a 0.97839564
-RM ITER 7 a 0.97476633
-RM ITER 8 a 0.97119204
-RM ITER 9 a 0.96762096
-RM ITER 10 a 0.96382442
+Energy -15037.996 in interval found after 5 updates in 0.02443 seconds
+RM ITER 1 a 0.99626701
+RM ITER 2 a 0.99266226
+RM ITER 3 a 0.98884885
+RM ITER 4 a 0.98514148
+RM ITER 5 a 0.98171464
+RM ITER 6 a 0.9780351
+RM ITER 7 a 0.97457808
+RM ITER 8 a 0.97115839
+RM ITER 9 a 0.96741648
+RM ITER 10 a 0.96366082
 RUNNING COMPLETED
-STOP 1.6580593 1.6698287 3.327888 -15334.908
-Overall acceptance 3469 of 5760 = 0.6023
-Time = 0.7809 seconds
-exit: Wed Sep 21 23:45:04 2022
+STOP 1.647359 1.6796433 3.3270023 -15330.827
+Overall acceptance 3537 of 5760 = 0.6141
+Time = 0.7339 seconds
+exit: Thu Nov 17 01:22:04 2022
 
