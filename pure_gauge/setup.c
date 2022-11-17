@@ -205,6 +205,16 @@ int readin(int prompt) {
   strcpy(savefile, par_buf.savefile);
   strcpy(stringLFN, par_buf.stringLFN);
 
+  // Allocate some more arrays to be used by LAPACK
+  // in generic/reunitarize.c
+  Rwork = malloc(sizeof *Rwork * 5 * NCOL);
+  eigs = malloc(sizeof *eigs * NCOL);
+  store = malloc(sizeof *store * 2 * NCOL * NCOL);
+  work = malloc(sizeof *work * 6 * NCOL);
+  junk = malloc(sizeof *junk * NCOL);
+  left = malloc(sizeof *left * 2 * NCOL * NCOL);
+  right = malloc(sizeof *right * 2 * NCOL * NCOL);
+
   // Do whatever is needed to get lattice
   startlat_p = reload_lattice(startflag, startfile);
   return 0;

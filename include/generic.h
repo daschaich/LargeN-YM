@@ -6,7 +6,6 @@
 // Other generic directory declarations are elsewhere:
 //   See comdefs.h for communications
 //   See io_lat.h for I/O
-//   See io_wprop.h for propagators
 #include <stdio.h>
 #include "../include/int32type.h"
 #include "../include/complex.h"
@@ -84,7 +83,8 @@ void ape_smear(
 /* ax_gauge.c */
 void ax_gauge();
 
-/* check_unitarity.c */
+// check_unitarity.c
+Real check_unit(matrix *c);
 Real check_unitarity();
 
 // nersc_cksum.c
@@ -165,6 +165,25 @@ void initialize_prn(double_prn *prn_pt, int seed, int index);
 Real myrand(double_prn *prn_pt);
 
 /* reunitarize.c */
+int check_deviation();
 void reunitarize();
+// Use LAPACK singular value decomposition for reunitarization
+// http://www.netlib.org/lapack/explore-3.1.1-html/zgesvd.f.html
+// First and second arguments tell LAPACK to compute all singular values
+// Third and fourth arguments are the dimensions of the matrix (both NCOL)
+// Fifth argument is the input matrix (lost)
+// Sixth argument is the leading dimension (NCOL)
+// Seventh argument is the array of singular values (discarded)
+// Eight argument is the matrix of left singular vectors (left)
+// Ninth argument is the dimension of left (NCOL)
+// Tenth argument is the matrix of right singular vectors (right^dag)
+// Eleventh argument is the dimension of right^dag (NCOL)
+// Twelfth argument is complex workspace of size given by the 13th argument
+// Fourteenth argument is real workspace of size 5 * NCOL
+// Final argument reports success or information about failure
+void zgesvd_(char *A1, char *A2, int *N1, int *N2, double *store,
+             int *lda, double *junk, double *left, int *Nl,
+             double *right, int *Nr, double *work, int *Nwork,
+             double *Rwork, int *stat);
 #endif
 // -----------------------------------------------------------------

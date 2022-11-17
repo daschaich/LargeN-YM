@@ -100,22 +100,27 @@ endif
 DARCH = ${DHAVE_QMP} ${DHAVE_QIO}
 
 ##### Targets:
+# lapack and blas needed for general-N reunitarization
 pg_ora::
 	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" \
+	"LAPACK = -llapack -lblas " \
 	"EXTRA_OBJECTS = control.o dsdu_qhb.o monte.o relax.o "
 
 pg_llr_ora::
 	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" "DEFINES = -DLLR" \
+	"LAPACK = -llapack -lblas " \
 	"EXTRA_OBJECTS = control_llr.o dsdu_qhb.o monte.o relax.o \
 	                 monteconst_e.o updateconst_e.o find_interval.o "
 
 pg_hmc::
 	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" "DEFINES = -DHMC" \
+	"LAPACK = -llapack -lblas " \
 	"EXTRA_OBJECTS = control.o ranmom.o action.o update_hmc.o update_h.o \
 	                 update_u.o "
 
 pg_llr::
 	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" "DEFINES = -DHMC -DLLR" \
+	"LAPACK = -llapack -lblas " \
 	"EXTRA_OBJECTS = control_llr.o ranmom.o action.o update_hmc.o update_h.o \
 	                 update_u.o updateconst_e.o find_interval.o "
 
@@ -132,7 +137,7 @@ libmake:
 
 localmake: ${OBJECTS} ${LIBRARIES}
 	${LD} -o ${MYTARGET} ${LDFLAGS} \
-	${OBJECTS} ${QCDLIB} ${ILIB} -lm
+	${OBJECTS} ${QCDLIB} ${ILIB} -lm ${LAPACK}
 	touch localmake
 
 target: libmake localmake
