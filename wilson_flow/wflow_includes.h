@@ -25,7 +25,7 @@ int setup();
 int readin(int prompt);
 void wflow();
 void stout_step_rk();
-void staple(matrix_f *stp[NDIMS]);
+void staple(matrix *stp[NDIMS]);
 
 // Measurement stuff
 void meas(Real t);

@@ -10,11 +10,6 @@
 Hasenfratz & Knechtli, hep-lat/0103029; turn on with:          */
 #define MIN_PLAQ
 
-/* Added local plaq measurement for plotting plaq distribution
- (frep only); turn on with:  */
-/* #define ALL_PLAQ */
-/*** CAUTION: Do not run ALL_PLAQ with MPI!! ***/
-
 /* The following should be defined self-consistently.
    The value of MY_DIR is printed out on the first time
    the routine is called.                                          */
@@ -36,8 +31,8 @@ static int print_dir=0;
 
 
 // -----------------------------------------------------------------
-void plaquette_lcl(double *ss_plaq,double *st_plaq) {
-  register int i,dir,dir2;
+void plaquette_lcl(double *ss_plaq, double *st_plaq) {
+  register int i, dir, dir2;
   register site *s;
   register matrix_f *m1, *m4;
   double ss_sum = 0.0, st_sum = 0.0, cur_plaq;
@@ -151,148 +146,6 @@ void plaquette_lcl(double *ss_plaq,double *st_plaq) {
   g_doublemax(&min_plaq);
   min_plaq = -min_plaq;
   node0_printf("MIN_PLAQ_FUND %e\n",min_plaq);
-#endif
-}
-// -----------------------------------------------------------------
-
-
-
-// -----------------------------------------------------------------
-// Plaquette in fermion irrep
-void plaquette_frep_lcl(double *ss_plaq_frep, double *st_plaq_frep) {
-  register int i,dir,dir2;
-  register site *s;
-  register matrix *m1, *m4;
-  double ss_sum = 0.0, st_sum = 0.0, cur_plaq;
-#ifdef MIN_PLAQ
-  double min_plaq = DIMF;
-#endif
-  msg_tag *mtag0, *mtag1;
-  matrix tmat, *tempmat = malloc(sizeof(matrix)*sites_on_node);
-
-#ifdef LOCAL_PLAQ
-  int xx;
-  double *plaq_perp = malloc(MY_N * sizeof(*plaq_perp));
-  double *plaq_prll = malloc(MY_N * sizeof(*plaq_prll));
-
-  for (xx = 0; xx < MY_N; xx++) {
-    plaq_perp[xx] = 0.0;
-    plaq_prll[xx] = 0.0;
-  }
-#endif
-
-  if (tempmat == NULL) {
-    printf("plaquette: can't malloc tempmat\n");
-    fflush(stdout);
-    terminate(1);
-  }
-
-  for (dir = YUP; dir <= TUP; dir++) {
-    for (dir2 = XUP; dir2 < dir; dir2++) {
-
-      mtag0 = start_gather_site(F_OFFSET(link[dir2]), sizeof(matrix),
-          dir, EVENANDODD, gen_pt[0]);
-      mtag1 = start_gather_site(F_OFFSET(link[dir]), sizeof(matrix),
-          dir2, EVENANDODD, gen_pt[1]);
-
-      FORALLSITES(i,s) {
-        m1 = &(s->link[dir]);
-        m4 = &(s->link[dir2]);
-        mult_an(m4,m1,&tempmat[i]);
-      }
-      wait_gather(mtag0);
-      wait_gather(mtag1);
-
-      if (dir==TUP) {
-        FORALLSITES(i, s) {
-          mult_nn(&(tempmat[i]), (matrix *)(gen_pt[0][i]),
-              &tmat);
-          cur_plaq = (double)
-            realtrace((matrix *)(gen_pt[1][i]),&tmat);
-#ifdef MIN_PLAQ
-          if (cur_plaq<min_plaq) min_plaq=cur_plaq;
-#endif
-#ifdef ALL_PLAQ
-          printf("ALL_PLAQ %d %d %d %d %d %d %e\n",
-              s->x,s->y,s->z,s->t,dir,dir2,cur_plaq);
-#endif
-          st_sum += cur_plaq;
-#ifdef LOCAL_PLAQ
-          if (dir==MY_DIR || dir2==MY_DIR) {
-            plaq_perp[s->MY_X] += cur_plaq;
-          }
-          else{
-            plaq_prll[s->MY_X] += cur_plaq;
-          }
-#endif
-        }
-      }
-      else {
-        FORALLSITES(i,s) {
-          mult_nn(&(tempmat[i]), (matrix *)(gen_pt[0][i]),
-              &tmat);
-          cur_plaq = (double)
-            realtrace((matrix *)(gen_pt[1][i]),&tmat);
-#ifdef MIN_PLAQ
-          if (cur_plaq<min_plaq) min_plaq=cur_plaq;
-#endif
-#ifdef ALL_PLAQ
-          printf("ALL_PLAQ %d %d %d %d %d %d %e\n",
-              s->x,s->y,s->z,s->t,dir,dir2,cur_plaq);
-#endif
-          ss_sum += cur_plaq;
-#ifdef LOCAL_PLAQ
-          if (dir==MY_DIR || dir2==MY_DIR)
-            plaq_perp[s->MY_X] += cur_plaq;
-          else
-            plaq_prll[s->MY_X] += cur_plaq;
-#endif
-        }
-      }
-      cleanup_gather(mtag0);
-      cleanup_gather(mtag1);
-    }
-  }
-  g_doublesum(&ss_sum);
-  g_doublesum(&st_sum);
-  // Average over three plaquettes that involve the temporal link
-  // and three that do not
-  *ss_plaq_frep = ss_sum / (double)(3.0 * volume);
-  *st_plaq_frep = st_sum / (double)(3.0 * volume);
-
-  free(tempmat);
-
-#ifdef LOCAL_PLAQ
-  for (xx = 0; xx < MY_N; xx++) {
-    g_doublesum(&(plaq_perp[xx]));
-    g_doublesum(&(plaq_prll[xx]));
-  }
-
-  // normalization
-  for (xx = 0; xx < MY_N; xx++) {
-    plaq_perp[xx] *= (double)(MY_N) / (3.0 * volume);
-    plaq_prll[xx] *= (double)(MY_N) / (3.0 * volume);
-  }
-
-  // Print out
-  if (this_node==0) {
-    /*    printf("LOCAL_PLAQ dir=%d\n", MY_DIR); */
-    printf("FAT_PLAQ_PERP");
-    for (xx = 0; xx < MY_N; xx++)
-      printf(" %e", (double)plaq_perp[xx]);
-    printf("\n");
-    printf("FAT_PLAQ_PRLL");
-    for (xx = 0; xx < MY_N; xx++)
-      printf(" %e", (double)plaq_prll[xx]);
-    printf("\n");
-  }
-#endif /* LOCAL_PLAQ */
-
-#ifdef MIN_PLAQ
-  min_plaq = -min_plaq;
-  g_doublemax(&min_plaq);
-  min_plaq = -min_plaq;
-  node0_printf("MIN_PLAQ_FERM %e\n",min_plaq);
 #endif
 }
 // -----------------------------------------------------------------

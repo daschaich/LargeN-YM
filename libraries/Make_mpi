@@ -10,7 +10,7 @@ MAKEFILE = Make_mpi
 CC       = mpicc
 OPT      = -O3    # Keep optimization by itself to omit below
 OCFLAGS  = -Wall
-CODETYPE = # -DFAST # Only works if NCOL = DIMF = 3
+CODETYPE = # -DFAST # Only works if NCOL = 3
 
 # Also check include/config.h
 # ------------------------------------------------------------------

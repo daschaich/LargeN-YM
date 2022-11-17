@@ -27,16 +27,16 @@ typedef struct {
 #endif
 
   // Gauge links
-  matrix_f linkf[4];
+  matrix linkf[4];
 #ifdef HMC
-  matrix_f old_linkf[4];  // For accept/reject
+  matrix old_link[4];  // For accept/reject
 
   // Antihermitian momentum matrices in each direction
   anti_hermitmat mom[4];
 #endif
 
   // Temporary storage
-  matrix_f tempmat, staple;    // TODO: Replace with tempmatf and tempmatf2
+  matrix tempmat, staple;    // TODO: Convert these to fields
 } site;
 // -----------------------------------------------------------------
 
@@ -93,7 +93,7 @@ EXTERN int this_node;           // Node number of this node
 EXTERN double_prn node_prn;
 
 // Temporary fields
-EXTERN matrix_f *tempmatf, *tempmatf2;
+EXTERN matrix *tempmat, *tempmat2;
 
 // Some more arrays to be used by LAPACK
 // in reunitarization (in generic directory)

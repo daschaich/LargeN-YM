@@ -40,45 +40,8 @@ static void p2d_complex(dcomplex *dest, complex *src) {
   dest->imag = src->imag;
 }
 
-// Color vector
-static void f2p_vec(vector_f *dest, fvector_f *src) {
-  int i;
-
-  for (i = 0; i < NCOL; i++) {
-    dest->c[i].real = src->c[i].real;
-    dest->c[i].imag = src->c[i].imag;
-  }
-}
-
-static void p2f_vec(fvector_f *dest, vector_f *src) {
-  int i;
-
-  for (i = 0; i < NCOL; i++) {
-    dest->c[i].real = src->c[i].real;
-    dest->c[i].imag = src->c[i].imag;
-  }
-}
-
-static void d2p_vec(vector_f *dest, dvector_f *src) {
-  int i;
-
-  for (i = 0; i < NCOL; i++) {
-    dest->c[i].real = src->c[i].real;
-    dest->c[i].imag = src->c[i].imag;
-  }
-}
-
-static void p2d_vec(dvector_f *dest, vector_f *src) {
-  int i;
-
-  for (i = 0; i < NCOL; i++) {
-    dest->c[i].real = src->c[i].real;
-    dest->c[i].imag = src->c[i].imag;
-  }
-}
-
 // Color matrix
-static void f2p_mat(matrix_f *dest, fmatrix_f *src) {
+static void f2p_mat(matrix *dest, fmatrix *src) {
   int i, j;
 
   for (i = 0; i < NCOL; i++) {
@@ -89,7 +52,7 @@ static void f2p_mat(matrix_f *dest, fmatrix_f *src) {
   }
 }
 
-static void p2f_mat(fmatrix_f *dest, matrix_f *src) {
+static void p2f_mat(fmatrix *dest, matrix *src) {
   int i, j;
 
   for (i = 0; i < NCOL; i++) {
@@ -100,7 +63,7 @@ static void p2f_mat(fmatrix_f *dest, matrix_f *src) {
   }
 }
 
-static void d2p_mat(matrix_f *dest, dmatrix_f *src) {
+static void d2p_mat(matrix *dest, dmatrix *src) {
   int i, j;
 
   for (i = 0; i < NCOL; i++) {
@@ -182,23 +145,19 @@ void vput_##P##N_##T##_to_field(char *buf, size_t index, int count, \
  make_vput_to_field(P, C, T, FIXTYPE, VARTYPE, FUNC);
 
 // Single precision
-make_vget(F,     , R, float,     Real,     p2f_real);
-make_vget(F,     , C, fcomplex,  complex,  p2f_complex);
-make_vget(F, NCOL, V, fvector_f, vector_f, p2f_vec);
-make_vget(F, NCOL, M, fmatrix_f, matrix_f, p2f_mat);
+make_vget(F,     , R, float,    Real,    p2f_real);
+make_vget(F,     , C, fcomplex, complex, p2f_complex);
+make_vget(F, NCOL, M, fmatrix,  matrix,  p2f_mat);
 
-make_vput(F,     , R, float,     Real,     f2p_real);
-make_vput(F,     , C, fcomplex,  complex,  f2p_complex);
-make_vput(F, NCOL, V, fvector_f, vector_f, f2p_vec);
-make_vput(F, NCOL, M, fmatrix_f, matrix_f, f2p_mat);
+make_vput(F,     , R, float,    Real,    f2p_real);
+make_vput(F,     , C, fcomplex, complex, f2p_complex);
+make_vput(F, NCOL, M, fmatrix,  matrix,  f2p_mat);
 
 // Double precision
-make_vget(D,     , C, dcomplex,  complex,  p2d_complex);
-make_vget(D, NCOL, V, dvector_f, vector_f, p2d_vec);
+make_vget(D,     , C, dcomplex, complex, p2d_complex);
 
-make_vput(D,     , C, dcomplex,  complex,  d2p_complex);
-make_vput(D, NCOL, V, dvector_f, vector_f, d2p_vec);
-make_vput(D, NCOL, M, dmatrix_f, matrix_f, d2p_mat);
+make_vput(D,     , C, dcomplex, complex, d2p_complex);
+make_vput(D, NCOL, M, dmatrix,  matrix,  d2p_mat);
 
 // Write site structure data, assuming output precision is single
 #define make_write_all_from_site(P, PSTRING, C, CVAL, SVAL, T, TYPESTRING, \
@@ -323,20 +282,16 @@ int write_##P##N_##T##_timeslice_from_field(QIO_Writer *outfile, \
                                FIXTYPE, VARTYPE, MYREAL);
 
 // Single precision
-make_write_all(F, "F",     , 0,    0, R, "QLA_F_Real",           float,     Real,     float);
-make_write_all(F, "F",     , 0,    0, C, "QLA_F_Complex",        fcomplex,  complex,  float);
-make_write_all(F, "F", NCOL, NCOL, 0, V, "USQCD_FN_ColorVector", fvector_f, vector_f, float);
-make_write_all(F, "F", NCOL, NCOL, 0, M, "USQCD_FN_ColorMatrix", fmatrix_f, matrix_f, float);
+make_write_all(F, "F",     ,    0, 0, R, "QLA_F_Real",           float,    Real,    float);
+make_write_all(F, "F",     ,    0, 0, C, "QLA_F_Complex",        fcomplex, complex, float);
+make_write_all(F, "F", NCOL, NCOL, 0, M, "USQCD_FN_ColorMatrix", fmatrix,  matrix,  float);
 
-make_write_tslice(F, "F",     , 0,    0, R, "QLA_F_Real",           float,     Real,     float);
-make_write_tslice(F, "F",     , 0,    0, C, "QLA_F_Complex",        fcomplex,  complex,  float);
-make_write_tslice(F, "F", NCOL, NCOL, 0, V, "USQCD_FN_ColorVector", fvector_f, vector_f, float);
+make_write_tslice(F, "F",     ,    0, 0, R, "QLA_F_Real",    float,    Real,    float);
+make_write_tslice(F, "F",     ,    0, 0, C, "QLA_F_Complex", fcomplex, complex, float);
 
 // Double precision
-make_write_all(D, "D",     , 0,    0, C, "QLA_D_Complex",        dcomplex,  complex,  double);
-make_write_all(D, "D", NCOL, NCOL, 0, V, "USQCD_DN_ColorVector", dvector_f, vector_f, double);
-make_write_tslice(D, "D",     , 0,    0, C, "QLA_D_Complex",        dcomplex,  complex,  double);
-make_write_tslice(D, "D", NCOL, NCOL, 0, V, "USQCD_DN_ColorVector", dvector_f, vector_f, double);
+make_write_all(D, "D",     ,    0, 0, C, "QLA_D_Complex", dcomplex, complex, double);
+make_write_tslice(D, "D",     ,    0, 0, C, "QLA_D_Complex", dcomplex, complex, double);
 
 // Read site structure data
 #define make_read_to_site(P, C, T, FIXTYPE, VARTYPE, MYREAL) \
@@ -388,15 +343,13 @@ int read_##P##N_##T##_to_field(QIO_Reader *infile, QIO_String *xml_in, \
   make_read_to_field(P, C, T, FIXTYPE, VARTYPE, MYREAL);
 
 // Single precision
-make_read(F,     , R, float,     Real,     float);
-make_read(F,     , C, fcomplex,  complex,  float);
-make_read(F, NCOL, V, fvector_f, vector_f, float);
-make_read(F, NCOL, M, fmatrix_f, matrix_f, float);
+make_read(F,     , R, float,    Real,    float);
+make_read(F,     , C, fcomplex, complex, float);
+make_read(F, NCOL, M, fmatrix,  matrix,  float);
 
 // Double precision
-make_read(D,     , C, dcomplex,  complex,  double);
-make_read(D, NCOL, V, dvector_f, vector_f, double);
-make_read(D, NCOL, M, dmatrix_f, matrix_f, double);
+make_read(D,     , C, dcomplex, complex, double);
+make_read(D, NCOL, M, dmatrix,  matrix,  double);
 
 // Factory function for moving RNG state from site structure to output
 // arg contains pointer to field offset value

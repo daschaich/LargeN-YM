@@ -18,7 +18,7 @@ void monteconst_e() {
   Real al, d, xl, xd, b3 = beta * a * one_ov_N;
   double E, ss_plaq, st_plaq;
   su2_matrix h;
-  matrix_f actmat;
+  matrix actmat;
 #ifdef DEBUG_PRINT
   double rate, check;
 #endif
@@ -55,13 +55,13 @@ void monteconst_e() {
           inb = index_b[subgrp];
           FORSOMEPARITY(i, s, parity) {
             // Save starting links
-            mat_copy_f(&(s->linkf[dir]), &(s->tempmat));
+            mat_copy(&(s->linkf[dir]), &(s->tempmat));
 
             // Decompose the action into SU(2) subgroups
             // using Pauli matrix expansion
             // The SU(2) hit matrix is represented as
             //   v0 + i * Sum j (sigma j * vj)
-            mult_na_f(&(s->linkf[dir]), &(s->staple), &actmat);
+            mult_na(&(s->linkf[dir]), &(s->staple), &actmat);
 #ifdef DEBUG_PRINT
             v0 = actmat.e[ina][ina].real + actmat.e[inb][inb].real;
             v3 = actmat.e[ina][ina].imag - actmat.e[inb][inb].imag;
@@ -225,7 +225,7 @@ void monteconst_e() {
             h.e[1][1] = cmplx( h0,-h3);
 
             // Update the link
-            left_su2_hit_n_f(&h, ina, inb, &(s->linkf[dir]));
+            left_su2_hit_n(&h, ina, inb, &(s->linkf[dir]));
           }
 
           // Reunitarize after each SU(2) subgroup sweep
@@ -245,7 +245,7 @@ void monteconst_e() {
             node0_printf("Energy %.8g leaves [%.8g, %.8g]\n", E, Emin, Emax);
 #endif
             FORSOMEPARITY(i, s, parity)
-              mat_copy_f(&(s->tempmat), &(s->linkf[dir]));
+              mat_copy(&(s->tempmat), &(s->linkf[dir]));
           }
           else {
             this_accept++;

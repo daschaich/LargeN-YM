@@ -92,11 +92,12 @@ void linktrsum(double_complex *linktr);
 
 // plaquette.c
 void plaquette(double *ss_plaq, double *st_plaq);
-void plaquette_frep(double *ss_plaq_frep, double *st_plaq_frep);
+#ifdef LLR
+double action(double *ss_plaq, double *st_plaq);
+#endif
 
 // plaquette_lcl.c
 void plaquette_lcl(double *ss_plaq, double *st_plaq);
-void plaquette_frep_lcl(double *ss_plaq_frep, double *st_plaq_frep);
 
 // field_strength.c
 // link_src is offset for matrix link[4] in site struct
@@ -163,7 +164,7 @@ int remap_stdio_from_args(int argc, char *argv[]);
 void initialize_prn(double_prn *prn_pt, int seed, int index);
 Real myrand(double_prn *prn_pt);
 
-/* reunitarize2.c */
+/* reunitarize.c */
 void reunitarize();
 #endif
 // -----------------------------------------------------------------

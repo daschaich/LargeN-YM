@@ -32,7 +32,7 @@ QIO_Reader *r_open_complex_scidac_file_xml(char *filename, int serpar,
 QIO_Reader *r_open_complex_scidac_file(char *filename, int serpar);
 void restore_color_matrix_scidac_to_site(char *filename, field_offset dest,
                                          int count);
-void restore_color_matrix_scidac_to_field(char *filename, matrix_f *dest,
+void restore_color_matrix_scidac_to_field(char *filename, matrix *dest,
                                           int count);
 void restore_random_state_scidac_to_site(char *filename, field_offset dest);
 
@@ -51,7 +51,7 @@ void save_color_matrix_scidac_from_site(char *filename, char *filexml,
 
 void save_color_matrix_scidac_from_field(char *filename, char *filexml,
                                          char *recxml, int volfmt,
-                                         matrix_f *src, int count);
+                                         matrix *src, int count);
 void save_random_state_scidac_from_site(char *filename, char *filexml,
                                         char *recxml, int volfmt,
                                         field_offset src);
@@ -77,8 +77,6 @@ int read_FN_R_to_site(QIO_Reader *infile, QIO_String *xml_in,
                      field_offset dest, int count);
 int read_FN_C_to_site(QIO_Reader *infile, QIO_String *xml_in,
                      field_offset dest, int count);
-int read_FN_V_to_site(QIO_Reader *infile, QIO_String *xml_in,
-                      field_offset dest, int count);
 int read_FN_M_to_site(QIO_Reader *infile, QIO_String *xml_in,
                       field_offset dest, int count);
 int read_FN_DN_to_site(QIO_Reader *infile, QIO_String *xml_in,
@@ -89,30 +87,22 @@ int read_FN_R_to_field(QIO_Reader *infile, QIO_String *xml_in,
                       Real *dest, int count);
 int read_FN_C_to_field(QIO_Reader *infile, QIO_String *xml_in,
                       complex *dest, int count);
-int read_FN_V_to_field(QIO_Reader *infile, QIO_String *xml_in,
-                       vector_f *dest, int count);
 int read_FN_M_to_field(QIO_Reader *infile, QIO_String *xml_in,
-                       matrix_f *dest, int count);
+                       matrix *dest, int count);
 
 int read_DN_C_to_site(QIO_Reader *infile, QIO_String *xml_in,
                      field_offset dest, int count);
-int read_DN_V_to_site(QIO_Reader *infile, QIO_String *xml_in,
-                      field_offset dest, int count);
 int read_DN_M_to_site(QIO_Reader *infile, QIO_String *xml_in,
                       field_offset dest, int count);
 
 int read_DN_C_to_field(QIO_Reader *infile, QIO_String *xml_in,
                       complex *dest, int count);
-int read_DN_V_to_field(QIO_Reader *infile, QIO_String *xml_in,
-                       vector_f *dest, int count);
 int read_DN_M_to_field(QIO_Reader *infile, QIO_String *xml_in,
-                       matrix_f *dest, int count);
+                       matrix *dest, int count);
 
 int write_FN_R_from_site(QIO_Writer *outfile, QIO_String *xml_out,
                         field_offset src, int count);
 int write_FN_C_from_site(QIO_Writer *outfile, QIO_String *xml_out,
-                        field_offset src, int count);
-int write_FN_V_from_site(QIO_Writer *outfile, QIO_String *xml_out,
                         field_offset src, int count);
 int write_FN_DN_from_site(QIO_Writer *outfile, QIO_String *xml_out,
                         field_offset src, int count);
@@ -123,8 +113,6 @@ int write_S_from_site(QIO_Writer *outfile, QIO_String *xml_out,
 
 int write_DN_C_from_site(QIO_Writer *outfile, QIO_String *xml_out,
                         field_offset src, int count);
-int write_DN_V_from_site(QIO_Writer *outfile, QIO_String *xml_out,
-                         field_offset src, int count);
 int write_DN_DN_from_site(QIO_Writer *outfile, QIO_String *xml_out,
                          field_offset src, int count);
 
@@ -132,15 +120,11 @@ int write_FN_R_timeslice_from_site(QIO_Writer *outfile, QIO_String *xml_out,
                                   field_offset src, int count, int t0);
 int write_FN_C_timeslice_from_site(QIO_Writer *outfile, QIO_String *xml_out,
                                   field_offset src, int count, int t0);
-int write_FN_V_timeslice_from_site(QIO_Writer *outfile, QIO_String *xml_out,
-                                   field_offset src, int count, int t0);
 int write_FN_DN_timeslice_from_site(QIO_Writer *outfile, QIO_String *xml_out,
                                    field_offset src, int count, int t0);
 
 int write_DN_C_timeslice_from_site(QIO_Writer *outfile, QIO_String *xml_out,
                                   field_offset src, int count, int t0);
-int write_DN_V_timeslice_from_site(QIO_Writer *outfile, QIO_String *xml_out,
-                                   field_offset src, int count, int t0);
 int write_DN_DN_timeslice_from_site(QIO_Writer *outfile, QIO_String *xml_out,
                                    field_offset src, int count, int t0);
 
@@ -148,27 +132,19 @@ int write_FN_R_from_field(QIO_Writer *outfile, QIO_String *xml_out,
                          Real *src, int count);
 int write_FN_C_from_field(QIO_Writer *outfile, QIO_String *xml_out,
                          complex *src, int count);
-int write_FN_V_from_field(QIO_Writer *outfile, QIO_String *xml_out,
-                          vector_f *src, int count);
 int write_FN_M_from_field(QIO_Writer *outfile, QIO_String *xml_out,
-                          matrix_f *src, int count);
+                          matrix *src, int count);
 
 int write_DN_C_from_field(QIO_Writer *outfile, QIO_String *xml_out,
                          complex *src, int count);
-int write_DN_V_from_field(QIO_Writer *outfile, QIO_String *xml_out,
-                          vector_f *src, int count);
 
 int write_FN_R_timeslice_from_field(QIO_Writer *outfile, QIO_String *xml_out,
                                    Real *src, int count, int t0);
 int write_FN_C_timeslice_from_field(QIO_Writer *outfile, QIO_String *xml_out,
                                    complex *src, int count, int t0);
-int write_FN_V_timeslice_from_field(QIO_Writer *outfile, QIO_String *xml_out,
-                                    vector_f *src, int count, int t0);
 
 int write_DN_C_timeslice_from_field(QIO_Writer *outfile, QIO_String *xml_out,
                                    complex *src, int count, int t0);
-int write_DN_V_timeslice_from_field(QIO_Writer *outfile, QIO_String *xml_out,
-                                    vector_f *src, int count, int t0);
 // -----------------------------------------------------------------
 
 

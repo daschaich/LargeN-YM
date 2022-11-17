@@ -1,107 +1,104 @@
 // -----------------------------------------------------------------
-// Communications routines for parallel machines
-// MPI version---allegedly machine independent
-/*
-  Exported Functions:
-   initialize_machine()  does any machine dependent setup at the
-                           very beginning.
-   normal_exit()         closes communications and exits
-   terminate()           halts program abruptly and exits
-   machine_type()        returns string describing communications architecture
-   mynode()              returns node number of this node.
-   numnodes()            returns number of nodes
-   g_sync()              provides a synchronization point for all nodes.
-   g_floatsum()          sums a floating point number over all nodes.
-   g_vecfloatsum()       sums a vector of generic floats over all nodes
-   g_doublesum()         sums a double over all nodes.
-   g_vecdoublesum()      sums a vector of doubles over all nodes.
-   g_complexsum()        sums a generic precision complex number over all nodes.
-   g_veccomplexsum()     sums a vector of generic precision complex numbers
-                           over all nodes.
-   g_dcomplexsum()       sums a double precision complex number over all nodes.
-   g_vecdcomplexsum()    sums a vector of double_complex over all nodes
-   g_wvectorsumfloat()   sums a generic precision wilson vector over all nodes.
-   g_xor32()             finds global exclusive or of 32-bit word
-   g_floatmax()          finds maximum floating point number over all nodes.
-   g_doublemax()         finds maximum double over all nodes.
-   broadcast_float()     broadcasts a generic precision number from
-                     node 0 to all nodes.
-   broadcast_double()    broadcasts a double precision number
-   broadcast_complex()   broadcasts a generic precision complex number
-   broadcast_dcomplex()  broadcasts a double precision complex number
-   broadcast_bytes()     broadcasts a number of bytes
-   send_integer()        sends an integer to one other node
-   receive_integer()     receives an integer
-   send_field()          sends a field to one other node.
-   get_field()           receives a field from some other node.
-   dclock()              returns a double precision time, with arbitrary zero
-   time_stamp()          print wall clock time with message
-   sort_eight_gathers()  sorts eight contiguous gathers from order
-                           XUP,XDOWN,YUP,YDOWN... to XUP,YUP,...XDOWN,YDOWN...
-   make_nn_gathers()     makes all necessary lists for communications with
-                           nodes containing neighbor sites.
-   make_gather()         calculates and stores necessary communications lists
-                           for a given gather mapping
-   declare_gather_site()      creates a message tag that defines specific details
-                           of a gather to be used later
-   declare_gather_field()  creates a message tag that defines specific
-                               details of a gather from field to be used later
-   prepare_gather()      optional call that allocates buffers for a previously
-                           declared gather.  will automatically be called from
-                           do_gather() if not done before.
-   do_gather()           executes a previously declared gather
-   wait_gather()         waits for receives to finish, insuring that the
-                           data has actually arrived.
-   cleanup_gather()      frees all the buffers that were allocated, WHICH
-                           MEANS THAT THE GATHERED DATA MAY SOON DISAPPEAR.
-   accumulate_gather()   combines gathers into single message tag
-   declare_accumulate_gather_site()  does declare_gather_site() and
-                                  accumulate_gather() in single step.
-   declare_accumulate_gather_field()  does declare_gather_field() and
-                                            accumulate_gather() in single step.
-   start_gather_site()        older function which does declare/prepare/do_gather
-                           in a single step
-   start_gather_field()  older function which does
-                               declare/prepare/do_gather_field
-   restart_gather_site()      older function which is obsoleted by do_gather()
-   restart_gather_field() older function which is obsoleted by do_gather()
-   start_general_gather_site()  starts asynchronous sends and receives required
-                             to gather fields at arbitrary displacement.
-   start_general_gather_field() starts asynchronous sends and receives
-                             required to gather neighbors from an
-           array of fields.
-   wait_general_gather()   waits for receives to finish, insuring that the
-                             data has actually arrived, and sets pointers to
-           received data.
-   cleanup_general_gather()  frees all the buffers that were allocated, WHICH
-                               MEANS THAT THE GATHERED DATA MAY SOON DISAPPEAR.
-   jobgeom()                 Dimensions of the multijob layout.  Product = numjobs
-   ionodegeom()              Dimensions of the I/O partition layout.  Product =
-                              number of files.
-   nodegeom()                Allocated dimensions of the nodes.
+// Communications routines for MPI
+// Exported Functions:
+// initialize_machine()   Do machine dependent setup at the very beginning
+// normal_exit()          Close communications and exit
+// terminate()            Halt program abruptly and exit
+// machine_type()         Return string describing communications architecture
+// mynode()               Return node number of this node
+// numnodes()             Return number of nodes
+// g_sync()               Provide a synchronization point for all nodes
+// g_floatsum()           Sum a Real over all nodes
+// g_vecfloatsum()        Sum a vector of Reals over all nodes
+// g_doublesum()          Sum a double over all nodes
+// g_vecdoublesum()       Sum a vector of doubles over all nodes
+// g_complexsum()         Sum a generic precision complex number over all nodes
+// g_veccomplexsum()      Sum a vector of generic precision complex numbers
+//                          over all nodes
+// g_dcomplexsum()        Sum a double precision complex number over all nodes
+// g_vecdcomplexsum()     Sum a vector of double_complex over all nodes
+// g_xor32()              Find global exclusive or of 32-bit word
+// g_floatmax()           Find maximum Real over all nodes
+// g_doublemax()          Find maximum double over all nodes
+// broadcast_float()      Broadcast a Real from node 0 to all nodes
+// broadcast_double()     Broadcast a double from node 0 to all nodes
+// broadcast_complex()    Broadcast a generic precision complex number
+// broadcast_dcomplex()   Broadcast a double precision complex number
+// broadcast_bytes()      Broadcast a number of bytes
+// send_integer()         Send an integer to one other node
+// receive_integer()      Receive an integer
+// send_field()           Send a field to one other node
+// get_field()            Receive a field from some other node
+// dclock()               Return a double precision time, with arbitrary zero
+// time_stamp()           Print wall clock time with message
+// sort_eight_gathers()   Sort eight contiguous gathers
+//                          from XUP, XDOWN, YUP, YDOWN, ...
+//                          to XUP, YUP, ..., XDOWN, YDOWN, ...
+// make_nn_gathers()      Make all necessary lists for communications with
+//                          nodes containing neighbor sites
+// make_gather()          Calculate and store necessary communications lists
+//                          for a given gather mapping
+// declare_gather_site()  Create a message tag that defines specific
+//                          details of a site gather to be used later
+// declare_gather_field() Create a message tag that defines specific
+//                          details of a field gather to be used later
+// prepare_gather()       Allocate buffers for a previously declared gather
+//                          Will automatically be called from do_gather()
+//                          if not done before
+// do_gather()            Execute a previously declared gather
+// wait_gather()          Wait for receives to finish,
+//                          ensuring that the data have actually arrived,
+//                          and set pointers to received data
+// cleanup_gather()       Free all the buffers that were allocated
+//                          NB: The gathered data may soon disappear
+// accumulate_gather()    Combine gathers into single message tag
+// declare_accumulate_gather_site()
+//                        Do declare_gather_site() and accumulate_gather()
+//                          in single step
+// declare_accumulate_gather_field()
+//                        Do declare_gather_field() and accumulate_gather()
+//                          in single step
+// start_gather_site()    Declare/prepare/do site gather in a single step
+// start_gather_field()   Declare/prepare/do field gather in a single step
+// start_general_gather_site()
+//                        Start asynchronous sends and receives required
+//                          to gather site data at arbitrary displacement
+// start_general_gather_field()
+//                        Start asynchronous sends and receives required to
+//                          gather field data at arbitrary displacement
+// wait_general_gather()  Wait for receives to finish, ensuring that the
+//                          data have actually arrived,
+//                          and set pointers to received data
+// cleanup_general_gather()
+//                        Free all the buffers that were allocated
+//                          NB: The gathered data may soon disappear
 
-*/
+
+// jobgeom()              Dimensions of the multijob layout, product = numjobs
+// ionodegeom()           Dimensions of the I/O partition layout
+//                          Product = number of files
+// nodegeom()             Allocated dimensions of the nodes
 
 #include <time.h>
 #include "generic_includes.h"
 #include <mpi.h>
 #include <ctype.h>
 #if PRECISION == 1
-#define MILC_MPI_REAL MPI_FLOAT
+#define OUR_MPI_REAL MPI_FLOAT
 #else
-#define MILC_MPI_REAL MPI_DOUBLE
+#define OUR_MPI_REAL MPI_DOUBLE
 #endif
 
-#define NOWHERE -1  /* Not an index in array of fields */
+#define NOWHERE -1      // Not an index in array of fields
 
-/* message types used here */
+// Message types used here
 #define SEND_INTEGER_ID    1  /* send an integer to one other node */
 #define SEND_FIELD_ID      2  /* id of field sent from one node to another */
 #define GENERAL_GATHER_ID  3  /* id used by general_gather routines */
 #define GATHER_BASE_ID     4  /* ids greater than or equal to this are used
                                  by the gather routines */
 
-/* macro to compute the message id */
+// Macro to compute the message id
 #define GATHER_ID(x) (GATHER_BASE_ID+(x))
 
 /* If we want to do our own checksums */
@@ -112,7 +109,7 @@ u_int32type crc32(u_int32type crc, const unsigned char *buf, size_t len);
 #define CRCBYTES 0
 #endif
 
-/* hacks needed to unify even/odd and 32 sublattice cases */
+// Hacks needed to unify even/odd and 32 sublattice cases
 #ifdef N_SUBL32
 #define NUM_SUBL 32
 #define FORSOMEPARITY FORSOMESUBLATTICE
@@ -125,12 +122,12 @@ static int num_jobs = 1;
 static int *geom = NULL;
 static int *jobgeomvals = NULL;
 static int *worldcoord = NULL;
-static MPI_Comm  MPI_COMM_THISJOB;
+static MPI_Comm MPI_COMM_THISJOB;
+// -----------------------------------------------------------------
 
-/**********************************************************************
- *                      INTERNAL DATA TYPES                           *
- **********************************************************************/
 
+
+// -----------------------------------------------------------------
 /* "comlink" is the basic structure used in gathering neighboring sites.
    Each node will maintain one such structure for each direction for each
    (other) node that contains sites that are neighbors of the sites on
@@ -209,35 +206,26 @@ struct msg_tag {
 };
 
 
-/***************************************************
- *  Global variables for the communications stuff  *
- ***************************************************/
-
+// Global variables for the communications stuff  *
 /* message ids for gather encode a sequence number for the gather
    so that if several gathers are going at once, you can read
    the message corresponding to the right one. */
 /* for computing message id in gather */
 /* not needed anymore, but may be used for a check later */
-static int id_offset;     /* label gathers by round-robin */
-static int num_gather_ids;  /* number of id offsets allowed */
+static int id_offset;           // Label gathers by round-robin
+static int num_gather_ids;      // Number of id offsets allowed
+static int *id_array;           // Keep track of used ids
+static gather_t *gather_array;  // Array storing gather setup info
 
-/* keep track of used ids */
-static int *id_array;
-
-/* array storing gather setup info */
-static gather_t *gather_array;
-
-/* Number of gathers (mappings) that have been set up */
+// Number of gathers (mappings) that have been set up
 static int n_gathers, gather_array_len;
+// -----------------------------------------------------------------
 
 
-/**********************************************************************
- *                BASIC COMMUNICATIONS FUNCTIONS                      *
- **********************************************************************/
 
-void
-err_func(MPI_Comm *comm, int *stat, ...)
-{
+// -----------------------------------------------------------------
+// Basic communications functions
+void err_func(MPI_Comm *comm, int *stat, ...) {
   int len;
   char err_string[MPI_MAX_ERROR_STRING];
 
@@ -340,8 +328,7 @@ static void repartition_switch_machine() {
 
 /* Create partitions of equal size from the allocated machine, based
    on jobgeom */
-static void
-repartition_mesh_machine() {
+static void repartition_mesh_machine() {
   int i;
   int localnodeid;
   int nd = 4;
@@ -549,9 +536,7 @@ void initialize_machine(int *argc, char ***argv) {
   gather_array = NULL;
 }
 
-/*
-**  version of normal exit for multinode processes
-*/
+// Normal exit for multinode processes
 void normal_exit(int status) {
   time_stamp("exit");
   MPI_Barrier(MPI_COMM_WORLD);  // wait for all lattices to finish?
@@ -560,9 +545,7 @@ void normal_exit(int status) {
   exit(status);
 }
 
-/*
-**  version of exit for multinode processes -- kill all nodes
-*/
+// Terminate for multinode processes -- kill all nodes
 // MPI_Abort has implementation-dependent effects
 // Sometimes it kills all processes in MPI_COMM_WORLD, sometimes not
 // Also, we can't decide if this is desirable
@@ -577,36 +560,24 @@ void terminate(int status) {
   exit(status);
 }
 
-/*
-**  Tell what kind of machine we are on
-*/
+// Tell what kind of machine we are on
 static char name[]="MPI (portable)";
-char *
-machine_type()
-{
-  return(name);
+char* machine_type() {
+  return name;
 }
 
-/*
-**  Return my node number
-*/
-int
-mynode()
-{
+// Return my node number
+int mynode() {
   int node;
   MPI_Comm_rank(MPI_COMM_THISJOB, &node);
-  return(node);
+  return node;
 }
 
-/*
-**  Return number of nodes
-*/
-int
-numnodes()
-{
+// Return number of nodes
+int numnodes() {
   int nodes;
   MPI_Comm_size(MPI_COMM_THISJOB, &nodes);
-  return(nodes);
+  return nodes;
 }
 
 // Return the allocated dimensions (node geometry) if a grid is being used
@@ -628,24 +599,21 @@ int* ionodegeom() {
 void g_sync() {
   MPI_Barrier(MPI_COMM_THISJOB);
 }
+// -----------------------------------------------------------------
 
-/*
-**  Sum signed integer over all nodes
-*/
-void
-g_intsum(int *ipt)
-{
+
+
+// -----------------------------------------------------------------
+// Global sums
+// Sum signed integer over all nodes
+void g_intsum(int *ipt) {
   int work;
   MPI_Allreduce(ipt, &work, 1, MPI_INT, MPI_SUM, MPI_COMM_THISJOB);
   *ipt = work;
 }
 
-/*
-**  Sum unsigned 32-bit integer type
-*/
-void
-g_uint32sum(u_int32type *pt)
-{
+// Sum unsigned 32-bit integer type
+void g_uint32sum(u_int32type *pt) {
   u_int32type work;
 #ifdef SHORT_IS_32BIT
   MPI_Allreduce(pt, &work, 1, MPI_UNSIGNED_SHORT,
@@ -657,272 +625,190 @@ g_uint32sum(u_int32type *pt)
   *pt = work;
 }
 
-
-/*
-**  Sum generic floating type over all nodes
-*/
-void
-g_floatsum(Real *fpt)
-{
+// Sum Real over all nodes
+void g_floatsum(Real *fpt) {
   Real work;
-  MPI_Allreduce(fpt, &work, 1, MILC_MPI_REAL, MPI_SUM, MPI_COMM_THISJOB);
+  MPI_Allreduce(fpt, &work, 1, OUR_MPI_REAL, MPI_SUM, MPI_COMM_THISJOB);
   *fpt = work;
 }
 
-/*
-**  Sum a vector of generic floating point types over all nodes
-*/
-void
-g_vecfloatsum(Real *fpt, int length)
-{
-  Real *work;
+// Sum a vector of Reals over all nodes
+void g_vecfloatsum(Real *fpt, int length) {
   int i;
-  work = (Real *)malloc(length*sizeof(Real));
-  MPI_Allreduce(fpt, work, length, MILC_MPI_REAL, MPI_SUM, MPI_COMM_THISJOB);
-  for (i = 0; i<length; i++) fpt[i] = work[i];
+  Real *work = malloc(sizeof *work * length);
+  MPI_Allreduce(fpt, work, length, OUR_MPI_REAL, MPI_SUM, MPI_COMM_THISJOB);
+  for (i = 0; i < length; i++)
+    fpt[i] = work[i];
   free(work);
 }
 
-/*
-**  Sum double over all nodes
-*/
-void
-g_doublesum(double *dpt)
-{
+// Sum double over all nodes
+void g_doublesum(double *dpt) {
   double work;
   MPI_Allreduce(dpt, &work, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_THISJOB);
   *dpt = work;
 }
 
-/*
-**  Sum a vector of doubles over all nodes
-*/
-void
-g_vecdoublesum(double *dpt, int ndoubles)
-{
-  double *work;
+// Sum a vector of doubles over all nodes
+void g_vecdoublesum(double *dpt, int length) {
   int i;
-  work = (double *)malloc(ndoubles*sizeof(double));
-  MPI_Allreduce(dpt, work, ndoubles, MPI_DOUBLE, MPI_SUM, MPI_COMM_THISJOB);
-  for (i = 0; i<ndoubles; i++) dpt[i] = work[i];
+  double *work = malloc(sizeof *work * length);
+  MPI_Allreduce(dpt, work, length, MPI_DOUBLE, MPI_SUM, MPI_COMM_THISJOB);
+  for (i = 0; i < length; i++)
+    dpt[i] = work[i];
   free(work);
 }
 
-/*
-**  Sum the generic precision complex type over all nodes
-*/
-void
-g_complexsum(complex *cpt)
-{
+// Sum complex over all nodes
+void g_complexsum(complex *cpt) {
   complex work;
-  MPI_Allreduce(cpt, &work, 2, MILC_MPI_REAL, MPI_SUM, MPI_COMM_THISJOB);
+  MPI_Allreduce(cpt, &work, 2, OUR_MPI_REAL, MPI_SUM, MPI_COMM_THISJOB);
   *cpt = work;
 }
 
-/*
-**  Sum a vector of the generic precision complex type over all nodes
-*/
-void
-g_veccomplexsum(complex *cpt, int ncomplex)
-{
-  complex *work;
+// Sum a vector of complex over all nodes
+void g_veccomplexsum(complex *cpt, int length) {
   int i;
-  work = (complex *)malloc(ncomplex*sizeof(complex));
-  MPI_Allreduce(cpt, work, 2*ncomplex, MILC_MPI_REAL, MPI_SUM, MPI_COMM_THISJOB);
-  for (i = 0; i<ncomplex; i++) cpt[i] = work[i];
+  complex *work = malloc(sizeof *work * length);
+  MPI_Allreduce(cpt, work, 2 * length, OUR_MPI_REAL, MPI_SUM, MPI_COMM_THISJOB);
+  for (i = 0; i < length; i++)
+    cpt[i] = work[i];
   free(work);
 }
 
-/*
-**  Sum double_complex over all nodes
-*/
-void
-g_dcomplexsum(double_complex *cpt)
-{
+// Sum double_complex over all nodes
+void g_dcomplexsum(double_complex *cpt) {
   double_complex work;
   MPI_Allreduce(cpt, &work, 2, MPI_DOUBLE, MPI_SUM, MPI_COMM_THISJOB);
   *cpt = work;
 }
 
-/*
-**  Sum a vector of double_complex over all nodes
-*/
-void
-g_vecdcomplexsum(double_complex *cpt, int ncomplex)
-{
-  double_complex *work;
+// Sum a vector of double_complex over all nodes
+void g_vecdcomplexsum(double_complex *cpt, int length) {
   int i;
-  work = (double_complex *)malloc(ncomplex*sizeof(double_complex));
-  MPI_Allreduce(cpt, work, 2*ncomplex, MPI_DOUBLE, MPI_SUM, MPI_COMM_THISJOB);
-  for (i = 0; i<ncomplex; i++) cpt[i] = work[i];
+  double_complex *work = malloc(sizeof *work * length);
+  MPI_Allreduce(cpt, work, 2 * length, MPI_DOUBLE, MPI_SUM, MPI_COMM_THISJOB);
+  for (i = 0; i < length; i++)
+    cpt[i] = work[i];
   free(work);
 }
+// -----------------------------------------------------------------
 
-// Sum wilson_vector over all nodes
-void g_wvectorsumfloat(wilson_vector *wvpt) {
-  g_veccomplexsum((complex *)wvpt, 12);
-}
 
-/*
-**  Global exclusive or acting on u_int32type
-*/
-void
-g_xor32(u_int32type *pt)
-{
+
+// -----------------------------------------------------------------
+// Global xor and maxima
+// Global exclusive or acting on u_int32type, for checksums
+void g_xor32(u_int32type *pt) {
   u_int32type work;
 #ifdef SHORT_IS_32BIT
   MPI_Allreduce(pt, &work, 1, MPI_UNSIGNED_SHORT,
-     MPI_BXOR, MPI_COMM_THISJOB);
+                MPI_BXOR, MPI_COMM_THISJOB);
 #else
   MPI_Allreduce(pt, &work, 1, MPI_UNSIGNED,
-     MPI_BXOR, MPI_COMM_THISJOB);
+                MPI_BXOR, MPI_COMM_THISJOB);
 #endif
   *pt = work;
 }
 
-/*
-**  Find maximum of the generic precision floating point type over all nodes
-*/
-void
-g_floatmax(Real *fpt)
-{
+// Find maximum of Real over all nodes
+void g_floatmax(Real *fpt) {
   Real work;
-  MPI_Allreduce(fpt, &work, 1, MILC_MPI_REAL, MPI_MAX, MPI_COMM_THISJOB);
+  MPI_Allreduce(fpt, &work, 1, OUR_MPI_REAL, MPI_MAX, MPI_COMM_THISJOB);
   *fpt = work;
 }
 
-/*
-**  Find maximum of double over all nodes
-*/
-void
-g_doublemax(double *dpt)
-{
+// Find maximum of double over all nodes
+void g_doublemax(double *dpt) {
   double work;
   MPI_Allreduce(dpt, &work, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_THISJOB);
   *dpt = work;
 }
+// -----------------------------------------------------------------
 
-/*
-**  Broadcast generic precision floating point number from node zero
-*/
-void
-broadcast_float(Real *fpt)
-{
-  MPI_Bcast(fpt, 1, MILC_MPI_REAL, 0, MPI_COMM_THISJOB);
+
+
+// -----------------------------------------------------------------
+// Broadcasts
+// Broadcast Real from node zero
+void broadcast_float(Real *fpt) {
+  MPI_Bcast(fpt, 1, OUR_MPI_REAL, 0, MPI_COMM_THISJOB);
 }
 
-/*
-**  Broadcast double precision floating point number from node zero
-*/
-void
-broadcast_double(double *dpt)
-{
+// Broadcast double from node zero
+void broadcast_double(double *dpt) {
   MPI_Bcast(dpt, 1, MPI_DOUBLE, 0, MPI_COMM_THISJOB);
 }
 
-/*
-**  Broadcast generic precision complex number from node zero
-*/
-void
-broadcast_complex(complex *cpt)
-{
-  MPI_Bcast(cpt, 2, MILC_MPI_REAL, 0, MPI_COMM_THISJOB);
+// Broadcast generic precision complex number from node zero
+void broadcast_complex(complex *cpt) {
+  MPI_Bcast(cpt, 2, OUR_MPI_REAL, 0, MPI_COMM_THISJOB);
 }
 
-/*
-**  Broadcast double precision complex number from node zero
-*/
-void
-broadcast_dcomplex(double_complex *cpt)
-{
+// Broadcast double precision complex number from node zero
+void broadcast_dcomplex(double_complex *cpt) {
   MPI_Bcast(cpt, 2, MPI_DOUBLE, 0, MPI_COMM_THISJOB);
 }
 
-/*
-**  Broadcast bytes from node 0 to all others
-*/
-void
-broadcast_bytes(char *buf, int size)
-{
+// Broadcast bytes from node 0 to all others
+void broadcast_bytes(char *buf, int size) {
   MPI_Bcast(buf, size, MPI_BYTE, 0, MPI_COMM_THISJOB);
 }
+// -----------------------------------------------------------------
 
 
-/******************************
- *  SEND AND RECEIVE INTEGER  *
- ******************************/
 
-/*
-**  Send an integer to one other node
-**  This is to be called only by the node doing the sending
-*/
-void
-send_integer(int tonode, int *address)
-{
+// -----------------------------------------------------------------
+// Send and receive integer
+// Send an integer to one other node
+// To be called only by the node doing the sending
+void send_integer(int tonode, int *address) {
   MPI_Send(address, 1, MPI_INT, tonode, SEND_INTEGER_ID, MPI_COMM_THISJOB);
 }
 
-/*
-**  Receive an integer from another node
-*/
-void
-receive_integer(int fromnode, int *address)
-{
+// Receive an integer from another node
+void receive_integer(int fromnode, int *address) {
   MPI_Status status;
   MPI_Recv(address, 1, MPI_INT, fromnode, SEND_INTEGER_ID,
-      MPI_COMM_THISJOB, &status);
+           MPI_COMM_THISJOB, &status);
 }
+// -----------------------------------------------------------------
 
 
-/****************************
- *  SEND AND RECEIVE FIELD  *
- ****************************/
 
-/*
-**  send_field is to be called only by the node doing the sending
-*/
-void
-send_field(char *buf, int size, int tonode)
-{
+// -----------------------------------------------------------------
+// Send and receive field
+// To be called only by the node doing the sending
+void send_field(char *buf, int size, int tonode) {
   MPI_Send(buf, size, MPI_BYTE, tonode, SEND_FIELD_ID, MPI_COMM_THISJOB);
 }
 
-/*
-**  get_field is to be called only by the node to which the field was sent
-*/
-void
-get_field(char *buf, int size, int fromnode)
-{
+// To be called only by the node to which the field was sent
+void get_field(char *buf, int size, int fromnode) {
   MPI_Status status;
   MPI_Recv(buf, size, MPI_BYTE, fromnode, SEND_FIELD_ID, MPI_COMM_THISJOB,
-      &status);
+           &status);
 }
+// -----------------------------------------------------------------
 
 
-/*********************
- *  TIMING ROUTINES  *
- *********************/
 
-/*
-**  Double precision CPU time in seconds
-*/
-double
-dclock_cpu()
-{
+// -----------------------------------------------------------------
+// Timing routines
+// Double precision CPU time in seconds
+double dclock_cpu() {
   long fine;
   fine = clock();
-  return(((double)fine)/CLOCKS_PER_SEC);
+  return(((double)fine) / CLOCKS_PER_SEC);
 }
 
-/*
-**  Double precision wall clock time in seconds
-*/
+// Double precision wall clock time in seconds
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
 double dclock() {
   struct timeval tp;
   gettimeofday(&tp,NULL);
-  return ((double) tp.tv_sec + (double) tp.tv_usec * 1.e-6);
+  return ((double)tp.tv_sec + (double)tp.tv_usec * 1.e-6);
 }
 #else
 double dclock() {
@@ -930,34 +816,26 @@ double dclock() {
 }
 #endif
 
-/*
-**  Print time stamp
-*/
-void
-time_stamp(char *msg)
-{
+// Print time stamp
+void time_stamp(char *msg) {
   time_t time_stamp;
 
-  if (mynode()==0) {
+  if (mynode() == 0) {
     time(&time_stamp);
     printf("%s: %s\n", msg, ctime(&time_stamp));
     fflush(stdout);
   }
 }
+// -----------------------------------------------------------------
 
 
-/**********************************************************************
- *                  FUNCTIONS USED FOR GATHERS                        *
- **********************************************************************/
 
-/*
-**  sort a list of eight gather_t structures into the order we want for the
-**  nearest neighbor gathers:  XUP,YUP,ZUP,TUP,TDOWN,ZDOWN,YDOWN,XDOWN,
-**  starting from the index for the first pointer
-*/
-void
-sort_eight_gathers(int index)
-{
+// -----------------------------------------------------------------
+// Functions used for gathers
+// Sort a list of eight gather_t structures into the order we want:
+// XUP, YUP, ZUP, TUP, TDOWN, ZDOWN, YDOWN, XDOWN
+// Start from the index for the first pointer
+void sort_eight_gathers(int index) {
   gather_t tt[8];
   int i;
 
@@ -2006,50 +1884,6 @@ start_gather_site(
   return mt;
 }
 
-/*
-**  old style routine used to restart a previously waited gather
-**  this finction is now depreciated and users should call do_gather()
-**  instead
-*/
-void
-restart_gather_site(
-  field_offset field, /* which field? Some member of structure "site" */
-  int size,   /* size in bytes of the field (eg sizeof(vector))*/
-  int index,    /* direction to gather from. eg XUP - index into
-         neighbor tables */
-  int parity,   /* parity of sites whose neighbors we gather.
-         one of EVEN, ODD or EVENANDODD. */
-  char ** dest,   /* one of the vectors of pointers */
-  msg_tag *mtag)        /* previously returned by start_gather_site */
-{
-  msg_sr_t *mbuf;
-
-  if (mtag->nsends!=0) mbuf = mtag->send_msgs;
-  else mbuf = NULL;
-
-  /* sanity checks for improper usage */
-  if (mbuf!=NULL) {
-    if (((char *)lattice+field)!=mbuf->gmem->mem) {
-      printf("error: wrong field in restart gather\n");
-      terminate(1);
-    }
-    if (sizeof(site)!=mbuf->gmem->stride) {
-      printf("error: wrong stride in restart gather\n");
-      terminate(1);
-    }
-    if (size!=mbuf->gmem->size) {
-      printf("error: wrong size in restart gather\n");
-      terminate(1);
-    }
-    if (((char *)lattice+field)!=mbuf->gmem->mem) {
-      printf("error: wrong field in restart gather\n");
-      terminate(1);
-    }
-  }
-
-  do_gather(mtag);
-}
-
 /*****************************
  * gather routines from arrays of fields *
  *****************************/
@@ -2091,51 +1925,6 @@ start_gather_field(
 
   return mt;
 }
-
-/*
-**  old style routine used to restart a previously waited gather
-**  this finction is now depreciated and users should call do_gather()
-**  instead
-*/
-void
-restart_gather_field(
-  void *field,    /* which field? Pointer returned by malloc() */
-  int size,   /* size in bytes of the field (eg sizeof(vector))*/
-  int index,    /* direction to gather from. eg XUP - index into
-         neighbor tables */
-  int parity,   /* parity of sites whose neighbors we gather.
-         one of EVEN, ODD or EVENANDODD. */
-  char ** dest,   /* one of the vectors of pointers */
-  msg_tag *mtag)          /* previously returned by start_gather_field */
-{
-  msg_sr_t *mbuf;
-
-  if (mtag->nsends!=0) mbuf = mtag->send_msgs;
-  else mbuf = NULL;
-
-  /* sanity checks for improper usage */
-  if (mbuf!=NULL) {
-    if (field!=mbuf->gmem->mem) {
-      printf("error: wrong field in restart gather\n");
-      terminate(1);
-    }
-    if (size!=mbuf->gmem->stride) {
-      printf("error: wrong stride in restart gather\n");
-      terminate(1);
-    }
-    if (size!=mbuf->gmem->size) {
-      printf("error: wrong size in restart gather\n");
-      terminate(1);
-    }
-    if (field!=mbuf->gmem->mem) {
-      printf("error: wrong field in restart gather\n");
-      terminate(1);
-    }
-  }
-
-  do_gather(mtag);
-}
-
 
 /**********************************************************************
  *                      MULTI-GATHER ROUTINES                         *

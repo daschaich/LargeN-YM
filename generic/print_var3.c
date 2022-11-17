@@ -1,5 +1,5 @@
 // -----------------------------------------------------------------
-// Print all complex traces of tempmatf on timeslice t=0
+// Print all complex traces of tempmat on timeslice t=0
 // Current specialized to Polyakov loop, but easy to generalize
 #include "generic_includes.h"
 
@@ -15,7 +15,7 @@ void print_var3() {
       for (x = 0; x < nx; x++) {
         // The data to print
         i = node_index(x, y, z, t);
-        toprint = trace_f(&(tempmatf[i]));
+        toprint = trace(&(tempmat[i]));
 
         // Check whether currentnode has changed as we loop over (x, y, z)
         newnode = node_number(x, y, z, t);

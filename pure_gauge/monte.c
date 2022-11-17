@@ -16,7 +16,7 @@ void monte() {
   Real r, r2, rho, z, norm;
   Real al, d, xl, xd, b3 = beta * one_ov_N;
   su2_matrix h;
-  matrix_f action;
+  matrix action;
 #ifdef DEBUG_PRINT
   double ss_plaq, st_plaq, check;
 #endif
@@ -56,7 +56,7 @@ void monte() {
             // using Pauli matrix expansion
             // The SU(2) hit matrix is represented as
             //   v0 + i * Sum j (sigma j * vj)
-            mult_na_f(&(s->linkf[dir]), &(s->staple), &action);
+            mult_na(&(s->linkf[dir]), &(s->staple), &action);
 #ifdef DEBUG_PRINT
             v0 = action.e[ina][ina].real + action.e[inb][inb].real;
             v3 = action.e[ina][ina].imag - action.e[inb][inb].imag;
@@ -221,7 +221,7 @@ void monte() {
             h.e[1][1] = cmplx( h0,-h3);
 
             // Update the link
-            left_su2_hit_n_f(&h, ina, inb, &(s->linkf[dir]));
+            left_su2_hit_n(&h, ina, inb, &(s->linkf[dir]));
           }
 
           // Reunitarize after each SU(2) subgroup sweep

@@ -5,7 +5,7 @@
 #include "../include/complex.h"
 #include "../include/su3.h"
 
-void make_anti_hermitian(matrix_f *src, anti_hermitmat *dest) {
+void make_anti_hermitian(matrix *src, anti_hermitmat *dest) {
   Real tr;
 
 #ifndef FAST
@@ -27,7 +27,7 @@ void make_anti_hermitian(matrix_f *src, anti_hermitmat *dest) {
     }
   }
 
-#else  // FAST version for NCOL = DIMF = 3
+#else  // FAST version for NCOL = 3
   Real tr2;
   tr = src->e[0][0].imag + src->e[1][1].imag;
   tr2 = tr + src->e[2][2].imag;

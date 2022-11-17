@@ -13,7 +13,7 @@
 void exp_mult(int dir, double eps, anti_hermitmat *A) {
   register int i;
   register site *s;
-  matrix_f *link, tmat, tmat2, htemp;
+  matrix *link, tmat, tmat2, htemp;
   register Real t2, t3, t4, t5, t6, t7, t8;
 
   // Take divisions out of site loop (can't be done by compiler)
@@ -29,31 +29,31 @@ void exp_mult(int dir, double eps, anti_hermitmat *A) {
     uncompress_anti_hermitian(&(A[i]), &htemp);
     link = &(s->linkf[dir]);
 
-    mult_nn_f(&htemp, link, &tmat);
-    scalar_mult_add_mat_f(link, &tmat, t8, &tmat2);
+    mult_nn(&htemp, link, &tmat);
+    scalar_mult_add_mat(link, &tmat, t8, &tmat2);
 
-    mult_nn_f(&htemp, &tmat2, &tmat);
-    scalar_mult_add_mat_f(link, &tmat, t7, &tmat2);
+    mult_nn(&htemp, &tmat2, &tmat);
+    scalar_mult_add_mat(link, &tmat, t7, &tmat2);
 
-    mult_nn_f(&htemp, &tmat2, &tmat);
-    scalar_mult_add_mat_f(link, &tmat, t6, &tmat2);
+    mult_nn(&htemp, &tmat2, &tmat);
+    scalar_mult_add_mat(link, &tmat, t6, &tmat2);
 
-    mult_nn_f(&htemp, &tmat2, &tmat);
-    scalar_mult_add_mat_f(link, &tmat, t5, &tmat2);
+    mult_nn(&htemp, &tmat2, &tmat);
+    scalar_mult_add_mat(link, &tmat, t5, &tmat2);
 
-    mult_nn_f(&htemp, &tmat2, &tmat);
-    scalar_mult_add_mat_f(link, &tmat, t4, &tmat2);
+    mult_nn(&htemp, &tmat2, &tmat);
+    scalar_mult_add_mat(link, &tmat, t4, &tmat2);
 
-    mult_nn_f(&htemp, &tmat2, &tmat);
-    scalar_mult_add_mat_f(link, &tmat, t3, &tmat2);
+    mult_nn(&htemp, &tmat2, &tmat);
+    scalar_mult_add_mat(link, &tmat, t3, &tmat2);
 
-    mult_nn_f(&htemp, &tmat2, &tmat);
-    scalar_mult_add_mat_f(link, &tmat, t2, &tmat2);
+    mult_nn(&htemp, &tmat2, &tmat);
+    scalar_mult_add_mat(link, &tmat, t2, &tmat2);
 
-    mult_nn_f(&htemp, &tmat2, &tmat);
-    scalar_mult_add_mat_f(link, &tmat, eps, &tmat2);
+    mult_nn(&htemp, &tmat2, &tmat);
+    scalar_mult_add_mat(link, &tmat, eps, &tmat2);
 
-    mat_copy_f(&tmat2, link);    // This step updates the link U[dir]
+    mat_copy(&tmat2, link);    // This step updates the link U[dir]
   }
 }
 // -----------------------------------------------------------------
@@ -95,17 +95,17 @@ void scalar_mult_sum_antiH(anti_hermitmat *b, Real s, anti_hermitmat *c) {
 void update_flow(double f1, double f2) {
   register int i, dir;
   register site *s;
-  matrix_f tmat;
+  matrix tmat;
   anti_hermitmat tah;
 
   // Lie derivative of (Wilson) action
   // Need to compute all four before we start updating U
-  // Uses tempmatf for temporary storage
+  // Uses tempmat for temporary storage
   staple(S);
 
   FORALLUPDIR(dir) {
     FORALLSITES(i, s) {
-      mult_na_f(&(s->linkf[dir]), &(S[dir][i]), &tmat);
+      mult_na(&(s->linkf[dir]), &(S[dir][i]), &tmat);
       make_anti_hermitian(&tmat, &tah);   // Traceless anti-H part
       // A += f1 * antihermitian_traceless(U.Sdag)
       scalar_mult_sum_antiH(&tah, (Real)f1, &(A[dir][i]));
