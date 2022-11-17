@@ -75,8 +75,8 @@ void staple(matrix *stp[NDIMS]) {
     FORALLUPDIR(dir2) {
       if (dir == dir2)
         continue;
-      directional_staple(dir, dir2, F_OFFSET(linkf[dir]),
-                         F_OFFSET(linkf[dir2]), stp[dir]);
+      directional_staple(dir, dir2, F_OFFSET(link[dir]),
+                         F_OFFSET(link[dir2]), stp[dir]);
     }
   }
 }

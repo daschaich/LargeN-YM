@@ -56,7 +56,7 @@ void monte() {
             // using Pauli matrix expansion
             // The SU(2) hit matrix is represented as
             //   v0 + i * Sum j (sigma j * vj)
-            mult_na(&(s->linkf[dir]), &(s->staple), &action);
+            mult_na(&(s->link[dir]), &(s->staple), &action);
 #ifdef DEBUG_PRINT
             v0 = action.e[ina][ina].real + action.e[inb][inb].real;
             v3 = action.e[ina][ina].imag - action.e[inb][inb].imag;
@@ -221,7 +221,7 @@ void monte() {
             h.e[1][1] = cmplx( h0,-h3);
 
             // Update the link
-            left_su2_hit_n(&h, ina, inb, &(s->linkf[dir]));
+            left_su2_hit_n(&h, ina, inb, &(s->link[dir]));
           }
 
           // Reunitarize after each SU(2) subgroup sweep

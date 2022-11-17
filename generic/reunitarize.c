@@ -405,7 +405,7 @@ void reunitarize() {
   av_deviation = 0.0;
   FORALLSITES(i, s) {
     FORALLUPDIR(dir) {
-      mat = (matrix *)&(s->linkf[dir]);
+      mat = (matrix *)&(s->link[dir]);
       errors = reunit_su3(mat);
       errcount += errors;
       if (errors)

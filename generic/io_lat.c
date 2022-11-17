@@ -293,7 +293,7 @@ static void w_serial(gauge_file *gf) {
           // The node with the data just appends to its tbuf
           if (this_node == currentnode) {
             i = node_index(x, y, z, t);
-            d2f_4mat(&lattice[i].linkf[0], &tbuf[4 * tbuf_length]);
+            d2f_4mat(&lattice[i].link[0], &tbuf[4 * tbuf_length]);
           }
 
           if (this_node == currentnode || this_node == 0)
@@ -491,7 +491,7 @@ static void r_serial(gauge_file *gf) {
           rank31 = 0;
       }
       // Copy 4 matrices to generic-precision lattice[idest]
-      f2d_4mat(tmat, &lattice[idest].linkf[0]);
+      f2d_4mat(tmat, &lattice[idest].link[0]);
     }
     else {
       rank29 += 4 * sizeof(fmatrix) / sizeof(int32type);
@@ -540,7 +540,7 @@ static void w_parallel(gauge_file *gf) {
   fmatrix *lbuf = w_parallel_setup(gf, &checksum_offset);
   struct {
     short x, y, z, t;
-    fmatrix linkf[4];
+    fmatrix link[4];
   } msg;
 
   // Collect buffer from other nodes and write when full
@@ -606,7 +606,7 @@ static void w_parallel(gauge_file *gf) {
           i = node_index(x, y, z, t);
           /* Copy 4 matrices and convert to single precision msg
              structure */
-          d2f_4mat(&lattice[i].linkf[0], &msg.linkf[0]);
+          d2f_4mat(&lattice[i].link[0], &msg.link[0]);
 
           send_field((char *)&msg, sizeof(msg), destnode);
         }
@@ -616,7 +616,7 @@ static void w_parallel(gauge_file *gf) {
             /* just copy links to write buffer */
             i = node_index(x, y, z, t);
             where_in_buf = buf_length;
-            d2f_4mat(&lattice[i].linkf[0],&lbuf[4*where_in_buf]);
+            d2f_4mat(&lattice[i].link[0],&lbuf[4*where_in_buf]);
             rank29 = 4 * sizeof(fmatrix) / sizeof(int32type) * rcv_rank;
             rank31 = rank29;
           }
@@ -633,7 +633,7 @@ static void w_parallel(gauge_file *gf) {
 
             /* Move data to buffer */
             memcpy((void *)&lbuf[4 * where_in_buf],
-                   (void *)msg.linkf, 4 * sizeof(fmatrix));
+                   (void *)msg.link, 4 * sizeof(fmatrix));
             rank29 = 4 * sizeof(fmatrix) / sizeof(int32type) * i;
             rank31 = rank29;
           }
@@ -735,7 +735,7 @@ static void w_checkpoint(gauge_file *gf) {
   FORALLSITES(i, s) {
     /* load the gauge configuration into the buffer */
     /* convert (copy) generic to single precision */
-    d2f_4mat(&lattice[i].linkf[0],&lbuf[4*buf_length]);
+    d2f_4mat(&lattice[i].link[0],&lbuf[4*buf_length]);
 
     /* Accumulate checksums - contribution from next site moved into buffer*/
     for (k = 0, val = (u_int32type *)&lbuf[4 * buf_length];
@@ -852,7 +852,7 @@ static void r_parallel(gauge_file *gf) {
   fmatrix *lbuf;
   struct {
     short x, y, z, t;
-    fmatrix linkf[4];
+    fmatrix link[4];
   } msg;
 
   int buf_length, where_in_buf;
@@ -1004,13 +1004,13 @@ static void r_parallel(gauge_file *gf) {
             /* just copy links, converting to generic precision */
             i = node_index(x, y, z, t);
             f2d_4mat((fmatrix *)&lbuf[4*where_in_buf],
-                &lattice[i].linkf[0]);
+                &lattice[i].link[0]);
           }
           else {
             /* send to correct node */
             /* Message consists of site coordinates and 4 link matrices */
             msg.x = x; msg.y = y; msg.z = z; msg.t = t;
-            memcpy((void *)msg.linkf,
+            memcpy((void *)msg.link,
                 (void *)&lbuf[4*where_in_buf], 4 * sizeof(fmatrix));
 
             send_field((char *)&msg, sizeof(msg), destnode);
@@ -1030,7 +1030,7 @@ static void r_parallel(gauge_file *gf) {
             }
             /* Store in the proper location, converting to generic
                precision */
-            f2d_4mat(&msg.linkf[0], &lattice[i].linkf[0]);
+            f2d_4mat(&msg.link[0], &lattice[i].link[0]);
           }
         }
       } /** end over the lattice sites in block on all nodes ***/
@@ -1182,7 +1182,7 @@ gauge_file *restore_ascii(char *filename) {
       }
       if (destnode == 0) {  /* just copy links */
         i = node_index(x, y, z, t);
-        f2d_4mat(lbuf, lattice[i].linkf);
+        f2d_4mat(lbuf, lattice[i].link);
       }
       else      /* send to correct node */
         send_field((char *)lbuf, 4 * sizeof(fmatrix), destnode);
@@ -1193,7 +1193,7 @@ gauge_file *restore_ascii(char *filename) {
       if (this_node == destnode) {
         get_field((char *)lbuf, 4 * sizeof(fmatrix), 0);
         i = node_index(x, y, z, t);
-        f2d_4mat(lbuf, lattice[i].linkf);
+        f2d_4mat(lbuf, lattice[i].link);
       }
     }
   }
@@ -1274,7 +1274,7 @@ gauge_file *save_ascii(char *filename) {
     if (this_node == 0) {
       if (currentnode == 0) {
         i = node_index(x, y, z, t);
-        d2f_4mat(lattice[i].linkf, lbuf);
+        d2f_4mat(lattice[i].link, lbuf);
       }
       else
         get_field((char *)lbuf, 4 * sizeof(fmatrix), currentnode);
@@ -1290,7 +1290,7 @@ gauge_file *save_ascii(char *filename) {
     else {  /* for nodes other than 0 */
       if (this_node == currentnode) {
         i = node_index(x, y, z, t);
-        d2f_4mat(lattice[i].linkf, lbuf);
+        d2f_4mat(lattice[i].link, lbuf);
         send_field((char *)lbuf, 4 * sizeof(fmatrix), 0);
       }
     }

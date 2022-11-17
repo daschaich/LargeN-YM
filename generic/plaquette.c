@@ -19,15 +19,15 @@ void plaquette(double *ss_plaq, double *st_plaq) {
   for (dir = YUP; dir <= TUP; dir++) {
     for (dir2 = XUP; dir2 < dir; dir2++) {
       // gen_pt[0] is U_b(x+a), gen_pt[1] is U_a(x+b)
-      mtag0 = start_gather_site(F_OFFSET(linkf[dir2]), sizeof(matrix),
+      mtag0 = start_gather_site(F_OFFSET(link[dir2]), sizeof(matrix),
                                 dir, EVENANDODD, gen_pt[0]);
-      mtag1 = start_gather_site(F_OFFSET(linkf[dir]), sizeof(matrix),
+      mtag1 = start_gather_site(F_OFFSET(link[dir]), sizeof(matrix),
                                 dir2, EVENANDODD, gen_pt[1]);
 
       // tempmat(x) = Udag_b(x) U_a(x)
       FORALLSITES(i, s) {
-        m1 = &(s->linkf[dir]);
-        m4 = &(s->linkf[dir2]);
+        m1 = &(s->link[dir]);
+        m4 = &(s->link[dir2]);
         mult_an(m4, m1, &(tempmat[i]));
       }
       wait_gather(mtag0);
@@ -71,15 +71,15 @@ double action(double *ss_plaq, double *st_plaq) {
   for (dir = YUP; dir <= TUP; dir++) {
     for (dir2 = XUP; dir2 < dir; dir2++) {
       // gen_pt[0] is U_b(x+a), gen_pt[1] is U_a(x+b)
-      mtag0 = start_gather_site(F_OFFSET(linkf[dir2]), sizeof(matrix),
+      mtag0 = start_gather_site(F_OFFSET(link[dir2]), sizeof(matrix),
                                 dir, EVENANDODD, gen_pt[0]);
-      mtag1 = start_gather_site(F_OFFSET(linkf[dir]), sizeof(matrix),
+      mtag1 = start_gather_site(F_OFFSET(link[dir]), sizeof(matrix),
                                 dir2, EVENANDODD, gen_pt[1]);
 
       // tempmat(x) = Udag_b(x) U_a(x)
       FORALLSITES(i, s) {
-        m1 = &(s->linkf[dir]);
-        m4 = &(s->linkf[dir2]);
+        m1 = &(s->link[dir]);
+        m4 = &(s->link[dir2]);
         mult_an(m4, m1, &(tempmat[i]));
       }
       wait_gather(mtag0);

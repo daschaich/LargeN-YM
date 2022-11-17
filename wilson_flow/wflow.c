@@ -32,7 +32,7 @@ void wflow() {
 
     // Find 8F_munu = sum_{clover} (U - Udag)
     // Subtract the (lattice artifact?) trace at each lattice site
-    make_field_strength(F_OFFSET(linkf), F_OFFSET(FS));
+    make_field_strength(F_OFFSET(link), F_OFFSET(FS));
 
     // Save previous data for slope and interpolation
     // old_plaq is only used for adjusting step size below

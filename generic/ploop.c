@@ -23,11 +23,11 @@ complex ploop(int dir) {
   }
 
   // First multiply the link on every even site by the next link
-  tag = start_gather_site(F_OFFSET(linkf[dir]), sizeof(matrix),
+  tag = start_gather_site(F_OFFSET(link[dir]), sizeof(matrix),
                           dir, EVEN, gen_pt[0]);
   wait_gather(tag);
   FOREVENSITES(i, s)
-    mult_nn(&(s->linkf[dir]), (matrix *)gen_pt[0][i], &(tempmat[i]));
+    mult_nn(&(s->link[dir]), (matrix *)gen_pt[0][i], &(tempmat[i]));
   cleanup_gather(tag);
 
   for (j = 2; j < Ndir; j += 2) {

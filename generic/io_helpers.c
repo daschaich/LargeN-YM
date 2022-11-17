@@ -92,7 +92,7 @@ gauge_file *save_lattice(int flag, char *filename, char *stringLFN) {
 
 
 // -----------------------------------------------------------------
-// Set linkf matrices to unit matrices
+// Set link matrices to unit matrices
 void coldlat() {
   register int i, j, k, dir;
   register site *s;
@@ -102,9 +102,9 @@ void coldlat() {
       for (j = 0; j < NCOL; j++) {
         for (k = 0; k < NCOL; k++) {
           if (j != k)
-            s->linkf[dir].e[j][k] = cmplx(0.0, 0.0);
+            s->link[dir].e[j][k] = cmplx(0.0, 0.0);
           else
-            s->linkf[dir].e[j][k] = cmplx(1.0, 0.0);
+            s->link[dir].e[j][k] = cmplx(1.0, 0.0);
         }
       }
     }
@@ -116,7 +116,7 @@ void coldlat() {
 
 
 // -----------------------------------------------------------------
-// Set linkf matrices to funny matrices for debugging
+// Set link matrices to funny matrices for debugging
 void funnylat() {
   register int i, j, k, dir;
   register site *s;
@@ -125,14 +125,14 @@ void funnylat() {
     FORALLUPDIR(dir) {
       for (j = 0; j < NCOL; ++j) {
         for (k = 0; k < NCOL; ++k)
-          s->linkf[dir].e[j][k] = cmplx(0.0, 0.0);
+          s->link[dir].e[j][k] = cmplx(0.0, 0.0);
       }
-      s->linkf[dir].e[0][0].real = dir;
-      s->linkf[dir].e[1][1].real = 10 * s->x;
-      s->linkf[dir].e[2][2].real = 100 * s->y;
-      s->linkf[dir].e[0][0].imag = dir;
-      s->linkf[dir].e[1][1].imag = 10 * s->z;
-      s->linkf[dir].e[2][2].imag = 100 * s->t;
+      s->link[dir].e[0][0].real = dir;
+      s->link[dir].e[1][1].real = 10 * s->x;
+      s->link[dir].e[2][2].real = 100 * s->y;
+      s->link[dir].e[0][0].imag = dir;
+      s->link[dir].e[1][1].imag = 10 * s->z;
+      s->link[dir].e[2][2].imag = 100 * s->t;
     }
   }
 }

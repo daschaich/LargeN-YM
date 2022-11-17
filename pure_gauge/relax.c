@@ -43,13 +43,13 @@ void relax() {
           ina = index_a[subgrp];
           inb = index_b[subgrp];
           FORSOMEPARITY(i, s, parity) {
-            mult_na(&(s->linkf[dir]), &(s->staple), &action);
+            mult_na(&(s->link[dir]), &(s->staple), &action);
 
             // Decompose the action into SU(2) subgroups
             // using Pauli matrix expansion
             // The SU(2) hit matrix is represented as
             //    a0 + i * Sum j (sigma j * aj)
-            mult_na_f(&(s->linkf[dir]), &(s->staple), &action);
+            mult_na(&(s->link[dir]), &(s->staple), &action);
 #ifdef DEBUG_PRINT
             a0 = action.e[ina][ina].real + action.e[inb][inb].real;
             a3 = action.e[ina][ina].imag - action.e[inb][inb].imag;
@@ -92,8 +92,8 @@ void relax() {
             u.e[1][1] = cmplx( a0,-a3);
 
             // Do SU(2) hit on all links twice (to overrelax)
-            left_su2_hit_n(&u, ina, inb, &(s->linkf[dir]));
-            left_su2_hit_n(&u, ina, inb, &(s->linkf[dir]));
+            left_su2_hit_n(&u, ina, inb, &(s->link[dir]));
+            left_su2_hit_n(&u, ina, inb, &(s->link[dir]));
           }
         }
       }

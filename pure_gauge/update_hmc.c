@@ -19,9 +19,9 @@ void gauge_field_copy(field_offset src, field_offset dest) {
     src2 = src;
     dest2 = dest;
     FORALLUPDIR(dir) {
-      mat_copy_f((matrix_f *)F_PT(s, src2), (matrix_f *)F_PT(s, dest2));
-      src2 += sizeof(matrix_f);
-      dest2 += sizeof(matrix_f);
+      mat_copy((matrix *)F_PT(s, src2), (matrix *)F_PT(s, dest2));
+      src2 += sizeof(matrix);
+      dest2 += sizeof(matrix);
     }
   }
 }
@@ -43,7 +43,7 @@ int update_hmc() {
   startaction = action();
 
   // Copy link field to old_link
-  gauge_field_copy(F_OFFSET(linkf[0]), F_OFFSET(old_linkf[0]));
+  gauge_field_copy(F_OFFSET(link[0]), F_OFFSET(old_link[0]));
 
   // Do microcanonical updating
   // First u(t/2)
@@ -87,7 +87,7 @@ int update_hmc() {
   broadcast_float(&xrandom);
   if (exp(-change) < (double)xrandom) {
     if (traj_length > 0.0)
-      gauge_field_copy(F_OFFSET(old_linkf[0]), F_OFFSET(linkf[0]));
+      gauge_field_copy(F_OFFSET(old_link[0]), F_OFFSET(link[0]));
 
     node0_printf("REJECT: delta S = %.4g start S = %.12g end S = %.12g\n",
                  change, startaction, endaction);
@@ -125,7 +125,7 @@ int update_hmc_const(double Eint, double a) {
   startactionHMC = action_HMC(a);
   startlatticeaction = U_action();
   // Copy link field to old_link
-  gauge_field_copy(F_OFFSET(linkf[0]), F_OFFSET(old_linkf[0]));
+  gauge_field_copy(F_OFFSET(link[0]), F_OFFSET(old_link[0]));
 
   // Do microcanonical updating
   // First u(t/2)
@@ -172,7 +172,7 @@ int update_hmc_const(double Eint, double a) {
   //if (exp(-change) < (double)xrandom) {
   if ((double)xrandom < exp(-change-pow(regulardelta,2.0)/(2.0*pow(delta,2.0))-regulardelta*(startlatticeaction-Eint-delta*0.5)/pow(delta,2.0))) {
     if (traj_length > 0.0)
-      gauge_field_copy(F_OFFSET(old_linkf[0]), F_OFFSET(linkf[0]));
+      gauge_field_copy(F_OFFSET(old_link[0]), F_OFFSET(link[0]));
 
     node0_printf("REJECT: delta S = %.4g start S = %.12g end S = %.12g\n",
                  change, startactionHMC, endactionHMC);

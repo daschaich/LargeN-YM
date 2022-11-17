@@ -66,7 +66,7 @@ Real check_unitarity() {
 
   FORALLSITES(i, s) {
     FORALLUPDIR(dir) {
-      mat = (matrix *)&(s->linkf[dir]);
+      mat = (matrix *)&(s->link[dir]);
       deviation = check_su3(mat);
       if (deviation > TOLERANCE) {
         printf("Unitarity problem on node %d, site %d, dir %d, deviation=%f\n",

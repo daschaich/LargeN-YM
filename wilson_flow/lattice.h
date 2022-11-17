@@ -29,7 +29,7 @@ typedef struct {
 
   // No random numbers
   // Gauge links and field strength for F^2 and topological charge
-  matrix linkf[4], FS[6];
+  matrix link[4], FS[6];
 } site;
 // -----------------------------------------------------------------
 

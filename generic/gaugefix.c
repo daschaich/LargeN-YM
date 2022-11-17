@@ -61,7 +61,7 @@ void accum_gauge_hit(int gauge_dir, int parity) {
   FORSOMEPARITY(i, s, parity) {
     FORALLUPDIRBUT(gauge_dir, dir) {
       // Upward link matrix
-      m1 = &(s->linkf[dir]);
+      m1 = &(s->link[dir]);
       if (diffmat_offset >= 0)
         dif_mat(m1, (matrix *)F_PT(s, diffmat_offset));
       else
@@ -173,7 +173,7 @@ void do_hit(int gauge_dir, int parity, int p, int q, Real relax_boost) {
 
     // Do SU(2) hit on all upward links
     FORALLUPDIR(dir)
-      left_su2_hit_n(&u, p, q,&(s->linkf[dir]));
+      left_su2_hit_n(&u, p, q,&(s->link[dir]));
 
     // Do SU(2) hit on all downward links
     FORALLUPDIR(dir)
@@ -196,7 +196,7 @@ double get_gauge_fix_action(int gauge_dir, int parity) {
 
   FORSOMEPARITY(i, s, parity) {
     FORALLUPDIRBUT(gauge_dir, dir) {
-      tc = trace(&(s->linkf[dir]));
+      tc = trace(&(s->link[dir]));
       gauge_fix_action += (double)tc.real;
 
       tc = trace((matrix *)gen_pt[dir][i]);
@@ -238,7 +238,7 @@ void gaugefixstep(int gauge_dir, double *av_gauge_fix_action,
   for (parity = ODD; parity <= EVEN; parity++) {
     // Gather all downward links at once
     FORALLUPDIR(dir) {
-      mtag[dir] = start_gather_site(F_OFFSET(linkf[dir]), sizeof(matrix),
+      mtag[dir] = start_gather_site(F_OFFSET(link[dir]), sizeof(matrix),
                                     OPP_DIR(dir), parity, gen_pt[dir]);
     }
     FORALLUPDIR(dir)
@@ -290,7 +290,7 @@ void gaugefixstep(int gauge_dir, double *av_gauge_fix_action,
 
       // Copy modified matrices into proper location
       FORSOMEPARITY(i, s, OPP_PAR(parity))
-        mat_copy((matrix *)(gen_pt[dir][i]), &(s->linkf[dir]));
+        mat_copy((matrix *)(gen_pt[dir][i]), &(s->link[dir]));
 
       cleanup_gather(mtag[dir]);
     }

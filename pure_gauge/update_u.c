@@ -10,7 +10,7 @@ void update_u(Real eps) {
   register int i, dir;
   register Real t2, t3, t4, t5, t6, t7, t8;
   register site *s;
-  matrix_f *link, temp1, temp2, htemp;
+  matrix *link, temp1, temp2, htemp;
 
   // Take divisions out of site loop (can't be done by compiler)
   t2 = eps / 2.0;
@@ -24,33 +24,33 @@ void update_u(Real eps) {
   FORALLSITES(i,s) {
     FORALLUPDIR(dir) {
       uncompress_anti_hermitian( &(s->mom[dir]) , &htemp);
-      link = &(s->linkf[dir]);
+      link = &(s->link[dir]);
 
-      mult_nn_f(&htemp, link, &temp1);
-      scalar_mult_add_mat_f(link, &temp1, t8, &temp2);
+      mult_nn(&htemp, link, &temp1);
+      scalar_mult_add_mat(link, &temp1, t8, &temp2);
 
-      mult_nn_f(&htemp, link, &temp1);
-      scalar_mult_add_mat_f(link, &temp1, t7, &temp2);
+      mult_nn(&htemp, link, &temp1);
+      scalar_mult_add_mat(link, &temp1, t7, &temp2);
 
-      mult_nn_f(&htemp, link, &temp1);
-      scalar_mult_add_mat_f(link, &temp1, t6, &temp2);
+      mult_nn(&htemp, link, &temp1);
+      scalar_mult_add_mat(link, &temp1, t6, &temp2);
 
-      mult_nn_f(&htemp, &temp2, &temp1);
-      scalar_mult_add_mat_f(link, &temp1, t5, &temp2);
+      mult_nn(&htemp, &temp2, &temp1);
+      scalar_mult_add_mat(link, &temp1, t5, &temp2);
 
-      mult_nn_f(&htemp, &temp2, &temp1);
-      scalar_mult_add_mat_f(link, &temp1, t4, &temp2);
+      mult_nn(&htemp, &temp2, &temp1);
+      scalar_mult_add_mat(link, &temp1, t4, &temp2);
 
-      mult_nn_f(&htemp, &temp2, &temp1);
-      scalar_mult_add_mat_f(link, &temp1, t3, &temp2);
+      mult_nn(&htemp, &temp2, &temp1);
+      scalar_mult_add_mat(link, &temp1, t3, &temp2);
 
-      mult_nn_f(&htemp, &temp2, &temp1);
-      scalar_mult_add_mat_f(link, &temp1, t2, &temp2);
+      mult_nn(&htemp, &temp2, &temp1);
+      scalar_mult_add_mat(link, &temp1, t2, &temp2);
 
-      mult_nn_f(&htemp, &temp2, &temp1);
-      scalar_mult_add_mat_f(link, &temp1, eps, &temp2);
+      mult_nn(&htemp, &temp2, &temp1);
+      scalar_mult_add_mat(link, &temp1, eps, &temp2);
 
-      mat_copy_f(&temp2, link);
+      mat_copy(&temp2, link);
     }
   }
 }

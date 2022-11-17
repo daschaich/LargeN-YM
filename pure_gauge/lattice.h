@@ -27,7 +27,7 @@ typedef struct {
 #endif
 
   // Gauge links
-  matrix linkf[4];
+  matrix link[4];
 #ifdef HMC
   matrix old_link[4];  // For accept/reject
 
