@@ -4,7 +4,9 @@ Can use either over-relaxed quasi-heatbath or hybrid Monte Carlo for updates
 
 For N=3 pg_ora reproduces milc_qcd/pure_gauge/test/su3_ora.2 (blame for test su3_ora.1 mentions "new random number generator" from commit c05e59d)
 
-However, pg_ora seems strangely sensitive to roundoff accumulation --- see github.com/milc-qcd/milc_qcd/issues/44
+However, pg_ora and pg_llr_ora seem strangely sensitive to roundoff accumulation --- see github.com/milc-qcd/milc_qcd/issues/44
+
+When adapting the SU(3) LLR input below for different SU(N) gauge groups, the energy is proportional to beta times the plaquette (normalized out of N)
 # ------------------------------------------------------------------
 
 
@@ -46,7 +48,7 @@ trajecs 3
 traj_between_meas 3
 
 beta 6.0
-hmc_steps 4
+hmc_steps 15
 traj_length 1.0
 
 reload_serial config.SU3.4444
@@ -64,19 +66,19 @@ nz 4
 nt 4
 iseed 41
 
-warms 0
-trajecs 100
+warms 3
+trajecs 3
 traj_between_meas 10
 
-beta 1.0
-hmc_steps 4
+beta 6.0
+hmc_steps 15
 traj_length 1.0
 
-Emin -80.0
-delta 8.0
-a = 10
+Emin -60.0
+delta 6.0
+a = 1.0
 ait 10
 
-fresh
+reload_serial config.SU3.4444
 forget
 # ------------------------------------------------------------------

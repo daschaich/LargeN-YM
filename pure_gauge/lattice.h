@@ -88,23 +88,27 @@ EXTERN int odd_sites_on_node;   // Number of odd sites on this node
 EXTERN int number_of_nodes;     // Number of nodes in use
 EXTERN int this_node;           // Node number of this node
 
-EXTERN gauge_file *startlat_p;
-
 // Each node maintains a structure with the pseudorandom number
 // generator state
 EXTERN double_prn node_prn;
+
+// Temporary fields
+EXTERN matrix_f *tempmatf, *tempmatf2;
+
+// Some more arrays to be used by LAPACK
+// in reunitarization (in generic directory)
+EXTERN double *Rwork, *eigs, *store, *work, *junk, *left, *right;
 
 // The lattice is a single global variable
 // (actually this is the part of the lattice on this node)
 EXTERN Real boundary_phase[4];
 EXTERN site *lattice;
 
+EXTERN gauge_file *startlat_p;
+
 // Vectors for addressing
 // Generic pointers, for gather routines
 #define N_POINTERS 8
 EXTERN char **gen_pt[N_POINTERS];
 #endif
-
-// Temporary fields for field_strength
-EXTERN matrix_f *tempmatf, *tempmatf2;
 // -----------------------------------------------------------------
