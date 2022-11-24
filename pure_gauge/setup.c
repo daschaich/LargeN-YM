@@ -181,7 +181,6 @@ int readin(int prompt) {
   trajecs = par_buf.trajecs;
   measinterval = par_buf.measinterval;
   beta = par_buf.beta;
-  a = par_buf.a;
 
 #ifndef HMC
   ora_steps = par_buf.ora_steps;
@@ -192,6 +191,7 @@ int readin(int prompt) {
 #endif
 
 #ifdef LLR
+  a = par_buf.a;
   Emin = par_buf.Emin * volume;
   delta = par_buf.delta * volume;
   Emax = Emin + delta;

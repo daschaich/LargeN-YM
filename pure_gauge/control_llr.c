@@ -29,7 +29,8 @@ int main(int argc, char *argv[]) {
   reject = 0;
 
   // Check: compute initial plaquette and energy
-  E = energy(&ss_plaq, &st_plaq);
+  plaquette(&ss_plaq, &st_plaq);
+  E = gauge_action();
   node0_printf("START %.8g %.8g %.8g %.8g\n",
                ss_plaq, st_plaq, ss_plaq + st_plaq, E);
 
@@ -39,9 +40,11 @@ int main(int argc, char *argv[]) {
   node0_printf("WARMUPS COMPLETED\n");
 
   // Terminates if interval not found
+  constrained = 0;
   findEint();
 
   // Robbins--Monro (RM) iterations
+  constrained = 1;
   for (RMcount = 0; RMcount < ait; RMcount++) {
     // Constrained warm-up sweeps in each RM iteration, with a=1
     save_a = a;
@@ -54,7 +57,7 @@ int main(int argc, char *argv[]) {
     for (traj_done = 0; traj_done < trajecs; traj_done++) {
       updateconst_e();
       // Accumulate after update
-      Reweightexpect += energy(&ss_plaq, &st_plaq);
+      Reweightexpect += gauge_action();
 
       // More expensive measurements every "measinterval" sweeps
       if ((traj_done % measinterval) == (measinterval - 1)) {
@@ -78,7 +81,7 @@ int main(int argc, char *argv[]) {
 
   // Check: compute final plaquette and energy
   plaquette(&ss_plaq, &st_plaq);
-  E = energy(&ss_plaq, &st_plaq);
+  E = gauge_action();
   node0_printf("STOP %.8g %.8g %.8g %.8g\n",
                ss_plaq, st_plaq, ss_plaq + st_plaq, E);
 

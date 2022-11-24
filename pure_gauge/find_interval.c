@@ -2,14 +2,6 @@
 // Find initial configuration in target energy interval
 #include "pg_includes.h"
 
-// Convert from plaquette to energy
-double energy(double *ss_plaq, double *st_plaq) {
-  double E;
-  plaquette(ss_plaq, st_plaq);
-  E = -3.0 * beta * volume * (*ss_plaq + *st_plaq);
-  return E;
-}
-
 void findEint() {
 #ifdef LLR
   int Efound = -99;
@@ -19,13 +11,13 @@ void findEint() {
   node0_printf("Searching for energy interval [%.8g, %.8g]\n", Emin, Emax);
 
   dtime = -dclock();
-  E = energy(&ss_plaq, &st_plaq);
+  E = gauge_action();
   if (E >= Emin && E <= Emax)
     Efound = 1;
 
   while (Efound < 0 && counter < count_max) {
     update();
-    E = energy(&ss_plaq, &st_plaq) * beta_sav / beta;
+    E = gauge_action() * beta_sav / beta;
     if (E >= Emin && E <= Emax) {
       Efound = 1;
       beta = beta_sav;    // Reset beta
@@ -35,7 +27,7 @@ void findEint() {
     else  // E < Emin
       beta -= 0.1;
 #ifdef DEBUG_PRINt
-    node0_printf("FINDING E %.8g %.8g %d\n", energy, beta, counter);
+    node0_printf("FINDING E %.8g %.8g %d\n", E, beta, counter);
 #endif
 
     counter++;

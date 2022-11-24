@@ -62,7 +62,7 @@ EXTERN int hmc_steps, traj_length;  // HMC stuff
 EXTERN Real fnorm, max_f;           // Force monitoring
 #endif
 
-EXTERN Real beta, a;        // Fix a = 1 without LLR
+EXTERN Real beta;
 EXTERN Real one_ov_N, one_ov_vol;
 EXTERN char startfile[MAXFILENAME], savefile[MAXFILENAME];
 EXTERN double g_ssplaq, g_stplaq;
@@ -76,8 +76,8 @@ EXTERN int total_iters;
 
 #ifdef LLR
 // LLR parameters
-EXTERN int ait, accept, reject;
-EXTERN double Emin, Emax, delta, deltaSq;
+EXTERN int ait, accept, reject, constrained;
+EXTERN Real a, Emin, Emax, delta, deltaSq;
 #endif
 
 // Some of these global variables are node dependent

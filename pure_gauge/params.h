@@ -16,7 +16,6 @@ typedef struct {
   int trajecs;            // The number of trajectories with measurements
   int measinterval;       // Number of trajectories between measurements
   Real beta;              // Gauge coupling
-  Real a;                 // LLR observable, otherwise fixed to a=1
   int startflag;          // What to do for beginning lattice
   int saveflag;           // What to do with lattice at end
   char startfile[MAXFILENAME], savefile[MAXFILENAME];
@@ -34,6 +33,7 @@ typedef struct {
 
 #ifdef LLR
   // LLR parameters
+  Real a;             // Robbins--Monro output
   Real Emin;          // Lower edge of energy interval
   Real delta;         // Size of energy interval
   int ait;            // Number of Robbins--Monro iterations

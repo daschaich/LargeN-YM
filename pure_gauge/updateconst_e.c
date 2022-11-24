@@ -11,7 +11,7 @@ void updateconst_e(double Eint, double a) {
 
 #ifdef HMC
   // Do HMC updates if specified
-  update_hmc_const();
+  update_hmc();
 #else
   // Otherwise do over-relaxation and quasi-heatbath steps
   relax();

@@ -92,9 +92,6 @@ void linktrsum(double_complex *linktr);
 
 // plaquette.c
 void plaquette(double *ss_plaq, double *st_plaq);
-#ifdef LLR
-double action(double *ss_plaq, double *st_plaq);
-#endif
 
 // plaquette_lcl.c
 void plaquette_lcl(double *ss_plaq, double *st_plaq);
