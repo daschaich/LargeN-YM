@@ -55,6 +55,7 @@ SU3OBJS1 = addmat.1o cmp_ahmat.1o det.1o clear_mat.1o dumpmat.1o \
 	adjoint.1o mat_copy.1o trace.1o \
 	dumpmat.1o dump_ahmat.1o clear_mat.1o addmat.1o \
 	r_su2_hit_a.1o l_su2_hit_n.1o s_m_mat.1o \
+  m_su2_mat_vec_n.1o m_su2_mat_vec_a.1o \
 	s_a_d_mat.1o cs_a_d_mat.1o cs_m_mat.1o
 
 SU3OBJS2 = addmat.2o cmp_ahmat.2o det.2o clear_mat.2o dumpmat.2o \
@@ -67,6 +68,7 @@ SU3OBJS2 = addmat.2o cmp_ahmat.2o det.2o clear_mat.2o dumpmat.2o \
 	adjoint.2o mat_copy.2o trace.2o \
 	clear_mat.2o dumpmat.2o dump_ahmat.2o addmat.2o \
 	r_su2_hit_a.2o l_su2_hit_n.2o s_m_mat.2o \
+  m_su2_mat_vec_n.2o m_su2_mat_vec_a.2o \
 	s_a_d_mat.2o cs_a_d_mat.2o cs_m_mat.2o
 
 ${SU3OBJS1} : ${HEADERS} ${ALLMAKES} ${LASTMAKE}
