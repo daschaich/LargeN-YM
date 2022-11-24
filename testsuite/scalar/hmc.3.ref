@@ -1,6 +1,6 @@
 SU(3) pure-gauge hybrid Monte Carlo algorithm
 Machine = Scalar processor, with 1 nodes
-start: Tue Nov 15 15:53:35 2022
+start: Thu Nov 17 02:47:17 2022
 
 type 0 for no prompts or 1 for prompts
 nx 4
@@ -25,33 +25,33 @@ forget
 Restored binary gauge configuration serially from file config.SU3.4444
 Time stamp Sat Oct  1 01:24:08 2022
 Checksums ac6e1df0 1e9a6f1a OK
-Time to reload gauge configuration = 0.01002 seconds
+Time to reload gauge configuration = 0.00123 seconds
 CHECK PLAQ: 1.7511526906430708e+00 1.7608072168014568e+00
 CHECK NERSC LINKTR: 2.5882006381721112e-03 CKSUM: 0
-Reunitarized for double precision.  Max deviation 5.7e-08 changed to 4.4e-16
-Time to check unitarity = 0.0003901 seconds
+Reunitarized for double precision.  Max deviation 5.7e-08 changed to 1.3e-15
+Time to check unitarity = 0.08157 seconds
 START 1.7511527 1.7608072 3.5119599
 WARMUPS COMPLETED
 ACTION: g, h, tot =  3821.63 4040.3806 7862.0102
 ACTION: g, h, tot =  3756.69 4105.8371 7862.5247
-ACCEPT: delta S = 0.5145 start S = 7862.0102235 end S = 7862.52472315
+ACCEPT: delta S = 0.5145 start S = 7862.01022839 end S = 7862.52472822
 IT_PER_TRAJ 0
 MONITOR_FORCE 0.06147 0.1235
 GMES -0.34363909 -0.79804767 1.7830111 1.7712287
 ACTION: g, h, tot =  3756.69 4102.8198 7859.5075
 ACTION: g, h, tot =  3571.32 4288.6305 7859.9537
-ACCEPT: delta S = 0.4462 start S = 7859.50747404 end S = 7859.95371413
+ACCEPT: delta S = 0.4462 start S = 7859.50747848 end S = 7859.9537201
 IT_PER_TRAJ 0
 MONITOR_FORCE 0.06209 0.1262
-GMES -0.38570171 -0.71924588 1.829031 1.8458888
+GMES -0.38570171 -0.71924589 1.829031 1.8458888
 ACTION: g, h, tot =  3571.32 4083.7611 7655.0843
 ACTION: g, h, tot =  3638.52 4015.8403 7654.3598
-ACCEPT: delta S = -0.7245 start S = 7655.08431536 end S = 7654.35983601
+ACCEPT: delta S = -0.7245 start S = 7655.08431824 end S = 7654.35983808
 IT_PER_TRAJ 0
 MONITOR_FORCE 0.06279 0.1262
-GMES -0.36923778 -0.64846032 1.8185898 1.8125824
+GMES -0.36923779 -0.64846033 1.8185897 1.8125824
 RUNNING COMPLETED
-STOP 1.8185898 1.8125824 3.6311722
-Time = 0.0556 seconds
-exit: Tue Nov 15 15:53:35 2022
+STOP 1.8185897 1.8125824 3.6311722
+Time = 0.06492 seconds
+exit: Thu Nov 17 02:47:17 2022
 
