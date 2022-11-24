@@ -30,6 +30,7 @@ Real ahmat_mag_sq(anti_hermitmat *ah) {
 // -----------------------------------------------------------------
 // Gauge momentum contribution to the action
 double hmom_action() {
+#ifdef HMC
   register int i, dir;
   register site *s;
   double sum = 0.0;
@@ -40,6 +41,9 @@ double hmom_action() {
   }
   g_doublesum(&sum);
   return sum;
+#else
+  return -99.0;
+#endif
 }
 // -----------------------------------------------------------------
 
@@ -57,11 +61,11 @@ double gauge_action() {
 }
 
 double action() {
-  double ssplaq, stplaq, g_act, h_act, tot;
+  double g_act, h_act, tot;
 
   g_act = gauge_action();
 #ifdef LLR
-  double td, w_act;
+  double td = 0.0, w_act = 0.0;
   if (constrained == 1) {
     // Add gaussian window contribution
     td = g_act - Emin - 0.5 * delta;

@@ -6,7 +6,7 @@ void findEint() {
 #ifdef LLR
   int Efound = -99;
   int counter = 0, count_max = 2000;
-  double E, ss_plaq, st_plaq, dtime, beta_sav = beta;
+  double E, dtime, beta_sav = beta;
 
   node0_printf("Searching for energy interval [%.8g, %.8g]\n", Emin, Emax);
 

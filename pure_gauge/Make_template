@@ -109,7 +109,7 @@ pg_ora::
 pg_llr_ora::
 	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" "DEFINES = -DLLR" \
 	"LAPACK = -llapack -lblas " \
-	"EXTRA_OBJECTS = control_llr.o dsdu_qhb.o monte.o relax.o \
+	"EXTRA_OBJECTS = control_llr.o dsdu_qhb.o monte.o relax.o action.o \
 	                 monteconst_e.o updateconst_e.o find_interval.o "
 
 pg_hmc::

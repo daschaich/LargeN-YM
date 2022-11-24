@@ -232,7 +232,8 @@ void monteconst_e() {
 //          reunitarize();
 
           // If we have exited the energy interval, restore starting links
-          E = energy(&ss_plaq, &st_plaq);
+          plaquette(&ss_plaq, &st_plaq);
+          E = gauge_action();
           // Monitor plaquette after each SU(2) subgroup sweep
 #ifdef DEBUG_PRINT
           node0_printf("PLAQ %.8g %.8g %.8g\n",
