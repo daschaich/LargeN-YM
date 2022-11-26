@@ -25,11 +25,12 @@ double update_h(Real eps) {
   register int i, dir, dir2;
   register site *s;
   register Real ebN = eps * beta * one_ov_N;
-  double td, norm = 0.0;
+  double norm = 0.0;
   msg_tag *tag0, *tag1, *tag2;
   int start;
   matrix tmat;
 #ifdef LLR
+  double td;
   matrix tmat2, tmat3;
 #endif
 

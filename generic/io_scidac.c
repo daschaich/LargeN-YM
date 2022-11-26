@@ -204,7 +204,7 @@ gauge_file *save_scidac(char *filename, int volfmt, int serpar, int ildgstyle,
   QIO_Filesystem fs;
   QIO_Writer *outfile;
   int status;
-  field_offset src = F_OFFSET(linkf[0]);
+  field_offset src = F_OFFSET(link[0]);
   gauge_file *gf;
   char *info;
   QIO_String *filexml;
@@ -361,7 +361,7 @@ gauge_file *restore_scidac(char *filename, int serpar) {
   QIO_RecordInfo recinfo;
   QIO_String *recxml;
   int status, typesize, bytes = 2 * 4 * NCOL * NCOL;
-  field_offset dest = F_OFFSET(linkf[0]);
+  field_offset dest = F_OFFSET(link[0]);
   gauge_file *gf;
 
   QIO_verbose(QIO_VERB_OFF);
