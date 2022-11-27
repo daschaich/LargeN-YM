@@ -30,8 +30,8 @@ void gauge_field_copy(field_offset src, field_offset dest) {
 
 
 // -----------------------------------------------------------------
-int update_hmc() {
-  int step, iters = 0;
+void update_hmc() {
+  int step;
   Real xrandom, tr;
   Real eps = traj_length / (Real)hmc_steps;
   double fnorm = 0.0, startaction = 0.0, endaction, change;
@@ -98,12 +98,8 @@ int update_hmc() {
   }
 
   if (traj_length > 0.0) {
-    node0_printf("IT_PER_TRAJ %d\n", iters);
     node0_printf("MONITOR_FORCE %.4g %.4g\n",
                  fnorm / (double)(2 * hmc_steps), max_f);
-    return iters;
   }
-  else
-    return(-99);
 }
 // -----------------------------------------------------------------

@@ -39,7 +39,7 @@ void monte();
 double action();
 void update_u(Real eps);
 double update_h(Real eps);
-int update_hmc();
+void update_hmc();
 #endif
 
 // Need gauge_action() for LLR with or without HMC
