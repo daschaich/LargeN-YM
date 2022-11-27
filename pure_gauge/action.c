@@ -74,7 +74,7 @@ double action() {
 #endif
 
   h_act = hmom_action();
-  node0_printf("ACTION: g, h, tot = %8g %.8g ", g_act, h_act);
+  node0_printf("ACTION: g, h, tot = %.8g %.8g ", g_act, h_act);
 
   tot = g_act + h_act;
 #ifdef LLR
