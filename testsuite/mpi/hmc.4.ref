@@ -1,6 +1,6 @@
 SU(4) pure-gauge hybrid Monte Carlo algorithm
 Machine = MPI (portable), with 2 nodes
-start: Thu Nov 24 16:40:45 2022
+start: Tue Nov 29 00:01:15 2022
 
 type 0 for no prompts or 1 for prompts
 nx 4
@@ -26,33 +26,30 @@ forget
 Restored binary gauge configuration serially from file config.SU4.4444
 Time stamp Sat Oct  1 01:26:32 2022
 Checksums 754534d9 e683e357 OK
-Time to reload gauge configuration = 0.00186 seconds
+Time to reload gauge configuration = 0.000798 seconds
 CHECK PLAQ: 2.2148399450929008e+00 2.2203971514700318e+00
 CHECK NERSC LINKTR: -6.0338394236065795e-03 CKSUM: 0
 Reunitarized for double precision.  Max deviation 5.6e-08 changed to 1.4e-15
-Time to check unitarity = 0.007635 seconds
+Time to check unitarity = 0.006814 seconds
 START 2.2148399 2.2203972 4.4352371
 WARMUPS COMPLETED
-ACTION: g, h, tot =  7323.45 7626.7072 14950.156
-ACTION: g, h, tot =  7343.78 7606.236 14950.013
+ACTION: g, h, tot = 7323.4489 7626.7072 14950.156
+ACTION: g, h, tot = 7343.7768 7606.236 14950.013
 ACCEPT: delta S = -0.1433 start S = 14950.156059 end S = 14950.0128067
-IT_PER_TRAJ 0
 MONITOR_FORCE 0.06867 0.1379
 GMES -0.064570697 -0.63889859 2.1995611 2.2257812
-ACTION: g, h, tot =  7343.78 7715.8762 15059.653
-ACTION: g, h, tot =  7342.08 7717.9811 15060.06
+ACTION: g, h, tot = 7343.7768 7715.8762 15059.653
+ACTION: g, h, tot = 7342.0786 7717.9811 15060.06
 ACCEPT: delta S = 0.4067 start S = 15059.6530275 end S = 15060.0597209
-IT_PER_TRAJ 0
 MONITOR_FORCE 0.06884 0.1383
 GMES -0.22327685 -0.63404354 2.2070083 2.2191606
-ACTION: g, h, tot =  7342.08 7727.5966 15069.675
-ACTION: g, h, tot =  7347.72 7721.9843 15069.707
+ACTION: g, h, tot = 7342.0786 7727.5966 15069.675
+ACTION: g, h, tot = 7347.723 7721.9843 15069.707
 ACCEPT: delta S = 0.03205 start S = 15069.6752693 end S = 15069.7073221
-IT_PER_TRAJ 0
 MONITOR_FORCE 0.06864 0.1383
 GMES -0.21688798 -0.51203655 2.2225863 2.2008351
 RUNNING COMPLETED
 STOP 2.2225863 2.2008351 4.4234214
-Time = 0.08493 seconds
-exit: Thu Nov 24 16:40:45 2022
+Time = 0.08604 seconds
+exit: Tue Nov 29 00:01:15 2022
 

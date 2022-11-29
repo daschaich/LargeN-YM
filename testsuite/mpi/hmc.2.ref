@@ -1,6 +1,6 @@
 SU(2) pure-gauge hybrid Monte Carlo algorithm
 Machine = MPI (portable), with 2 nodes
-start: Thu Nov 24 16:39:28 2022
+start: Tue Nov 29 00:00:54 2022
 
 type 0 for no prompts or 1 for prompts
 nx 4
@@ -26,33 +26,30 @@ forget
 Restored binary gauge configuration serially from file config.SU2.4444
 Time stamp Sat Oct  1 01:22:54 2022
 Checksums a4c03c80 398ab5fc OK
-Time to reload gauge configuration = 0.001474 seconds
+Time to reload gauge configuration = 0.0002239 seconds
 CHECK PLAQ: 1.3624482837232208e+00 1.3662679721914681e+00
 CHECK NERSC LINKTR: -2.3132042723432278e-02 CKSUM: 0
 Reunitarized for double precision.  Max deviation 3.9e-08 changed to 8.9e-16
-Time to check unitarity = 0.002304 seconds
+Time to check unitarity = 0.0008352 seconds
 START 1.3624483 1.366268 2.7287163
 WARMUPS COMPLETED
-ACTION: g, h, tot =  1318.07 1489.1098 2807.1768
-ACTION: g, h, tot =  1291.43 1516.2525 2807.6806
+ACTION: g, h, tot = 1318.067 1489.1098 2807.1768
+ACTION: g, h, tot = 1291.4282 1516.2525 2807.6806
 ACCEPT: delta S = 0.5038 start S = 2807.17678328 end S = 2807.68062969
-IT_PER_TRAJ 0
 MONITOR_FORCE 0.04683 0.0941
 GMES 0.56720452 -2.7755576e-17 1.3664618 1.3879478
-ACTION: g, h, tot =  1291.43 1517.8584 2809.2866
-ACTION: g, h, tot =  1288.33 1521.1072 2809.4374
+ACTION: g, h, tot = 1291.4282 1517.8584 2809.2866
+ACTION: g, h, tot = 1288.3301 1521.1072 2809.4374
 ACCEPT: delta S = 0.1508 start S = 2809.28659054 end S = 2809.43736508
-IT_PER_TRAJ 0
 MONITOR_FORCE 0.04677 0.0941
 GMES 0.46768949 -2.3418767e-17 1.3656572 1.3917404
-ACTION: g, h, tot =  1288.33 1509.2976 2797.6277
-ACTION: g, h, tot =  1334.51 1462.9501 2797.4589
+ACTION: g, h, tot = 1288.3301 1509.2976 2797.6277
+ACTION: g, h, tot = 1334.5088 1462.9501 2797.4589
 ACCEPT: delta S = -0.1688 start S = 2797.62771271 end S = 2797.45888776
-IT_PER_TRAJ 0
 MONITOR_FORCE 0.04677 0.09425
 GMES 0.47316394 1.0842022e-17 1.3491875 1.3636705
 RUNNING COMPLETED
 STOP 1.3491875 1.3636705 2.712858
-Time = 0.02505 seconds
-exit: Thu Nov 24 16:39:28 2022
+Time = 0.01493 seconds
+exit: Tue Nov 29 00:00:54 2022
 
