@@ -69,7 +69,8 @@ double action() {
   if (constrained == 1) {
     // Add gaussian window contribution
     td = g_act - Emin - 0.5 * delta;
-    w_act = exp(-0.5 * td * td / deltaSq);
+    //w_act = exp(-0.5 * td * td / deltaSq);
+    w_act = 0.5 * td * td / deltaSq;
   }
 #endif
 

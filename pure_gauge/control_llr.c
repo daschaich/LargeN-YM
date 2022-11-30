@@ -60,19 +60,19 @@ int main(int argc, char *argv[]) {
       Reweightexpect += gauge_action();
 
       // More expensive measurements every "measinterval" sweeps
-      if ((traj_done % measinterval) == (measinterval - 1)) {
+      //if ((traj_done % measinterval) == (measinterval - 1)) {
 //        Nmeas++;
         // Nothing yet...
-      }
+      //}
     }
     Reweightexpect /= trajecs;
     Reweightexpect -= Emin + 0.5 * delta;
 
     // Hard-code under-relaxation to begin after 100 RM iterations
-    if (RMcount < 100)
+    if (RMcount < 1)
       a += 12.0 * Reweightexpect / deltaSq;
     else
-      a += 12.0 * Reweightexpect / (deltaSq * (RMcount - 99));
+      a += 12.0 * Reweightexpect / (deltaSq * (RMcount - 0));
     node0_printf("RM ITER %d a %.8g\n", RMcount + 1, a);
     // TODO: I think acceptance rate for each RM iteration
     //       would be more interesting than the overall one below...
