@@ -1,6 +1,7 @@
 // -----------------------------------------------------------------
 // Find initial configuration in target energy interval
 #include "pg_includes.h"
+//#define FINDING_DEBUG
 
 void findEint() {
 #ifdef LLR
@@ -23,10 +24,10 @@ void findEint() {
       beta = beta_sav;    // Reset beta
     }
     else if (E > Emax)
-      beta += 0.1;
+      beta += 0.1;        // Increases plaq --> decreases E
     else  // E < Emin
       beta -= 0.1;
-#ifdef DEBUG_PRINt
+#ifdef FINDING_DEBUG
     node0_printf("FINDING E %.8g %.8g %d\n", E, beta, counter);
 #endif
 

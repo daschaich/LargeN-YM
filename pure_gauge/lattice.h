@@ -76,8 +76,11 @@ EXTERN int total_iters;
 
 #ifdef LLR
 // LLR parameters
-EXTERN int ait, accept, reject, constrained;
+EXTERN int ait, constrained;
 EXTERN Real a, Emin, Emax, delta, deltaSq;
+#ifndef HMC
+EXTERN int accept, reject;    // Motitor over-relaxation acceptance
+#endif
 #endif
 
 // Some of these global variables are node dependent

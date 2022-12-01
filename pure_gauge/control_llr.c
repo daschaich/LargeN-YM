@@ -24,9 +24,11 @@ int main(int argc, char *argv[]) {
   }
   dtime = -dclock();
 
+#ifndef HMC
   // Monitor overall acceptance in monteconst_e.c
   accept = 0;
   reject = 0;
+#endif
 
   // Check: compute initial plaquette and energy
   plaquette(&ss_plaq, &st_plaq);
@@ -60,19 +62,19 @@ int main(int argc, char *argv[]) {
       Reweightexpect += gauge_action();
 
       // More expensive measurements every "measinterval" sweeps
-      //if ((traj_done % measinterval) == (measinterval - 1)) {
+      if ((traj_done % measinterval) == (measinterval - 1)) {
 //        Nmeas++;
         // Nothing yet...
-      //}
+      }
     }
     Reweightexpect /= trajecs;
     Reweightexpect -= Emin + 0.5 * delta;
 
     // Hard-code under-relaxation to begin after 100 RM iterations
-    if (RMcount < 1)
+    if (RMcount < 100)
       a += 12.0 * Reweightexpect / deltaSq;
     else
-      a += 12.0 * Reweightexpect / (deltaSq * (RMcount - 0));
+      a += 12.0 * Reweightexpect / (deltaSq * (RMcount - 99));
     node0_printf("RM ITER %d a %.8g\n", RMcount + 1, a);
     // TODO: I think acceptance rate for each RM iteration
     //       would be more interesting than the overall one below...
@@ -85,9 +87,11 @@ int main(int argc, char *argv[]) {
   node0_printf("STOP %.8g %.8g %.8g %.8g\n",
                ss_plaq, st_plaq, ss_plaq + st_plaq, E);
 
+#ifndef HMC
   rate = (double)accept / ((double)(accept + reject));
   node0_printf("Overall acceptance %d of %d = %.4g\n",
                accept, accept + reject, rate);
+#endif
   dtime += dclock();
   node0_printf("Time = %.4g seconds\n", dtime);
   fflush(stdout);
