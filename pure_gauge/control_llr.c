@@ -6,7 +6,7 @@
 int main(int argc, char *argv[]) {
   int prompt;
   int traj_done, RMcount;//, Nmeas = 0;
-  double ss_plaq, st_plaq, E, dtime, save_a, rate;
+  double ss_plaq, st_plaq, E, dtime, save_a;
   double Reweightexpect;    // Reweighted expectation value of the energy
 
   // Set up
@@ -28,6 +28,7 @@ int main(int argc, char *argv[]) {
   // Monitor overall acceptance in monteconst_e.c
   accept = 0;
   reject = 0;
+  double rate;
 #endif
 
   // Check: compute initial plaquette and energy
