@@ -45,7 +45,7 @@ complex.1.a: ${COMPLEXOBJS1}
 complex.2.a: ${COMPLEXOBJS2}
 	${AR} rcs $@ ${COMPLEXOBJS2}
 
-SU3OBJS1 = addmat.1o cmp_ahmat.1o det.1o clear_mat.1o dumpmat.1o \
+SU3OBJS1 = addmat.1o cmp_ahmat.1o clear_mat.1o dumpmat.1o \
 	clearvec.1o m_mat_an.1o m_mat_na.1o m_mat_nn.1o \
 	make_ahmat.1o rand_ahmat.1o tr_prod.1o s_m_mat.1o \
 	adjoint.1o mat_copy.1o trace.1o \
@@ -58,7 +58,7 @@ SU3OBJS1 = addmat.1o cmp_ahmat.1o det.1o clear_mat.1o dumpmat.1o \
   m_su2_mat_vec_n.1o m_su2_mat_vec_a.1o \
 	s_a_d_mat.1o cs_a_d_mat.1o cs_m_mat.1o
 
-SU3OBJS2 = addmat.2o cmp_ahmat.2o det.2o clear_mat.2o dumpmat.2o \
+SU3OBJS2 = addmat.2o cmp_ahmat.2o clear_mat.2o dumpmat.2o \
 	clearvec.2o m_mat_an.2o m_mat_na.2o m_mat_nn.2o \
 	make_ahmat.2o rand_ahmat.2o tr_prod.2o s_m_mat.2o \
 	adjoint.2o mat_copy.2o trace.2o \

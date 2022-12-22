@@ -35,12 +35,7 @@ void update_hmc(double E_min) {
   Real xrandom, tr;
   Real eps = traj_length / (Real)hmc_steps;
   double fnorm = 0.0, startaction = 0.0, endaction, change;
-  
-  double deltaH2 = 0;
-  double regularstart = 0;
-  double regularend = 0;
-  double regulardelta = 0;
-  
+
   // Refresh the momenta
   ranmom();
 
@@ -65,8 +60,6 @@ void update_hmc(double E_min) {
       update_u(eps);
     else
       update_u(0.5 * eps);    // Final u(t/2)
-    
-    node0_printf("gauge_action after update= %.4g\n", gauge_action());
   }
 
   // Reunitarize the gauge field
@@ -76,7 +69,7 @@ void update_hmc(double E_min) {
   endaction = action(E_min);
   regularend = gauge_action();
   change = endaction - startaction;
-  regulardelta = regularend - regularstart;
+
   // Reject configurations giving overflow
 #ifndef HAVE_IEEEFP_H
   if (fabs((double)change) > 1e20) {

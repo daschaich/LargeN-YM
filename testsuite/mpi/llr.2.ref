@@ -1,6 +1,6 @@
 SU(2) pure-gauge log-linear relaxation algorithm using hybrid Monte Carlo updates
-Machine = Scalar processor, with 1 nodes
-start: Wed Dec  7 00:12:16 2022
+Machine = MPI (portable), with 2 nodes
+start: Wed Dec  7 12:31:09 2022
 
 type 0 for no prompts or 1 for prompts
 nx 4
@@ -8,9 +8,10 @@ ny 4
 nz 4
 nt 4
 iseed 41
-LAYOUT = Hypercubes, options = with fixed node_geometry
-ON EACH NODE 4 x 4 x 4 x 4
-Mallocing 0.2 MBytes per core for lattice
+LAYOUT = Hypercubes, options = hyper_prime,
+MPI with automatic hyper_prime layout
+ON EACH NODE 2 x 4 x 4 x 4
+Mallocing 0.1 MBytes per core for lattice
 Mallocing 0.0 MBytes per core for fields
 
 
@@ -29,11 +30,11 @@ forget
 Restored binary gauge configuration serially from file config.SU2.4444
 Time stamp Sat Oct  1 01:22:54 2022
 Checksums a4c03c80 398ab5fc OK
-Time to reload gauge configuration = 0.005483 seconds
-CHECK PLAQ: 1.3624482837232239e+00 1.3662679721914686e+00
+Time to reload gauge configuration = 0.4323 seconds
+CHECK PLAQ: 1.3624482837232208e+00 1.3662679721914681e+00
 CHECK NERSC LINKTR: -2.3132042723432278e-02 CKSUM: 0
 Reunitarized for double precision.  Max deviation 3.9e-08 changed to 8.9e-16
-Time to check unitarity = 0.2437 seconds
+Time to check unitarity = 0.002192 seconds
 START 1.3624483 1.366268 2.7287163 1318.067
 ACTION: g, h, tot = 1318.067 1489.1098 2807.1768
 ACTION: g, h, tot = 1291.4282 1516.2525 2807.6806
@@ -77,7 +78,7 @@ ACTION: g, h, tot = 1189.0531 1555.1869 2744.24
 ACTION: g, h, tot = 1219.8337 1524.3951 2744.2289
 ACCEPT: delta S = -0.01112 start S = 2744.24001334 end S = 2744.22889305
 MONITOR_FORCE 0.03362 0.09425
-Energy 1568.3577 in interval found after 7 updates in 0.04953 seconds
+Energy 1568.3577 in interval found after 7 updates in 0.03019 seconds
 ACTION: g, h, w, tot = 1568.3577 1549.5652 0.041858261 3117.9648
 ACTION: g, h, w, tot = 1494.1586 1623.599 0.29830447 3118.0559
 ACCEPT: delta S = 0.09114 start S = 3117.96477152 end S = 3118.05591111
@@ -313,7 +314,7 @@ REJECT: delta S = 0.7935 start S = 3094.36863556 end S = 3095.16216043
 MONITOR_FORCE 0.04456 0.09425
 ACTION: g, h, w, tot = 1549.5026 1482.4062 0.084909969 3031.9938
 ACTION: g, h, w, tot = 1460.3641 1572.4101 0.49245015 3033.2666
-ACCEPT: delta S = 1.273 start S = 3031.99379941 end S = 3033.26661893
+ACCEPT: delta S = 1.273 start S = 3031.9937994 end S = 3033.26661893
 MONITOR_FORCE 0.04471 0.09425
 ACTION: g, h, w, tot = 1460.3641 1495.863 0.49245015 2692.1997
 ACTION: g, h, w, tot = 1533.429 1436.0974 0.13350907 2691.9057
@@ -330,5 +331,6 @@ MONITOR_FORCE 0.03486 0.09425
 RM ITER 10 a 0.81490688
 RUNNING COMPLETED
 STOP 1.1824155 1.2043965 2.3868119 1672.5534
-Time = 35.72 seconds
-exit: Wed Dec  7 00:12:52 2022
+Time = 13.26 seconds
+exit: Wed Dec  7 12:31:23 2022
+

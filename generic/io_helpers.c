@@ -129,10 +129,12 @@ void funnylat() {
       }
       s->link[dir].e[0][0].real = dir;
       s->link[dir].e[1][1].real = 10 * s->x;
-      s->link[dir].e[2][2].real = 100 * s->y;
       s->link[dir].e[0][0].imag = dir;
       s->link[dir].e[1][1].imag = 10 * s->z;
+#if NCOL > 2
+      s->link[dir].e[2][2].real = 100 * s->y;
       s->link[dir].e[2][2].imag = 100 * s->t;
+#endif
     }
   }
 }

@@ -32,6 +32,8 @@ int main(int argc, char *argv[]) {
   // Monitor overall acceptance in monteconst_e.c
   accept = 0;
   reject = 0;
+  double rate;
+#endif
 
   // Check: compute initial plaquette and energy
   plaquette(&ss_plaq, &st_plaq);
@@ -107,9 +109,11 @@ int main(int argc, char *argv[]) {
   node0_printf("STOP %.8g %.8g %.8g %.8g\n",
                ss_plaq, st_plaq, ss_plaq + st_plaq, E);
 
+#ifndef HMC
   rate = (double)accept / ((double)(accept + reject));
   node0_printf("Overall acceptance %d of %d = %.4g\n",
                accept, accept + reject, rate);
+#endif
   dtime += dclock();
   node0_printf("Time = %.4g seconds\n", dtime);
   fflush(stdout);
