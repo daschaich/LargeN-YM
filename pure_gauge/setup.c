@@ -145,6 +145,8 @@ int readin(int prompt) {
     // LLR stuff
     // Energy range to scan (min to max)
     IF_OK status += get_f(stdin, prompt, "Emin", &par_buf.Emin);
+    
+    IF_OK status += get_f(stdin, prompt, "Emax", &par_buf.Emax);
 
     // Size of energy interval delta
     IF_OK status += get_f(stdin, prompt, "delta", &par_buf.delta);
@@ -154,6 +156,9 @@ int readin(int prompt) {
 
     // Number of iterations for Robbins--Monro algorithm
     IF_OK status += get_i(stdin, prompt, "ait", &par_buf.ait);
+    
+    // Number of Jackknife samples
+    IF_OK status += get_i(stdin, prompt, "Njacknife", &par_buf.Njacknife);
 #endif
 
     // Find out what kind of starting lattice to use
@@ -193,10 +198,11 @@ int readin(int prompt) {
 #ifdef LLR
   a = par_buf.a;
   Emin = par_buf.Emin * volume;
+  Emax = par_buf.Emax * volume;
   delta = par_buf.delta * volume;
-  Emax = Emin + delta;
   deltaSq = delta * delta;
   ait = par_buf.ait;
+  Njacknife = par_buf.Njacknife;
 #endif
 
   startflag = par_buf.startflag;

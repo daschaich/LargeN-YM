@@ -36,10 +36,10 @@ void dsdu_qhb(int dir, int parity);    // Gauge force for quasi-heatbath
 void monte();
 #else
 // HMC stuff
-double action();
+double action(double E_min);
 void update_u(Real eps);
-double update_h(Real eps);
-void update_hmc();
+double update_h(Real eps,double E_min);
+void update_hmc(double E_min);
 #endif
 
 // Need gauge_action() for LLR with or without HMC
@@ -49,9 +49,9 @@ double gauge_action();
 
 // LLR stuff
 #ifdef LLR
-void findEint();
+void findEint(double E_min);
 
-void updateconst_e();
+void updateconst_e(double E_min);
 #ifndef HMC
   // Over-relaxed quasi-heatbath updates with hard constraints
 void monteconst_e();

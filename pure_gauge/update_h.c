@@ -21,7 +21,7 @@ void update_mom(site *s, int dir, Real eps, matrix *force) {
 
 // -----------------------------------------------------------------
 // Update the momenta with the gauge force
-double update_h(Real eps) {
+double update_h(Real eps,double E_min) {
   register int i, dir, dir2;
   register site *s;
   register Real ebN = eps * beta * one_ov_N;
@@ -98,7 +98,7 @@ double update_h(Real eps) {
 #ifdef LLR
       if (constrained == 1) {
         td = gauge_action();
-        td -= Emin + 0.5 * delta;
+        td -= E_min + 0.5 * delta;
         td /= deltaSq;
         scalar_mult_mat(&tmat, td, &tmat2);
         scalar_mult_add_mat(&tmat2, &tmat, a, &tmat3);

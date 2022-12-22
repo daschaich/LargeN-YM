@@ -2,34 +2,34 @@
 // Find initial configuration in target energy interval
 #include "pg_includes.h"
 
-void findEint() {
+void findEint(double E_min) {
 #ifdef LLR
   int Efound = -99;
   int counter = 0, count_max = 2000;
   double E, dtime, beta_sav = beta;
-
-  node0_printf("Searching for energy interval [%.8g, %.8g]\n", Emin, Emax);
+  double E_max = E_min + delta;
+  node0_printf("Searching for energy interval [%.8g, %.8g]\n", E_min, E_max);
 
   dtime = -dclock();
   E = gauge_action();
-  if (E >= Emin && E <= Emax)
+  if (E >= E_min && E <= E_max)
     Efound = 1;
 
   while (Efound < 0 && counter < count_max) {
     update();
     E = gauge_action() * beta_sav / beta;
-    if (E >= Emin && E <= Emax) {
+    if (E >= E_min && E <= E_max) {
       Efound = 1;
       beta = beta_sav;    // Reset beta
     }
-    else if (E > Emax)
+    else if (E > E_max)
       beta += 0.1;
     else  // E < Emin
       beta -= 0.1;
 #ifdef DEBUG_PRINt
     node0_printf("FINDING E %.8g %.8g %d\n", E, beta, counter);
 #endif
-
+    node0_printf("FINDING E %.8g %.8g %d\n", E, beta, counter);
     counter++;
   }
 

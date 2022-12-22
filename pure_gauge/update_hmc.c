@@ -30,7 +30,7 @@ void gauge_field_copy(field_offset src, field_offset dest) {
 
 
 // -----------------------------------------------------------------
-void update_hmc() {
+void update_hmc(double E_min) {
   int step;
   Real xrandom, tr;
   Real eps = traj_length / (Real)hmc_steps;
@@ -45,7 +45,7 @@ void update_hmc() {
   ranmom();
 
   // Find initial action
-  startaction = action();
+  startaction = action(E_min);
   regularstart = gauge_action();
   // Copy link field to old_link
   gauge_field_copy(F_OFFSET(link[0]), F_OFFSET(old_link[0]));
@@ -56,7 +56,7 @@ void update_hmc() {
 
   // Inner steps p(t) u(t)
   for (step = 0; step < hmc_steps; step++) {
-    tr = update_h(eps);
+    tr = update_h(eps,E_min);
     fnorm += tr;
     if (tr > max_f)
       max_f = tr;
@@ -73,7 +73,7 @@ void update_hmc() {
   reunitarize();
 
   // Find ending action
-  endaction = action();
+  endaction = action(E_min);
   regularend = gauge_action();
   change = endaction - startaction;
   regulardelta = regularend - regularstart;
@@ -93,20 +93,47 @@ void update_hmc() {
   if (this_node == 0)
     xrandom = myrand(&node_prn);
   broadcast_float(&xrandom);
+
+if (constrained == 0) {
   if (exp(-change) < (double)xrandom) {
     if (traj_length > 0.0)
       gauge_field_copy(F_OFFSET(old_link[0]), F_OFFSET(link[0]));
 
     node0_printf("REJECT: delta S = %.4g start S = %.12g end S = %.12g\n",
-                 change, startaction, endaction);
-                 deltaH2 = deltaH2 + pow(-change-pow(regulardelta,2.0)/(2.0*pow(delta,2.0))-regulardelta*(regularstart-Emin-delta*0.5)/pow(delta,2.0),2);
+                 change, startaction, endaction);                 
+                 deltaH2 = deltaH2 + pow(-change,2); //-pow(regulardelta,2.0)/(2.0*pow(delta,2.0))-regulardelta*(regularstart-E_min-delta*0.5)/pow(delta,2.0),2);
   }
   else {
     node0_printf("ACCEPT: delta S = %.4g start S = %.12g end S = %.12g\n",
                  change, startaction, endaction);
-                 deltaH2 = deltaH2 + pow(-change-pow(regulardelta,2.0)/(2.0*pow(delta,2.0))-regulardelta*(regularstart-Emin-delta*0.5)/pow(delta,2.0),2);
+                 deltaH2 = deltaH2 + pow(-change,2); //-pow(regulardelta,2.0)/(2.0*pow(delta,2.0))-regulardelta*(regularstart-E_min-delta*0.5)/pow(delta,2.0),2);
   }
-  node0_printf("Delta_H^2 = %.12g\n", deltaH2);
+}
+
+else {
+ if ((double)xrandom < exp(-change-pow(regulardelta,2.0)/(2.0*pow(delta,2.0))-regulardelta*(regularstart-E_min-delta*0.5)/pow(delta,2.0))) {
+  if (traj_length > 0.0)
+      node0_printf("ACCEPT: delta S = %.4g start S = %.12g end S = %.12g\n",
+                 change, startaction, endaction);
+                 deltaH2 = deltaH2 + pow(-change-pow(regulardelta,2.0)/(2.0*pow(delta,2.0))-regulardelta*(regularstart-E_min-delta*0.5)/pow(delta,2.0),2);
+ }
+ else {
+    if (traj_length > 0.0)
+      gauge_field_copy(F_OFFSET(old_link[0]), F_OFFSET(link[0]));
+
+    node0_printf("REJECT: delta S = %.4g start S = %.12g end S = %.12g\n",
+                 change, startaction, endaction);                 
+                 deltaH2 = deltaH2 + pow(-change-pow(regulardelta,2.0)/(2.0*pow(delta,2.0))-regulardelta*(regularstart-E_min-delta*0.5)/pow(delta,2.0),2);
+ }
+}
+#ifdef LLR
+      if (constrained == 1) {
+        node0_printf("DeltaLLR_H^2 = %.12g\n", deltaH2);
+      }
+      else {
+        node0_printf("Delta_H^2 = %.12g\n", deltaH2);
+      }
+#endif
   if (traj_length > 0.0) {
     node0_printf("MONITOR_FORCE %.4g %.4g\n",
                  fnorm / (double)(2 * hmc_steps), max_f);

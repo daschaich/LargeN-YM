@@ -34,9 +34,11 @@ typedef struct {
 #ifdef LLR
   // LLR parameters
   Real a;             // Robbins--Monro output
-  Real Emin;          // Lower edge of energy interval
-  Real delta;         // Size of energy interval
+  double Emin;          // Lower edge of lowest energy interval
+  double Emax;          // Lower edge of highest energy interval
+  double delta;         // Size of energy interval
   int ait;            // Number of Robbins--Monro iterations
+  int Njacknife;          // Number of Jackknife samples
 #endif
 }  params;
 #endif
