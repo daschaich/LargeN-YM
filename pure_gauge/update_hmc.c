@@ -35,6 +35,11 @@ void update_hmc(double E_min) {
   Real xrandom, tr;
   Real eps = traj_length / (Real)hmc_steps;
   double fnorm = 0.0, startaction = 0.0, endaction, change;
+  
+  double deltaH2 = 0;
+  double regularstart = 0;
+  double regularend = 0;
+  double regulardelta = 0;
 
   // Refresh the momenta
   ranmom();

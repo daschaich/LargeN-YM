@@ -32,8 +32,6 @@ int main(int argc, char *argv[]) {
   // Monitor overall acceptance in monteconst_e.c
   accept = 0;
   reject = 0;
-  double rate;
-#endif
 
   // Check: compute initial plaquette and energy
   plaquette(&ss_plaq, &st_plaq);
