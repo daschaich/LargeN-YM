@@ -13,12 +13,12 @@ beta 1.0
 hmc_steps 20
 traj_length 1.0
 
-Emin 3.0
-Emax 3.5
+Emin -3.0
+Emax -3.0
 delta 0.1
 a 1.0
 ait 1
-Njacknife 5
+Njacknife 1
 
 reload_serial config.SU2.4444
 forget

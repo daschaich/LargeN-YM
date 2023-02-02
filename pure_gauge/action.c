@@ -65,6 +65,7 @@ double action(double E_min) {
   double g_act, h_act, tot;
 
   g_act = gauge_action();
+  node0_printf("ACTION: g, h, ");
 //#ifdef LLR
   //double td = 0.0, w_act = 0.0;
   //if (constrained == 1) {
@@ -73,11 +74,10 @@ double action(double E_min) {
     //w_act = exp(-0.5 * td * td / deltaSq);
     //w_act = 0.5 * td * td / deltaSq; 
   //}
-
 //#endif
 
   h_act = hmom_action();
-  node0_printf("ACTION: g, h, tot = %.8g %.8g ", g_act, h_act);
+  node0_printf("tot = %.8g %.8g ", g_act, h_act);
 
   tot = g_act + h_act;
 #ifdef LLR
