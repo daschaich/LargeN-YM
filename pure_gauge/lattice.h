@@ -55,8 +55,10 @@ EXTERN int volume;          // Volume of lattice
 EXTERN int iseed;           // Random number seed
 EXTERN int warms, trajecs;  // Common stuff
 EXTERN int measinterval;
-#ifndef HMC
+
 EXTERN int ora_steps, qhb_steps;    // ORA stuff
+#ifndef HMC
+//EXTERN int ora_steps, qhb_steps;    // ORA stuff
 #else
 EXTERN int hmc_steps, traj_length;  // HMC stuff
 EXTERN Real fnorm, max_f;           // Force monitoring

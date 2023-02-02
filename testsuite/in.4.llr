@@ -1,21 +1,21 @@
 prompt 0
-nx 4
-ny 4
-nz 4
-nt 4
+nx 6
+ny 6
+nz 6
+nt 6
 iseed 41
 
 warms 0
-trajecs 40
+trajecs 10
 traj_between_meas 1
 
 beta 1.0
-hmc_steps 20
+hmc_steps 10
 traj_length 1.0
 
-Emin -3.5
-Emax -3.5
-delta 0.1
+Emin -5.5
+Emax -5.5
+delta 1.0
 a 1.0
 ait 1
 Njacknife 1

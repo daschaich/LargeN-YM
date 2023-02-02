@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
       constrained = 0;
       a = 1.0;
       findEint(Eint[Intcount]);
-      a = save_a;
+      //a = save_a;
       // Robbins--Monro (RM) iterations
       constrained = 1;
       for (RMcount = 0; RMcount < ait; RMcount++) {
@@ -88,11 +88,11 @@ int main(int argc, char *argv[]) {
         Reweightexpect -= Eint[Intcount] + 0.5 * delta;
 
         // Hard-code under-relaxation to begin after 100 RM iterations
-        if (RMcount < 1)
-          a += 12.0 * Reweightexpect / deltaSq;
+        if (RMcount < 80)
+          a += 1.0*12.0 * Reweightexpect / deltaSq;
         else
-          a += 12.0 * Reweightexpect / (deltaSq * (RMcount - 0));
-        node0_printf("RM ITER %d a %.8g\n", RMcount + 1, a);
+          a += 12.0 * Reweightexpect / (deltaSq * (RMcount - 79));
+        node0_printf("RM ITER %d Reweightexpect %.8g a %.8g\n", RMcount + 1, Reweightexpect,a);
         // TODO: I think acceptance rate for each RM iteration
         //       would be more interesting than the overall one below...
       }

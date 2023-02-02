@@ -52,8 +52,9 @@ double hmom_action() {
 // -----------------------------------------------------------------
 double gauge_action() {
   double ssplaq, stplaq;
-
   plaquette(&ssplaq, &stplaq);
+  //plaquette_lcl(&ssplaq, &stplaq);
+  node0_printf("Do we get here action?\n");
   ssplaq = ssplaq * one_ov_N;
   stplaq = stplaq * one_ov_N;
   // Three space--space and three space--time plaquette orientations
@@ -64,16 +65,16 @@ double action(double E_min) {
   double g_act, h_act, tot;
 
   g_act = gauge_action();
-#ifdef LLR
-  double td = 0.0, w_act = 0.0;
-  if (constrained == 1) {
+//#ifdef LLR
+  //double td = 0.0, w_act = 0.0;
+  //if (constrained == 1) {
     // Add gaussian window contribution
     //td = g_act - E_min - 0.5 * delta;
     //w_act = exp(-0.5 * td * td / deltaSq);
     //w_act = 0.5 * td * td / deltaSq; 
-  }
+  //}
 
-#endif
+//#endif
 
   h_act = hmom_action();
   node0_printf("ACTION: g, h, tot = %.8g %.8g ", g_act, h_act);

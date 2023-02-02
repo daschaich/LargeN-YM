@@ -29,11 +29,15 @@ double update_h(Real eps,double E_min) {
   msg_tag *tag0, *tag1, *tag2;
   int start;
   matrix tmat;
+  
 #ifdef LLR
-  double td;
+  register double td;
   matrix tmat2, tmat3;
+  td = gauge_action();
+  node0_printf("Do we get here update_h?\n");
+  td -= E_min + 0.5 * delta;
+  td /= deltaSq;
 #endif
-
   // Loop over directions, update mom[dir]
   FORALLUPDIR(dir) {
     start = 1; // Indicates staple sum (in tempmat2) not initialized
@@ -97,9 +101,6 @@ double update_h(Real eps,double E_min) {
       mult_na(&(s->link[dir]), &(tempmat2[i]), &tmat);
 #ifdef LLR
       if (constrained == 1) {
-        td = gauge_action();
-        td -= E_min + 0.5 * delta;
-        td /= deltaSq;
         scalar_mult_mat(&tmat, td, &tmat2);
         scalar_mult_add_mat(&tmat2, &tmat, a, &tmat3);
         mat_copy(&tmat3, &tmat);
