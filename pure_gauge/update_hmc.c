@@ -40,7 +40,7 @@ void update_hmc(double E_min) {
   double regularstart = 0;
   double regularend = 0;
   double regulardelta = 0;
-  
+
   // Refresh the momenta
   ranmom();
 
@@ -56,6 +56,7 @@ void update_hmc(double E_min) {
 
   // Inner steps p(t) u(t)
   for (step = 0; step < hmc_steps; step++) {
+    node0_printf("Do we get here update_hmc?\n");
     tr = update_h(eps,E_min);
     fnorm += tr;
     if (tr > max_f)
@@ -65,8 +66,10 @@ void update_hmc(double E_min) {
       update_u(eps);
     else
       update_u(0.5 * eps);    // Final u(t/2)
+
     
     //node0_printf("gauge_action after update= %.4g\n", gauge_action());
+
   }
 
   // Reunitarize the gauge field
@@ -76,7 +79,7 @@ void update_hmc(double E_min) {
   endaction = action(E_min);
   regularend = gauge_action();
   change = endaction - startaction;
-  regulardelta = regularend - regularstart;
+
   // Reject configurations giving overflow
 #ifndef HAVE_IEEEFP_H
   if (fabs((double)change) > 1e20) {
@@ -100,14 +103,18 @@ if (constrained == 0) {
       gauge_field_copy(F_OFFSET(old_link[0]), F_OFFSET(link[0]));
 
     node0_printf("REJECT: delta S = %.4g start S = %.12g end S = %.12g\n",
+
                  change, startaction, endaction);       
     reject = reject + 1;          
+
                  //deltaH2 = deltaH2 + pow(-change,2); //-pow(regulardelta,2.0)/(2.0*pow(delta,2.0))-regulardelta*(regularstart-E_min-delta*0.5)/pow(delta,2.0),2);
   }
   else {
     node0_printf("ACCEPT: delta S = %.4g start S = %.12g end S = %.12g\n",
                  change, startaction, endaction);
+
     accept = accept + 1;
+
                  //deltaH2 = deltaH2 + pow(-change,2); //-pow(regulardelta,2.0)/(2.0*pow(delta,2.0))-regulardelta*(regularstart-E_min-delta*0.5)/pow(delta,2.0),2);
   }
 }
@@ -116,10 +123,12 @@ else {
  if ((double)xrandom < exp(-change-pow(regulardelta,2.0)/(2.0*pow(delta,2.0))-regulardelta*(regularstart-E_min-delta*0.5)/pow(delta,2.0))) {
   if (traj_length > 0.0)
       node0_printf("ACCEPT: delta S = %.4g start S = %.12g end S = %.12g\n",
+
                  change+pow(regulardelta,2.0)/(2.0*pow(delta,2.0))+regulardelta*(regularstart-E_min-delta*0.5)/pow(delta,2.0), startaction+pow(regularstart-E_min-delta*0.5,2.0)/(2.0*pow(delta,2.0)), endaction+pow(regularend-E_min-delta*0.5,2.0)/(2.0*pow(delta,2.0)));
       node0_printf("delta S_gauss = %.4g start S_gauss = %.12g end S_gauss = %.12g\n",
                  pow(regulardelta,2.0)/(2.0*pow(delta,2.0))+regulardelta*(regularstart-E_min-delta*0.5)/pow(delta,2.0), pow(regularstart-E_min-delta*0.5,2.0)/(2.0*pow(delta,2.0)), pow(regularend-E_min-delta*0.5,2.0)/(2.0*pow(delta,2.0)));
       accept = accept + 1;
+
                  //deltaH2 = deltaH2 + pow(-change-pow(regulardelta,2.0)/(2.0*pow(delta,2.0))-regulardelta*(regularstart-E_min-delta*0.5)/pow(delta,2.0),2);
  }
  else {
@@ -127,10 +136,12 @@ else {
       gauge_field_copy(F_OFFSET(old_link[0]), F_OFFSET(link[0]));
 
     node0_printf("REJECT: delta S = %.4g start S = %.12g end S = %.12g\n",
+
                  change+pow(regulardelta,2.0)/(2.0*pow(delta,2.0))+regulardelta*(regularstart-E_min-delta*0.5)/pow(delta,2.0), startaction+pow(regularstart-E_min-delta*0.5,2.0)/(2.0*pow(delta,2.0)), endaction+pow(regularend-E_min-delta*0.5,2.0)/(2.0*pow(delta,2.0)));
       node0_printf("delta S_gauss = %.4g start S_gauss = %.12g end S_gauss = %.12g\n",
                  pow(regulardelta,2.0)/(2.0*pow(delta,2.0))+regulardelta*(regularstart-E_min-delta*0.5)/pow(delta,2.0), pow(regularstart-E_min-delta*0.5,2.0)/(2.0*pow(delta,2.0)), pow(regularend-E_min-delta*0.5,2.0)/(2.0*pow(delta,2.0)));     
     reject = reject + 1;            
+
                  //deltaH2 = deltaH2 + pow(-change-pow(regulardelta,2.0)/(2.0*pow(delta,2.0))-regulardelta*(regularstart-E_min-delta*0.5)/pow(delta,2.0),2);
  }
 }

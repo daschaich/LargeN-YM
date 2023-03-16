@@ -145,6 +145,9 @@ void make_global_fields();
 /* plaquette.c */
 void plaquette(Real *ss_plaq, Real *st_plaq);
 
+/* plaquette.c */
+void plaquette_lcl(double *ss_plaq, double *st_plaq);
+
 // ploop.c
 complex ploop(int dir);
 

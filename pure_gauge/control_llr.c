@@ -91,6 +91,7 @@ int main(int argc, char *argv[]) {
         }
         Reweightexpect /= trajecs;
         Reweightexpect -= Eint[Intcount] + 0.5 * delta;
+
         
         accrate_it = ((double)accept/((double)(accept + reject)));
         node0_printf("Acc rate this step %.8g\n", accrate_it);
@@ -131,6 +132,7 @@ int main(int argc, char *argv[]) {
             }
           }
         }
+
         node0_printf("RM ITER %d Reweightexpect %.8g a %.8g\n", RMcount + 1, Reweightexpect,a);
         // TODO: I think acceptance rate for each RM iteration
         //       would be more interesting than the overall one below...
@@ -146,9 +148,11 @@ int main(int argc, char *argv[]) {
   node0_printf("STOP %.8g %.8g %.8g %.8g\n",
                ss_plaq, st_plaq, ss_plaq + st_plaq, E);
 
+
   //rate = (double)accept / ((double)(accept + reject));
   //node0_printf("Overall acceptance %d of %d = %.4g\n",
                //accept, accept + reject, rate);
+
   dtime += dclock();
   node0_printf("Time = %.4g seconds\n", dtime);
   fflush(stdout);

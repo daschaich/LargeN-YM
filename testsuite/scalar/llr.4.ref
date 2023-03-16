@@ -1,6 +1,6 @@
 SU(4) pure-gauge log-linear relaxation algorithm using hybrid Monte Carlo updates
 Machine = Scalar processor, with 1 nodes
-start: Wed Dec  7 10:20:54 2022
+start: Wed Dec  7 00:15:55 2022
 
 type 0 for no prompts or 1 for prompts
 nx 4
@@ -7442,4 +7442,5 @@ STOP 1.5131504 1.5153197 3.0284701 954.53374
 Overall acceptance 0 of 0 = -nan
 Time = 370 seconds
 exit: Wed Dec  7 10:27:04 2022
+
 

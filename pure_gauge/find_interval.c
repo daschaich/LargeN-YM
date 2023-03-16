@@ -1,6 +1,7 @@
 // -----------------------------------------------------------------
 // Find initial configuration in target energy interval
 #include "pg_includes.h"
+//#define FINDING_DEBUG
 
 void findEint(double E_min) {
 #ifdef LLR
@@ -36,6 +37,7 @@ void findEint(double E_min) {
       a=beta;
       beta = beta_sav;    // Reset beta
     }
+
     else if (E > E_max){
       if(abs(E-(E_max))>1.0)
       {
@@ -73,6 +75,7 @@ void findEint(double E_min) {
       }
     }
 #ifdef DEBUG_PRINt
+
     node0_printf("FINDING E %.8g %.8g %d\n", E, beta, counter);
 #endif
     node0_printf("FINDING E %.8g %.8g %d\n", E, beta, counter);

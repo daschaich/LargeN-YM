@@ -2,6 +2,7 @@ prompt 0
 nx 6
 ny 6
 nz 6
+
 nt 4
 iseed 41
 
@@ -16,9 +17,11 @@ traj_length 1.0
 Emin 2.49
 Emax 2.49
 delta 0.01
+
 a 1.0
 ait 1
 Njacknife 1
 
 fresh
 forget
+
