@@ -29,11 +29,11 @@ int readin(int prompt);
 // Generic update routine switches between ora and HMC
 void update();
 
+void relax();
+void monte();
+void dsdu_qhb(int dir, int parity);    // Gauge force for quasi-heatbath
 #ifndef HMC
 // Over-relaxed quasi-heatbath stuff
-void relax();
-void dsdu_qhb(int dir, int parity);    // Gauge force for quasi-heatbath
-void monte();
 #else
 // HMC stuff
 double action(double E_min);

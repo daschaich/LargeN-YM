@@ -12,7 +12,7 @@ void update_mom(site *s, int dir, Real eps, matrix *force) {
   matrix tmat;
 
   uncompress_anti_hermitian(&(s->mom[dir]), &tmat);
-  scalar_mult_dif_mat(force, eps, &tmat);
+  scalar_mult_sum_mat(force, eps, &tmat);
   make_anti_hermitian(&tmat, &(s->mom[dir]));
 }
 // -----------------------------------------------------------------
@@ -32,6 +32,9 @@ double update_h(Real eps,double E_min) {
 #ifdef LLR
   double td;
   matrix tmat2, tmat3;
+  td = gauge_action();
+  td -= E_min + 0.5 * delta;
+  td /= -deltaSq;
 #endif
 
   // Loop over directions, update mom[dir]
@@ -97,9 +100,6 @@ double update_h(Real eps,double E_min) {
       mult_na(&(s->link[dir]), &(tempmat2[i]), &tmat);
 #ifdef LLR
       if (constrained == 1) {
-        td = gauge_action();
-        td -= E_min + 0.5 * delta;
-        td /= deltaSq;
         scalar_mult_mat(&tmat, td, &tmat2);
         scalar_mult_add_mat(&tmat2, &tmat, a, &tmat3);
         mat_copy(&tmat3, &tmat);
