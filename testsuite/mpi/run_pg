@@ -3,7 +3,8 @@
 
 # May need to be customized for different platforms
 makefile=Make_mpi
-run="mpirun -np 2"
+run="mpirun -np 8"
+#run="mpirun_rsh -np 4"
 
 # TODO: Should eventually merge into a single script
 # User just needs to specify NCOL and tag
