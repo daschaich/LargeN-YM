@@ -1,7 +1,6 @@
 // -----------------------------------------------------------------
 // Measure total action, as needed by the hybrid Monte Carlo algorithm
 #include "pg_includes.h"
-//#define DEBUG_PRINT
 // -----------------------------------------------------------------
 
 
@@ -53,17 +52,9 @@ double hmom_action() {
 // -----------------------------------------------------------------
 double gauge_action() {
   double ssplaq, stplaq;
-#ifdef DEBUG_PRINT
-  node0_printf("Computing gauge_action\n");
-#endif
-
   plaquette(&ssplaq, &stplaq);
   ssplaq = 1.0 - ssplaq * one_ov_N;
   stplaq = 1.0 - stplaq * one_ov_N;
-#if 0 // TESTING
-  ssplaq *= one_ov_N;
-  stplaq *= one_ov_N;
-#endif
   // Three space--space and three space--time plaquette orientations
   return (beta * 3.0 * volume * (ssplaq + stplaq));
 }
