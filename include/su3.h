@@ -12,7 +12,7 @@
 
 // -----------------------------------------------------------------
 // Set number of colors
-#define NCOL 4
+#define NCOL 3
 #define N_OFFDIAG (NCOL * (NCOL - 1) / 2)
 
 #ifdef FAST

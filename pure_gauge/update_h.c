@@ -12,7 +12,10 @@ void update_mom(site *s, int dir, Real eps, matrix *force) {
   matrix tmat;
 
   uncompress_anti_hermitian(&(s->mom[dir]), &tmat);
+  scalar_mult_dif_mat(force, eps, &tmat);
+#if 0 // TESTING
   scalar_mult_sum_mat(force, eps, &tmat);
+#endif
   make_anti_hermitian(&tmat, &(s->mom[dir]));
 }
 // -----------------------------------------------------------------

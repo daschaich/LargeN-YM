@@ -2,6 +2,7 @@
 // Measure average space--space and space--time plaquettes,
 // Uses tempmat for temporary storage
 #include "generic_includes.h"
+//#define DEBUG_PRINT
 
 void plaquette(double *ss_plaq, double *st_plaq) {
   register int i, dir, dir2;
@@ -11,7 +12,10 @@ void plaquette(double *ss_plaq, double *st_plaq) {
   msg_tag *mtag0, *mtag1;
   matrix tmat;
 
+#ifdef DEBUG_PRINT
   printf("Entering plaquette on node %d\n", this_node);
+#endif
+
   // We can exploit a symmetry under dir<-->dir2
   for (dir = YUP; dir <= TUP; dir++) {
     for (dir2 = XUP; dir2 < dir; dir2++) {
@@ -52,6 +56,9 @@ void plaquette(double *ss_plaq, double *st_plaq) {
   // and three that do not
   *ss_plaq = ss_sum / (double)(3.0 * volume);
   *st_plaq = st_sum / (double)(3.0 * volume);
+
+#ifdef DEBUG_PRINT
   printf("Leaving plaquette on node %d\n", this_node);
+#endif
 }
 // -----------------------------------------------------------------

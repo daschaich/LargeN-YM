@@ -25,12 +25,12 @@ int main(int argc, char *argv[]) {
   dtime = -dclock();
   
   int nrintervals = (int)((Emax-Emin)/delta)+1;
-  node0_printf("nrintervals %.8g \n",
-               Emax);
+  node0_printf("nrintervals %.8g \n", Emax);
   double Eint[nrintervals];
   double aint[nrintervals];
   double accrate_it = 0;
-  // Monitor overall acceptance in monteconst_e.c
+
+  // Monitor overall acceptance in updateconst_e
   accept = 0;
   reject = 0;
 
@@ -40,10 +40,10 @@ int main(int argc, char *argv[]) {
   node0_printf("START %.8g %.8g %.8g %.8g\n",
                ss_plaq, st_plaq, ss_plaq + st_plaq, E);
   save_a = a;
-  for(Intcount = 0; Intcount <= (int)((Emax-Emin)/delta); Intcount++) {
+  for (Intcount = 0; Intcount <= (int)((Emax-Emin)/delta); Intcount++) {
     aint[Intcount] = 0;
     Eint[Intcount] = Emin + Intcount*delta;
-    for(Ncount = 0; Ncount < Njacknife; Ncount++) {
+    for (Ncount = 0; Ncount < Njacknife; Ncount++) {
       a = save_a;
       constrained = 0;
       startlat_p = reload_lattice(startflag, startfile);
@@ -78,20 +78,12 @@ int main(int argc, char *argv[]) {
 
         Reweightexpect = 0.0;
         for (traj_done = 0; traj_done < trajecs; traj_done++) {
-
           updateconst_e(Eint[Intcount]);
           // Accumulate after update
           Reweightexpect += gauge_action();
-
-          // More expensive measurements every "measinterval" sweeps
-          //if ((traj_done % measinterval) == (measinterval - 1)) {
-//            Nmeas++;
-            //   Nothing yet...
-            //}
         }
         Reweightexpect /= trajecs;
         Reweightexpect -= Eint[Intcount] + 0.5 * delta;
-
         
         accrate_it = ((double)accept/((double)(accept + reject)));
         node0_printf("Acc rate this step %.8g\n", accrate_it);

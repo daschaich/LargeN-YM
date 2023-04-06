@@ -1,6 +1,7 @@
 // -----------------------------------------------------------------
 // Measure total action, as needed by the hybrid Monte Carlo algorithm
 #include "pg_includes.h"
+//#define DEBUG_PRINT
 // -----------------------------------------------------------------
 
 
@@ -52,11 +53,17 @@ double hmom_action() {
 // -----------------------------------------------------------------
 double gauge_action() {
   double ssplaq, stplaq;
+#ifdef DEBUG_PRINT
+  node0_printf("Computing gauge_action\n");
+#endif
+
   plaquette(&ssplaq, &stplaq);
-  //plaquette_lcl(&ssplaq, &stplaq);
-  node0_printf("Do we get here action?\n");
-  ssplaq = ssplaq * one_ov_N;
-  stplaq = stplaq * one_ov_N;
+  ssplaq = 1.0 - ssplaq * one_ov_N;
+  stplaq = 1.0 - stplaq * one_ov_N;
+#if 0 // TESTING
+  ssplaq *= one_ov_N;
+  stplaq *= one_ov_N;
+#endif
   // Three space--space and three space--time plaquette orientations
   return (beta * 3.0 * volume * (ssplaq + stplaq));
 }
@@ -65,19 +72,17 @@ double action(double E_min) {
   double g_act, h_act, tot;
 
   g_act = gauge_action();
-
-//#endif
-
   h_act = hmom_action();
-  node0_printf("tot = %.8g %.8g ", g_act, h_act);
-
-  tot = g_act + h_act;
 #ifdef LLR
-  if (constrained == 1)
-    tot = a * g_act + h_act;
+  g_act *= a;
+
+  // TODO: Best to add window action here,
+  //       then accept/reject step can stay standardized
+//  if (constrained == 1)
 //    tot = a * g_act + h_act + w_act;
 #endif
-  node0_printf("%.8g\n", tot);
+  tot = g_act + h_act;
+  node0_printf("ACTION: g, h, tot = %.8g %.8g %.8g\n", g_act, h_act, tot);
   return tot;
 }
 // -----------------------------------------------------------------
