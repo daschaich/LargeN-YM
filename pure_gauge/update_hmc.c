@@ -66,7 +66,7 @@ void update_hmc(double E_min) {
     else
       update_u(0.5 * eps);    // Final u(t/2)
     
-    node0_printf("gauge_action after update= %.4g\n", gauge_action());
+    //node0_printf("gauge_action after update= %.4g\n", gauge_action());
   }
 
   // Reunitarize the gauge field
@@ -100,40 +100,53 @@ if (constrained == 0) {
       gauge_field_copy(F_OFFSET(old_link[0]), F_OFFSET(link[0]));
 
     node0_printf("REJECT: delta S = %.4g start S = %.12g end S = %.12g\n",
-                 change, startaction, endaction);                 
-                 deltaH2 = deltaH2 + pow(-change,2); //-pow(regulardelta,2.0)/(2.0*pow(delta,2.0))-regulardelta*(regularstart-E_min-delta*0.5)/pow(delta,2.0),2);
+                 change, startaction, endaction);       
+    reject = reject + 1;          
+                 //deltaH2 = deltaH2 + pow(-change,2); //-pow(regulardelta,2.0)/(2.0*pow(delta,2.0))-regulardelta*(regularstart-E_min-delta*0.5)/pow(delta,2.0),2);
   }
   else {
     node0_printf("ACCEPT: delta S = %.4g start S = %.12g end S = %.12g\n",
                  change, startaction, endaction);
-                 deltaH2 = deltaH2 + pow(-change,2); //-pow(regulardelta,2.0)/(2.0*pow(delta,2.0))-regulardelta*(regularstart-E_min-delta*0.5)/pow(delta,2.0),2);
+    accept = accept + 1;
+                 //deltaH2 = deltaH2 + pow(-change,2); //-pow(regulardelta,2.0)/(2.0*pow(delta,2.0))-regulardelta*(regularstart-E_min-delta*0.5)/pow(delta,2.0),2);
   }
 }
-
 else {
- if ((double)xrandom < exp(-change-pow(regulardelta,2.0)/(2.0*pow(delta,2.0))-regulardelta*(regularstart-E_min-delta*0.5)/pow(delta,2.0))) {
+ double Eherestart = 2.0/delta*(regularstart-E_min-delta*0.5)+0.000000000000;
+ double Ehereend = 2.0/delta*(regularend-E_min-delta*0.5)+0.000000000000;
+ int expo = -4;
+ 
+ if ((double)xrandom < exp(-change+log(1.0-1.0/cosh(pow(Ehereend,expo)))-log(1.0-1.0/cosh(pow(Eherestart,expo))))){
   if (traj_length > 0.0)
       node0_printf("ACCEPT: delta S = %.4g start S = %.12g end S = %.12g\n",
-                 change, startaction, endaction);
-                 deltaH2 = deltaH2 + pow(-change-pow(regulardelta,2.0)/(2.0*pow(delta,2.0))-regulardelta*(regularstart-E_min-delta*0.5)/pow(delta,2.0),2);
+                 change-log(1.0-1.0/cosh(pow(Ehereend,expo)))+log(1.0-1.0/cosh(pow(Eherestart,expo))), startaction-log(1.0-1.0/cosh(pow(Eherestart,expo))), endaction-log(1.0-1.0/cosh(pow(Ehereend,expo))));
+      node0_printf("delta S_gauss = %.4g start S_gauss = %.12g end S_gauss = %.12g\n",
+                 -log(1.0-1.0/cosh(pow(Ehereend,expo)))+log(1.0-1.0/cosh(pow(Eherestart,expo))), -log(1.0-1.0/cosh(pow(Eherestart,expo))), -log(1.0-1.0/cosh(pow(Ehereend,expo))));
+      accept = accept + 1;
+                 deltaH2 = deltaH2 + pow(-change+log(1.0-1.0/cosh(pow(Ehereend,expo)))-log(1.0-1.0/cosh(pow(Eherestart,expo))),2);
  }
  else {
     if (traj_length > 0.0)
       gauge_field_copy(F_OFFSET(old_link[0]), F_OFFSET(link[0]));
 
     node0_printf("REJECT: delta S = %.4g start S = %.12g end S = %.12g\n",
-                 change, startaction, endaction);                 
-                 deltaH2 = deltaH2 + pow(-change-pow(regulardelta,2.0)/(2.0*pow(delta,2.0))-regulardelta*(regularstart-E_min-delta*0.5)/pow(delta,2.0),2);
+                  change-log(1.0-1.0/cosh(pow(Ehereend,expo)))+log(1.0-1.0/cosh(pow(Eherestart,expo))), startaction-log(1.0-1.0/cosh(pow(Eherestart,expo))), endaction-log(1.0-1.0/cosh(pow(Ehereend,expo))));
+      node0_printf("delta S_gauss = %.4g start S_gauss = %.12g end S_gauss = %.12g\n",
+                 -log(1.0-1.0/cosh(pow(Ehereend,expo)))+log(1.0-1.0/cosh(pow(Eherestart,expo))), -log(1.0-1.0/cosh(pow(Eherestart,expo))), -log(1.0-1.0/cosh(pow(Ehereend,expo))));    
+    reject = reject + 1;            
+                 deltaH2 = deltaH2 + pow(-change+log(1.0-1.0/cosh(pow(Ehereend,expo)))-log(1.0-1.0/cosh(pow(Eherestart,expo))),2);
  }
 }
-#ifdef LLR
+
+//#ifdef LLR
       if (constrained == 1) {
         node0_printf("DeltaLLR_H^2 = %.12g\n", deltaH2);
       }
       else {
         node0_printf("Delta_H^2 = %.12g\n", deltaH2);
       }
-#endif
+//#endif
+
   if (traj_length > 0.0) {
     node0_printf("MONITOR_FORCE %.4g %.4g\n",
                  fnorm / (double)(2 * hmc_steps), max_f);

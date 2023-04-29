@@ -30,8 +30,13 @@ double update_h(Real eps,double E_min) {
   int start;
   matrix tmat;
 #ifdef LLR
+  double Ehere;
   double td;
   matrix tmat2, tmat3;
+  Ehere = 2.0/delta*(gauge_action()-E_min-0.5 * delta);
+  td = 8.0/delta*pow(Ehere,-5)*tanh(pow(Ehere,-4))/(cosh(pow(Ehere,-4))-1.0);
+  //node0_printf("td  %.8g\n",
+  //             td);
 #endif
 
   // Loop over directions, update mom[dir]
@@ -97,9 +102,6 @@ double update_h(Real eps,double E_min) {
       mult_na(&(s->link[dir]), &(tempmat2[i]), &tmat);
 #ifdef LLR
       if (constrained == 1) {
-        td = gauge_action();
-        td -= E_min + 0.5 * delta;
-        td /= deltaSq;
         scalar_mult_mat(&tmat, td, &tmat2);
         scalar_mult_add_mat(&tmat2, &tmat, a, &tmat3);
         mat_copy(&tmat3, &tmat);
