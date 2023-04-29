@@ -29,8 +29,9 @@ double update_h(Real eps,double E_min) {
   msg_tag *tag0, *tag1, *tag2;
   int start;
   matrix tmat;
+  
 #ifdef LLR
-  double td;
+  register double td;
   matrix tmat2, tmat3;
   td = gauge_action();
   td -= E_min + 0.5 * delta;

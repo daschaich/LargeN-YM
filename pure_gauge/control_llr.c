@@ -29,8 +29,7 @@ int main(int argc, char *argv[]) {
   dtime = -dclock();
   
   int nrintervals = (int)((Emax-Emin)/delta)+1;
-  node0_printf("nrintervals %.8g \n",
-               Emax);
+  node0_printf("nrintervals %.8g \n", Emax);
   double Eint[nrintervals];
   double aint[nrintervals];
   double accrate_it = 0;
@@ -44,7 +43,7 @@ int main(int argc, char *argv[]) {
   node0_printf("START %.8g %.8g %.8g %.8g\n",
                ss_plaq, st_plaq, ss_plaq + st_plaq, E);
   save_a = a;
-  for(Intcount = 0; Intcount <= (int)((Emax-Emin)/delta); Intcount++) {
+  for (Intcount = 0; Intcount <= (int)((Emax-Emin)/delta); Intcount++) {
     aint[Intcount] = 0;
     Eint[Intcount] = Emin + Intcount*delta;
     for(Ncount = 0; Ncount < Njacknife; Ncount++) {
@@ -58,9 +57,9 @@ int main(int argc, char *argv[]) {
                ss_plaq, st_plaq, ss_plaq + st_plaq, E);
 
       // Unconstrained warmup sweeps before searching for energy interval
-      for (traj_done = 0; traj_done < warms; traj_done++)
-        update();
-      node0_printf("WARMUPS COMPLETED\n");
+      //for (traj_done = 0; traj_done < warms; traj_done++)
+      //  update();
+      //node0_printf("WARMUPS COMPLETED\n");
 
       // Terminates if interval not found
       constrained = 0;

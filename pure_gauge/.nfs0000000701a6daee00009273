@@ -66,9 +66,11 @@ void update_hmc(double E_min) {
       update_u(eps);
     else
       update_u(0.5 * eps);    // Final u(t/2)
+<<<<<<< HEAD
     
     //node0_printf("gauge_action after update= %.4g\n", gauge_action());
-
+=======
+>>>>>>> 4d1f2256919aa4a9e6ebcaaec222534f5e6cac55
   }
 
   // Reunitarize the gauge field
@@ -154,13 +156,18 @@ void update_hmc(double E_min) {
       gauge_field_copy(F_OFFSET(old_link[0]), F_OFFSET(link[0]));
 
     node0_printf("REJECT: delta S = %.4g start S = %.12g end S = %.12g\n",
+<<<<<<< HEAD
                  change, startaction, endaction);       
     reject = reject + 1;          
                  //deltaH2 = deltaH2 + pow(-change,2); //-pow(regulardelta,2.0)/(2.0*pow(delta,2.0))-regulardelta*(regularstart-E_min-delta*0.5)/pow(delta,2.0),2);
+=======
+                 change, startaction, endaction);
+>>>>>>> 4d1f2256919aa4a9e6ebcaaec222534f5e6cac55
   }
   else {
     node0_printf("ACCEPT: delta S = %.4g start S = %.12g end S = %.12g\n",
                  change, startaction, endaction);
+<<<<<<< HEAD
     accept = accept + 1;
                  //deltaH2 = deltaH2 + pow(-change,2); //-pow(regulardelta,2.0)/(2.0*pow(delta,2.0))-regulardelta*(regularstart-E_min-delta*0.5)/pow(delta,2.0),2);
   }
@@ -198,6 +205,11 @@ else {
       }
 #endif
 */
+=======
+  }
+#endif
+
+>>>>>>> 4d1f2256919aa4a9e6ebcaaec222534f5e6cac55
   if (traj_length > 0.0) {
     node0_printf("MONITOR_FORCE %.4g %.4g\n",
                  fnorm / (double)(2 * hmc_steps), max_f);

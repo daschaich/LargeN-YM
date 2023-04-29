@@ -8,7 +8,6 @@
 
 G_ALL = \
  ape_smear.o \
- ax_gauge.o \
  check_unitarity.o \
  com_mpi.o \
  com_qmp.o \
@@ -62,8 +61,6 @@ ${G_ALL} : ${G_ALL_DEPEND}
 
 ape_smear.o: ../generic/ape_smear.c
 	${CC} -c ${CFLAGS} $<
-ax_gauge.o: ../generic/ax_gauge.c
-	${CC} -c ${CFLAGS} $<
 check_unitarity.o: ../generic/check_unitarity.c
 	${CC} -c ${CFLAGS} $<
 com_mpi.o: ../generic/com_mpi.c
@@ -75,8 +72,6 @@ com_vanilla.o: ../generic/com_vanilla.c
 field_strength.o: ../generic/field_strength.c
 	${CC} -c ${CFLAGS} $<
 gaugefix.o: ../generic/gaugefix.c
-	${CC} -c ${CFLAGS} $<
-gaugefix_full.o: ../generic/gaugefix_full.c
 	${CC} -c ${CFLAGS} $<
 io_ansi.o: ../generic/io_ansi.c
 	${CC} -c ${CFLAGS} $<
