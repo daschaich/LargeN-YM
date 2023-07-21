@@ -239,8 +239,9 @@ void monteconst_e() {
           node0_printf("PLAQ %.8g %.8g %.8g\n",
                        ss_plaq, st_plaq, ss_plaq + st_plaq);
 #endif
-          if (E < Emin || E > Emax) {
+          if (E < Emin || E > Emin+delta) {
             this_reject++;
+            node0_printf("Energy %.8g leaves [%.8g, %.8g]\n", E, Emin, Emax);
 #ifdef DEBUG_PRINT
             node0_printf("Reject subgrp %d for parity %d: ", subgrp, parity);
             node0_printf("Energy %.8g leaves [%.8g, %.8g]\n", E, Emin, Emax);
@@ -250,6 +251,7 @@ void monteconst_e() {
           }
           else {
             this_accept++;
+            node0_printf("Accept new energy %.8g\n", E);
 #ifdef DEBUG_PRINT
             node0_printf("Accept new energy %.8g\n", E);
 #endif

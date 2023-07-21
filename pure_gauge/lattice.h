@@ -55,10 +55,13 @@ EXTERN int volume;          // Volume of lattice
 EXTERN int iseed;           // Random number seed
 EXTERN int warms, trajecs;  // Common stuff
 EXTERN int measinterval;
-#ifndef HMC
+
 EXTERN int ora_steps, qhb_steps;    // ORA stuff
+#ifndef HMC
+//EXTERN int ora_steps, qhb_steps;    // ORA stuff
 #else
-EXTERN int hmc_steps, traj_length;  // HMC stuff
+EXTERN int hmc_steps;  // HMC stuff
+EXTERN Real traj_length;  // HMC stuff
 EXTERN Real fnorm, max_f;           // Force monitoring
 #endif
 
@@ -76,7 +79,7 @@ EXTERN int total_iters;
 
 #ifdef LLR
 // LLR parameters
-EXTERN int ait, accept, reject, constrained, Njacknife;
+EXTERN int ait, RMstart, accept, reject, constrained, Njacknife;
 EXTERN Real a, Emin, Emax, delta, deltaSq;
 #endif
 

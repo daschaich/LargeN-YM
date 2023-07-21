@@ -9,7 +9,10 @@ void update() {
 
 #ifdef HMC
   // Do HMC updates if specified
-  update_hmc(0.0);
+  //printf("nr node %d \n", this_node);
+  //update_hmc(0.0);
+  relax();
+  monte();
 #else
   // Otherwise do over-relaxation and quasi-heatbath steps
   relax();

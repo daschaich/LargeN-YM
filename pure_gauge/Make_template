@@ -122,7 +122,7 @@ pg_llr::
 	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" "DEFINES = -DHMC -DLLR" \
 	"LAPACK = -llapack -lblas " \
 	"EXTRA_OBJECTS = control_llr.o ranmom.o action.o update_hmc.o update_h.o \
-	                 update_u.o updateconst_e.o find_interval.o "
+	                 update_u.o updateconst_e.o find_interval.o dsdu_qhb.o monte.o monteconst_e.o frankensteinconst_e.o relax.o"
 
 clean:
 	-/bin/rm -f *.o

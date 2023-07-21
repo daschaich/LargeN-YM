@@ -29,11 +29,13 @@ int readin(int prompt);
 // Generic update routine switches between ora and HMC
 void update();
 
+void relax();
+void monte();
+void monteconst_e();
+void frankensteinconst_e(double E_min,int node_counter);
+void dsdu_qhb(int dir, int parity);    // Gauge force for quasi-heatbath
 #ifndef HMC
 // Over-relaxed quasi-heatbath stuff
-void relax();
-void dsdu_qhb(int dir, int parity);    // Gauge force for quasi-heatbath
-void monte();
 #else
 // HMC stuff
 double action(double E_min);
@@ -54,7 +56,7 @@ void findEint(double E_min);
 void updateconst_e(double E_min);
 #ifndef HMC
   // Over-relaxed quasi-heatbath updates with hard constraints
-void monteconst_e();
+
 #endif
 #endif
 // -----------------------------------------------------------------

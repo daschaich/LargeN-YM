@@ -1,23 +1,24 @@
 prompt 0
-nx 4
-ny 4
-nz 4
+nx 20
+ny 20
+nz 20
 nt 4
 iseed 41
 
-warms 0
-trajecs 40
+warms 5
+trajecs 10
 traj_between_meas 1
 
 beta 1.0
-hmc_steps 20
+hmc_steps 60
 traj_length 1.0
 
-Emin -3.5
-Emax -3.5
-delta 0.1
-a 1.0
-ait 1
+Emin -2.5
+Emax -2.5
+delta 0.0042
+a 99.998
+ait 2
+RMstart 0
 Njacknife 1
 
 fresh

@@ -157,6 +157,9 @@ int readin(int prompt) {
     // Number of iterations for Robbins--Monro algorithm
     IF_OK status += get_i(stdin, prompt, "ait", &par_buf.ait);
     
+    // Starting iteration
+    IF_OK status += get_i(stdin, prompt, "RMstart", &par_buf.RMstart);
+    
     // Number of Jackknife samples
     IF_OK status += get_i(stdin, prompt, "Njacknife", &par_buf.Njacknife);
 #endif
@@ -202,6 +205,7 @@ int readin(int prompt) {
   delta = par_buf.delta * volume;
   deltaSq = delta * delta;
   ait = par_buf.ait;
+  RMstart = par_buf.RMstart;
   Njacknife = par_buf.Njacknife;
 #endif
 

@@ -38,6 +38,7 @@ typedef struct {
   double Emax;          // Lower edge of highest energy interval
   double delta;         // Size of energy interval
   int ait;            // Number of Robbins--Monro iterations
+  int RMstart;            // starting RM iteration
   int Njacknife;          // Number of Jackknife samples
 #endif
 }  params;
