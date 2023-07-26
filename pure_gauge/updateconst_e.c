@@ -12,6 +12,11 @@ void updateconst_e(double E_min) {
 #ifdef HMC
   // Do HMC updates if specified
   update_hmc(E_min);
+  relax();
+  relax();
+  relax();
+  relax();
+  relax();
 #else
   // Otherwise do over-relaxation and quasi-heatbath steps
   relax();
