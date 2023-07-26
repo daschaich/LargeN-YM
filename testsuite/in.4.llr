@@ -1,4 +1,6 @@
 prompt 0
+
+
 nx 16
 ny 16
 nz 16
@@ -22,3 +24,4 @@ Njacknife 1
 
 fresh
 forget
+

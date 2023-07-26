@@ -33,7 +33,6 @@ int main(int argc, char *argv[]) {
   plaquette(&ss_plaq, &st_plaq);
   node0_printf("START %.8g %.8g %.8g\n", ss_plaq, st_plaq, ss_plaq + st_plaq);
 
-
   // Perform warmup sweeps
   for (traj_done = 0; traj_done < warms; traj_done++)
     update();

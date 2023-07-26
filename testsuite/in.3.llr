@@ -13,8 +13,8 @@ beta 6.0
 hmc_steps 15
 traj_length 1.0
 
-Emin -60.0
-delta 6.0
+Emin 15.0
+delta 1.5
 a 1.0
 ait 10
 

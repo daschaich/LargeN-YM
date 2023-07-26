@@ -29,8 +29,7 @@ int main(int argc, char *argv[]) {
   dtime = -dclock();
   
   int nrintervals = (int)((Emax-Emin)/delta)+1;
-  node0_printf("nrintervals %.8g \n",
-               Emax);
+  node0_printf("nrintervals %.8g \n", Emax);
   double Eint[nrintervals];
   double aint[nrintervals];
   double accrate_it = 0;
@@ -44,7 +43,7 @@ int main(int argc, char *argv[]) {
   node0_printf("START %.8g %.8g %.8g %.8g\n",
                ss_plaq, st_plaq, ss_plaq + st_plaq, E);
   save_a = a;
-  for(Intcount = 0; Intcount <= (int)((Emax-Emin)/delta); Intcount++) {
+  for (Intcount = 0; Intcount <= (int)((Emax-Emin)/delta); Intcount++) {
     aint[Intcount] = 0;
     Eint[Intcount] = Emin + Intcount*delta;
     for(Ncount = 0; Ncount < Njacknife; Ncount++) {
@@ -58,14 +57,18 @@ int main(int argc, char *argv[]) {
                ss_plaq, st_plaq, ss_plaq + st_plaq, E);
 
       // Unconstrained warmup sweeps before searching for energy interval
+
       //for (traj_done = 0; traj_done < 10; traj_done++)
+
       //  update();
       //node0_printf("WARMUPS COMPLETED\n");
 
       // Terminates if interval not found
       constrained = 0;
       a = 1.0;
+
       findEint(Eint[Intcount]+0.5*delta-0.5/1.0*delta);
+
       //a = save_a;
       // Robbins--Monro (RM) iterations
       constrained = 1;
@@ -108,9 +111,11 @@ int main(int argc, char *argv[]) {
         
         if(((double)accept/((double)(accept + reject)))<0.5){
           hmc_steps = hmc_steps + 20;
+
           RMcount = RMcount - 1;
           node0_printf("Nr hmc steps changed to %d\n", hmc_steps);
           node0_printf("redo step");
+
         }
         else if(((double)accept/((double)(accept + reject)))>0.9){
           if( (hmc_steps - 10)>0 ){
@@ -122,6 +127,7 @@ int main(int argc, char *argv[]) {
           
         
         // Hard-code under-relaxation to begin after 25 RM iterations
+
         if(accrate_it>=0.5){
           if (RMcount < 10){
               if(variance>deltaSq){
@@ -130,16 +136,19 @@ int main(int argc, char *argv[]) {
               else{
                 a += 1.0*12.0 * Reweightexpect / (deltaSq);
               }
+
             
           }
           else{
             
+
               if(variance>deltaSq){
                 a += 1.0*1.0 * Reweightexpect / (variance * (RMcount - 10.0 + 1.0));
               }
               else{
                 a += 1.0*12.0 * Reweightexpect / (deltaSq * (RMcount - 10.0 + 1.0));
               }
+
             
           }
         }
