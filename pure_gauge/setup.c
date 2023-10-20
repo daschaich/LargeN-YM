@@ -18,14 +18,14 @@ int initial_set() {
     // Print banner
 #ifndef LLR
 #ifndef HMC
-    printf("SU(%d) pure-gauge over-relaxed heatbath algorithm\n", NCOL);
+    printf("SU(%d) pure-gauge over-relaxed quasi-heatbath algorithm\n", NCOL);
 #else
     printf("SU(%d) pure-gauge hybrid Monte Carlo algorithm\n", NCOL);
 #endif
 #else
     printf("SU(%d) pure-gauge log-linear relaxation algorithm ", NCOL);
 #ifndef HMC
-    printf("using over-relaxed heatbath updates\n");
+    printf("using over-relaxed quasi-heatbath updates\n");
 #else
     printf("using hybrid Monte Carlo updates\n");
 #endif

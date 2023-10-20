@@ -160,7 +160,6 @@ gauge_file *reload_lattice(int flag, char *filename) {
       break;
     case FRESH:         // Cold lattice
       coldlat();
-      node0_printf("Starting with cold lattice\n");
       gf = NULL;
       break;
     case RELOAD_ASCII:  /* read Ascii lattice */

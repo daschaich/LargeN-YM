@@ -5,18 +5,20 @@ nz 4
 nt 4
 iseed 41
 
-warms 3
-trajecs 3
+warms 0
+trajecs 60
 traj_between_meas 10
 
-beta 6.0
+beta 1.0
 hmc_steps 15
 traj_length 1.0
 
-Emin -60.0
-delta 6.0
-a 1.0
-ait 10
+Emin -3.67
+Emax -3.49
+delta 0.349
+a 6.0
+ait 50
+Njacknife 1
 
-reload_serial config.SU3.4444
+fresh
 forget

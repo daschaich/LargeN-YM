@@ -5,7 +5,7 @@
 
 int main(int argc, char *argv[]) {
   int prompt;
-  int traj_done, RMcount, Ncount, Intcount;//, Nmeas = 0;
+  int traj_done, RMcount, Ncount, nrintervals, Intcount;//, Nmeas = 0;
   double ss_plaq, st_plaq, E, dtime, save_a, rate;
   double Reweightexpect;    // Reweighted expectation value of the energy
 
@@ -24,9 +24,12 @@ int main(int argc, char *argv[]) {
   }
   dtime = -dclock();
   
-  int nrintervals = (int)((Emax-Emin)/delta)+1;
-  node0_printf("nrintervals %.8g \n",
-               Emax);
+  if (Emax < Emin) {
+    node0_printf("ERROR: Emax smaller than Emin\n");
+    terminate(1);
+  }
+  nrintervals = (int)((Emax-Emin) / delta) + 1;
+  node0_printf("nrintervals %d\n", nrintervals);
   double Eint[nrintervals];
   double aint[nrintervals];
   // Monitor overall acceptance in monteconst_e.c
@@ -39,7 +42,7 @@ int main(int argc, char *argv[]) {
   node0_printf("START %.8g %.8g %.8g %.8g\n",
                ss_plaq, st_plaq, ss_plaq + st_plaq, E);
   save_a = a;
-  for(Intcount = 0; Intcount <= (int)((Emax-Emin)/delta); Intcount++) {
+  for(Intcount = 0; Intcount < nrintervals; Intcount++) {
     aint[Intcount] = 0;
     Eint[Intcount] = Emin + Intcount*delta;
     for(Ncount = 0; Ncount < Njacknife; Ncount++) {
@@ -87,7 +90,7 @@ int main(int argc, char *argv[]) {
         Reweightexpect /= trajecs;
         Reweightexpect -= Eint[Intcount] + 0.5 * delta;
 
-        // Hard-code under-relaxation to begin after 100 RM iterations
+        // Hard-code under-relaxation to begin after 30 RM iterations
         if (RMcount < 30){
           if(abs(Reweightexpect)<200.0){
             a += 1.0* Reweightexpect / (deltaSq);
@@ -124,10 +127,11 @@ int main(int argc, char *argv[]) {
   E = gauge_action();
   node0_printf("STOP %.8g %.8g %.8g %.8g\n",
                ss_plaq, st_plaq, ss_plaq + st_plaq, E);
-
+#ifndef HMC
   rate = (double)accept / ((double)(accept + reject));
   node0_printf("Overall acceptance %d of %d = %.4g\n",
                accept, accept + reject, rate);
+#endif
   dtime += dclock();
   node0_printf("Time = %.4g seconds\n", dtime);
   fflush(stdout);

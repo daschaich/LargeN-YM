@@ -1,0 +1,24 @@
+prompt 0
+nx 4
+ny 4
+nz 4
+nt 4
+iseed 41
+
+warms 3
+trajecs 3
+traj_between_meas 10
+
+beta 1.0
+ora_steps 4
+qhb_steps 4
+
+Emin -3.31
+Emax -3.15
+delta 0.315
+a 32.7
+ait 50
+Njacknife 1
+
+fresh
+forget

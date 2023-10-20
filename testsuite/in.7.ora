@@ -1,0 +1,17 @@
+prompt 0
+nx 4
+ny 4
+nz 4
+nt 4
+iseed 41
+
+warms 0
+trajecs 3
+traj_between_meas 3
+
+beta 32.7
+ora_steps 4
+qhb_steps 4
+
+fresh
+forget

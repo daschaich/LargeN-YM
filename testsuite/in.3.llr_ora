@@ -9,14 +9,16 @@ warms 3
 trajecs 3
 traj_between_meas 10
 
-beta 6.0
+beta 1.0
 ora_steps 4
 qhb_steps 4
 
-Emin -60.0
-delta 6.0
-a 1.0
-ait 10
+Emin -3.67
+Emax -3.49
+delta 0.349
+a 6.0
+ait 50
+Njacknife 1
 
-reload_serial config.SU3.4444
+fresh
 forget

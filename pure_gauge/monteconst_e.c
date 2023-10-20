@@ -21,6 +21,7 @@ void monteconst_e() {
   matrix actmat;
 #ifdef DEBUG_PRINT
   double rate, check;
+  node0_printf("b3 = %e\n", b3);
 #endif
 
   // Set up SU(2) subgroup indices [a][b] with a < b
@@ -73,7 +74,8 @@ void monteconst_e() {
             z = sqrt((double)vsq);
             v0 = v0/z; v1 = v1/z; v2 = v2/z; v3 = v3/z;
             check = 1.0 - v0 * v0 - v1 * v1 - v2 * v2 - v3 * v3;
-            node0_printf("TEST %e ", check);
+            if (fabs(check) > 1e-8)
+              node0_printf("WARNING: 1 - v^2 = %e\n", check);
 #endif
 
             v0 = actmat.e[ina][ina].real + actmat.e[inb][inb].real;
@@ -234,8 +236,8 @@ void monteconst_e() {
           // If we have exited the energy interval, restore starting links
           plaquette(&ss_plaq, &st_plaq);
           E = gauge_action();
-          // Monitor plaquette after each SU(2) subgroup sweep
 #ifdef DEBUG_PRINT
+          // Monitor plaquette after each SU(2) subgroup sweep
           node0_printf("PLAQ %.8g %.8g %.8g\n",
                        ss_plaq, st_plaq, ss_plaq + st_plaq);
 #endif

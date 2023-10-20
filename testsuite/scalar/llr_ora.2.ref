@@ -1,6 +1,6 @@
-SU(2) pure-gauge log-linear relaxation algorithm using over-relaxed heatbath updates
+SU(2) pure-gauge log-linear relaxation algorithm using over-relaxed quasi-heatbath updates
 Machine = Scalar processor, with 1 nodes
-start: Thu Nov 17 01:13:58 2022
+start: Fri Oct 20 18:02:26 2023
 
 type 0 for no prompts or 1 for prompts
 nx 4
@@ -17,40 +17,102 @@ Mallocing 0.0 MBytes per core for fields
 warms 3
 trajecs 3
 traj_between_meas 10
-beta 2.7
+beta 1
 ora_steps 4
 qhb_steps 4
-Emin -18
-delta 1.8
-a 1
-ait 10
-reload_serial config.SU2.4444
+Emin -4.33
+Emax -4.12
+delta 0.412
+a 2.7
+ait 50
+Njacknife 1
+fresh
 forget
-Restored binary gauge configuration serially from file config.SU2.4444
-Time stamp Sat Oct  1 01:22:54 2022
-Checksums a4c03c80 398ab5fc OK
-Time to reload gauge configuration = 0.00015 seconds
-CHECK PLAQ: 1.3624482837232239e+00 1.3662679721914686e+00
-CHECK NERSC LINKTR: -2.3132042723432278e-02 CKSUM: 0
-Reunitarized for double precision.  Max deviation 3.9e-08 changed to 2.2e-16
-Time to check unitarity = 5.698e-05 seconds
-START 1.3624483 1.366268 2.7287163 -5658.266
+unit gauge configuration loaded
+CHECK PLAQ: 2.0000000000000000e+00 2.0000000000000000e+00
+CHECK NERSC LINKTR: 1.0000000000000000e+00 CKSUM: 0
+Reunitarized for double precision.  Max deviation 0 changed to 0
+Time to check unitarity = 0.001733 seconds
+nrintervals 1
+START 2 2 4 -1536
+unit gauge configuration loaded
+CHECK PLAQ: 2.0000000000000000e+00 2.0000000000000000e+00
+CHECK NERSC LINKTR: 1.0000000000000000e+00 CKSUM: 0
+Reunitarized for double precision.  Max deviation 0 changed to 0
+Time to check unitarity = 0.001325 seconds
+START 2 2 4 -1536
 WARMUPS COMPLETED
-Searching for energy interval [-4608, -4147.2]
-Energy -4418.5508 in interval found after 7 updates in 0.02115 seconds
-RM ITER 1 a 0.98711485
-RM ITER 2 a 0.97433432
-RM ITER 3 a 0.96170871
-RM ITER 4 a 0.94935202
-RM ITER 5 a 0.93708016
-RM ITER 6 a 0.92512025
-RM ITER 7 a 0.91325905
-RM ITER 8 a 0.90038083
-RM ITER 9 a 0.88911635
-RM ITER 10 a 0.87698265
+Searching for energy interval [-1108.48, -1003.008]
+FINDING E -376.53207 1.1 0
+FINDING E -427.98043 1.2 1
+FINDING E -443.62274 1.3 2
+FINDING E -461.33784 1.4 3
+FINDING E -524.08715 1.5 4
+FINDING E -546.62298 1.6 5
+FINDING E -633.9502 1.7 6
+FINDING E -619.77576 1.8 7
+FINDING E -676.45026 1.9 8
+FINDING E -704.38343 2 9
+FINDING E -739.89879 2.1 10
+FINDING E -823.18759 2.2 11
+FINDING E -831.86261 2.3 12
+FINDING E -876.7267 2.4 13
+FINDING E -944.01295 2.5 14
+FINDING E -1014.8474 1 15
+Energy -1014.8474 in interval found after 16 updates in 0.05944 seconds
+RM ITER 1 Reweightexpect 40.896598 a 2.5036763
+RM ITER 2 Reweightexpect 40.896598 a 2.5073526
+RM ITER 3 Reweightexpect 40.896598 a 2.5110289
+RM ITER 4 Reweightexpect 40.896598 a 2.5147053
+RM ITER 5 Reweightexpect 40.896598 a 2.5183816
+RM ITER 6 Reweightexpect 40.896598 a 2.5220579
+RM ITER 7 Reweightexpect 40.896598 a 2.5257342
+RM ITER 8 Reweightexpect 40.896598 a 2.5294105
+RM ITER 9 Reweightexpect 40.896598 a 2.5330868
+RM ITER 10 Reweightexpect 40.896598 a 2.5367632
+RM ITER 11 Reweightexpect 40.896598 a 2.5404395
+RM ITER 12 Reweightexpect 40.896598 a 2.5441158
+RM ITER 13 Reweightexpect 40.896598 a 2.5477921
+RM ITER 14 Reweightexpect 40.896598 a 2.5514684
+RM ITER 15 Reweightexpect 40.896598 a 2.5551447
+RM ITER 16 Reweightexpect 40.896598 a 2.5588211
+RM ITER 17 Reweightexpect 40.896598 a 2.5624974
+RM ITER 18 Reweightexpect 40.896598 a 2.5661737
+RM ITER 19 Reweightexpect 40.896598 a 2.56985
+RM ITER 20 Reweightexpect 40.896598 a 2.5735263
+RM ITER 21 Reweightexpect 40.896598 a 2.5772026
+RM ITER 22 Reweightexpect 40.896598 a 2.5808789
+RM ITER 23 Reweightexpect 40.896598 a 2.5845553
+RM ITER 24 Reweightexpect 40.896598 a 2.5882316
+RM ITER 25 Reweightexpect 40.896598 a 2.5919079
+RM ITER 26 Reweightexpect 40.896598 a 2.5955842
+RM ITER 27 Reweightexpect 40.896598 a 2.5992605
+RM ITER 28 Reweightexpect 40.896598 a 2.6029368
+RM ITER 29 Reweightexpect 40.896598 a 2.6066132
+RM ITER 30 Reweightexpect 40.896598 a 2.6102895
+RM ITER 31 Reweightexpect 40.896598 a 2.6139658
+RM ITER 32 Reweightexpect 40.896598 a 2.615804
+RM ITER 33 Reweightexpect 40.896598 a 2.6170294
+RM ITER 34 Reweightexpect 40.896598 a 2.6179485
+RM ITER 35 Reweightexpect 40.896598 a 2.6186837
+RM ITER 36 Reweightexpect 40.896598 a 2.6192965
+RM ITER 37 Reweightexpect 40.896598 a 2.6198216
+RM ITER 38 Reweightexpect 40.896598 a 2.6202812
+RM ITER 39 Reweightexpect 40.896598 a 2.6206897
+RM ITER 40 Reweightexpect 40.896598 a 2.6210573
+RM ITER 41 Reweightexpect 40.896598 a 2.6213915
+RM ITER 42 Reweightexpect 40.896598 a 2.6216979
+RM ITER 43 Reweightexpect 40.896598 a 2.6219807
+RM ITER 44 Reweightexpect 40.896598 a 2.6222432
+RM ITER 45 Reweightexpect 40.896598 a 2.6224883
+RM ITER 46 Reweightexpect 40.896598 a 2.6227181
+RM ITER 47 Reweightexpect 40.896598 a 2.6229344
+RM ITER 48 Reweightexpect 40.896598 a 2.6231386
+RM ITER 49 Reweightexpect 40.896598 a 2.6233321
+RM ITER 50 Reweightexpect 40.896598 a 2.6235159
 RUNNING COMPLETED
-STOP 1.1143859 1.0990152 2.2134011 -4589.7085
-Overall acceptance 163 of 1920 = 0.0849
-Time = 0.2607 seconds
-exit: Thu Nov 17 01:13:59 2022
+STOP 1.336187 1.3066448 2.6428318 -1014.8474
+Overall acceptance 0 of 9600 = 0
+Time = 1.985 seconds
+exit: Fri Oct 20 18:02:28 2023
 
