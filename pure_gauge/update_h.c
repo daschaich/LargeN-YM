@@ -98,7 +98,7 @@ double update_h(Real eps,double E_min) {
     FORALLSITES(i, s) {
       mult_na(&(s->link[dir]), &(tempmat2[i]), &tmat);
 #ifdef LLR
-      if (constrained == 1) {
+      if (constrained == 1) {   // Add force from Gaussian window
         scalar_mult_mat(&tmat, td, &tmat2);
         scalar_mult_add_mat(&tmat2, &tmat, a, &tmat3);
         mat_copy(&tmat3, &tmat);

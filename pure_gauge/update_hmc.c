@@ -36,16 +36,11 @@ void update_hmc(double E_min) {
   Real eps = traj_length / (Real)hmc_steps;
   double fnorm = 0.0, startaction = 0.0, endaction, change;
 
-  double regularstart = 0;
-  double regularend = 0;
-  double regulardelta = 0;
-
   // Refresh the momenta
   ranmom();
 
   // Find initial action
   startaction = action(E_min);
-  regularstart = gauge_action();
   // Copy link field to old_link
   gauge_field_copy(F_OFFSET(link[0]), F_OFFSET(old_link[0]));
 
@@ -74,9 +69,7 @@ void update_hmc(double E_min) {
 
   // Find ending action
   endaction = action(E_min);
-  regularend = gauge_action();
   change = endaction - startaction;
-  regulardelta = regularend - regularstart;
   // Reject configurations giving overflow
 #ifndef HAVE_IEEEFP_H
   if (fabs((double)change) > 1e20) {
@@ -94,36 +87,6 @@ void update_hmc(double E_min) {
     xrandom = myrand(&node_prn);
   broadcast_float(&xrandom);
 
-#ifdef LLR
-  if (constrained == 0) {
-    if (exp(-change) < (double)xrandom) {
-      if (traj_length > 0.0)
-        gauge_field_copy(F_OFFSET(old_link[0]), F_OFFSET(link[0]));
-
-      node0_printf("REJECT: delta S = %.4g start S = %.12g end S = %.12g\n",
-                   change, startaction, endaction);
-    }
-    else {
-      node0_printf("ACCEPT: delta S = %.4g start S = %.12g end S = %.12g\n",
-                   change, startaction, endaction);
-    }
-  }
-
-  else {
-    if ((double)xrandom < exp(-change-pow(regulardelta,2.0)/(2.0*pow(delta,2.0))-regulardelta*(regularstart-E_min-delta*0.5)/pow(delta,2.0))) {
-      if (traj_length > 0.0)
-        node0_printf("ACCEPT: delta S = %.4g start S = %.12g end S = %.12g\n",
-                     change, startaction, endaction);
-    }
-    else {
-      if (traj_length > 0.0)
-        gauge_field_copy(F_OFFSET(old_link[0]), F_OFFSET(link[0]));
-
-      node0_printf("REJECT: delta S = %.4g start S = %.12g end S = %.12g\n",
-                   change, startaction, endaction);
-    }
-  }
-#else
   if (exp(-change) < (double)xrandom) {
     if (traj_length > 0.0)
       gauge_field_copy(F_OFFSET(old_link[0]), F_OFFSET(link[0]));
@@ -135,7 +98,6 @@ void update_hmc(double E_min) {
     node0_printf("ACCEPT: delta S = %.4g start S = %.12g end S = %.12g\n",
                  change, startaction, endaction);
   }
-#endif
   if (traj_length > 0.0) {
     node0_printf("MONITOR_FORCE %.4g %.4g\n",
                  fnorm / (double)(2 * hmc_steps), max_f);

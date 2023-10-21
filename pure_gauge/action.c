@@ -64,25 +64,24 @@ double action(double E_min) {
   double g_act, h_act, tot;
 
   g_act = gauge_action();
-//#ifdef LLR
-  //double td = 0.0, w_act = 0.0;
-  //if (constrained == 1) {
-    // Add gaussian window contribution
-    //td = g_act - E_min - 0.5 * delta;
-    //w_act = exp(-0.5 * td * td / deltaSq);
-    //w_act = 0.5 * td * td / deltaSq; 
-  //}
-
-//#endif
-
   h_act = hmom_action();
-  node0_printf("ACTION: g, h, tot = %.8g %.8g ", g_act, h_act);
+  node0_printf("ACTION: g, ");
+#ifdef LLR
+  double td = 0.0, w_act = 0.0;
+  if (constrained == 1) {
+    // Add Gaussian window contribution
+    td = g_act - E_min - 0.5 * delta;
+    w_act = 0.5 * td * td / deltaSq; 
+  }
+  node0_printf("w, h, tot = %.8g %.8g %.8g ", g_act, w_act, h_act);
+#else
+  node0_printf("h, tot = %.8g %.8g ", g_act, h_act);
+#endif
 
   tot = g_act + h_act;
 #ifdef LLR
   if (constrained == 1)
-    tot = a * g_act + h_act;
-//    tot = a * g_act + h_act + w_act;
+    tot = a * g_act + h_act + w_act;
 #endif
   node0_printf("%.8g\n", tot);
   return tot;

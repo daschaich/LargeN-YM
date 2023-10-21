@@ -8,7 +8,6 @@
 #define GAUGE_FIX_TOL 1.0e-7  // For gauge fixing
 
 #ifdef LLR      // LLR stuff
-#define NRiters 30
 #define a_cut 200.0           // Maximum change in NR or RM iteration
 #define FIND_MAX 2000         // Max updates of beta to find energy interval
 #endif

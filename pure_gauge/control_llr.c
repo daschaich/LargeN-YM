@@ -79,6 +79,7 @@ int main(int argc, char *argv[]) {
         RestrictEV -= Eint[Intcount] + 0.5 * delta;
 
         // Implement initial NR iterations
+        // Replace deltaSq/12 --> deltaSq to control fluctuations
         if (RMcount < NRiter) {
           if (fabs(RestrictEV) < a_cut)
             a += RestrictEV / deltaSq;
@@ -98,7 +99,7 @@ int main(int argc, char *argv[]) {
         node0_printf("RM ITER %d RestrictEV %.8g a %.8g\n",
                      RMcount + 1, RestrictEV, a);
       }
-      aint[Intcount] += a / ((double)(Nj));
+      aint[Intcount] += a;
 
       // Reload lattice for next jackknife sample
       if (Ncount < Nj - 1) {
@@ -106,6 +107,7 @@ int main(int argc, char *argv[]) {
         startlat_p = reload_lattice(startflag, startfile);
       }
     }
+    aint[Intcount] /= (double)Nj;
   }
   node0_printf("RUNNING COMPLETED\n");
 
