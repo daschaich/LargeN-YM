@@ -1,6 +1,6 @@
 SU(5) pure-gauge hybrid Monte Carlo algorithm
 Machine = Scalar processor, with 1 nodes
-start: Fri Oct 20 15:55:36 2023
+start: Sat Oct 21 00:42:24 2023
 
 type 0 for no prompts or 1 for prompts
 nx 4
@@ -23,11 +23,10 @@ traj_length 1
 fresh
 forget
 unit gauge configuration loaded
-Starting with cold lattice
 CHECK PLAQ: 5.0000000000000000e+00 5.0000000000000000e+00
 CHECK NERSC LINKTR: 8.0000000000000004e-01 CKSUM: 0
 Reunitarized for double precision.  Max deviation 0 changed to 0
-Time to check unitarity = 0.004952 seconds
+Time to check unitarity = 0.002417 seconds
 START 5 5 10
 WARMUPS COMPLETED
 ACTION: g, h, tot = -25651.2 12226.962 -13424.238
@@ -47,6 +46,6 @@ MONITOR_FORCE 0.07066 0.1864
 GMES 1.9584988 -0.016397007 3.2978141 3.2961756
 RUNNING COMPLETED
 STOP 3.2978141 3.2961756 6.5939897
-Time = 0.323 seconds
-exit: Fri Oct 20 15:55:36 2023
+Time = 0.3223 seconds
+exit: Sat Oct 21 00:42:24 2023
 

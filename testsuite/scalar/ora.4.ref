@@ -1,6 +1,6 @@
-SU(4) pure-gauge over-relaxed heatbath algorithm
+SU(4) pure-gauge over-relaxed quasi-heatbath algorithm
 Machine = Scalar processor, with 1 nodes
-start: Thu Nov 17 02:47:49 2022
+start: Sat Oct 21 00:47:52 2023
 
 type 0 for no prompts or 1 for prompts
 nx 4
@@ -25,11 +25,11 @@ forget
 Restored binary gauge configuration serially from file config.SU4.4444
 Time stamp Sat Oct  1 01:26:32 2022
 Checksums 754534d9 e683e357 OK
-Time to reload gauge configuration = 0.0005341 seconds
+Time to reload gauge configuration = 0.001255 seconds
 CHECK PLAQ: 2.2148399450929013e+00 2.2203971514700305e+00
 CHECK NERSC LINKTR: -6.0338394236065795e-03 CKSUM: 0
 Reunitarized for double precision.  Max deviation 5.6e-08 changed to 1.4e-15
-Time to check unitarity = 0.01048 seconds
+Time to check unitarity = 0.009483 seconds
 START 2.2148399 2.2203972 4.4352371
 WARMUPS COMPLETED
 GMES -0.0059445777 -0.69058476 2.2494195 2.2609775
@@ -37,6 +37,6 @@ GMES -0.053390012 -0.77439332 2.1856978 2.2654745
 GMES 0.076391281 -0.83203841 2.2518846 2.2401951
 RUNNING COMPLETED
 STOP 2.2518846 2.2401951 4.4920797
-Time = 0.07877 seconds
-exit: Thu Nov 17 02:47:49 2022
+Time = 0.07793 seconds
+exit: Sat Oct 21 00:47:52 2023
 

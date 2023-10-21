@@ -1,6 +1,6 @@
 SU(7) pure-gauge over-relaxed quasi-heatbath algorithm
-Machine = Scalar processor, with 1 nodes
-start: Sat Oct 21 00:48:07 2023
+Machine = MPI (portable), with 2 nodes
+start: Fri Oct 20 19:01:25 2023
 
 type 0 for no prompts or 1 for prompts
 nx 4
@@ -8,10 +8,11 @@ ny 4
 nz 4
 nt 4
 iseed 41
-LAYOUT = Hypercubes, options = with fixed node_geometry
-ON EACH NODE 4 x 4 x 4 x 4
-Mallocing 1.2 MBytes per core for lattice
-Mallocing 0.4 MBytes per core for fields
+LAYOUT = Hypercubes, options = hyper_prime,
+MPI with automatic hyper_prime layout
+ON EACH NODE 2 x 4 x 4 x 4
+Mallocing 0.6 MBytes per core for lattice
+Mallocing 0.2 MBytes per core for fields
 
 
 warms 0
@@ -26,7 +27,7 @@ unit gauge configuration loaded
 CHECK PLAQ: 7.0000000000000000e+00 7.0000000000000000e+00
 CHECK NERSC LINKTR: 5.7142857142857140e-01 CKSUM: 0
 Reunitarized for double precision.  Max deviation 0 changed to 0
-Time to check unitarity = 0.009605 seconds
+Time to check unitarity = 0.004887 seconds
 START 7 7 14
 WARMUPS COMPLETED
 GMES 1.8242807 -0.048777753 3.8051991 3.7662672
@@ -34,6 +35,6 @@ GMES 1.2548612 0.05335329 3.6606912 3.6735956
 GMES 1.3490339 0.026456037 3.6572779 3.6881311
 RUNNING COMPLETED
 STOP 3.6572779 3.6881311 7.345409
-Time = 0.5562 seconds
-exit: Sat Oct 21 00:48:08 2023
+Time = 0.2974 seconds
+exit: Fri Oct 20 19:01:25 2023
 

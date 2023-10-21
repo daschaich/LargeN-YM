@@ -1,6 +1,6 @@
-SU(3) pure-gauge over-relaxed heatbath algorithm
+SU(3) pure-gauge over-relaxed quasi-heatbath algorithm
 Machine = MPI (portable), with 2 nodes
-start: Thu Nov 24 16:40:12 2022
+start: Fri Oct 20 18:52:12 2023
 
 type 0 for no prompts or 1 for prompts
 nx 4
@@ -26,11 +26,11 @@ forget
 Restored binary gauge configuration serially from file config.SU3.4444
 Time stamp Sat Oct  1 01:24:08 2022
 Checksums ac6e1df0 1e9a6f1a OK
-Time to reload gauge configuration = 0.0006871 seconds
+Time to reload gauge configuration = 0.0006411 seconds
 CHECK PLAQ: 1.7511526906430692e+00 1.7608072168014537e+00
 CHECK NERSC LINKTR: 2.5882006381721112e-03 CKSUM: 0
 Reunitarized for double precision.  Max deviation 5.7e-08 changed to 1.3e-15
-Time to check unitarity = 0.004989 seconds
+Time to check unitarity = 0.005075 seconds
 START 1.7511527 1.7608072 3.5119599
 WARMUPS COMPLETED
 GMES -0.42705235 -0.74380798 1.7717133 1.8169595
@@ -38,6 +38,6 @@ GMES -0.49405897 -0.74799377 1.8048594 1.8037026
 GMES -0.39192678 -0.49827707 1.7373255 1.7551337
 RUNNING COMPLETED
 STOP 1.7373255 1.7551337 3.4924592
-Time = 0.02696 seconds
-exit: Thu Nov 24 16:40:12 2022
+Time = 0.02933 seconds
+exit: Fri Oct 20 18:52:12 2023
 
