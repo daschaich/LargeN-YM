@@ -153,11 +153,14 @@ int readin(int prompt) {
     // Size of energy interval delta
     IF_OK status += get_f(stdin, prompt, "delta", &par_buf.delta);
 
-    // Number of iterations for Robbins--Monro algorithm
-    IF_OK status += get_i(stdin, prompt, "ait", &par_buf.ait);
+    // Number of initial Newton--Raphson iterations
+    IF_OK status += get_i(stdin, prompt, "NRiter", &par_buf.NRiter);
+
+    // Number of subsequent Robbins--Monro iterations
+    IF_OK status += get_i(stdin, prompt, "RMiter", &par_buf.RMiter);
 
     // Number of Jackknife samples
-    IF_OK status += get_i(stdin, prompt, "Njacknife", &par_buf.Njacknife);
+    IF_OK status += get_i(stdin, prompt, "Nj", &par_buf.Nj);
 #endif
 
     // Find out what kind of starting lattice to use
@@ -190,18 +193,20 @@ int readin(int prompt) {
   ora_steps = par_buf.ora_steps;
   qhb_steps = par_buf.qhb_steps;
 #else
+  ora_steps = 5;    // Defaults for finding energy interval
+  qhb_steps = 5;
   hmc_steps = par_buf.hmc_steps;
   traj_length = par_buf.traj_length;
 #endif
 
 #ifdef LLR
-  a = par_buf.a;
   Emin = par_buf.Emin * volume;
   Emax = par_buf.Emax * volume;
   delta = par_buf.delta * volume;
   deltaSq = delta * delta;
-  ait = par_buf.ait;
-  Njacknife = par_buf.Njacknife;
+  NRiter = par_buf.NRiter;
+  RMiter = par_buf.RMiter;
+  Nj = par_buf.Nj;
 #endif
 
   startflag = par_buf.startflag;

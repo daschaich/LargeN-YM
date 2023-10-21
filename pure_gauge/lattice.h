@@ -78,7 +78,7 @@ EXTERN int total_iters;
 
 #ifdef LLR
 // LLR parameters
-EXTERN int ait, accept, reject, constrained, Njacknife;
+EXTERN int NRiter, RMiter, accept, reject, constrained, Nj;
 EXTERN Real a, Emin, Emax, delta, deltaSq;
 #endif
 

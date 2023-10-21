@@ -15,8 +15,9 @@ traj_length 1.0
 Emin -3.39
 Emax -3.23
 delta 0.323
-ait 50
-Njacknife 1
+NRiter 30
+RMiter 20
+Nj 1
 
 fresh
 forget

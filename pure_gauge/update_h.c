@@ -83,7 +83,6 @@ double update_h(Real eps,double E_min) {
         FORALLSITES(i, s) {
           mult_nn(&(s->link[dir2]), (matrix *)gen_pt[2][i], &tmat);
           mult_na_sum(&tmat, (matrix *)gen_pt[0][i], &(tempmat2[i]));
-
         }
       }
 
