@@ -120,9 +120,12 @@ int readin(int prompt) {
     IF_OK status += get_i(stdin, prompt, "warms", &par_buf.warms);
     IF_OK status += get_i(stdin, prompt, "trajecs", &par_buf.trajecs);
 
+#ifndef LLR
     // Trajectories between more expensive measurements
+    // Not done in LLR calculations
     IF_OK status += get_i(stdin, prompt, "traj_between_meas",
                           &par_buf.measinterval);
+#endif
 
     // beta
     IF_OK status += get_f(stdin, prompt, "beta", &par_buf.beta);
@@ -145,18 +148,14 @@ int readin(int prompt) {
     // LLR stuff
     // Energy range to scan (min to max)
     IF_OK status += get_f(stdin, prompt, "Emin", &par_buf.Emin);
-    
     IF_OK status += get_f(stdin, prompt, "Emax", &par_buf.Emax);
 
     // Size of energy interval delta
     IF_OK status += get_f(stdin, prompt, "delta", &par_buf.delta);
 
-    // Starting value for LLR observable 'a'
-    IF_OK status += get_f(stdin, prompt, "a", &par_buf.a);
-
     // Number of iterations for Robbins--Monro algorithm
     IF_OK status += get_i(stdin, prompt, "ait", &par_buf.ait);
-    
+
     // Number of Jackknife samples
     IF_OK status += get_i(stdin, prompt, "Njacknife", &par_buf.Njacknife);
 #endif

@@ -7,7 +7,6 @@ iseed 43
 
 warms 0
 trajecs 60
-traj_between_meas 10
 
 beta 1.0
 hmc_steps 20
@@ -16,7 +15,6 @@ traj_length 1.0
 Emin -3.54
 Emax -3.37
 delta 0.337
-a 10.7
 ait 50
 Njacknife 1
 

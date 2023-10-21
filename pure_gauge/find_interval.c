@@ -5,24 +5,24 @@
 void findEint(double E_min) {
 #ifdef LLR
   int Efound = -99;
-  int counter = 0, count_max = 2000;
+  int counter = 0;
   double E, dtime, beta_sav = beta;
   double E_max = E_min + delta;
   node0_printf("Searching for energy interval [%.8g, %.8g]\n", E_min, E_max);
 #ifdef HMC
   int hmc_steps_save = hmc_steps;
   hmc_steps = 60;
-  
+
   ora_steps = 5;
   qhb_steps = 5;
 #endif
-  
+
   dtime = -dclock();
   E = gauge_action();
   if (E >= E_min && E <= E_max)
     Efound = 1;
 
-  while (Efound < 0 && counter < count_max) {
+  while (Efound < 0 && counter < FIND_MAX) {
 #ifndef HMC
     update();
 #endif
