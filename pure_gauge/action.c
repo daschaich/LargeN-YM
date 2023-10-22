@@ -70,6 +70,7 @@ double action(double E_min) {
   double td = 0.0, w_act = 0.0;
   if (constrained == 1) {
     // Add Gaussian window contribution
+    // TODO: Add tunable parameter 'C' rather than constrained flag...
     td = g_act - E_min - 0.5 * delta;
     w_act = 0.5 * td * td / deltaSq; 
   }
