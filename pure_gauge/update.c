@@ -1,22 +1,25 @@
 // -----------------------------------------------------------------
 // Update lattice, choosing between hybrid Monte Carlo trajectories
-// or over-relaxed quasi-heatbath (qhb) sweeps
+// or over-relaxed quasi-heatbath sweeps
+// In both cases Check unitarity before doing anything
+// and reunitarize gauge field at end
 #include "pg_includes.h"
 
-void update() {
-  // Check unitarity before doing anything
+#if defined(ORA) || defined(LLR)
+void update_ora() {
   check_unitarity();
-
-#ifdef HMC
-  // Do HMC updates if specified
-  update_hmc(0.0);
-#else
-  // Otherwise do over-relaxation and quasi-heatbath steps
   relax();
   monte();
-#endif
-
-  // Reunitarize the gauge field
   reunitarize();
 }
+#endif
+
+// HMC updates including energy interval info for LLR
+#ifdef HMC
+void update_hmc(double E_min) {
+  check_unitarity();
+  hmc_traj(E_min);
+  reunitarize();
+}
+#endif
 // -----------------------------------------------------------------

@@ -33,15 +33,22 @@ int main(int argc, char *argv[]) {
   plaquette(&ss_plaq, &st_plaq);
   node0_printf("START %.8g %.8g %.8g\n", ss_plaq, st_plaq, ss_plaq + st_plaq);
 
-
   // Perform warmup sweeps
   for (traj_done = 0; traj_done < warms; traj_done++)
-    update();
+#ifdef HMC
+    update_hmc(NAN);
+#else
+    update_ora();
+#endif
   node0_printf("WARMUPS COMPLETED\n");
 
   // Perform sweeps, reunitarizations and measurements
   for (traj_done = 0; traj_done < trajecs; traj_done++) {
-    update();
+#ifdef HMC
+    update_hmc(NAN);
+#else
+    update_ora();
+#endif
 
     // Measure and print Polyakov loop and plaquette after every sweep
     plaquette(&ss_plaq, &st_plaq);

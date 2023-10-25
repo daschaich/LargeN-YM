@@ -33,12 +33,6 @@ int main(int argc, char *argv[]) {
   node0_printf("Nint %d\n", Nint);
   Real Eint[Nint], aint[Nint];
 
-#ifndef HMC
-  // Monitor quasi-heatbath acceptance in monteconst_e.c
-  accept = 0;
-  reject = 0;
-#endif
-
   // Cycle over intervals in this job
   for (Intcount = 0; Intcount < Nint; Intcount++) {
     aint[Intcount] = 0;
@@ -53,13 +47,13 @@ int main(int argc, char *argv[]) {
                ss_plaq, st_plaq, ss_plaq + st_plaq, E);
 
       // Unconstrained warmup sweeps before searching for energy interval
+      constrained = 0;
       for (traj_done = 0; traj_done < warms; traj_done++)
-        update();
+        update_hmc(Eint[Intcount]);
       node0_printf("WARMUPS COMPLETED\n");
 
       // Terminates if interval not found
       // Otherwise sets initial guess for a
-      constrained = 0;
       findEint(Eint[Intcount]);
 
       // Newton--Raphson (NR) and Robbins--Monro (RM) iterations
@@ -67,11 +61,11 @@ int main(int argc, char *argv[]) {
       for (RMcount = 0; RMcount < (NRiter + RMiter); RMcount++) {
         // Constrained warm-up sweeps in each iteration
         for (traj_done = 0; traj_done < warms; traj_done++)
-          updateconst_e(Eint[Intcount]);
+          update_hmc(Eint[Intcount]);
 
         RestrictEV = 0.0;
         for (traj_done = 0; traj_done < trajecs; traj_done++) {
-          updateconst_e(Eint[Intcount]);
+          update_hmc(Eint[Intcount]);
           // Accumulate after update
           RestrictEV += gauge_action();
         }
@@ -116,11 +110,6 @@ int main(int argc, char *argv[]) {
   E = gauge_action();
   node0_printf("STOP %.8g %.8g %.8g %.8g\n",
                ss_plaq, st_plaq, ss_plaq + st_plaq, E);
-#ifndef HMC
-  double rate = (double)accept / ((double)(accept + reject));
-  node0_printf("Overall acceptance %d of %d = %.4g\n",
-               accept, accept + reject, rate);
-#endif
   dtime += dclock();
   node0_printf("Time = %.4g seconds\n", dtime);
   fflush(stdout);

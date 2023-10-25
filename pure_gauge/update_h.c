@@ -21,7 +21,7 @@ void update_mom(site *s, int dir, Real eps, matrix *force) {
 
 // -----------------------------------------------------------------
 // Update the momenta with the gauge force
-double update_h(Real eps,double E_min) {
+double update_h(Real eps, double E_min) {
   register int i, dir, dir2;
   register site *s;
   register Real ebN = eps * beta * one_ov_N;

@@ -26,35 +26,27 @@
 int setup();
 int readin(int prompt);
 
-// Generic update routine switches between ora and HMC
-void update();
-
+#if defined(ORA) || defined(LLR)
+// Over-relaxed quasi-heatbath stuff
+// Used to find energy interval when doing LLR with HMC
+void dsdu_qhb(int dir, int parity);    // Gauge force for quasi-heatbath
 void relax();
 void monte();
-void dsdu_qhb(int dir, int parity);    // Gauge force for quasi-heatbath
-#ifndef HMC
-// Over-relaxed quasi-heatbath stuff
-#else
-// HMC stuff
-double action(double E_min);
-void update_u(Real eps);
-double update_h(Real eps,double E_min);
-void update_hmc(double E_min);
+void update_ora();
 #endif
 
-// Need gauge_action() for LLR with or without HMC
-#if defined(HMC) || defined(LLR)
-double gauge_action();
+// HMC stuff, including energy interval info for LLR
+#ifdef HMC
+double action(double E_min);
+void update_u(Real eps);
+double update_h(Real eps, double E_min);
+void hmc_traj(double E_min);
+void update_hmc(double E_min);
 #endif
 
 // LLR stuff
 #ifdef LLR
+double gauge_action();
 void findEint(double E_min);
-
-void updateconst_e(double E_min);
-#ifndef HMC
-  // Over-relaxed quasi-heatbath updates with hard constraints
-void monteconst_e();
-#endif
 #endif
 // -----------------------------------------------------------------

@@ -8,7 +8,6 @@
 #   pg_ora uses the over-relaxed quasi-heat bath algorithm
 #   pg_hmc uses the hybrid Monte Carlo algorithm
 #   pg_llr uses log-linear relaxation to compute density of states with HMC
-#   pg_llr_ora does the same using over-relaxed quasi-heat bath
 
 MYINCLUDEDIR = .
 INCLUDEDIR = ../include
@@ -102,15 +101,9 @@ DARCH = ${DHAVE_QMP} ${DHAVE_QIO}
 ##### Targets:
 # lapack and blas needed for general-N reunitarization
 pg_ora::
-	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" \
+	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" "DEFINES = -DORA"  \
 	"LAPACK = -llapack -lblas " \
 	"EXTRA_OBJECTS = control.o dsdu_qhb.o monte.o relax.o "
-
-pg_llr_ora::
-	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" "DEFINES = -DLLR" \
-	"LAPACK = -llapack -lblas " \
-	"EXTRA_OBJECTS = control_llr.o dsdu_qhb.o monte.o relax.o action.o \
-	                 monteconst_e.o updateconst_e.o find_interval.o "
 
 pg_hmc::
 	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" "DEFINES = -DHMC" \
@@ -122,7 +115,7 @@ pg_llr::
 	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" "DEFINES = -DHMC -DLLR" \
 	"LAPACK = -llapack -lblas " \
 	"EXTRA_OBJECTS = control_llr.o ranmom.o action.o update_hmc.o update_h.o \
-	                 update_u.o updateconst_e.o find_interval.o dsdu_qhb.o monte.o relax.o"
+	                 update_u.o find_interval.o dsdu_qhb.o monte.o relax.o"
 
 clean:
 	-/bin/rm -f *.o

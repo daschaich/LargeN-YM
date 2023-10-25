@@ -30,7 +30,7 @@ void gauge_field_copy(field_offset src, field_offset dest) {
 
 
 // -----------------------------------------------------------------
-void update_hmc(double E_min) {
+void hmc_traj(double E_min) {
   int step;
   Real xrandom, tr;
   Real eps = traj_length / (Real)hmc_steps;
@@ -50,7 +50,7 @@ void update_hmc(double E_min) {
 
   // Inner steps p(t) u(t)
   for (step = 0; step < hmc_steps; step++) {
-    tr = update_h(eps,E_min);
+    tr = update_h(eps, E_min);
     fnorm += tr;
     if (tr > max_f)
       max_f = tr;
