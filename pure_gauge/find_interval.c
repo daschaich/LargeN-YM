@@ -16,8 +16,7 @@ void findEint(double E_min) {
     Efound = 1;
 
   while (Efound < 0 && counter < FIND_MAX) {
-    relax();
-    monte();
+    update_ora();
     E = gauge_action() * beta_sav / beta;
     if (E >= E_min && E <= E_max) {
       Efound = 1;
