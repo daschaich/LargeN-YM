@@ -1,6 +1,6 @@
 SU(2) pure-gauge log-linear relaxation algorithm using hybrid Monte Carlo updates
 Machine = MPI (portable), with 2 nodes
-start: Sun Oct 22 14:02:38 2023
+start: Fri Oct 27 14:07:42 2023
 
 type 0 for no prompts or 1 for prompts
 nx 4
@@ -23,6 +23,7 @@ traj_length 1
 Emin -4.33
 Emax -4.12
 delta 0.412
+C_Gauss 1
 NRiter 5
 RMiter 5
 Nj 1
@@ -32,14 +33,14 @@ unit gauge configuration loaded
 CHECK PLAQ: 2.0000000000000000e+00 2.0000000000000000e+00
 CHECK NERSC LINKTR: 1.0000000000000000e+00 CKSUM: 0
 Reunitarized for double precision.  Max deviation 0 changed to 0
-Time to check unitarity = 0.001571 seconds
+Time to check unitarity = 0.001635 seconds
 Nint 1
 START 2 2 4 -1536
 WARMUPS COMPLETED
 Searching for energy interval [-1108.48, -1003.008]
 FINDING E -1536 1 0
 FINDING E -718.55078 2 10
-Energy -1028.6552 in interval found after 15 updates in 0.04445 seconds
+Energy -1028.6552 in interval found after 15 updates in 0.04471 seconds
 ACTION: g, w, h, tot = -1028.6552 0.032981859 1536.1214 -1035.4836
 ACTION: g, w, h, tot = -1015.3508 0.07333522 1502.71 -1035.5936
 ACCEPT: delta S = -0.11 start S = -1035.48361508 end S = -1035.59359738
@@ -452,6 +453,6 @@ MONITOR_FORCE 0.04259 0.08727
 RM ITER 10 RestrictEV 51.338497 a 2.5258172
 RUNNING COMPLETED
 STOP 1.3519938 1.3145032 2.666497 -1023.9349
-Time = 0.4974 seconds
-exit: Sun Oct 22 14:02:38 2023
+Time = 0.5496 seconds
+exit: Fri Oct 27 14:07:43 2023
 

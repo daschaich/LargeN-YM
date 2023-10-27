@@ -1,6 +1,6 @@
 SU(5) pure-gauge log-linear relaxation algorithm using hybrid Monte Carlo updates
 Machine = Scalar processor, with 1 nodes
-start: Sun Oct 22 13:57:41 2023
+start: Fri Oct 27 14:03:44 2023
 
 type 0 for no prompts or 1 for prompts
 nx 4
@@ -22,6 +22,7 @@ traj_length 1
 Emin -3.39
 Emax -3.23
 delta 0.323
+C_Gauss 1
 NRiter 5
 RMiter 5
 Nj 1
@@ -31,7 +32,7 @@ unit gauge configuration loaded
 CHECK PLAQ: 5.0000000000000000e+00 5.0000000000000000e+00
 CHECK NERSC LINKTR: 8.0000000000000004e-01 CKSUM: 0
 Reunitarized for double precision.  Max deviation 0 changed to 0
-Time to check unitarity = 0.002426 seconds
+Time to check unitarity = 0.003511 seconds
 Nint 1
 START 5 5 10 -1536
 WARMUPS COMPLETED
@@ -53,7 +54,7 @@ FINDING E -473.62092 14 130
 FINDING E -518.57641 15 140
 FINDING E -582.67248 16 150
 FINDING E -703.43676 17 160
-Energy -812.04143 in interval found after 162 updates in 8.688 seconds
+Energy -812.04143 in interval found after 162 updates in 8.844 seconds
 ACTION: g, w, h, tot = -812.04143 0.015279007 12384.459 -1582.6388
 ACTION: g, w, h, tot = -807.80673 0.025542859 12310.904 -1583.346
 ACCEPT: delta S = -0.7072 start S = -1582.63879842 end S = -1583.34603587
@@ -466,6 +467,6 @@ MONITOR_FORCE 0.06636 0.1344
 RM ITER 10 RestrictEV -41.557802 a 17.169717
 RUNNING COMPLETED
 STOP 2.8400331 2.8514069 5.69144 -874.20518
-Time = 20.24 seconds
-exit: Sun Oct 22 13:58:01 2023
+Time = 20.66 seconds
+exit: Fri Oct 27 14:04:05 2023
 
