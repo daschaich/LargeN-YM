@@ -31,6 +31,14 @@ typedef struct {
   // Gauge links and field strength for F^2 and topological charge
   matrix link[4], FS[6];
 } site;
+
+// Defines for index on field_strength
+#define FS_XY 0
+#define FS_XZ 1
+#define FS_YZ 2
+#define FS_XT 3
+#define FS_YT 4
+#define FS_ZT 5
 // -----------------------------------------------------------------
 
 

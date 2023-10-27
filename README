@@ -7,7 +7,7 @@ include        -- Header files for common procedures
 libraries      -- Single processor linear algebra routines
 
 Then there are currently two application directories, each with more detailed READMEs:
-pure_gauge -- Pure-gauge evolution and LLR density of states, using either the over-relaxed quasi-heatbath algorithm or the HMC algorithm
+pure_gauge -- Pure-gauge evolution and LLR density of states
 wilson_flow -- Wilson flow with optional RG-blocking and measurements
 
 Finally, the testsuite directory contains some sample input files and corresponding output for testing

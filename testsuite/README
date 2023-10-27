@@ -5,8 +5,7 @@ su3_Wflow
 su3_printpoly
 pg_ora (over-relaxed quasi-heatbath)
 pg_hmc (hybrid Monte Carlo)
-pg_llr_ora
-pg_llr
+pg_llr (logarithmic linear relaxation)
 
 The scripts run_Wflow and run_pg in both the scalar and mpi directories automate the process of compiling, running and checking the given target for the given gauge group.  Each script must be run from its respective directory.  Given the two arguments
 $ ./run_Wflow <target> <N>
