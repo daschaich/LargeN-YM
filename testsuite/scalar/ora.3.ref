@@ -1,6 +1,6 @@
-SU(3) pure-gauge over-relaxed heatbath algorithm
+SU(3) pure-gauge over-relaxed quasi-heatbath algorithm
 Machine = Scalar processor, with 1 nodes
-start: Tue Dec 22 18:03:48 2020
+start: Sat Oct 21 00:47:44 2023
 
 type 0 for no prompts or 1 for prompts
 nx 4
@@ -15,28 +15,28 @@ Mallocing 0.1 MBytes per core for fields
 
 
 warms 0
-sweeps 3
-swp_between_meas 3
+trajecs 3
+traj_between_meas 3
 beta 6
 ora_steps 4
 qhb_steps 4
-reload_serial config.3F.4444
+reload_serial config.SU3.4444
 forget
-Restored binary gauge configuration serially from file config.3F.4444
-Time stamp Tue Jan 24 11:31:01 2017
-Checksums 1f0df83 afc22265 OK
-Time to reload gauge configuration = 0.000592 seconds
-CHECK PLAQ: 1.5941514601839692e+00 1.5811129947216720e+00
-CHECK NERSC LINKTR: -1.2799688810294660e-02 CKSUM: 0
-Reunitarized for double precision.  Max deviation 6e-08 changed to 4.4e-16
-Time to check unitarity = 0.0002179 seconds
-START 1.5941515 1.581113 3.1752645
+Restored binary gauge configuration serially from file config.SU3.4444
+Time stamp Sat Oct  1 01:24:08 2022
+Checksums ac6e1df0 1e9a6f1a OK
+Time to reload gauge configuration = 0.001186 seconds
+CHECK PLAQ: 1.7511526906430708e+00 1.7608072168014568e+00
+CHECK NERSC LINKTR: 2.5882006381721112e-03 CKSUM: 0
+Reunitarized for double precision.  Max deviation 5.7e-08 changed to 1.3e-15
+Time to check unitarity = 0.009835 seconds
+START 1.7511527 1.7608072 3.5119599
 WARMUPS COMPLETED
-GMES 0.22248426 -0.29555005 1.7765107 1.7557319
-GMES 0.48216476 -0.18017715 1.8359736 1.8501437
-GMES 0.52101386 0.0057024603 1.800514 1.7838541
+GMES -0.42705235 -0.74380798 1.7717133 1.8169595
+GMES -0.49405897 -0.74799377 1.8048594 1.8037026
+GMES -0.39192678 -0.49827707 1.7373255 1.7551337
 RUNNING COMPLETED
-STOP 1.800514 1.7838541 3.5843682
-Time = 0.04459 seconds
-exit: Tue Dec 22 18:03:48 2020
+STOP 1.7373255 1.7551337 3.4924592
+Time = 0.03844 seconds
+exit: Sat Oct 21 00:47:44 2023
 

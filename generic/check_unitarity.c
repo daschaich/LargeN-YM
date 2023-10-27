@@ -1,5 +1,6 @@
 // -----------------------------------------------------------------
-// Check unitarity of the link matrices, terminate if not unitary
+// Check unitarity of the link matrices
+// Terminate if deviations exceed TOLERANCE
 #include "generic_includes.h"
 
 #define TOLERANCE 0.0001
@@ -10,18 +11,22 @@
 
 
 // -----------------------------------------------------------------
-Real check_su3(matrix *c) {
-  register int i, j, k;
-  register Real ar, ai, ari, max = 0.0;
+Real check_unit(matrix *c) {
+  register int i, j;
+  register Real ar, max = 0.0;
+#ifdef STRONG
+  register int k;
+  complex sum, tc;
+#endif
 
   // Check normalization of each row
   for (i = 0; i < NCOL; i++) {
     ar = 0.0;
-    for (j=0;j<NCOL;j++) {
-      ar += (*c).e[i][j].real * (*c).e[i][j].real +    /* sum of squares of row */
-  (*c).e[i][j].imag * (*c).e[i][j].imag;
+    for (j = 0; j < NCOL; j++) {    // Sum of squares of row
+      ar += (*c).e[i][j].real * (*c).e[i][j].real
+          + (*c).e[i][j].imag * (*c).e[i][j].imag;
     }
-    ar =  fabs(sqrt((double)ar) - 1.0);
+    ar = fabs(sqrt((double)ar) - 1.0);
     if (max < ar)
       max = ar;
   }
@@ -30,17 +35,14 @@ Real check_su3(matrix *c) {
   // Test orthogonality of row i and row j
   for (i = 0; i < NCOL; i++) {
     for (j = i + 1; j < NCOL; j++) {
-      ar = 0.0;   // Real part of i dot j
-      ai = 0.0;   // Imag part of i dot j
-      for (k = 0; k < NCOL; k++) {
-        ar += (*c).e[i][k].real * (*c).e[j][k].real
-            + (*c).e[i][k].imag * (*c).e[j][k].imag;
-        ai += (*c).e[i][k].real * (*c).e[j][k].imag
-            - (*c).e[i][k].imag * (*c).e[j][k].real;
+      CMULJ_(c->e[j][0], c->e[i][0], sum);
+      for (k = 1; k < NCOL; k++) {
+        CMULJ_(c->e[j][k], c->e[i][k], tc);
+        CSUM(sum, tc);
       }
-      ari = sqrt((double)(ar * ar + ai * ai));
-      if (max < ari)
-        max = ari;
+      ar = cabs(&sum);
+      if (max < ar)
+        max = ar;
     }
   }
 #endif
@@ -53,43 +55,21 @@ Real check_su3(matrix *c) {
 
 // -----------------------------------------------------------------
 Real check_unitarity() {
-  register int i,dir;
-  int ii, jj;
+  register int i, dir;
   register site *s;
   register matrix *mat;
   Real deviation, max_deviation = 0.0;
   double av_deviation = 0.0;
-  union {
-    Real fval;
-    int ival;
-  } ifval;
 
   FORALLSITES(i, s) {
     FORALLUPDIR(dir) {
-      mat = (matrix *)&(s->linkf[dir]);
-      deviation = check_su3(mat);
+      mat = &(s->link[dir]);
+      deviation = check_unit(mat);
       if (deviation > TOLERANCE) {
         printf("Unitarity problem on node %d, site %d, dir %d, deviation=%f\n",
                mynode(), i, dir, deviation);
         printf("SU(N) matrix:\n");
-        for (ii = 0; ii < NCOL; ii++) {
-          for (jj = 0; jj < NCOL; jj++) {
-            printf("%f ", (*mat).e[ii][jj].real);
-            printf("%f ", (*mat).e[ii][jj].imag);
-          }
-          printf("\n");
-        }
-        printf("repeat in hex:\n");
-        for (ii = 0; ii < NCOL; ii++) {
-          for (jj = 0; jj < NCOL; jj++) {
-            ifval.fval = (*mat).e[ii][jj].real;
-            printf("%08x ", ifval.ival);
-            ifval.fval = (*mat).e[ii][jj].imag;
-            printf("%08x ", ifval.ival);
-          }
-          printf("\n");
-        }
-        printf("  \n\n");
+        dump_mat(mat);
         fflush(stdout);
         terminate(1);
       }
@@ -104,9 +84,10 @@ Real check_unitarity() {
   printf("Deviation from unitarity on node %d: max %.4g, ave %.4g\n",
          mynode(), max_deviation, av_deviation);
 #endif
-  if (max_deviation > TOLERANCE)
+  if (max_deviation > TOLERANCE) {
     printf("Unitarity problem on node %d, maximum deviation %.4g\n",
            mynode(), max_deviation);
+  }
   return max_deviation;
 }
 // -----------------------------------------------------------------

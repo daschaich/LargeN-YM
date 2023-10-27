@@ -8,14 +8,6 @@
 #include "../include/io_lat.h"    // For gauge_file
 #include "../include/random.h"    // For double_prn
 #include "../include/su3.h"
-
-// Defines for index on field_strength
-#define FS_XY 0
-#define FS_XZ 1
-#define FS_YZ 2
-#define FS_XT 3
-#define FS_YT 4
-#define FS_ZT 5
 // -----------------------------------------------------------------
 
 
@@ -34,8 +26,16 @@ typedef struct {
   int space1;
 #endif
 
-  // Gauge links and field strength
-  matrix linkf[4];
+  // Gauge links
+  matrix link[4];
+#ifdef HMC
+  matrix old_link[4];  // For accept/reject
+
+  // Antihermitian momentum matrices in each direction
+  anti_hermitmat mom[4];
+#endif
+
+  // Temporary storage
   matrix tempmat, staple;    // TODO: Convert these to fields
 } site;
 // -----------------------------------------------------------------
@@ -53,9 +53,18 @@ typedef struct {
 EXTERN int nx, ny, nz, nt;  // Lattice dimensions
 EXTERN int volume;          // Volume of lattice
 EXTERN int iseed;           // Random number seed
-EXTERN int warms, sweeps, steps, stepsQ, measinterval;
+EXTERN int warms, trajecs;  // Common stuff
+#ifndef LLR
+EXTERN int measinterval;    // Less-frequent measurements
+#endif
 
-EXTERN Real beta;
+EXTERN int ora_steps, qhb_steps;    // ORA sweep parameters
+#ifdef HMC
+EXTERN int hmc_steps, traj_length;  // HMC parameters
+EXTERN Real fnorm, max_f;           // Force monitoring
+#endif
+
+EXTERN Real beta, C_Gauss;
 EXTERN Real one_ov_N, one_ov_vol;
 EXTERN char startfile[MAXFILENAME], savefile[MAXFILENAME];
 EXTERN double g_ssplaq, g_stplaq;
@@ -67,10 +76,9 @@ EXTERN int fixflag;   // Either NO_GAUGE_FIX or COULOMB_GAUGE_FIX
 EXTERN int saveflag;  // 1 if we will save the lattice
 EXTERN int total_iters;
 
-#ifdef LLR
-// LLR parameters
-EXTERN int ait, Njacknife, accept, reject;
-EXTERN double Emax, Emin, delta;
+#ifdef LLR            // LLR stuff
+EXTERN int NRiter, RMiter, Nj;
+EXTERN Real a, Emin, Emax, delta, deltaSq, C_Gauss;
 #endif
 
 // Some of these global variables are node dependent
@@ -81,23 +89,27 @@ EXTERN int odd_sites_on_node;   // Number of odd sites on this node
 EXTERN int number_of_nodes;     // Number of nodes in use
 EXTERN int this_node;           // Node number of this node
 
-EXTERN gauge_file *startlat_p;
-
 // Each node maintains a structure with the pseudorandom number
 // generator state
 EXTERN double_prn node_prn;
+
+// Temporary fields
+EXTERN matrix *tempmat, *tempmat2;
+
+// Some more arrays to be used by LAPACK
+// in reunitarization (in generic directory)
+EXTERN double *Rwork, *eigs, *store, *work, *junk, *left, *right;
 
 // The lattice is a single global variable
 // (actually this is the part of the lattice on this node)
 EXTERN Real boundary_phase[4];
 EXTERN site *lattice;
 
+EXTERN gauge_file *startlat_p;
+
 // Vectors for addressing
 // Generic pointers, for gather routines
 #define N_POINTERS 8
 EXTERN char **gen_pt[N_POINTERS];
 #endif
-
-// Temporary fields for field_strength
-EXTERN matrix *tempmat, *tempmat2;
 // -----------------------------------------------------------------

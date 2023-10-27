@@ -118,7 +118,7 @@ __asm__ __volatile__ ("prefetchnta %0  \n\t"  \
                       "m" (*(((char*)(a))+352)), \
                       "m" (*(((char*)(a))+376)))
 
-#elif defined P4 
+#elif defined P4
 
 /***************************************************************************/
 /*               GNU C Cache Manipulation Macros                           */

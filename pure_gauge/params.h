@@ -11,28 +11,32 @@ typedef struct {
   int nx, ny, nz, nt;     // Lattice dimensions
   int iseed;              // For random numbers
 
-  // Over-relaxation parameters
-  int warms;              // The number of warmup sweeps
-  int sweeps;             // The number of sweeps with measurements
-  int steps;              // Number of over-relaxation steps per sweep
-  int stepsQ;             // Number of quasi-heatbath steps per sweep
+  // Generic update parameters
+  int warms;              // The number of warmup trajectories/sweeps
+  int trajecs;            // The number of trajectories with measurements
+  int measinterval;       // Number of trajectories between measurements
+  Real beta;              // Gauge coupling
   int startflag;          // What to do for beginning lattice
   int saveflag;           // What to do with lattice at end
-  Real beta;              // Gauge coupling
   char startfile[MAXFILENAME], savefile[MAXFILENAME];
   char stringLFN[MAXFILENAME];  // ILDG LFN if applicable
 
-#ifndef LLR
-  int measinterval;       // Number of sweepsbetween measurements
+  int ora_steps;          // Number of over-relaxation steps per sweep
+  int qhb_steps;          // Number of quasi-heatbath steps per sweep
+#ifdef HMC
+  int hmc_steps;          // Number of hmc steps per trajectory
+  Real traj_length;       // Trajectory length
 #endif
 
 #ifdef LLR
-  // LLR parameters
-  Real Emin, Emax;    // Energy range to scan
-  Real delta;         // Size of energy interval
-  int ait;            // Number of Robbins--Monro iterations
-  int Njacknife;      // Number of repetitions to jackknife or bootstrap
+  Real Emin;              // Lower edge of lowest energy interval
+  Real Emax;              // Lower edge of highest energy interval
+  Real delta;             // Size of energy interval
+  Real C_Gauss;           // Coefficient of Gaussian window function
+  int NRiter;             // Number of Newton--Raphson iterations
+  int RMiter;             // Number of subsequent Robbins--Monro iterations
+  int Nj;                 // Number of Jackknife samples
 #endif
-}  params;
+} params;
 #endif
 // -----------------------------------------------------------------

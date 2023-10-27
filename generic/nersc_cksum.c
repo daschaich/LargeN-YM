@@ -25,7 +25,7 @@ void linktrsum(double_complex *linktr) {
   *linktr = dcmplx(0.0, 0.0);
   FORALLSITES(i, s) {
     FORALLUPDIR(dir) {
-      a = &(s->linkf[dir]);
+      a = &(s->link[dir]);
       CSUM(*linktr, a->e[0][0]);
       CSUM(*linktr, a->e[1][1]);
 #if NCOL > 2

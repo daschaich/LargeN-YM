@@ -24,21 +24,21 @@ void dsdu_qhb(int dir, int parity) {
       continue;
 
     // Get link[dir2] from direction dir on other parity
-    tag0 = start_gather_site(F_OFFSET(linkf[dir2]), sizeof(matrix),
+    tag0 = start_gather_site(F_OFFSET(link[dir2]), sizeof(matrix),
                              dir, otherparity, gen_pt[0]);
 
     // Get link[dir2] from direction dir
-    tag1 = start_gather_site(F_OFFSET(linkf[dir2]), sizeof(matrix),
+    tag1 = start_gather_site(F_OFFSET(link[dir2]), sizeof(matrix),
                              dir, parity, gen_pt[1]);
 
     // Get link[dir] from direction dir2
-    tag2 = start_gather_site(F_OFFSET(linkf[dir]), sizeof(matrix),
+    tag2 = start_gather_site(F_OFFSET(link[dir]), sizeof(matrix),
                              dir2, parity, gen_pt[2]);
 
     // Lower staple (computed at backward site)
     wait_gather(tag0);
     FORSOMEPARITY(i, s, otherparity) {
-      mult_an(&(s->linkf[dir2]), &(s->linkf[dir]), &tmat);
+      mult_an(&(s->link[dir2]), &(s->link[dir]), &tmat);
       mult_nn(&tmat, (matrix *)gen_pt[0][i], &(s->tempmat));
     } END_LOOP
     cleanup_gather(tag0);
@@ -51,14 +51,14 @@ void dsdu_qhb(int dir, int parity) {
     wait_gather(tag2);
     if (start) {  // This is the first contribution to staple
       FORSOMEPARITY(i, s, parity) {
-        mult_nn(&(s->linkf[dir2]), (matrix *)gen_pt[2][i], &tmat);
+        mult_nn(&(s->link[dir2]), (matrix *)gen_pt[2][i], &tmat);
         mult_na(&tmat, (matrix *)gen_pt[1][i], &(s->staple));
       } END_LOOP
       start = 0;
     }
     else {
       FORSOMEPARITY(i, s, parity) {
-        mult_nn(&(s->linkf[dir2]), (matrix *)gen_pt[2][i], &tmat);
+        mult_nn(&(s->link[dir2]), (matrix *)gen_pt[2][i], &tmat);
         mult_na_sum(&tmat, (matrix *)gen_pt[1][i], &(s->staple));
       } END_LOOP
     }

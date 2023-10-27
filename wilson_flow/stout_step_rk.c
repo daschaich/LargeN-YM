@@ -27,7 +27,7 @@ void exp_mult(int dir, double eps, anti_hermitmat *A) {
 
   FORALLSITES(i, s) {
     uncompress_anti_hermitian(&(A[i]), &htemp);
-    link = &(s->linkf[dir]);
+    link = &(s->link[dir]);
 
     mult_nn(&htemp, link, &tmat);
     scalar_mult_add_mat(link, &tmat, t8, &tmat2);
@@ -105,7 +105,7 @@ void update_flow(double f1, double f2) {
 
   FORALLUPDIR(dir) {
     FORALLSITES(i, s) {
-      mult_na(&(s->linkf[dir]), &(S[dir][i]), &tmat);
+      mult_na(&(s->link[dir]), &(S[dir][i]), &tmat);
       make_anti_hermitian(&tmat, &tah);   // Traceless anti-H part
       // A += f1 * antihermitian_traceless(U.Sdag)
       scalar_mult_sum_antiH(&tah, (Real)f1, &(A[dir][i]));

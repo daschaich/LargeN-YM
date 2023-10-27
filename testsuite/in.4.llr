@@ -3,20 +3,22 @@ nx 4
 ny 4
 nz 4
 nt 4
-iseed 41
+iseed 43
 
-warms 3
-sweeps 3
+warms 0
+trajecs 10
 
-beta 10.0
-ora_steps 4
-qhb_steps 4
+beta 1.0
+hmc_steps 20
+traj_length 1.0
 
-Emin -80.0
-Emax -80.0
-delta 8.0
-ait 10
-Njacknife 1
+Emin -3.54
+Emax -3.37
+delta 0.337
+C_Gauss 1.0
+NRiter 5
+RMiter 5
+Nj 1
 
 fresh
 forget

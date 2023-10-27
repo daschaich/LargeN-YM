@@ -29,7 +29,7 @@ typedef struct {
 
   // No random numbers
   // Gauge links and field strength for F^2 and topological charge
-  matrix linkf[4], FS[6];
+  matrix link[4], FS[6];
 } site;
 // -----------------------------------------------------------------
 
@@ -63,9 +63,14 @@ EXTERN int odd_sites_on_node;   // Number of odd sites on this node
 EXTERN int number_of_nodes;     // Number of nodes in use
 EXTERN int this_node;           // Node number of this node
 
-EXTERN gauge_file *startlat_p;
-
 // No random numbers
+
+// Temporary fields
+EXTERN matrix *tempmat, *tempmat2;
+
+// Some more arrays to be used by LAPACK
+// in reunitarization (in generic directory)
+EXTERN double *Rwork, *eigs, *store, *work, *junk, *left, *right;
 
 // Loop stuff
 #define nloop 6
@@ -84,13 +89,12 @@ EXTERN Real loop_term[max_num][nreps];
 // (actually this is the part of the lattice on this node)
 EXTERN site *lattice;
 
+EXTERN gauge_file *startlat_p;
+
 // Vectors for addressing
 // Generic pointers, for gather routines
 #define N_POINTERS 8   // Needed by ../generic/make_lattice.c
 EXTERN char **gen_pt[N_POINTERS];
-
-// Temporary fields
-EXTERN matrix *tempmat, *tempmat2;
 
 // Wilson flow stuff
 EXTERN Real tmax, start_eps, max_eps, epsilon;

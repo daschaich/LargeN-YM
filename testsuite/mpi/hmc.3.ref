@@ -1,0 +1,55 @@
+SU(3) pure-gauge hybrid Monte Carlo algorithm
+Machine = MPI (portable), with 2 nodes
+start: Fri Oct 20 18:52:21 2023
+
+type 0 for no prompts or 1 for prompts
+nx 4
+ny 4
+nz 4
+nt 4
+iseed 41
+LAYOUT = Hypercubes, options = hyper_prime,
+MPI with automatic hyper_prime layout
+ON EACH NODE 2 x 4 x 4 x 4
+Mallocing 0.2 MBytes per core for lattice
+Mallocing 0.0 MBytes per core for fields
+
+
+warms 0
+trajecs 3
+traj_between_meas 3
+beta 6
+hmc_steps 15
+traj_length 1
+reload_serial config.SU3.4444
+forget
+Restored binary gauge configuration serially from file config.SU3.4444
+Time stamp Sat Oct  1 01:24:08 2022
+Checksums ac6e1df0 1e9a6f1a OK
+Time to reload gauge configuration = 0.000639 seconds
+CHECK PLAQ: 1.7511526906430692e+00 1.7608072168014537e+00
+CHECK NERSC LINKTR: 2.5882006381721112e-03 CKSUM: 0
+Reunitarized for double precision.  Max deviation 5.7e-08 changed to 1.3e-15
+Time to check unitarity = 0.005087 seconds
+START 1.7511527 1.7608072 3.5119599
+WARMUPS COMPLETED
+ACTION: g, h, tot = -5394.3704 4040.3806 -1353.9898
+ACTION: g, h, tot = -5459.3124 4105.8371 -1353.4753
+ACCEPT: delta S = 0.5145 start S = -1353.98977161 end S = -1353.47527178
+MONITOR_FORCE 0.06147 0.1235
+GMES -0.34363909 -0.79804767 1.7830111 1.7712287
+ACTION: g, h, tot = -5459.3124 4102.8198 -1356.4925
+ACTION: g, h, tot = -5644.6767 4288.6305 -1356.0463
+ACCEPT: delta S = 0.4462 start S = -1356.49252152 end S = -1356.0462799
+MONITOR_FORCE 0.06209 0.1262
+GMES -0.38570171 -0.71924589 1.829031 1.8458888
+ACTION: g, h, tot = -5644.6767 4083.7611 -1560.9157
+ACTION: g, h, tot = -5577.4805 4015.8403 -1561.6402
+ACCEPT: delta S = -0.7245 start S = -1560.91568176 end S = -1561.64016192
+MONITOR_FORCE 0.06279 0.1262
+GMES -0.36923779 -0.64846033 1.8185897 1.8125824
+RUNNING COMPLETED
+STOP 1.8185897 1.8125824 3.6311722
+Time = 0.04379 seconds
+exit: Fri Oct 20 18:52:21 2023
+

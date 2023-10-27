@@ -26,15 +26,27 @@
 int setup();
 int readin(int prompt);
 
+#if defined(ORA) || defined(LLR)
 // Over-relaxed quasi-heatbath stuff
+// Used to find energy interval when doing LLR with HMC
+void dsdu_qhb(int dir, int parity);    // Gauge force for quasi-heatbath
 void relax();
-void dsdu_qhb(int dir1, int parity);    // Gauge force for quasi-heat bath
 void monte();
-void update();
+void update_ora();
+#endif
 
+// HMC stuff, including energy interval info for LLR
+#ifdef HMC
+double action(Real C, double E_min);
+void update_u(Real eps);
+double update_h(Real eps, Real C, double E_min);
+void hmc_traj(Real C, double E_min);
+void update_hmc(Real C, double E_min);
+#endif
+
+// LLR stuff
 #ifdef LLR
-// Impose constraint that energy remains within interval under consideration
-void updateconst_e(double Eint, double a);
-void monteconst_e(double Eint, double a);
+double gauge_action();
+void findEint(double E_min);
 #endif
 // -----------------------------------------------------------------

@@ -5,8 +5,9 @@
 # Don't use it by itself!
 
 # Target:
-#   pg_ora uses over-relaxed quasi-heat bath algorithm
-#   pg_llr uses log-linear relaxation to compute density of states
+#   pg_ora uses the over-relaxed quasi-heat bath algorithm
+#   pg_hmc uses the hybrid Monte Carlo algorithm
+#   pg_llr uses log-linear relaxation to compute density of states with HMC
 
 MYINCLUDEDIR = .
 INCLUDEDIR = ../include
@@ -31,16 +32,12 @@ HEADERS = ${GLOBAL_HEADERS} ${MY_HEADERS}
 
 # All required object files
 # Basic set from current directory
-MY_OBJECTS = dsdu_qhb.o \
-             monte.o    \
-             relax.o    \
-             setup.o    \
+MY_OBJECTS = setup.o    \
              update.o   \
              gauge_info.o
 
 # Basic set from generic directory
 G_OBJECTS = check_unitarity.o \
-            field_strength.o  \
             gaugefix.o        \
             io_helpers.o      \
             io_lat.o          \
@@ -102,12 +99,23 @@ endif
 DARCH = ${DHAVE_QMP} ${DHAVE_QIO}
 
 ##### Targets:
+# lapack and blas needed for general-N reunitarization
 pg_ora::
-	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" "EXTRA_OBJECTS = control.o "
+	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" "DEFINES = -DORA"  \
+	"LAPACK = -llapack -lblas " \
+	"EXTRA_OBJECTS = control.o dsdu_qhb.o monte.o relax.o "
+
+pg_hmc::
+	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" "DEFINES = -DHMC" \
+	"LAPACK = -llapack -lblas " \
+	"EXTRA_OBJECTS = control.o ranmom.o action.o update_hmc.o update_h.o \
+	                 update_u.o "
 
 pg_llr::
-	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" "DEFINES = -DLLR" \
-	"EXTRA_OBJECTS = control_llr.o monteconst_e.o updateconst_e.o "
+	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" "DEFINES = -DHMC -DLLR" \
+	"LAPACK = -llapack -lblas " \
+	"EXTRA_OBJECTS = control_llr.o ranmom.o action.o update_hmc.o update_h.o \
+	                 update_u.o find_interval.o dsdu_qhb.o monte.o relax.o"
 
 clean:
 	-/bin/rm -f *.o
@@ -122,7 +130,7 @@ libmake:
 
 localmake: ${OBJECTS} ${LIBRARIES}
 	${LD} -o ${MYTARGET} ${LDFLAGS} \
-	${OBJECTS} ${QCDLIB} ${ILIB} -lm
+	${OBJECTS} ${QCDLIB} ${ILIB} -lm ${LAPACK}
 	touch localmake
 
 target: libmake localmake

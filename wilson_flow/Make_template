@@ -107,11 +107,13 @@ DARCH = ${DHAVE_QMP} ${DHAVE_QIO}
 
 ##### Targets:
 su3_Wflow::
-	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@"
+	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" \
+	"LAPACK = -llapack -lblas "
 
 su3_printpoly::
 	${MAKE} -f ${MAKEFILE} target "MYTARGET= $@" \
 	"DEFINES = ${DEFINES} -DLOCALPOLY " \
+	"LAPACK = -llapack -lblas " \
 	"EXTRA_OBJECTS = print_var3.o "
 
 clean:
@@ -130,7 +132,7 @@ libmake:
 
 localmake: ${OBJECTS} ${LIBRARIES}
 	${LD} -o ${MYTARGET} ${LDFLAGS} \
-	${OBJECTS} ${QCDLIB} ${ILIB} -lm
+	${OBJECTS} ${QCDLIB} ${ILIB} -lm ${LAPACK}
 	touch localmake
 
 target: libmake localmake

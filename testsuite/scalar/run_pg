@@ -3,7 +3,7 @@
 
 # TODO: Should eventually merge into a single script
 # User just needs to specify NCOL and tag
-# Available targets are ora and llr for targets pg_$tag
+# Available tags are ora, llr_ora, hmc and llr for targets pg_$tag
 if [ $# -lt 2 ]; then
   echo "Usage: $0 <tag> <N>"
   exit 0

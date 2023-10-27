@@ -1,12 +1,16 @@
-This directory provides a suite of tests for SU(N) lattice gauge theories with N=2, 3, 4
+This directory provides a suite of tests for SU(N) lattice Yang--Mills theories
 
 Reference input and output files are provided for the following compilation targets (which are described in ../wilson_flow/README and ../pure_gauge/README):
 su3_Wflow
-pg_ora
+su3_printpoly
+pg_ora (over-relaxed quasi-heatbath)
+pg_hmc (hybrid Monte Carlo)
+pg_llr_ora
+pg_llr
 
 The scripts run_Wflow and run_pg in both the scalar and mpi directories automate the process of compiling, running and checking the given target for the given gauge group.  Each script must be run from its respective directory.  Given the two arguments
 $ ./run_Wflow <target> <N>
 $ ./run_pg <target> <N>
-the script will compile the target $target for gauge group SU($N), run the $target executable using the appropriate input file in this directory, save the output to $tag.$N$pat.out and check for differences between this output and the reference file $tag.$N.ref where $target=su3_$tag.
+the script will compile the target $target for gauge group SU(N), run the $target executable using the appropriate input file in this directory, save the output to $tag.$N$pat.out and check for differences between this output and the reference file $tag.$N.ref where $target=su3_$tag or $target=pg_$tag.  All tests and reference output are set up for N=2, 3 and 4, with most set up for N=5 and 7 as well.  The energy interval considered by the LLR tests is centered around E=-6plaq/N given the plaquette reported by the ora tests.
 
 Currently the MPI tests are customized for the Barkla cluster at the University of Liverpool.  Adjusting the $makefile and $run variables at the start of mpi/run_* may suffice to adjust the tests for other systems.

@@ -17,9 +17,18 @@ int initial_set() {
   if (mynode() == 0) {
     // Print banner
 #ifndef LLR
-    printf("SU(%d) pure-gauge over-relaxed heatbath algorithm\n", NCOL);
+#ifndef HMC
+    printf("SU(%d) pure-gauge over-relaxed quasi-heatbath algorithm\n", NCOL);
 #else
-    printf("SU(%d) pure-gauge log-linear relaxation algorithm\n", NCOL);
+    printf("SU(%d) pure-gauge hybrid Monte Carlo algorithm\n", NCOL);
+#endif
+#else
+    printf("SU(%d) pure-gauge log-linear relaxation algorithm ", NCOL);
+#ifndef HMC
+    printf("using over-relaxed quasi-heatbath updates\n");
+#else
+    printf("using hybrid Monte Carlo updates\n");
+#endif
 #endif
     printf("Machine = %s, with %d nodes\n", machine_type(), numnodes());
     time_stamp("start");
@@ -109,22 +118,31 @@ int readin(int prompt) {
 
     // Warms, sweeps
     IF_OK status += get_i(stdin, prompt, "warms", &par_buf.warms);
-    IF_OK status += get_i(stdin, prompt, "sweeps", &par_buf.sweeps);
+    IF_OK status += get_i(stdin, prompt, "trajecs", &par_buf.trajecs);
 
 #ifndef LLR
     // Trajectories between more expensive measurements
-    IF_OK status += get_i(stdin, prompt, "swp_between_meas",
+    // Not done in LLR calculations
+    IF_OK status += get_i(stdin, prompt, "traj_between_meas",
                           &par_buf.measinterval);
 #endif
 
     // beta
     IF_OK status += get_f(stdin, prompt, "beta", &par_buf.beta);
 
+#ifndef HMC
     // Over-relaxation steps per sweep
-    IF_OK status += get_i(stdin, prompt, "ora_steps", &par_buf.steps);
+    IF_OK status += get_i(stdin, prompt, "ora_steps", &par_buf.ora_steps);
 
     // Quasi-heatbath steps per sweep
-    IF_OK status += get_i(stdin, prompt, "qhb_steps", &par_buf.stepsQ);
+    IF_OK status += get_i(stdin, prompt, "qhb_steps", &par_buf.qhb_steps);
+#else
+    // HMC steps per sweep
+    IF_OK status += get_i(stdin, prompt, "hmc_steps", &par_buf.hmc_steps);
+
+    // HMC trajectory length
+    IF_OK status += get_f(stdin, prompt, "traj_length", &par_buf.traj_length);
+#endif
 
 #ifdef LLR
     // LLR stuff
@@ -135,11 +153,17 @@ int readin(int prompt) {
     // Size of energy interval delta
     IF_OK status += get_f(stdin, prompt, "delta", &par_buf.delta);
 
-    // Number of iterations for Robbins--Monro algorithm
-    IF_OK status += get_i(stdin, prompt, "ait", &par_buf.ait);
+    // Coefficient of gaussian window constraint
+    IF_OK status += get_f(stdin, prompt, "C_Gauss", &par_buf.C_Gauss);
 
-    // Number of repetitions to jackknife or bootstrap
-    IF_OK status += get_i(stdin, prompt, "Njacknife", &par_buf.Njacknife);
+    // Number of initial Newton--Raphson iterations
+    IF_OK status += get_i(stdin, prompt, "NRiter", &par_buf.NRiter);
+
+    // Number of subsequent Robbins--Monro iterations
+    IF_OK status += get_i(stdin, prompt, "RMiter", &par_buf.RMiter);
+
+    // Number of Jackknife samples
+    IF_OK status += get_i(stdin, prompt, "Nj", &par_buf.Nj);
 #endif
 
     // Find out what kind of starting lattice to use
@@ -164,26 +188,84 @@ int readin(int prompt) {
     normal_exit(0);
 
   warms = par_buf.warms;
-  sweeps = par_buf.sweeps;
+  trajecs = par_buf.trajecs;
   beta = par_buf.beta;
-  steps = par_buf.steps;
-  stepsQ = par_buf.stepsQ;
-  startflag = par_buf.startflag;
-  saveflag = par_buf.saveflag;
+#ifndef LLR
+  measinterval = par_buf.measinterval;
+#endif
+
+#ifndef HMC
+  ora_steps = par_buf.ora_steps;
+  qhb_steps = par_buf.qhb_steps;
+#else
+  ora_steps = 5;    // Defaults for finding energy interval
+  qhb_steps = 5;
+  hmc_steps = par_buf.hmc_steps;
+  traj_length = par_buf.traj_length;
+#endif
 
 #ifdef LLR
   Emin = par_buf.Emin * volume;
   Emax = par_buf.Emax * volume;
   delta = par_buf.delta * volume;
-  ait = par_buf.ait;
-  Njacknife = par_buf.Njacknife;
+  deltaSq = delta * delta;
+  C_Gauss = par_buf.C_Gauss;
+  NRiter = par_buf.NRiter;
+  RMiter = par_buf.RMiter;
+  Nj = par_buf.Nj;
 #else
-  measinterval = par_buf.measinterval;
+  C_Gauss = 0.0;
 #endif
 
+  // Sanity checks
+  if (warms < 0 || trajecs < 0) {
+    node0_printf("ERROR: Number of trajectories cannot be negative\n");
+    terminate(1);
+  }
+  if (ora_steps < 0 || qhb_steps < 0) {
+    node0_printf("ERROR: Number of steps cannot be negative\n");
+    terminate(1);
+  }
+#ifdef HMC
+  if (hmc_steps < 0) {
+    node0_printf("ERROR: Number of steps cannot be negative\n");
+    terminate(1);
+  }
+#endif
+#ifdef LLR
+  if (NRiter < 0 || RMiter < 0) {
+    node0_printf("ERROR: Number of iterations cannot be negative\n");
+    terminate(1);
+  }
+  if (Nj < 0) {
+    node0_printf("ERROR: Nj cannot be negative\n");
+    terminate(1);
+  }
+  if (delta < 0) {
+    node0_printf("ERROR: delta cannot be negative\n");
+    terminate(1);
+  }
+#endif
+  if (C_Gauss < 0) {
+    node0_printf("ERROR: C_Gauss cannot be negative\n");
+    terminate(1);
+  }
+
+  startflag = par_buf.startflag;
+  saveflag = par_buf.saveflag;
   strcpy(startfile, par_buf.startfile);
   strcpy(savefile, par_buf.savefile);
   strcpy(stringLFN, par_buf.stringLFN);
+
+  // Allocate some more arrays to be used by LAPACK
+  // in generic/reunitarize.c
+  Rwork = malloc(sizeof *Rwork * 5 * NCOL);
+  eigs = malloc(sizeof *eigs * NCOL);
+  store = malloc(sizeof *store * 2 * NCOL * NCOL);
+  work = malloc(sizeof *work * 6 * NCOL);
+  junk = malloc(sizeof *junk * NCOL);
+  left = malloc(sizeof *left * 2 * NCOL * NCOL);
+  right = malloc(sizeof *right * 2 * NCOL * NCOL);
 
   // Do whatever is needed to get lattice
   startlat_p = reload_lattice(startflag, startfile);

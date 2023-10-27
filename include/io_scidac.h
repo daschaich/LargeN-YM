@@ -108,7 +108,7 @@ int write_FN_DN_from_site(QIO_Writer *outfile, QIO_String *xml_out,
                         field_offset src, int count);
 int write_FN_M_from_site(QIO_Writer *outfile, QIO_String *xml_out,
                         field_offset src, int count);
-int write_S_from_site(QIO_Writer *outfile, QIO_String *xml_out, 
+int write_S_from_site(QIO_Writer *outfile, QIO_String *xml_out,
                       field_offset src);
 
 int write_DN_C_from_site(QIO_Writer *outfile, QIO_String *xml_out,

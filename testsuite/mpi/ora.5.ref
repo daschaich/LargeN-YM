@@ -1,0 +1,40 @@
+SU(5) pure-gauge over-relaxed quasi-heatbath algorithm
+Machine = MPI (portable), with 2 nodes
+start: Fri Oct 20 18:56:28 2023
+
+type 0 for no prompts or 1 for prompts
+nx 4
+ny 4
+nz 4
+nt 4
+iseed 41
+LAYOUT = Hypercubes, options = hyper_prime,
+MPI with automatic hyper_prime layout
+ON EACH NODE 2 x 4 x 4 x 4
+Mallocing 0.3 MBytes per core for lattice
+Mallocing 0.1 MBytes per core for fields
+
+
+warms 0
+trajecs 3
+traj_between_meas 3
+beta 16.7
+ora_steps 4
+qhb_steps 4
+fresh
+forget
+unit gauge configuration loaded
+CHECK PLAQ: 5.0000000000000000e+00 5.0000000000000000e+00
+CHECK NERSC LINKTR: 8.0000000000000004e-01 CKSUM: 0
+Reunitarized for double precision.  Max deviation 0 changed to 0
+Time to check unitarity = 0.003847 seconds
+START 5 5 10
+WARMUPS COMPLETED
+GMES 1.6360165 0.039116296 2.7948465 2.8184134
+GMES 1.06391 0.03578754 2.7023306 2.696318
+GMES 0.59484813 0.0013295424 2.7032502 2.6793681
+RUNNING COMPLETED
+STOP 2.7032502 2.6793681 5.3826183
+Time = 0.1104 seconds
+exit: Fri Oct 20 18:56:28 2023
+

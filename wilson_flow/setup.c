@@ -73,13 +73,6 @@ int setup() {
   FIELD_ALLOC_VEC(S, matrix, NDIMS);
   FIELD_ALLOC_VEC(A, anti_hermitmat, NDIMS);
 
-#if NCOL == 4
-#ifdef NHYP_JACOBI
-  Qj = AllocateMatrix(NCOL);
-  Vj = AllocateMatrix(NCOL);
-#endif
-#endif
-
   return prompt;
 }
 // -----------------------------------------------------------------
@@ -165,6 +158,16 @@ int readin(int prompt) {
   strcpy(startfile, par_buf.startfile);
   strcpy(savefile, par_buf.savefile);
   strcpy(stringLFN, par_buf.savefile);
+
+  // Allocate some more arrays to be used by LAPACK
+  // in generic/reunitarize.c
+  Rwork = malloc(sizeof *Rwork * 5 * NCOL);
+  eigs = malloc(sizeof *eigs * NCOL);
+  store = malloc(sizeof *store * 2 * NCOL * NCOL);
+  work = malloc(sizeof *work * 6 * NCOL);
+  junk = malloc(sizeof *junk * NCOL);
+  left = malloc(sizeof *left * 2 * NCOL * NCOL);
+  right = malloc(sizeof *right * 2 * NCOL * NCOL);
 
   // Do whatever is needed to get lattice
   startlat_p = reload_lattice(startflag, startfile);

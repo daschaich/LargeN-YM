@@ -2,71 +2,12 @@
 // Main procedure and helpers for pure-gauge over-relaxed quasi-heatbath
 #define CONTROL
 #include "pg_includes.h"
-//#define DEBUG_PRINT
-// -----------------------------------------------------------------
 
-
-
-// -----------------------------------------------------------------
-// Find initial configuration in desired energy interval
-void findEint(double Eint, double delta) {
-  bool Efound = false;
-  int counter = 0, count_max = 2000;
-  double ss_plaq, st_plaq, dtime, energy, energyref, betaref = beta;
-
-  node0_printf("Searching for energy interval [%.8g, %.8g]\n",
-               Eint, Eint + delta);
-
-  dtime = -dclock();
-  energy = action(&ss_plaq, &st_plaq);
-  if (energy >= Eint && energy <= (Eint + delta))
-  {
-    Efound = true;
-    beta = betaref;
-  }
-
-  while(Efound == false && counter < count_max) {
-    update();
-    energyref = action(&ss_plaq, &st_plaq) * betaref / beta;
-    if (energyref >= Eint && energyref <= (Eint + delta))
-    {
-      Efound = true;
-      beta = betaref;
-    }
-    else if (energyref>(Eint+delta))
-      beta += 0.1;
-    else  // energyref < Eint
-      beta -= 0.1;
-#ifdef DEBUG_PRINt
-    node0_printf("energyref %.8g %.8g %d\n", energyref, beta, counter);
-#endif
-
-    counter++;
-  }
-
-  dtime += dclock();
-  if (Efound) {
-    node0_printf("Energy %.4g in interval found ", energy);
-    node0_printf("after %d updates in %.4g seconds\n", counter, dtime);
-  }
-  else {
-    node0_printf("ERROR: Energy interval not found ");
-    node0_printf("after %d updates in %.4g seconds\n", counter, dtime);
-    node0_printf("Ended up with energy %.4g\n", energy);
-    terminate(1);
-  }
-}
-// -----------------------------------------------------------------
-
-
-
-// -----------------------------------------------------------------
 int main(int argc, char *argv[]) {
-  bool Einterval = false;
   int prompt;
-  int swp_done, Nint, Eint, jcount, acounter;
-  int RMcount;      // Count Robbins--Monro iterations
-  double ss_plaq, st_plaq, dtime, rate, energy;
+  int traj_done, RMcount, Ncount, Nint, Intcount;
+  double ss_plaq, st_plaq, E, dtime;
+  double RestrictEV;    // Restricted expectation value <<E - E_i>>
 
   // Set up
   setlinebuf(stdout); // DEBUG
@@ -83,94 +24,90 @@ int main(int argc, char *argv[]) {
   }
   dtime = -dclock();
 
-  // Monitor overall acceptance in monteconst_e.c
-  accept = 0;
-  reject = 0;
-
-  // Check: compute initial plaquette and energy
-  energy = action(&ss_plaq, &st_plaq);
-  node0_printf("START %.8g %.8g %.8g %.8g\n",
-               ss_plaq, st_plaq, ss_plaq + st_plaq, energy);
-
-  // Declarations that depend on input
-  // Number of energy intervals, include interval starting at Emax
+  // Set up number of intervals
+  if (Emax < Emin) {
+    node0_printf("ERROR: Emax smaller than Emin\n");
+    terminate(1);
+  }
   Nint = (int)((Emax - Emin) / delta) + 1;
-  double x0[Nint];  // Lower end of energy interval
-  double a[Nint], a_i[Njacknife], a_i_new;
-  double Reweightexpect; // Reweighted expectation value of the energy
-  double *measurement = malloc(sweeps * sizeof(double));
+  node0_printf("Nint %d\n", Nint);
+  Real Eint[Nint], aint[Nint];
 
-  for(Eint=0;Eint<Nint;Eint++)
-  {
-    x0[Eint] = (double)(Eint)*delta + Emin;
-    a[Eint] = 0.0;
-    for(jcount = 0;jcount<Njacknife;jcount++)
-    {
-      a_i[jcount] = 1.0;
-      a_i_new = 1.0;
-      RMcount = 0;
-      Einterval = false;
+  // Cycle over intervals in this job
+  for (Intcount = 0; Intcount < Nint; Intcount++) {
+    aint[Intcount] = 0;
+    Eint[Intcount] = Emin + Intcount * delta;
 
-      // Perform warmup sweeps before searching for energy interval
-      coldlat();
-      for (swp_done = 0; swp_done < warms; swp_done++)
-        update();
-      node0_printf("%d WARMUPS COMPLETED FOR jcount=%d\n", warms, jcount);
+    // Cycle over jackknife samples in this interval
+    for (Ncount = 0; Ncount < Nj; Ncount++) {
+      // Check: compute initial plaquette and energy
+      plaquette(&ss_plaq, &st_plaq);
+      E = gauge_action();
+      node0_printf("START %.8g %.8g %.8g %.8g\n",
+               ss_plaq, st_plaq, ss_plaq + st_plaq, E);
 
-      for(acounter=0;acounter<ait;acounter++)
-      {
-        a_i[jcount] = a_i_new;
+      // Unconstrained warmup sweeps before searching for energy interval
+      for (traj_done = 0; traj_done < warms; traj_done++)
+        update_hmc(0.0, Eint[Intcount]);
+      node0_printf("WARMUPS COMPLETED\n");
 
-        if (Einterval == false)
-        {
-          // Terminates if interval not found
-          findEint(x0[Eint],delta);
-          Einterval = true;
+      // Terminates if interval not found
+      // Otherwise sets initial guess for a
+      findEint(Eint[Intcount]);
 
-          for (swp_done = 0; swp_done < (2*warms); swp_done++)
-            updateconst_e(x0[Eint], 1.0);
+      // Newton--Raphson (NR) and Robbins--Monro (RM) iterations
+      for (RMcount = 0; RMcount < (NRiter + RMiter); RMcount++) {
+        // Constrained warm-up sweeps in each iteration
+        for (traj_done = 0; traj_done < warms; traj_done++)
+          update_hmc(C_Gauss, Eint[Intcount]);
+
+        RestrictEV = 0.0;
+        for (traj_done = 0; traj_done < trajecs; traj_done++) {
+          update_hmc(C_Gauss, Eint[Intcount]);
+          // Accumulate after update
+          RestrictEV += gauge_action();
         }
+        RestrictEV /= trajecs;
+        RestrictEV -= Eint[Intcount] + 0.5 * delta;
 
-        for (swp_done = 0; swp_done < warms; swp_done++)
-          updateconst_e(x0[Eint], 1.0);
-
-        // TODO: Compute variance from <O> and <O^2>
-        Reweightexpect = 0;
-        for (swp_done = 0; swp_done < sweeps; swp_done++) {
-          measurement[swp_done] = action(&ss_plaq, &st_plaq);
-          Reweightexpect += measurement[swp_done];
-          updateconst_e(x0[Eint], a_i[jcount]);
+        // Implement initial NR iterations
+        // Replace deltaSq/12 --> deltaSq to control fluctuations
+        if (RMcount < NRiter) {
+          if (fabs(RestrictEV) < a_cut)
+            a += RestrictEV / deltaSq;
+          else if (RestrictEV > 0.0)
+            a += a_cut / deltaSq;
+          else
+            a -= a_cut / deltaSq;
         }
-        Reweightexpect /= sweeps;
-
-        Reweightexpect -= x0[Eint] + 0.5*delta;
-        if (RMcount<100)
-        {
-          a_i_new = a_i[jcount] + 12/(delta*delta)*Reweightexpect;
-          node0_printf("a = %.4g off\n", a_i_new);
+        else {    // Otherwise under-relax
+          if (fabs(RestrictEV) < a_cut)
+            a += RestrictEV / (deltaSq *  (RMcount - NRiter + 1));
+          else if (RestrictEV > 0.0)
+            a += a_cut / (deltaSq * (RMcount - NRiter + 1));
+          else
+            a -= a_cut / (deltaSq * (RMcount - NRiter + 1));
         }
-        else
-        {
-          a_i_new = a_i[jcount] + 12/(delta*delta*(RMcount+1-100))*Reweightexpect;
-          node0_printf("a = %.4g\n", a_i_new);
-        }
-        RMcount++;
+        node0_printf("RM ITER %d RestrictEV %.8g a %.8g\n",
+                     RMcount + 1, RestrictEV, a);
       }
-      a[Eint] += a_i_new / Njacknife;
+      aint[Intcount] += a;
+
+      // Reload lattice for next jackknife sample
+      if (Ncount < Nj - 1) {
+        node0_printf("Resetting lattice\n");
+        startlat_p = reload_lattice(startflag, startfile);
+      }
     }
-    //node0_printf("a = %.4g \n", a[Eint]);
-    //printf("%d \n",1.0);
+    aint[Intcount] /= (double)Nj;
   }
   node0_printf("RUNNING COMPLETED\n");
 
   // Check: compute final plaquette and energy
-  energy = action(&ss_plaq, &st_plaq);
+  plaquette(&ss_plaq, &st_plaq);
+  E = gauge_action();
   node0_printf("STOP %.8g %.8g %.8g %.8g\n",
-               ss_plaq, st_plaq, ss_plaq + st_plaq, energy);
-
-  rate = (double)accept / ((double)(accept + reject));
-  node0_printf("Overall acceptance %d of %d = %.4g\n",
-               accept, accept + reject, rate);
+               ss_plaq, st_plaq, ss_plaq + st_plaq, E);
   dtime += dclock();
   node0_printf("Time = %.4g seconds\n", dtime);
   fflush(stdout);
@@ -179,7 +116,6 @@ int main(int argc, char *argv[]) {
   if (saveflag != FORGET)
     save_lattice(saveflag, savefile, stringLFN);
 
-  free(measurement);
   normal_exit(0);         // Needed by at least some clusters
   return 0;
 }

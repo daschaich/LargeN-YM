@@ -15,11 +15,6 @@
 #define NCOL 3
 #define N_OFFDIAG (NCOL * (NCOL - 1) / 2)
 
-// Only have anti_hermitmat and explicit loops in libraries for N <= 4
-#if NCOL > 4
-  #error "NCOL > 4 not yet implemented!"
-#endif
-
 #ifdef FAST
   #if (NCOL != 3)
     #error "FAST only works if NCOL = 3"
