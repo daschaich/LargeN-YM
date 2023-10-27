@@ -60,7 +60,7 @@ double gauge_action() {
   return (-beta * 3.0 * volume * (ssplaq + stplaq));
 }
 
-double action(double E_min) {
+double action(Real C, double E_min) {
   double g_act, h_act, tot;
 
   g_act = gauge_action();
@@ -68,11 +68,10 @@ double action(double E_min) {
   node0_printf("ACTION: g, ");
 #ifdef LLR
   double td = 0.0, w_act = 0.0;
-  if (constrained == 1) {
+  if (C > 0) {
     // Add Gaussian window contribution
-    // TODO: Add tunable parameter 'C' rather than constrained flag...
     td = g_act - E_min - 0.5 * delta;
-    w_act = 0.5 * td * td / deltaSq; 
+    w_act = 0.5 * C * td * td / deltaSq;
   }
   node0_printf("w, h, tot = %.8g %.8g %.8g ", g_act, w_act, h_act);
 #else
@@ -81,7 +80,7 @@ double action(double E_min) {
 
   tot = g_act + h_act;
 #ifdef LLR
-  if (constrained == 1)
+  if (C > 0)
     tot = a * g_act + h_act + w_act;
 #endif
   node0_printf("%.8g\n", tot);

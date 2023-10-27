@@ -153,6 +153,9 @@ int readin(int prompt) {
     // Size of energy interval delta
     IF_OK status += get_f(stdin, prompt, "delta", &par_buf.delta);
 
+    // Coefficient of gaussian window constraint
+    IF_OK status += get_f(stdin, prompt, "C_Gauss", &par_buf.C_Gauss);
+
     // Number of initial Newton--Raphson iterations
     IF_OK status += get_i(stdin, prompt, "NRiter", &par_buf.NRiter);
 
@@ -186,8 +189,10 @@ int readin(int prompt) {
 
   warms = par_buf.warms;
   trajecs = par_buf.trajecs;
-  measinterval = par_buf.measinterval;
   beta = par_buf.beta;
+#ifndef LLR
+  measinterval = par_buf.measinterval;
+#endif
 
 #ifndef HMC
   ora_steps = par_buf.ora_steps;
@@ -204,10 +209,47 @@ int readin(int prompt) {
   Emax = par_buf.Emax * volume;
   delta = par_buf.delta * volume;
   deltaSq = delta * delta;
+  C_Gauss = par_buf.C_Gauss;
   NRiter = par_buf.NRiter;
   RMiter = par_buf.RMiter;
   Nj = par_buf.Nj;
+#else
+  C_Gauss = 0.0;
 #endif
+
+  // Sanity checks
+  if (warms < 0 || trajecs < 0) {
+    node0_printf("ERROR: Number of trajectories cannot be negative\n");
+    terminate(1);
+  }
+  if (ora_steps < 0 || qhb_steps < 0) {
+    node0_printf("ERROR: Number of steps cannot be negative\n");
+    terminate(1);
+  }
+#ifdef HMC
+  if (hmc_steps < 0) {
+    node0_printf("ERROR: Number of steps cannot be negative\n");
+    terminate(1);
+  }
+#endif
+#ifdef LLR
+  if (NRiter < 0 || RMiter < 0) {
+    node0_printf("ERROR: Number of iterations cannot be negative\n");
+    terminate(1);
+  }
+  if (Nj < 0) {
+    node0_printf("ERROR: Nj cannot be negative\n");
+    terminate(1);
+  }
+  if (delta < 0) {
+    node0_printf("ERROR: delta cannot be negative\n");
+    terminate(1);
+  }
+#endif
+  if (C_Gauss < 0) {
+    node0_printf("ERROR: C_Gauss cannot be negative\n");
+    terminate(1);
+  }
 
   startflag = par_buf.startflag;
   saveflag = par_buf.saveflag;

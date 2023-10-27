@@ -47,9 +47,8 @@ int main(int argc, char *argv[]) {
                ss_plaq, st_plaq, ss_plaq + st_plaq, E);
 
       // Unconstrained warmup sweeps before searching for energy interval
-      constrained = 0;
       for (traj_done = 0; traj_done < warms; traj_done++)
-        update_hmc(Eint[Intcount]);
+        update_hmc(0.0, Eint[Intcount]);
       node0_printf("WARMUPS COMPLETED\n");
 
       // Terminates if interval not found
@@ -57,15 +56,14 @@ int main(int argc, char *argv[]) {
       findEint(Eint[Intcount]);
 
       // Newton--Raphson (NR) and Robbins--Monro (RM) iterations
-      constrained = 1;
       for (RMcount = 0; RMcount < (NRiter + RMiter); RMcount++) {
         // Constrained warm-up sweeps in each iteration
         for (traj_done = 0; traj_done < warms; traj_done++)
-          update_hmc(Eint[Intcount]);
+          update_hmc(C_Gauss, Eint[Intcount]);
 
         RestrictEV = 0.0;
         for (traj_done = 0; traj_done < trajecs; traj_done++) {
-          update_hmc(Eint[Intcount]);
+          update_hmc(C_Gauss, Eint[Intcount]);
           // Accumulate after update
           RestrictEV += gauge_action();
         }

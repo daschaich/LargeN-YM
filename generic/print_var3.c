@@ -32,7 +32,7 @@ void print_var3() {
           // Now we can print
           if ((printf("POLYDIST %d %d %d %.8g %.8g\n", x, y, z,
                       toprint.real, toprint.imag) == EOF)) {
-            printf("print_var3: Write error\n"); 
+            printf("print_var3: Write error\n");
             terminate(1);
           }
         }

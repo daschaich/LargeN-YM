@@ -9,11 +9,6 @@ int main(int argc, char *argv[]) {
   double ss_plaq, st_plaq, dtime;
   complex plp = cmplx(99.0, 99.0);
 
-#ifdef LLR
-  node0_printf("ERROR: Use control_llr.c for LLR!\n");
-    terminate(1);
-#endif
-
   // Set up
   setlinebuf(stdout); // DEBUG
   initialize_machine(&argc,&argv);
@@ -36,7 +31,7 @@ int main(int argc, char *argv[]) {
   // Perform warmup sweeps
   for (traj_done = 0; traj_done < warms; traj_done++)
 #ifdef HMC
-    update_hmc(NAN);
+    update_hmc(0.0, NAN);
 #else
     update_ora();
 #endif
@@ -45,7 +40,7 @@ int main(int argc, char *argv[]) {
   // Perform sweeps, reunitarizations and measurements
   for (traj_done = 0; traj_done < trajecs; traj_done++) {
 #ifdef HMC
-    update_hmc(NAN);
+    update_hmc(0.0, NAN);
 #else
     update_ora();
 #endif

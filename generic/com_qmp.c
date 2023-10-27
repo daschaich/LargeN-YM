@@ -1,102 +1,84 @@
-/******************  com_qmp.c *****************************************/
-/* Communications routines for the SU3 program 
-   This file is communications-scheme dependent.
-   QMP version - allegedly machine independent
-*/
-/*
-  Exported Functions:
-
-   initialize_machine()  does any machine dependent setup at the
-                           very beginning.
-   normal_exit()         closes communications and exits
-   terminate()           halts program abruptly and exits
-   machine_type()        returns string describing communications architecture
-   mynode()              returns node number of this node.
-   numnodes()            returns number of nodes
-   g_sync()              provides a synchronization point for all nodes.
-   g_floatsum()          sums a floating point number over all nodes.
-   g_vecfloatsum()       sums a vector of floats over all nodes 
-   g_doublesum()         sums a double over all nodes.
-   g_vecdoublesum()      sums a vector of doubles over all nodes.
-   g_complexsum()        sums a single precision complex number over all nodes.
-   g_veccomplexsum()     sums a vector of single precision complex numbers
-                           over all nodes.
-   g_dcomplexsum()       sums a double precision complex number over all nodes.
-   g_vecdcomplexsum()    sums a vector of double_complex over all nodes 
-   g_xor32()             finds global exclusive or of 32-bit word
-   g_floatmax()          finds maximum floating point number over all nodes.
-   g_doublemax()         finds maximum double over all nodes.
-   broadcast_float()     broadcasts a single precision number from
-	                   node 0 to all nodes.
-   broadcast_double()    broadcasts a double precision number
-   broadcast_complex()   broadcasts a single precision complex number
-   broadcast_dcomplex()  broadcasts a double precision complex number
-   broadcast_bytes()     broadcasts a number of bytes
-   send_integer()        sends an integer to one other node
-   receive_integer()     receives an integer
-   send_field()          sends a field to one other node.
-   get_field()           receives a field from some other node.
-   dclock()              returns a double precision time, with arbitrary zero
-   time_stamp()          print wall clock time with message
-   sort_eight_gathers()  sorts eight contiguous gathers from order
-                           XUP,XDOWN,YUP,YDOWN... to XUP,YUP,...XDOWN,YDOWN...
-   make_nn_gathers()     makes all necessary lists for communications with
-                           nodes containing neighbor sites.
-   make_gather()         calculates and stores necessary communications lists
-                           for a given gather mapping
-   declare_gather_site()      creates a message tag that defines specific details
-                           of a gather to be used later
-   declare_gather_field()  creates a message tag that defines specific
-                                details of a gather from field to be used later
-   prepare_gather()      optional call that allocates buffers for a previously
-                           declared gather.  will automatically be called from
-                           do_gather() if not done before.
-   do_gather()           executes a previously declared gather
-   wait_gather()         waits for receives to finish, insuring that the
-                           data has actually arrived.
-   cleanup_gather()      frees all the buffers that were allocated, WHICH
-                           MEANS THAT THE GATHERED DATA MAY SOON DISAPPEAR.
-   accumulate_gather()   combines gathers into single message tag
-   declare_accumulate_gather_site()  does declare_gather() and accumulate_gather()
-                                  in single step.
-   declare_accumulate_gather_field()  does declare_gather_field() and
-                                            accumulate_gather() in single step.
-   start_gather_site()        older function which does declare/prepare/do_gather
-                           in a single step
-   start_gather_field()  older function which does
-                               declare/prepare/do_gather_field
-   restart_gather_site()      older function which is obsoleted by do_gather()
-   restart_gather_field() older function which is obsoleted by do_gather() 
-   start_general_gather_site()  starts asynchronous sends and receives required
-                             to gather fields at arbitrary displacement.
-   start_general_gather_field() starts asynchronous sends and receives 
-                             required to gather neighbors from a temporary 
-			     array of fields.
-   wait_general_gather()   waits for receives to finish, insuring that the
-                             data has actually arrived, and sets pointers to
-			     received data.
-   cleanup_general_gather()  frees all the buffers that were allocated, WHICH
-                               MEANS THAT THE GATHERED DATA MAY SOON DISAPPEAR.
-
-*/
+// -----------------------------------------------------------------
+// Communications routines for MPI from QMP (allegedly machine independent)
+// Exported Functions:
+// initialize_machine()   Do machine dependent setup at the very beginning
+// normal_exit()          Close communications and exit
+// terminate()            Halt program abruptly and exit
+// machine_type()         Return string describing communications architecture
+// mynode()               Return node number of this node
+// numnodes()             Return number of nodes
+// g_sync()               Provide a synchronization point for all nodes
+// g_floatsum()           Sum a Real over all nodes
+// g_vecfloatsum()        Sum a vector of Reals over all nodes
+// g_doublesum()          Sum a double over all nodes
+// g_vecdoublesum()       Sum a vector of doubles over all nodes
+// g_complexsum()         Sum a generic precision complex number over all nodes
+// g_veccomplexsum()      Sum a vector of generic precision complex numbers
+//                          over all nodes
+// g_dcomplexsum()        Sum a double precision complex number over all nodes
+// g_vecdcomplexsum()     Sum a vector of double_complex over all nodes
+// g_xor32()              Find global exclusive or of 32-bit word
+// g_floatmax()           Find maximum Real over all nodes
+// g_doublemax()          Find maximum double over all nodes
+// broadcast_float()      Broadcast a Real from node 0 to all nodes
+// broadcast_double()     Broadcast a double from node 0 to all nodes
+// broadcast_complex()    Broadcast a generic precision complex number
+// broadcast_dcomplex()   Broadcast a double precision complex number
+// broadcast_bytes()      Broadcast a number of bytes
+// send_integer()         Send an integer to one other node
+// receive_integer()      Receive an integer
+// send_field()           Send a field to one other node
+// get_field()            Receive a field from some other node
+// dclock()               Return a double precision time, with arbitrary zero
+// time_stamp()           Print wall clock time with message
+// sort_eight_gathers()   Sort eight contiguous gathers
+//                          from XUP, XDOWN, YUP, YDOWN, ...
+//                          to XUP, YUP, ..., XDOWN, YDOWN, ...
+// make_nn_gathers()      Make all necessary lists for communications with
+//                          nodes containing neighbor sites
+// make_gather()          Calculate and store necessary communications lists
+//                          for a given gather mapping
+// declare_gather_site()  Create a message tag that defines specific
+//                          details of a site gather to be used later
+// declare_gather_field() Create a message tag that defines specific
+//                          details of a field gather to be used later
+// prepare_gather()       Allocate buffers for a previously declared gather
+//                          Will automatically be called from do_gather()
+//                          if not done before
+// do_gather()            Execute a previously declared gather
+// wait_gather()          Wait for receives to finish,
+//                          ensuring that the data have actually arrived,
+//                          and set pointers to received data
+// cleanup_gather()       Free all the buffers that were allocated
+//                          NB: The gathered data may soon disappear
+// accumulate_gather()    Combine gathers into single message tag
+// declare_accumulate_gather_site()
+//                        Do declare_gather_site() and accumulate_gather()
+//                          in single step
+// declare_accumulate_gather_field()
+//                        Do declare_gather_field() and accumulate_gather()
+//                          in single step
+// start_gather_site()    Declare/prepare/do site gather in a single step
+// start_gather_field()   Declare/prepare/do field gather in a single step
+// start_general_gather_site()
+//                        Start asynchronous sends and receives required
+//                          to gather site data at arbitrary displacement
+// start_general_gather_field()
+//                        Start asynchronous sends and receives required to
+//                          gather field data at arbitrary displacement
+// wait_general_gather()  Wait for receives to finish, ensuring that the
+//                          data have actually arrived,
+//                          and set pointers to received data
+// cleanup_general_gather()
+//                        Free all the buffers that were allocated
+//                          NB: The gathered data may soon disappear
 
 #include <time.h>
 #include "generic_includes.h"
 #include "../include/config.h"
 #include "qmp.h"
 
-#define NOWHERE -1	/* Not an index in array of fields */
-
-#if 0
-/* message types used here */
-#define SEND_INTEGER_ID    1  /* send an integer to one other node */
-#define SEND_FIELD_ID      2  /* id of field sent from one node to another */
-#define GENERAL_GATHER_ID  3  /* id used by general_gather routines */
-#define GATHER_BASE_ID     4  /* ids greater than or equal to this are used
-                                 by the gather routines */
-/* macro to compute the message id */
-#define GATHER_ID(x) (GATHER_BASE_ID+(x))
-#endif
+#define NOWHERE -1      // Not an index in array of fields
 
 /* If we want to do our own checksums */
 #ifdef COM_CRC
@@ -106,7 +88,7 @@ u_int32type crc32(u_int32type crc, const unsigned char *buf, size_t len);
 #define CRCBYTES 0
 #endif
 
-/* hacks needed to unify even/odd and 32 sublattice cases */
+// Hacks needed to unify even/odd and 32 sublattice cases
 #ifdef N_SUBL32
 #define NUM_SUBL 32
 #define FORSOMEPARITY FORSOMESUBLATTICE
@@ -114,7 +96,7 @@ u_int32type crc32(u_int32type crc, const unsigned char *buf, size_t len);
 #define NUM_SUBL 2
 #endif
 
-/* Precision */
+// Precision
 #if PRECISION == 1
 #define QMP_sum_Real QMP_sum_float
 #define QMP_sum_Real_array QMP_sum_float_array
@@ -124,11 +106,11 @@ u_int32type crc32(u_int32type crc, const unsigned char *buf, size_t len);
 #define QMP_sum_Real_array QMP_sum_double_array
 #define QMP_max_Real QMP_max_double
 #endif
+// -----------------------------------------------------------------
 
-/**********************************************************************
- *                      INTERNAL DATA TYPES                           *
- **********************************************************************/
 
+
+// -----------------------------------------------------------------
 /* "comlink" is the basic structure used in gathering neighboring sites.
    Each node will maintain one such structure for each direction for each
    (other) node that contains sites that are neighbors of the sites on
@@ -153,23 +135,12 @@ typedef struct comlink {
      the opposite gather. */
 } comlink;
 
-#if 0
-/* Linked list type to store id offsets for the sender.
-   Needed to match the id that receiver is expecting */
-typedef struct id_list_t {
-  int id_offset;           /* id offset */
-  struct id_list_t *next;  /* linked list */
-} id_list_t;
-#endif
-
 /* structure to hold all necessary info for a gather */
 typedef struct gather_t {
   int *neighbor;    /* keeps track if gather neighbor is on our node or not */
   comlink *neighborlist;         /* comlink for receiving messages */
   comlink *neighborlist_send;    /* comlink for sending messages */
-  //  id_list_t *id_list;            /* list of id offsets for sending */
-  int n_recv_msgs, n_send_msgs;  /* number of messages to receive and send */ 
-  //  int offset_increment; /* total number of message ids used for this gather */
+  int n_recv_msgs, n_send_msgs;  /* number of messages to receive and send */
 } gather_t;
 
 /* structure to keep track of details of a declared gather */
@@ -185,7 +156,6 @@ typedef struct gmem_t {
 /* Structure to keep track of outstanding sends and receives */
 typedef struct {
   int msg_node;         /* node sending or receiving message */
-  //  int id_offset;        /* id offset for this message */
   int msg_size;         /* size of message in bytes */
   QMP_mem_t *qmp_mem;
   char *msg_buf;        /* address of buffer malloc'd for message */
@@ -203,8 +173,6 @@ struct msg_tag {
   int index;
 #endif
   int prepared;
-  //  int *ids;          /* array of message ids used in gather */
-  //  int nids;          /* number of message ids used in gather */
   int nrecvs;        /* number of messages to receive in gather */
   int nsends;        /* number of messages to send in gather */
   msg_sr_t *recv_msgs;  /* array of messages to receive */
@@ -214,16 +182,13 @@ struct msg_tag {
 };
 
 
-/***************************************************
- *  Global variables for the communications stuff  *
- ***************************************************/
-
+// Global variables for the communications stuff  *
 /* message ids for gather encode a sequence number for the gather
    so that if several gathers are going at once, you can read
    the message corresponding to the right one. */
 /* for computing message id in gather */
 /* not needed anymore, but may be used for a check later */
-//static int id_offset;	    /* label gathers by round-robin */
+//static int id_offset;     /* label gathers by round-robin */
 //static int num_gather_ids;  /* number of id offsets allowed */
 
 /* keep track of used ids */
@@ -237,68 +202,41 @@ static int n_gathers, gather_array_len;
 
 static size_t mem_align=QMP_ALIGN_DEFAULT;
 static int mem_flags=(QMP_MEM_COMMS);
+// -----------------------------------------------------------------
 
-/**********************************************************************
- *                BASIC COMMUNICATIONS FUNCTIONS                      *
- **********************************************************************/
+
+
+// -----------------------------------------------------------------
+// Basic communications functions
 
 /*
 **  Machine initialization
 */
-void
-initialize_machine(int *argc, char ***argv)
-{
+void initialize_machine(int *argc, char ***argv) {
   QMP_status_t i = -1;
   QMP_thread_level_t provide;
 
   i = QMP_init_msg_passing(argc, argv, QMP_THREAD_SINGLE, &provide);
-  if(i!=0) {
+  if (i!=0) {
     printf("%s\n", QMP_error_string(i));
     printf("com_qmp: Initialize QMP failed.\n");
     fflush(stdout);
     exit(i);
   }
 
-  /* This section needed until QMP is fixed so we don't have to call
-     QMP_declare_logical_topology */
-#if 0
-  /* we do our own layout but we have to pass QMP something to make it happy */
-  //  if(QMP_get_msg_passing_type()==QMP_GRID) 
-  if(0)
-    {
-      QMP_declare_logical_topology(QMP_get_allocated_dimensions(),
-				   QMP_get_allocated_number_of_dimensions());
-    } 
-  else 
-    { /* switch */
-      int nodes;
-      nodes = QMP_get_number_of_nodes();
-      QMP_declare_logical_topology(&nodes, 1);
-    }
-#endif
-
   /* check if 32 bit int is set correctly */
 #ifdef SHORT_IS_32BIT
-  if(sizeof(unsigned short)!=4) {
-    printf("node %d: SHORT_IS_32BIT is set but sizeof(unsigned short)=%d\n",
-	   mynode(), sizeof(unsigned short));
+  if (sizeof(unsigned short)!=4) {
+    printf("node%d: SHORT_IS_32BIT is set but sizeof(unsigned short)=%d\n",
+           mynode(), sizeof(unsigned short));
     terminate(1);
   }
 #else
-  if(sizeof(unsigned int)!=4) {
-    printf("node %d: SHORT_IS_32BIT is not set but sizeof(unsigned int)=%d\n",
-	   mynode(), (int)sizeof(unsigned int));
+  if (sizeof(unsigned int)!=4) {
+    printf("node%d: SHORT_IS_32BIT is not set but sizeof(unsigned int)=%d\n",
+           mynode(), (int)sizeof(unsigned int));
     terminate(1);
   }
-#endif
-
-#if 0
-  num_gather_ids = 257 - GATHER_BASE_ID;
-  if(num_gather_ids>1024) num_gather_ids = 1024;
-
-  id_offset = 0;
-  id_array = (int *)malloc(num_gather_ids*sizeof(int));
-  for(i=0; i<num_gather_ids; ++i) id_array[i] = 0;
 #endif
 
   n_gathers = 0;
@@ -314,7 +252,7 @@ reset_machine(int *argc, char ***argv)
 
   QMP_finalize_msg_passing();
   i = QMP_init_msg_passing(argc, argv, QMP_THREAD_SINGLE, &provide);
-  if(i!=0) {
+  if (i!=0) {
     printf("%s\n", QMP_error_string(i));
     printf("com_qmp: Initialize QMP failed.\n");
     fflush(stdout);
@@ -403,8 +341,8 @@ g_intsum(int *ipt)
 **  Sum unsigned 32-bit integer type
 */
 /* Binary operation */
-static void 
-sum_u32(void *inout, void *in ){
+static void
+sum_u32(void *inout, void *in) {
   *(u_int32type *)inout += *(u_int32type *)in;
 }
 
@@ -651,10 +589,10 @@ get_field(char *buf, int size, int fromnode)
 */
 double
 dclock_cpu(void)
-{ 
+{
   long fine;
   fine = clock();
-  return( ((double)fine)/CLOCKS_PER_SEC);
+  return(((double)fine)/CLOCKS_PER_SEC);
 }
 
 /*
@@ -662,13 +600,13 @@ dclock_cpu(void)
 */
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
-double dclock(void){
+double dclock(void) {
   struct timeval tp;
   gettimeofday(&tp,NULL);
-  return ( (double) tp.tv_sec + (double) tp.tv_usec * 1.e-6 );
+  return ((double) tp.tv_sec + (double) tp.tv_usec * 1.e-6);
 }
 #else
-double dclock(void){
+double dclock(void) {
   return dclock_cpu();
 }
 #endif
@@ -681,7 +619,7 @@ time_stamp(char *msg)
 {
   time_t time_stamp;
 
-  if(mynode()==0){
+  if (mynode()==0) {
     time(&time_stamp);
     printf("%s: %s\n", msg, ctime(&time_stamp));
     fflush(stdout);
@@ -704,8 +642,8 @@ sort_eight_gathers(int index)
   gather_t tt[8];
   int i;
 
-  for(i=0; i<8; i++) memcpy(&tt[i], &gather_array[index+i], sizeof(gather_t));
-  for(i=XUP; i<=TUP; i++) {
+  for (i = 0; i < 8; i++) memcpy(&tt[i], &gather_array[index+i], sizeof(gather_t));
+  for (i=XUP; i < =TUP; i++) {
     memcpy(&gather_array[index+i], &tt[2*i], sizeof(gather_t));
     memcpy(&gather_array[index+OPP_DIR(i)], &tt[2*i+1], sizeof(gather_t));
   }
@@ -749,28 +687,28 @@ make_nn_gathers(void)
 {
   int i, gather_parity;
 
-  if(n_gathers!=0) {
+  if (n_gathers!=0) {
     printf("error: make_nn_gathers must come before any make_gather\n");
     terminate(1);
   }
 
   gather_array_len = 8;
   gather_array = (gather_t *)malloc(gather_array_len*sizeof(gather_t));
-  if(gather_array==NULL) {
+  if (gather_array==NULL) {
     printf("error: not enough room for gather_array in make_nn_gathers\n");
     terminate(1);
   }
 
-  if((nx&1)||(ny&1)||(nz&1)||(nt&1)) gather_parity = SCRAMBLE_PARITY;
+  if ((nx&1)||(ny&1)||(nz&1)||(nt&1)) gather_parity = SCRAMBLE_PARITY;
   else gather_parity = SWITCH_PARITY;
 
-  for(i=XUP; i<=TUP; i++)
-    make_gather( neighbor_coords_special, &i, WANT_INVERSE,
-                 ALLOW_EVEN_ODD, gather_parity );
+  for (i=XUP; i < =TUP; i++)
+    make_gather(neighbor_coords_special, &i, WANT_INVERSE,
+                 ALLOW_EVEN_ODD, gather_parity);
 
   /* Sort into the order we want for nearest neighbor gathers,
      so you can use XUP, XDOWN, etc. as argument in calling them. */
-  sort_eight_gathers( 0 );
+  sort_eight_gathers(0);
 }
 
 
@@ -800,24 +738,24 @@ copy_list_switch(comlink *old_compt, int *send_subl)
   comlink *firstpt, *compt;
   int r_subl, s_subl;
 
-  if(old_compt==NULL) return(NULL);
+  if (old_compt==NULL) return(NULL);
 
-  firstpt = compt = (comlink *)malloc( sizeof(comlink) );
+  firstpt = compt = (comlink *)malloc(sizeof(comlink));
   do{
     compt->othernode = old_compt->othernode;
-    for(r_subl=0; r_subl<NUM_SUBL; r_subl++) {
+    for (r_subl=0; r_subl<NUM_SUBL; r_subl++) {
       s_subl = send_subl[r_subl];
       compt->n_subl_connected[s_subl] = old_compt->n_subl_connected[r_subl];
       compt->sitelist[s_subl] = old_compt->sitelist[r_subl];
     }
     compt->n_subl_connected[NUM_SUBL] = old_compt->n_subl_connected[NUM_SUBL];
     compt->sitelist[NUM_SUBL] = old_compt->sitelist[NUM_SUBL];
-    if( old_compt->nextcomlink != NULL)
-      compt->nextcomlink = (comlink *)malloc( sizeof(comlink) );
+    if (old_compt->nextcomlink != NULL)
+      compt->nextcomlink = (comlink *)malloc(sizeof(comlink));
     else compt->nextcomlink = NULL;
-    old_compt = old_compt->nextcomlink; 
+    old_compt = old_compt->nextcomlink;
     compt = compt->nextcomlink;
-  } while( old_compt!=NULL );
+  } while(old_compt!=NULL);
   return(firstpt);
 }
 
@@ -827,48 +765,48 @@ copy_list_switch(comlink *old_compt, int *send_subl)
 */
 static void
 sort_site_list(
-  int n,		/* number of elements in list */
-  int *list,	        /* pointer to list */
+  int n,    /* number of elements in list */
+  int *list,          /* pointer to list */
   void (*func)(int, int, int, int, int *, int, int *, int *, int *, int *),
                         /* function which defines mapping */
-  int *args,	        /* arguments to pass to function */
-  int forw_back)	/* look forwards or backwards in map */
+  int *args,          /* arguments to pass to function */
+  int forw_back)  /* look forwards or backwards in map */
 {
   register int j,k,in1,in2,flag;
   register site *s;
   int x,y,z,t;
   int *key;
 
-  if(n==0) return;
+  if (n==0) return;
   key = (int *)malloc(n*sizeof(int));
-  if(key == NULL) {
+  if (key == NULL) {
     printf("sort_site_list(%d): no room for key\n",mynode());
     terminate(1);
   }
 
-  /* Construct sort key */
-  for(j=0; j<n; j++) {
+  // Construct sort key
+  for (j = 0; j < n; j++) {
     s = &(lattice[list[j]]);
     func(s->x,s->y,s->z,s->t,args,forw_back,&x,&y,&z,&t);
     key[j] = node_index(x,y,z,t);
   }
 
   /* bubble sort, if this takes too long fix it later */
-  for(j = n-1; j>0; j--) {
+  for (j = n-1; j>0; j--) {
     flag=0;
-    for(k=0; k<j; k++){
+    for (k=0; k<j; k++) {
       in1 = key[k];
       in2 = key[k+1];
-      if(in1>in2){
-	flag=1;
-	key[k]   = in2;
-	key[k+1] = in1;
-	in1 = list[k];
-	list[k] = list[k+1];
-	list[k+1] = in1;
+      if (in1>in2) {
+  flag=1;
+  key[k]   = in2;
+  key[k+1] = in1;
+  in1 = list[k];
+  list[k] = list[k+1];
+  list[k+1] = in1;
       }
     }
-    if(flag==0)break;
+    if (flag==0)break;
   }
   free(key);
 }
@@ -879,50 +817,50 @@ sort_site_list(
 static comlink *
 make_send_receive_list(
   void (*func)(int, int, int, int, int *, int, int *, int *, int *, int *),
-        		/* function which defines sites to gather from */
-  int *args,		/* list of arguments, to be passed to function */
-  int want_even_odd,	/* ALLOW_EVEN_ODD or NO_EVEN_ODD */
-  int forw_back,	/* FORWARDS or BACKWARDS */
+            /* function which defines sites to gather from */
+  int *args,    /* list of arguments, to be passed to function */
+  int want_even_odd,  /* ALLOW_EVEN_ODD or NO_EVEN_ODD */
+  int forw_back,  /* FORWARDS or BACKWARDS */
   int send_recv,        /* SEND or RECEIVE list */
   int *n_msgs)          /* returns number of messages in list */
 {
-  int i,j,subl;	        /* scratch */
-  site *s;	        /* scratch */
-  int x,y,z,t;		/* coordinates */
-  int *sbuf[NUM_SUBL];	/* to be malloc'd */
-  int *tbuf;	        /* to be malloc'd */
-  comlink **combuf;	/* to be malloc'd, remember where comlinks are */
+  int i,j,subl;         /* scratch */
+  site *s;          /* scratch */
+  int x,y,z,t;    /* coordinates */
+  int *sbuf[NUM_SUBL];  /* to be malloc'd */
+  int *tbuf;          /* to be malloc'd */
+  comlink **combuf; /* to be malloc'd, remember where comlinks are */
   comlink *compt,**comptpt;
   comlink *firstpt;
 
   /* make temporary buffers of numnodes() integers to count numbers of
      neighbors in each sublattice on each node */
-  for(subl=0; subl<NUM_SUBL; subl++) {
-    sbuf[subl] = (int *)malloc( numnodes()*sizeof(int) );
+  for (subl=0; subl<NUM_SUBL; subl++) {
+    sbuf[subl] = (int *)malloc(numnodes()*sizeof(int));
     /* clear neighbor_numbers */
-    for(i=0; i<numnodes(); i++) sbuf[subl][i] = 0;
+    for (i = 0; i < numnodes(); i++) sbuf[subl][i] = 0;
   }
-  tbuf = (int *)malloc( numnodes()*sizeof(int) );
-  for(i=0; i<numnodes(); i++) tbuf[i] = 0;
-  combuf = (comlink **)malloc( numnodes()*sizeof(comlink *) );
+  tbuf = (int *)malloc(numnodes()*sizeof(int));
+  for (i = 0; i < numnodes(); i++) tbuf[i] = 0;
+  combuf = (comlink **)malloc(numnodes()*sizeof(comlink *));
 
   /* scan sites in lattice */
   FORALLSITES(i,s) {
     /* find coordinates, node, and sublattice of receiving site */
-    if( send_recv==RECEIVE ) {
-      func( s->x, s->y, s->z, s->t, args, forw_back, &x, &y, &z, &t );
+    if (send_recv==RECEIVE) {
+      func(s->x, s->y, s->z, s->t, args, forw_back, &x, &y, &z, &t);
       subl = parity_function(s->x,s->y,s->z,s->t);
     }
     else {  /* SEND */
-      func( s->x, s->y, s->z, s->t, args, -forw_back, &x, &y, &z, &t );
+      func(s->x, s->y, s->z, s->t, args, -forw_back, &x, &y, &z, &t);
       subl = parity_function(x,y,z,t);
     }
     j = node_number(x,y,z,t);
 
     /* if site is off node, increment neighbor_counter */
-    if( j != mynode() ) {
+    if (j != mynode()) {
       ++tbuf[j];
-      if(want_even_odd==NO_EVEN_ODD) subl = 0;
+      if (want_even_odd==NO_EVEN_ODD) subl = 0;
       ++sbuf[subl][j];
     }
   }
@@ -931,50 +869,50 @@ make_send_receive_list(
   firstpt = NULL;
   comptpt = &firstpt;
   /* for each neighbor_counter that is nonzero, create a comlink */
-  for(j=0; j<numnodes(); j++) {
-    if( j==mynode() ) continue;  /* not for local node */
-    if( tbuf[j]==0 ) continue;   /* no neighbors on this node */
+  for (j = 0; j < numnodes(); j++) {
+    if (j==mynode()) continue;  /* not for local node */
+    if (tbuf[j]==0) continue;   /* no neighbors on this node */
 
-    compt = (comlink *)malloc( sizeof(comlink) );
+    compt = (comlink *)malloc(sizeof(comlink));
     *comptpt = compt;
-    combuf[j] = compt;	/* to make it easy to find again */
-    compt->nextcomlink = NULL;	/* currently terminates list */
+    combuf[j] = compt;  /* to make it easy to find again */
+    compt->nextcomlink = NULL;  /* currently terminates list */
     compt->othernode = j;
     compt->n_subl_connected[NUM_SUBL] = tbuf[j];
-    for(subl=0; subl<NUM_SUBL; subl++) {
+    for (subl=0; subl<NUM_SUBL; subl++) {
       compt->n_subl_connected[subl] = sbuf[subl][j];
     }
     compt->sitelist[0] = compt->sitelist[NUM_SUBL] =
-      (int *)malloc( tbuf[j]*sizeof(int) );
-    for(subl=1; subl<NUM_SUBL; subl++)
+      (int *)malloc(tbuf[j]*sizeof(int));
+    for (subl=1; subl<NUM_SUBL; subl++)
       compt->sitelist[subl] = (compt->sitelist[subl-1]) + sbuf[subl-1][j];
     /* sitelist[...] must be filled in later */
-    comptpt = &(compt->nextcomlink);	/* linked list, if we
-		      extend it this will get address of next comlink. */
+    comptpt = &(compt->nextcomlink);  /* linked list, if we
+          extend it this will get address of next comlink. */
     ++(*n_msgs);
   }
 
   /* clear neighbor_numbers, to be used as counters now */
-  for(subl=0; subl<NUM_SUBL; subl++) {
-    for(i=0; i<numnodes(); i++) sbuf[subl][i] = 0;
+  for (subl=0; subl<NUM_SUBL; subl++) {
+    for (i = 0; i < numnodes(); i++) sbuf[subl][i] = 0;
   }
 
   /* scan sites in node again */
-  FORALLSITES(i,s){
+  FORALLSITES(i,s) {
     /* find coordinates, node, and sublattice of receiving site */
-    if( send_recv==RECEIVE ){
-      func( s->x, s->y, s->z, s->t, args, forw_back, &x,&y,&z,&t);
+    if (send_recv==RECEIVE) {
+      func(s->x, s->y, s->z, s->t, args, forw_back, &x,&y,&z,&t);
       subl = parity_function(s->x,s->y,s->z,s->t);
     }
     else {  /* SEND */
-      func( s->x, s->y, s->z, s->t, args, -forw_back, &x,&y,&z,&t);
+      func(s->x, s->y, s->z, s->t, args, -forw_back, &x,&y,&z,&t);
       subl = parity_function(x,y,z,t);
     }
     j = node_number(x,y,z,t);
 
     /* if neighbor is offnode, add to list in appropriate comlink */
-    if( j != mynode() ){
-      if(want_even_odd==NO_EVEN_ODD) subl = 0;
+    if (j != mynode()) {
+      if (want_even_odd==NO_EVEN_ODD) subl = 0;
       combuf[j]->sitelist[subl][sbuf[subl][j]] = i;
       ++sbuf[subl][j];
     }
@@ -982,91 +920,23 @@ make_send_receive_list(
   /* sort the lists of links according to the ordering of their
      even neighbors in the lower numbered node.  The list of sites
      on the lower numbered node is already in order. */
-  for(compt=firstpt; compt != NULL; compt=compt->nextcomlink) {
-    if(compt->othernode > this_node)continue;
+  for (compt=firstpt; compt != NULL; compt=compt->nextcomlink) {
+    if (compt->othernode > this_node)continue;
     /* this is lower numbered node, so don't sort */
-    if( send_recv==RECEIVE ) i = forw_back;
+    if (send_recv==RECEIVE) i = forw_back;
     else i = -forw_back;
-    for(subl=0; subl<NUM_SUBL; subl++)
-      sort_site_list( compt->n_subl_connected[subl],
-		      compt->sitelist[subl], func, args, i );
+    for (subl=0; subl<NUM_SUBL; subl++)
+      sort_site_list(compt->n_subl_connected[subl],
+          compt->sitelist[subl], func, args, i);
   }
 
   /* free temporary storage */
   free(combuf);
   free(tbuf);
-  for(subl=0; subl<NUM_SUBL; subl++) free(sbuf[subl]);
+  for (subl=0; subl<NUM_SUBL; subl++) free(sbuf[subl]);
 
   return(firstpt);
 }
-
-#if 0
-/*
-**  determine tag offsets needed by sender
-*/
-static id_list_t *
-make_id_list(
-  comlink *recv,       /* neighborlist */
-  int n_recv,          /* number of receives */
-  comlink *send)       /* neighborlist_send */
-{
-  int i, *buf;
-  id_list_t *tol_top, *tol, **tol_next;
-  QMP_msgmem_t *smm, rmm;
-  QMP_msghandle_t *smh, rmh;
-
-  buf = (int *)malloc(n_recv*sizeof(int));
-  smm = (QMP_msgmem_t *)malloc(n_recv*sizeof(QMP_msgmem_t));
-  smh = (QMP_msghandle_t *)malloc(n_recv*sizeof(QMP_msghandle_t));
-
-  for(i=0; recv!=NULL; ++i, recv=recv->nextcomlink) {
-    buf[i] = i;
-    smm[i] = QMP_declare_msgmem(&buf[i], sizeof(int));
-    smh[i] = QMP_declare_send_to(smm[i], recv->othernode, 0);
-    QMP_start(smh[i]);
-  }
-  if(i!=n_recv) {printf("error i!=n_recv\n"); terminate(1);}
-
-  tol_next = &tol_top;
-  while(send!=NULL) {
-    tol = *tol_next = (id_list_t *)malloc(sizeof(id_list_t));
-    rmm = QMP_declare_msgmem(&i, sizeof(int));
-    rmh = QMP_declare_receive_from(rmm, send->othernode, 0);
-    QMP_start(rmh);
-    QMP_wait(rmh);
-    QMP_free_msghandle(rmh);
-    QMP_free_msgmem(rmm);
-    tol->id_offset = i;
-    tol_next = &(tol->next);
-    send = send->nextcomlink;
-  }
-  *tol_next = NULL;
-
-  for(i=0; i<n_recv; ++i) {
-    QMP_wait(smh[i]);
-    QMP_free_msghandle(smh[i]);
-    QMP_free_msgmem(smm[i]);
-  }
-
-  free(smh);
-  free(smm);
-  free(buf);
-
-  return tol_top;
-}
-
-/*
-**  determine max number of ids needed for gather
-*/
-static int
-get_max_receives(int n_recv)
-{
-  double temp;
-  temp = n_recv;
-  QMP_max_double(&temp);
-  return (int)(temp+0.5);
-}
-#endif
 
 /*
 **  add another gather to the list of tables
@@ -1075,50 +945,50 @@ int
 make_gather(
   void (*func)(int, int, int, int, int *, int, int *, int *, int *, int *),
                         /* function which defines sites to gather from */
-  int *args,		/* list of arguments, to be passed to function */
-  int inverse,		/* OWN_INVERSE, WANT_INVERSE, or NO_INVERSE */
-  int want_even_odd,	/* ALLOW_EVEN_ODD or NO_EVEN_ODD */
-  int parity_conserve)	/* {SAME,SWITCH,SCRAMBLE}_PARITY */
+  int *args,    /* list of arguments, to be passed to function */
+  int inverse,    /* OWN_INVERSE, WANT_INVERSE, or NO_INVERSE */
+  int want_even_odd,  /* ALLOW_EVEN_ODD or NO_EVEN_ODD */
+  int parity_conserve)  /* {SAME,SWITCH,SCRAMBLE}_PARITY */
 {
-  int i,j,subl;	        /* scratch */
-  site *s;	        /* scratch */
-  int dir;		/* direction */
-  int x,y,z,t;		/* coordinates */
+  int i,j,subl;         /* scratch */
+  site *s;          /* scratch */
+  int dir;    /* direction */
+  int x,y,z,t;    /* coordinates */
   int *send_subl;       /* sublist of sender for a given receiver */
 
   /* we will have one or two more gathers */
-  if( inverse==WANT_INVERSE ) n_gathers += 2;
-  else			      n_gathers += 1;
+  if (inverse==WANT_INVERSE) n_gathers += 2;
+  else            n_gathers += 1;
 
-  if(n_gathers>gather_array_len) {
+  if (n_gathers>gather_array_len) {
     gather_array_len = n_gathers;
     /* lengthen gather array to add more gathers */
     gather_array =
       (gather_t *)realloc(gather_array, gather_array_len*sizeof(gather_t));
   }
 
-  dir = n_gathers - 1;	/* index of gather we are working on */
-  gather_array[dir].neighbor = (int *)malloc( sites_on_node*sizeof(int) );
-  if( gather_array[dir].neighbor==NULL ) {
+  dir = n_gathers - 1;  /* index of gather we are working on */
+  gather_array[dir].neighbor = (int *)malloc(sites_on_node*sizeof(int));
+  if (gather_array[dir].neighbor==NULL) {
     printf("make_gather: NODE %d: no room for neighbor vector\n",this_node);
     terminate(1);
   }
-  if( inverse==WANT_INVERSE ) {
-    dir = n_gathers - 2;	/* index of gather we are working on */
-    gather_array[dir].neighbor = (int *)malloc( sites_on_node*sizeof(int) );
-    if( gather_array[dir].neighbor==NULL ) {
+  if (inverse==WANT_INVERSE) {
+    dir = n_gathers - 2;  /* index of gather we are working on */
+    gather_array[dir].neighbor = (int *)malloc(sites_on_node*sizeof(int));
+    if (gather_array[dir].neighbor==NULL) {
       printf("make_gather: NODE %d no room for neighbor vector\n",this_node);
       terminate(1);
     }
   }
 
-  if( want_even_odd==ALLOW_EVEN_ODD && parity_conserve!=SCRAMBLE_PARITY ) {
+  if (want_even_odd==ALLOW_EVEN_ODD && parity_conserve!=SCRAMBLE_PARITY) {
     send_subl = (int *)malloc(NUM_SUBL*sizeof(int));
-    if(send_subl==NULL){
+    if (send_subl==NULL) {
       printf("NODE %d: no room for send_subl\n",this_node);
       terminate(1);
     }
-    for(subl=0; subl<NUM_SUBL; subl++) send_subl[subl] = NOWHERE;
+    for (subl=0; subl<NUM_SUBL; subl++) send_subl[subl] = NOWHERE;
   } else {
     send_subl = NULL;
   }
@@ -1127,58 +997,58 @@ make_gather(
   /* Also check to see if it returns legal values for coordinates */
   FORALLSITES(i,s) {
     /* find coordinates of neighbor who sends us data */
-    func( s->x, s->y, s->z, s->t, args, FORWARDS, &x,&y,&z,&t);
+    func(s->x, s->y, s->z, s->t, args, FORWARDS, &x,&y,&z,&t);
 
-    if( x<0 || y<0 || z<0  || t<0 || x>=nx || y>=ny || z>=nz || t>=nt){
+    if (x<0 || y<0 || z<0  || t<0 || x>=nx || y>=ny || z>=nz || t>=nt) {
       printf("DUMMY! Your gather mapping does not stay in lattice\n");
       printf("It mapped %d %d %d %d to %d %d %d %d\n",
-	     s->x,s->y,s->z,s->t,x,y,z,t);
+       s->x,s->y,s->z,s->t,x,y,z,t);
       terminate(1);
     }
 
-    if(parity_conserve!=SCRAMBLE_PARITY) {
+    if (parity_conserve!=SCRAMBLE_PARITY) {
       int r_subl, s_subl;
 
       r_subl = parity_function(s->x,s->y,s->z,s->t);
       s_subl = parity_function(x,y,z,t);
 
-      if( want_even_odd==ALLOW_EVEN_ODD ) {
-	if( send_subl[r_subl] == NOWHERE ) {
-	  send_subl[r_subl] = s_subl;
-	}
-	else if( send_subl[r_subl] != s_subl ){
-	  printf("DUMMY! Your gather mixes up sublattices: %d vs %d\n",
-		 send_subl[r_subl], s_subl);
-	  printf("on mapping %i %i %i %i -> %i %i %i %i\n",
-		 s->x,s->y,s->z,s->t, x,y,z,t);
-	  terminate(1);
-	}
+      if (want_even_odd==ALLOW_EVEN_ODD) {
+  if (send_subl[r_subl] == NOWHERE) {
+    send_subl[r_subl] = s_subl;
+  }
+  else if (send_subl[r_subl] != s_subl) {
+    printf("DUMMY! Your gather mixes up sublattices: %d vs %d\n",
+     send_subl[r_subl], s_subl);
+    printf("on mapping %i %i %i %i -> %i %i %i %i\n",
+     s->x,s->y,s->z,s->t, x,y,z,t);
+    terminate(1);
+  }
       }
 
-      if( parity_conserve==SAME_PARITY && s_subl!=r_subl ){
-	printf("DUMMY! Your gather mapping does not obey claimed parity");
-	printf(", namely SAME_PARITY\n");
-	printf("It mapped %d %d %d %d with %d to %d %d %d %d with %d\n",
-	       s->x,s->y,s->z,s->t,r_subl,x,y,z,t,s_subl);
-	terminate(1);
+      if (parity_conserve==SAME_PARITY && s_subl!=r_subl) {
+  printf("DUMMY! Your gather mapping does not obey claimed parity");
+  printf(", namely SAME_PARITY\n");
+  printf("It mapped %d %d %d %d with %d to %d %d %d %d with %d\n",
+         s->x,s->y,s->z,s->t,r_subl,x,y,z,t,s_subl);
+  terminate(1);
       }
-      if( parity_conserve==SWITCH_PARITY && s_subl==r_subl ){
-	printf("DUMMY! Your gather mapping does not obey claimed parity");
-	printf(", namely SWITCH_PARITY\n");
-	printf("It mapped %d %d %d %d with %d to %d %d %d %d with %d\n",
-	       s->x,s->y,s->z,s->t,r_subl,x,y,z,t,s_subl);
-	terminate(1);
+      if (parity_conserve==SWITCH_PARITY && s_subl==r_subl) {
+  printf("DUMMY! Your gather mapping does not obey claimed parity");
+  printf(", namely SWITCH_PARITY\n");
+  printf("It mapped %d %d %d %d with %d to %d %d %d %d with %d\n",
+         s->x,s->y,s->z,s->t,r_subl,x,y,z,t,s_subl);
+  terminate(1);
       }
 
-      if( inverse==OWN_INVERSE ) {
-	int x2,y2,z2,t2;
-	func( x, y, z, t, args, FORWARDS, &x2,&y2,&z2,&t2);
-	if( s->x!=x2 || s->y!=y2 || s->z!=z2 || s->t!=t2 ) {
-	  printf("DUMMY! Your gather mapping is not its own inverse\n");
-	  printf("It's square mapped %d %d %d %d to %d %d %d %d\n",
-		 s->x,s->y,s->z,s->t,x2,y2,z2,t2);
-	  terminate(1);
-	}
+      if (inverse==OWN_INVERSE) {
+  int x2,y2,z2,t2;
+  func(x, y, z, t, args, FORWARDS, &x2,&y2,&z2,&t2);
+  if (s->x!=x2 || s->y!=y2 || s->z!=z2 || s->t!=t2) {
+    printf("DUMMY! Your gather mapping is not its own inverse\n");
+    printf("It's square mapped %d %d %d %d to %d %d %d %d\n",
+     s->x,s->y,s->z,s->t,x2,y2,z2,t2);
+    terminate(1);
+  }
       }
     }
   }
@@ -1186,52 +1056,42 @@ make_gather(
   /* RECEIVE LISTS: */
   /* Fill in pointers to sites which are on this node, NOWHERE if
      they are off-node */
-  FORALLSITES(i,s){
+  FORALLSITES(i,s) {
     /* find coordinates of neighbor who sends us data */
-    func( s->x, s->y, s->z, s->t, args, FORWARDS, &x,&y,&z,&t);
-    j = node_number(x,y,z,t);	/* node for neighbor site */
+    func(s->x, s->y, s->z, s->t, args, FORWARDS, &x,&y,&z,&t);
+    j = node_number(x,y,z,t); /* node for neighbor site */
     /* if neighbor is on node, set up pointer */
-    if( j == mynode() ) gather_array[dir].neighbor[i] = node_index(x,y,z,t);
-    else		gather_array[dir].neighbor[i] = NOWHERE;
+    if (j == mynode()) gather_array[dir].neighbor[i] = node_index(x,y,z,t);
+    else    gather_array[dir].neighbor[i] = NOWHERE;
   }
 
   /* make lists of sites which get data from other nodes.  */
   gather_array[dir].neighborlist =
-    make_send_receive_list( func, args, want_even_odd, FORWARDS, RECEIVE,
-			    &gather_array[dir].n_recv_msgs );
+    make_send_receive_list(func, args, want_even_odd, FORWARDS, RECEIVE,
+          &gather_array[dir].n_recv_msgs);
 
   /* SEND LISTS: */
   /* Now make lists of sites to which we send */
   /* Under some conditions, if mapping is its own inverse we can use
      the lists we have already made */
-  if( inverse==OWN_INVERSE && 
-      ( want_even_odd!=ALLOW_EVEN_ODD || parity_conserve!=SCRAMBLE_PARITY ) ) {
-    if( want_even_odd==NO_EVEN_ODD || parity_conserve==SAME_PARITY ) {
+  if (inverse==OWN_INVERSE &&
+      (want_even_odd!=ALLOW_EVEN_ODD || parity_conserve!=SCRAMBLE_PARITY)) {
+    if (want_even_odd==NO_EVEN_ODD || parity_conserve==SAME_PARITY) {
       gather_array[dir].neighborlist_send = gather_array[dir].neighborlist;
       gather_array[dir].n_send_msgs = gather_array[dir].n_recv_msgs;
     } else {
       gather_array[dir].neighborlist_send =
-	copy_list_switch( gather_array[dir].neighborlist, send_subl );
+  copy_list_switch(gather_array[dir].neighborlist, send_subl);
       gather_array[dir].n_send_msgs = gather_array[dir].n_recv_msgs;
     }
   } else {
     /* Make new linked list of comlinks for send lists */
     gather_array[dir].neighborlist_send =
-      make_send_receive_list( func, args, want_even_odd, FORWARDS, SEND,
-			      &gather_array[dir].n_send_msgs );
+      make_send_receive_list(func, args, want_even_odd, FORWARDS, SEND,
+            &gather_array[dir].n_send_msgs);
   } /* End general case for send lists */
 
-#if 0
-  gather_array[dir].id_list =
-    make_id_list( gather_array[dir].neighborlist,
-		  gather_array[dir].n_recv_msgs,
-		  gather_array[dir].neighborlist_send );
-
-  gather_array[dir].offset_increment =
-    get_max_receives( gather_array[dir].n_recv_msgs );
-#endif
-
-  if( inverse != WANT_INVERSE ) {
+  if (inverse != WANT_INVERSE) {
     free(send_subl);
     return(dir);
   }
@@ -1244,57 +1104,47 @@ make_gather(
   /* In most cases, we can use the same lists as the gather, in one
      form or another.  Of course, by the time you get to here
      you know that inverse = WANT_INVERSE */
-  dir++;	/* inverse gather has direction one more than original */
+  dir++;  /* inverse gather has direction one more than original */
 
   /* Always set up pointers to sites on this node */
   /* scan sites in lattice */
   FORALLSITES(i,s) {
     /* find coordinates of neighbor who sends us data */
-    func( s->x, s->y, s->z, s->t, args, BACKWARDS, &x,&y,&z,&t);
-    j = node_number(x,y,z,t);	/* node for neighbor site */
+    func(s->x, s->y, s->z, s->t, args, BACKWARDS, &x,&y,&z,&t);
+    j = node_number(x,y,z,t); /* node for neighbor site */
 
     /* if neighbor is on node, set up pointer */
-    if( j == mynode() ) gather_array[dir].neighbor[i] = node_index(x,y,z,t);
-    else 		gather_array[dir].neighbor[i] = NOWHERE;
+    if (j == mynode()) gather_array[dir].neighbor[i] = node_index(x,y,z,t);
+    else    gather_array[dir].neighbor[i] = NOWHERE;
   }
 
-  if( parity_conserve==SAME_PARITY || want_even_odd==NO_EVEN_ODD ) {
+  if (parity_conserve==SAME_PARITY || want_even_odd==NO_EVEN_ODD) {
     /* Use same comlinks as inverse gather, switching send and receive.
        Nearest neighbor gathers are an example of this case. */
     gather_array[dir].neighborlist = gather_array[dir-1].neighborlist_send;
     gather_array[dir].neighborlist_send = gather_array[dir-1].neighborlist;
     gather_array[dir].n_recv_msgs = gather_array[dir-1].n_send_msgs;
     gather_array[dir].n_send_msgs = gather_array[dir-1].n_recv_msgs;
-  } else if( parity_conserve==SWITCH_PARITY ) {
+  } else if (parity_conserve==SWITCH_PARITY) {
     /* make new comlinks, but use same lists as inverse gather, switching
        send and receive, switching even and odd. */
-    gather_array[dir].neighborlist = 
-      copy_list_switch( gather_array[dir-1].neighborlist_send, send_subl );
-    gather_array[dir].neighborlist_send = 
-      copy_list_switch( gather_array[dir-1].neighborlist, send_subl );
+    gather_array[dir].neighborlist =
+      copy_list_switch(gather_array[dir-1].neighborlist_send, send_subl);
+    gather_array[dir].neighborlist_send =
+      copy_list_switch(gather_array[dir-1].neighborlist, send_subl);
     gather_array[dir].n_recv_msgs = gather_array[dir-1].n_send_msgs;
     gather_array[dir].n_send_msgs = gather_array[dir-1].n_recv_msgs;
   } else {  /* general case.  Really only get here if ALLOW_EVEN_ODD
-	       and SCRAMBLE_PARITY */
+         and SCRAMBLE_PARITY */
     /* RECEIVE LISTS */
     gather_array[dir].neighborlist =
-      make_send_receive_list( func, args, want_even_odd, BACKWARDS, RECEIVE,
-			      &gather_array[dir].n_recv_msgs );
+      make_send_receive_list(func, args, want_even_odd, BACKWARDS, RECEIVE,
+            &gather_array[dir].n_recv_msgs);
     /* SEND LISTS */
     gather_array[dir].neighborlist_send =
-      make_send_receive_list( func, args, want_even_odd, BACKWARDS, SEND,
-			      &gather_array[dir].n_send_msgs );
+      make_send_receive_list(func, args, want_even_odd, BACKWARDS, SEND,
+            &gather_array[dir].n_send_msgs);
   } /* End making new lists for inverse gather */
-
-#if 0
-  gather_array[dir].id_list =
-    make_id_list( gather_array[dir].neighborlist,
-		  gather_array[dir].n_recv_msgs,
-		  gather_array[dir].neighborlist_send );
-
-  gather_array[dir].offset_increment =
-    get_max_receives(gather_array[dir].n_recv_msgs);
-#endif
 
   free(send_subl);
   return(dir-1);
@@ -1325,27 +1175,27 @@ make_gather(
  cleanup_gather() frees memory allocated for the gather including the msg_tag.
 
    example:
-	msg_tag *tag;
-	tag = declare_gather_site( F_OFFSET(phi), sizeof(vector), XUP,
-	                      EVEN, gen_pt[0] );
+  msg_tag *tag;
+  tag = declare_gather_site(F_OFFSET(phi), sizeof(vector), XUP,
+                        EVEN, gen_pt[0]);
         prepare_gather(tag);  ** this step is optional **
         do_gather(tag);
-	  ** do other stuff, but don't modify tag or gen_pt[0] **
-	wait_gather(tag);
-	  ** gen_pt[0][i] now contains the address of the phi
-	   vector (or a copy thereof) on the neighbor of site i in the
-	   XUP direction for all even sites i.
-	   Do whatever you want with it here, but don't modify tag or
-	   gen_pt[0].
-	   Do modify the source field phi. **
-	do_gather(tag);
-	  ** do other stuff **
-	wait_gather(tag);
-	  ** gen_pt[0][i] now contains the address of the modified phi.
-	   The restart-wait may be repeated as often as desired.  **
-	cleanup_gather(tag);
-	  ** subsequent calls will overwrite the gathered fields. but if you
-	   don't clean up, you will eventually run out of space **
+    ** do other stuff, but don't modify tag or gen_pt[0] **
+  wait_gather(tag);
+    ** gen_pt[0][i] now contains the address of the phi
+     vector (or a copy thereof) on the neighbor of site i in the
+     XUP direction for all even sites i.
+     Do whatever you want with it here, but don't modify tag or
+     gen_pt[0].
+     Do modify the source field phi. **
+  do_gather(tag);
+    ** do other stuff **
+  wait_gather(tag);
+    ** gen_pt[0][i] now contains the address of the modified phi.
+     The restart-wait may be repeated as often as desired.  **
+  cleanup_gather(tag);
+    ** subsequent calls will overwrite the gathered fields. but if you
+     don't clean up, you will eventually run out of space **
 
 */
 
@@ -1355,35 +1205,34 @@ make_gather(
 */
 msg_tag *
 declare_strided_gather(
-  void *field,	        /* source buffer aligned to desired field */
+  void *field,          /* source buffer aligned to desired field */
   int stride,           /* bytes between fields in source buffer */
-  int size,		/* size in bytes of the field (eg sizeof(vector))*/
-  int index,		/* direction to gather from. eg XUP - index into
-			   neighbor tables */
-  int subl,		/* subl of sites whose neighbors we gather.
-			   It is EVENANDODD, if all sublattices are done. */
-  char ** dest)		/* one of the vectors of pointers */
+  int size,   /* size in bytes of the field (eg sizeof(vector))*/
+  int index,    /* direction to gather from. eg XUP - index into
+         neighbor tables */
+  int subl,   /* subl of sites whose neighbors we gather.
+         It is EVENANDODD, if all sublattices are done. */
+  char ** dest)   /* one of the vectors of pointers */
 {
-  int i;	        /* scratch */
-  site *s;	        /* scratch pointer to site */
-  msg_tag *mtag;	/* message tag structure we will return a pointer to */
+  int i;          /* scratch */
+  site *s;          /* scratch pointer to site */
+  msg_tag *mtag;  /* message tag structure we will return a pointer to */
   msg_sr_t *mrecv, *msend; /* arrays for send and receive lists */
   gmem_t *gmem;
-  comlink *compt;	/* pointer to current comlink */
+  comlink *compt; /* pointer to current comlink */
   gather_t *gt;         /* pointer to current gather */
-  //id_list_t *idl;
 
   gt = &gather_array[index];
 
   /* set pointers in sites whose neighbors are on this node.  (If all
      neighbors are on this node, this is the only thing done.) */
-  if(subl==EVENANDODD) {
-    FORALLSITES(i,s){ if(gt->neighbor[i] != NOWHERE){
-	dest[i] = ((char *)field) + gt->neighbor[i]*stride;
+  if (subl==EVENANDODD) {
+    FORALLSITES(i,s) { if (gt->neighbor[i] != NOWHERE){
+      dest[i] = (char *)field + gt->neighbor[i]*stride;
     }}
   } else {
-    FORSOMEPARITY(i,s,subl){ if(gt->neighbor[i] != NOWHERE){
-	dest[i] = ((char *)field) + gt->neighbor[i]*stride;
+    FORSOMEPARITY(i,s,subl) { if (gt->neighbor[i] != NOWHERE){
+      dest[i] = (char *)field + gt->neighbor[i]*stride;
     }}
   }
 
@@ -1395,7 +1244,7 @@ declare_strided_gather(
     default:  printf("ERROR: bad sublattice\n"); terminate(subl);
   }
 #else
-  if(subl==EVENANDODD) subl = NUM_SUBL;
+  if (subl==EVENANDODD) subl = NUM_SUBL;
 #endif
 
   /*  allocate the message tag */
@@ -1405,24 +1254,19 @@ declare_strided_gather(
 #endif
   mtag->prepared = 0;
 
-#if 0
-  mtag->nids = gt->offset_increment;
-  mtag->ids = NULL;
-#endif
-
   /* allocate a buffer for the msg_sr_t's.  This is dynamically allocated
      because there may be an arbitrary number of gathers in progress
      in any direction. */
 
   mtag->nrecvs = 0;
-  for( compt = gt->neighborlist; compt != NULL;
-       compt = compt->nextcomlink ) {
-    if(compt->n_subl_connected[subl]!=0) mtag->nrecvs++;
+  for (compt = gt->neighborlist; compt != NULL;
+       compt = compt->nextcomlink) {
+    if (compt->n_subl_connected[subl]!=0) mtag->nrecvs++;
   }
-  if( mtag->nrecvs==0 ) mrecv = NULL;
+  if (mtag->nrecvs==0) mrecv = NULL;
   else {
     mrecv = (msg_sr_t *)malloc(mtag->nrecvs*sizeof(msg_sr_t));
-    if(mrecv==NULL) {
+    if (mrecv==NULL) {
       printf("NO ROOM for mrecv, node %d\n", mynode());
       terminate(1);
     }
@@ -1430,14 +1274,14 @@ declare_strided_gather(
   mtag->recv_msgs = mrecv;
 
   mtag->nsends = 0;
-  for( compt = gt->neighborlist_send; compt != NULL;
-       compt = compt->nextcomlink ) {
-    if(compt->n_subl_connected[subl]!=0) mtag->nsends++;
+  for (compt = gt->neighborlist_send; compt != NULL;
+       compt = compt->nextcomlink) {
+    if (compt->n_subl_connected[subl]!=0) mtag->nsends++;
   }
-  if( mtag->nsends==0 ) msend = NULL;
+  if (mtag->nsends==0) msend = NULL;
   else {
     msend = (msg_sr_t *)malloc(mtag->nsends*sizeof(msg_sr_t));
-    if(msend==NULL) {
+    if (msend==NULL) {
       printf("NO ROOM for msend, node %d\n", mynode());
       terminate(1);
     }
@@ -1445,11 +1289,10 @@ declare_strided_gather(
   mtag->send_msgs = msend;
 
   /* for each node which has neighbors of my sites */
-  for( i=0, compt = gt->neighborlist; compt != NULL;
-       compt = compt->nextcomlink ) {
-    if(compt->n_subl_connected[subl]==0) continue;
+  for (i = 0, compt = gt->neighborlist; compt != NULL;
+       compt = compt->nextcomlink) {
+    if (compt->n_subl_connected[subl]==0) continue;
     mrecv[i].msg_node = compt->othernode;
-    //mrecv[i].id_offset = i;
     mrecv[i].msg_size = size*compt->n_subl_connected[subl];
     mrecv[i].msg_buf = NULL;
     gmem = (gmem_t *)malloc(sizeof(gmem_t));
@@ -1464,12 +1307,10 @@ declare_strided_gather(
   }
 
   /* for each node whose neighbors I have */
-  //idl = gt->id_list;
-  for( i=0, compt = gt->neighborlist_send; compt != NULL;
-       compt = compt->nextcomlink/*, idl = idl->next*/ ) {
-    if(compt->n_subl_connected[subl]==0) continue;
+  for (i = 0, compt = gt->neighborlist_send; compt != NULL;
+       compt = compt->nextcomlink/*, idl = idl->next*/) {
+    if (compt->n_subl_connected[subl]==0) continue;
     msend[i].msg_node = compt->othernode;
-    //msend[i].id_offset = idl->id_offset;
     msend[i].msg_size = size*compt->n_subl_connected[subl];
     msend[i].msg_buf = NULL;
     gmem = (gmem_t *)malloc(sizeof(gmem_t));
@@ -1493,52 +1334,31 @@ void
 prepare_gather(msg_tag *mtag)
 {
   int i, j/*, nids*/;
-  //int *ids;
   msg_sr_t *mrecv,*msend;
   gmem_t *gmem;
   char *tpt;
 
-  if(mtag->prepared) {
+  if (mtag->prepared) {
     printf("error: already prepared\n");
     terminate(1);
   }
   mtag->prepared = 1;
 
-#if 0
-  nids = mtag->nids;
-  if(nids!=0) {
-    mtag->ids = ids = (int *)malloc(nids*sizeof(int));
-    for(i=0, j=id_offset; i<nids; i++, j=(j+1)%num_gather_ids) {
-      /* find next available type */
-      while(id_array[j]!=0) {
-	j = (j+1)%num_gather_ids;
-	if(j==id_offset) {
-	  printf("error: not enough message ids\n");
-	  terminate(1);
-	}
-      }
-      ids[i] = j;
-      id_array[j] = 1;
-    }
-    id_offset = j;
-  }
-#endif
-
-  if( mtag->nrecvs == 0 )
+  if (mtag->nrecvs == 0)
     mtag->mhrecvlist = NULL;
   else{
     mtag->mhrecvlist = (QMP_msghandle_t *)malloc(mtag->nrecvs*sizeof(QMP_msghandle_t));
-    if(mtag->mhrecvlist == NULL){
+    if (mtag->mhrecvlist == NULL) {
       printf("NO ROOM for mrecv, node %d\n", mynode());
       terminate(1);
     }
   }
   mrecv = mtag->recv_msgs;
   /* for each node which has neighbors of my sites */
-  for(i=0; i<mtag->nrecvs; ++i) {
+  for (i = 0; i < mtag->nrecvs; ++i) {
     mrecv[i].qmp_mem =
-      QMP_allocate_aligned_memory( mrecv[i].msg_size+CRCBYTES, mem_align, mem_flags );
-    if(mrecv[i].qmp_mem==NULL) {
+      QMP_allocate_aligned_memory(mrecv[i].msg_size+CRCBYTES, mem_align, mem_flags);
+    if (mrecv[i].qmp_mem==NULL) {
       printf("NO ROOM for mrecv, node %d\n", mynode());
       terminate(1);
     }
@@ -1548,49 +1368,47 @@ prepare_gather(msg_tag *mtag)
     memset(tpt, '\0', mrecv[i].msg_size+CRCBYTES);
 #endif
     mrecv[i].mm = QMP_declare_msgmem(mrecv[i].msg_buf, mrecv[i].msg_size+CRCBYTES);
-    //mrecv[i].mh = QMP_declare_receive_from(mrecv[i].mm, mrecv[i].msg_node, 0);
     mtag->mhrecvlist[i] = QMP_declare_receive_from(mrecv[i].mm, mrecv[i].msg_node, 0);
     /* set pointers in sites to correct location */
     gmem = mrecv[i].gmem;
     do {
-      for(j=0; j<gmem->num; ++j, tpt+=gmem->size) {
-	((char **)gmem->mem)[gmem->sitelist[j]] = tpt;
+      for (j = 0; j < gmem->num; ++j,tpt+=gmem->size) {
+  ((char **)gmem->mem)[gmem->sitelist[j]] = tpt;
       }
     } while((gmem=gmem->next)!=NULL);
   }
-  if(mtag->nrecvs==1) {
+  if (mtag->nrecvs==1) {
     mtag->mhrecv = mtag->mhrecvlist[0];
-  } else if(mtag->nrecvs>1) {
-    mtag->mhrecv = QMP_declare_multiple( mtag->mhrecvlist, mtag->nrecvs );
+  } else if (mtag->nrecvs>1) {
+    mtag->mhrecv = QMP_declare_multiple(mtag->mhrecvlist, mtag->nrecvs);
   }
 
-  if(mtag->nsends == 0)
+  if (mtag->nsends == 0)
     mtag->mhsendlist = NULL;
   else{
     mtag->mhsendlist = (QMP_msghandle_t *)malloc(mtag->nsends*sizeof(QMP_msghandle_t));
-    if(mtag->mhsendlist == NULL){
+    if (mtag->mhsendlist == NULL) {
       printf("NO ROOM for msend, node %d\n", mynode());
       terminate(1);
     }
   }
   msend = mtag->send_msgs;
   /* for each node whose neighbors I have */
-  for(i=0; i<mtag->nsends; ++i) {
-    msend[i].qmp_mem = 
-      QMP_allocate_aligned_memory( msend[i].msg_size+CRCBYTES, mem_align, mem_flags );
-    if(msend[i].qmp_mem==NULL) {
+  for (i = 0; i < mtag->nsends; ++i) {
+    msend[i].qmp_mem =
+      QMP_allocate_aligned_memory(msend[i].msg_size+CRCBYTES, mem_align, mem_flags);
+    if (msend[i].qmp_mem==NULL) {
       printf("NO ROOM for msg_buf, node %d\n",mynode());
       terminate(1);
     }
     msend[i].msg_buf = (char *) QMP_get_memory_pointer(msend[i].qmp_mem);
     msend[i].mm = QMP_declare_msgmem(msend[i].msg_buf, msend[i].msg_size+CRCBYTES);
-    //msend[i].mh = QMP_declare_send_to(msend[i].mm, msend[i].msg_node, 0);
     mtag->mhsendlist[i] = QMP_declare_send_to(msend[i].mm, msend[i].msg_node, 0);
   }
-  if(mtag->nsends==1) {
+  if (mtag->nsends==1) {
     mtag->mhsend = mtag->mhsendlist[0];
-  } else if(mtag->nsends>1) {
-    mtag->mhsend = QMP_declare_multiple( mtag->mhsendlist, mtag->nsends );
+  } else if (mtag->nsends>1) {
+    mtag->mhsend = QMP_declare_multiple(mtag->mhsendlist, mtag->nsends);
   }
 }
 
@@ -1600,32 +1418,24 @@ prepare_gather(msg_tag *mtag)
 void
 do_gather(msg_tag *mtag)  /* previously returned by start_gather_site */
 {
-  register int i,j;	/* scratch */
-  register char *tpt;	/* scratch pointer in buffers */
+  register int i,j; /* scratch */
+  register char *tpt; /* scratch pointer in buffers */
   msg_sr_t *mbuf;
   gmem_t *gmem;
 
-  if(!mtag->prepared) prepare_gather(mtag);
+  if (!mtag->prepared) prepare_gather(mtag);
 
-#if 0
-  mbuf = mtag->recv_msgs;
-  /* for each node which has neighbors of my sites */
-  for(i=0; i<mtag->nrecvs; i++) {
-    /* post receive */
-    QMP_start(mbuf[i].mh);
-  }
-#endif
-  if(mtag->nrecvs>0) QMP_start(mtag->mhrecv);
+  if (mtag->nrecvs>0) QMP_start(mtag->mhrecv);
 
   mbuf = mtag->send_msgs;
   /* for each node whose neighbors I have */
-  for(i=0; i<mtag->nsends; ++i) {
+  for (i = 0; i < mtag->nsends; ++i) {
     /* gather data into the buffer */
     tpt = mbuf[i].msg_buf;
     gmem = mbuf[i].gmem;
     do {
-      for(j=0; j<gmem->num; ++j,tpt+=gmem->size) {
-	memcpy( tpt, gmem->mem + gmem->sitelist[j]*gmem->stride, gmem->size );
+      for (j = 0; j < gmem->num; ++j,tpt+=gmem->size) {
+  memcpy(tpt, gmem->mem + gmem->sitelist[j]*gmem->stride, gmem->size);
       }
     } while((gmem=gmem->next)!=NULL);
     /* start the send */
@@ -1640,23 +1450,22 @@ do_gather(msg_tag *mtag)  /* previously returned by start_gather_site */
       crc_pt = tpt + msg_size;
       crc = (u_int32type *)crc_pt;
 
-      *crc = crc32(0, tpt, msg_size );
+      *crc = crc32(0, tpt, msg_size);
 #ifdef CRC_DEBUG
       {
-	char filename[128];
-	FILE *dump;
-	sprintf(filename,"/tmp/send.%d.to.%d.dir%d.msg%d",
-		mynode(),mbuf[i].msg_node,mtag->index,i);
-	dump = fopen(filename,"w");
-	fwrite(tpt, 1, msg_size + CRCBYTES, dump);
-	fclose(dump);
+  char filename[128];
+  FILE *dump;
+  sprintf(filename,"/tmp/send.%d.to.%d.dir%d.msg%d",
+    mynode(),mbuf[i].msg_node,mtag->index,i);
+  dump = fopen(filename,"w");
+  fwrite(tpt, 1, msg_size + CRCBYTES, dump);
+  fclose(dump);
       }
-#endif      
+#endif
     }
 #endif
-    //QMP_start(mbuf[i].mh);
   }
-  if(mtag->nsends>0) QMP_start(mtag->mhsend);
+  if (mtag->nsends>0) QMP_start(mtag->mhsend);
 }
 
 /*
@@ -1671,23 +1480,13 @@ wait_gather(msg_tag *mtag)
 #endif
 
   /* wait for all receive messages */
-#if 0
-  for(i=0; i<mtag->nrecvs; i++) {
-    QMP_wait( mtag->recv_msgs[i].mh );
-  }
-#endif
-  if(mtag->nrecvs>0) QMP_wait( mtag->mhrecv );
+  if (mtag->nrecvs>0) QMP_wait(mtag->mhrecv);
 
   /* wait for all send messages */
-#if 0
-  for(i=0; i<mtag->nsends; i++) {
-    QMP_wait( mtag->send_msgs[i].mh );
-  }
-#endif
-  if(mtag->nsends>0) QMP_wait( mtag->mhsend );
+  if (mtag->nsends>0) QMP_wait(mtag->mhsend);
 #if COM_CRC
   /* Verify the checksums received */
-  for(i=0; i<mtag->nrecvs; i++) {
+  for (i = 0; i < mtag->nrecvs; i++) {
     {
       u_int32type crcgot;
       msg_sr_t *mbuf;
@@ -1701,32 +1500,32 @@ wait_gather(msg_tag *mtag)
       msg_size = mbuf[i].msg_size;
       crc_pt = tpt + msg_size;
       crc = (u_int32type *)crc_pt;
-      crcgot = crc32(0, tpt, msg_size );
+      crcgot = crc32(0, tpt, msg_size);
 
-      if(*crc != crcgot){
-	fprintf(stderr,
-		"Node %d received checksum %x != node %d sent checksum %x\n",
-		mynode(),*crc, mbuf[i].msg_node, crcgot);
-	fflush(stdout);
-	fail = 1;
+      if (*crc != crcgot) {
+  fprintf(stderr,
+    "Node %d received checksum %x != node %d sent checksum %x\n",
+    mynode(),*crc, mbuf[i].msg_node, crcgot);
+  fflush(stdout);
+  fail = 1;
 #ifdef CRC_DEBUG
-	{
-	  char filename[128];
-	  FILE *dump;
-	  sprintf(filename,"/tmp/receive.%d.from.%d.dir%d.msg%d",mynode(),
-		  mbuf[i].msg_node,mtag->index,i);
-	  dump = fopen(filename,"w");
-	  fwrite(tpt, 1, msg_size + CRCBYTES, dump);
-	  fclose(dump);
-	}
-#endif      
+  {
+    char filename[128];
+    FILE *dump;
+    sprintf(filename,"/tmp/receive.%d.from.%d.dir%d.msg%d",mynode(),
+      mbuf[i].msg_node,mtag->index,i);
+    dump = fopen(filename,"w");
+    fwrite(tpt, 1, msg_size + CRCBYTES, dump);
+    fclose(dump);
+  }
+#endif
       }
     }
   }
 #ifdef CRC_DEBUG
   QMP_sum_int(&fail);
 #endif
-  if(fail > 0)terminate(1);
+  if (fail > 0)terminate(1);
 #endif
 }
 
@@ -1739,18 +1538,13 @@ cleanup_gather(msg_tag *mtag)
   int i;
   gmem_t *gmem, *next;
 
-#if 0
-  if(mtag->ids!=NULL)
-    for(i=0; i<mtag->nids; ++i) id_array[mtag->ids[i]] = 0;
-#endif
-
   /* free all receive buffers */
-  if(mtag->nrecvs>0) QMP_free_msghandle( mtag->mhrecv );
-  for(i=0; i<mtag->nrecvs; i++) {
-    //QMP_free_msghandle( mtag->recv_msgs[i].mh );
-    //QMP_free_msghandle( mtag->mhrecvlist[i] );
-    QMP_free_msgmem( mtag->recv_msgs[i].mm );
-    QMP_free_memory( mtag->recv_msgs[i].qmp_mem );
+  if (mtag->nrecvs>0) QMP_free_msghandle(mtag->mhrecv);
+  for (i = 0; i < mtag->nrecvs; i++) {
+    //QMP_free_msghandle(mtag->recv_msgs[i].mh);
+    //QMP_free_msghandle(mtag->mhrecvlist[i]);
+    QMP_free_msgmem(mtag->recv_msgs[i].mm);
+    QMP_free_memory(mtag->recv_msgs[i].qmp_mem);
     gmem = mtag->recv_msgs[i].gmem;
     do {
       next = gmem->next;
@@ -1759,12 +1553,10 @@ cleanup_gather(msg_tag *mtag)
     } while(gmem!=NULL);
   }
   /*  free all send buffers */
-  if(mtag->nsends>0) QMP_free_msghandle( mtag->mhsend );
-  for(i=0; i<mtag->nsends; i++) {
-    //QMP_free_msghandle( mtag->send_msgs[i].mh );
-    //QMP_free_msghandle( mtag->mhsendlist[i] );
-    QMP_free_msgmem( mtag->send_msgs[i].mm );
-    QMP_free_memory( mtag->send_msgs[i].qmp_mem );
+  if (mtag->nsends>0) QMP_free_msghandle(mtag->mhsend);
+  for (i = 0; i < mtag->nsends; i++) {
+    QMP_free_msgmem(mtag->send_msgs[i].mm);
+    QMP_free_memory(mtag->send_msgs[i].qmp_mem);
     gmem = mtag->send_msgs[i].gmem;
     do {
       next = gmem->next;
@@ -1773,15 +1565,14 @@ cleanup_gather(msg_tag *mtag)
     } while(gmem!=NULL);
   }
   /* free the msg_tag buffer */
-  if(mtag->nrecvs>0) {
+  if (mtag->nrecvs>0) {
     free(mtag->recv_msgs);
     free(mtag->mhrecvlist);
   }
-  if(mtag->nsends>0) {
+  if (mtag->nsends>0) {
     free(mtag->send_msgs);
     free(mtag->mhsendlist);
   }
-  //free(mtag->ids);
   free(mtag);
 }
 
@@ -1795,16 +1586,16 @@ cleanup_gather(msg_tag *mtag)
 */
 msg_tag *
 declare_gather_site(
-  field_offset field,	/* which field? Some member of structure "site" */
-  int size,		/* size in bytes of the field (eg sizeof(vector))*/
-  int index,		/* direction to gather from. eg XUP - index into
-			   neighbor tables */
-  int parity,		/* parity of sites whose neighbors we gather.
-			   one of EVEN, ODD or EVENANDODD. */
-  char ** dest)		/* one of the vectors of pointers */
+  field_offset field, /* which field? Some member of structure "site" */
+  int size,   /* size in bytes of the field (eg sizeof(vector))*/
+  int index,    /* direction to gather from. eg XUP - index into
+         neighbor tables */
+  int parity,   /* parity of sites whose neighbors we gather.
+         one of EVEN, ODD or EVENANDODD. */
+  char ** dest)   /* one of the vectors of pointers */
 {
-  return declare_strided_gather( (char *)lattice + field, sizeof(site), size,
-				 index, parity, dest );
+  return declare_strided_gather((char *)lattice + field, sizeof(site), size,
+         index, parity, dest);
 }
 
 /*
@@ -1812,66 +1603,22 @@ declare_gather_site(
 */
 msg_tag *
 start_gather_site(
-  field_offset field,	/* which field? Some member of structure "site" */
-  int size,		/* size in bytes of the field (eg sizeof(vector))*/
-  int index,		/* direction to gather from. eg XUP - index into
-			   neighbor tables */
-  int parity,		/* parity of sites whose neighbors we gather.
-			   one of EVEN, ODD or EVENANDODD. */
-  char ** dest)		/* one of the vectors of pointers */
+  field_offset field, /* which field? Some member of structure "site" */
+  int size,   /* size in bytes of the field (eg sizeof(vector))*/
+  int index,    /* direction to gather from. eg XUP - index into
+         neighbor tables */
+  int parity,   /* parity of sites whose neighbors we gather.
+         one of EVEN, ODD or EVENANDODD. */
+  char ** dest)   /* one of the vectors of pointers */
 {
   msg_tag *mt;
 
-  mt = declare_strided_gather( (char *)lattice + field, sizeof(site), size,
-			       index, parity, dest );
+  mt = declare_strided_gather((char *)lattice + field, sizeof(site), size,
+             index, parity, dest);
   prepare_gather(mt);
   do_gather(mt);
 
   return mt;
-}
-
-/*
-**  old style routine used to restart a previously waited gather
-**  this finction is now depreciated and users should call do_gather()
-**  instead
-*/
-void
-restart_gather_site(
-  field_offset field,	/* which field? Some member of structure "site" */
-  int size,		/* size in bytes of the field (eg sizeof(vector))*/
-  int index,		/* direction to gather from. eg XUP - index into
-			   neighbor tables */
-  int parity,		/* parity of sites whose neighbors we gather.
-			   one of EVEN, ODD or EVENANDODD. */
-  char ** dest,		/* one of the vectors of pointers */
-  msg_tag *mtag)        /* previously returned by start_gather_site */
-{
-  msg_sr_t *mbuf;
-
-  if(mtag->nsends!=0) mbuf = mtag->send_msgs;
-  else mbuf = NULL;
-
-  /* sanity checks for improper usage */
-  if(mbuf!=NULL) {
-    if(((char *)lattice+field)!=mbuf->gmem->mem) {
-      printf("error: wrong field in restart gather\n");
-      terminate(1);
-    }
-    if(sizeof(site)!=mbuf->gmem->stride) {
-      printf("error: wrong stride in restart gather\n");
-      terminate(1);
-    }
-    if(size!=mbuf->gmem->size) {
-      printf("error: wrong size in restart gather\n");
-      terminate(1);
-    }
-    if(((char *)lattice+field)!=mbuf->gmem->mem) {
-      printf("error: wrong field in restart gather\n");
-      terminate(1);
-    }
-  }
-
-  do_gather(mtag);
 }
 
 /*****************************
@@ -1883,15 +1630,15 @@ restart_gather_site(
 */
 msg_tag *
 declare_gather_field(
-  void * field,		/* which field? Pointer returned by malloc() */
-  int size,		/* size in bytes of the field (eg sizeof(vector))*/
-  int index,		/* direction to gather from. eg XUP - index into
-			   neighbor tables */
-  int parity,		/* parity of sites whose neighbors we gather.
-			   one of EVEN, ODD or EVENANDODD. */
-  char ** dest)		/* one of the vectors of pointers */
+  void * field,   /* which field? Pointer returned by malloc() */
+  int size,   /* size in bytes of the field (eg sizeof(vector))*/
+  int index,    /* direction to gather from. eg XUP - index into
+         neighbor tables */
+  int parity,   /* parity of sites whose neighbors we gather.
+         one of EVEN, ODD or EVENANDODD. */
+  char ** dest)   /* one of the vectors of pointers */
 {
-  return declare_strided_gather( (char *)field, size, size, index, parity, dest );
+  return declare_strided_gather((char *)field, size, size, index, parity, dest);
 }
 
 /*
@@ -1899,67 +1646,22 @@ declare_gather_field(
 */
 msg_tag *
 start_gather_field(
-  void * field,		/* which field? Pointer returned by malloc() */
-  int size,		/* size in bytes of the field (eg sizeof(vector))*/
-  int index,		/* direction to gather from. eg XUP - index into
-			   neighbor tables */
-  int parity,		/* parity of sites whose neighbors we gather.
-			   one of EVEN, ODD or EVENANDODD. */
-  char ** dest)		/* one of the vectors of pointers */
+  void * field,   /* which field? Pointer returned by malloc() */
+  int size,   /* size in bytes of the field (eg sizeof(vector))*/
+  int index,    /* direction to gather from. eg XUP - index into
+         neighbor tables */
+  int parity,   /* parity of sites whose neighbors we gather.
+         one of EVEN, ODD or EVENANDODD. */
+  char ** dest)   /* one of the vectors of pointers */
 {
   msg_tag *mt;
 
-  mt = declare_strided_gather( (char *)field, size, size, index, parity, dest );
+  mt = declare_strided_gather((char *)field, size, size, index, parity, dest);
   prepare_gather(mt);
   do_gather(mt);
 
   return mt;
 }
-
-/*
-**  old style routine used to restart a previously waited gather
-**  this finction is now depreciated and users should call do_gather()
-**  instead
-*/
-void
-restart_gather_field(
-  void *field,		/* which field? Pointer returned by malloc() */
-  int size,		/* size in bytes of the field (eg sizeof(vector))*/
-  int index,		/* direction to gather from. eg XUP - index into
-			   neighbor tables */
-  int parity,		/* parity of sites whose neighbors we gather.
-			   one of EVEN, ODD or EVENANDODD. */
-  char ** dest,		/* one of the vectors of pointers */
-  msg_tag *mtag)          /* previously returned by start_gather_field */
-{
-  msg_sr_t *mbuf;
-
-  if(mtag->nsends!=0) mbuf = mtag->send_msgs;
-  else mbuf = NULL;
-
-  /* sanity checks for improper usage */
-  if(mbuf!=NULL) {
-    if(field!=mbuf->gmem->mem) {
-      printf("error: wrong field in restart gather\n");
-      terminate(1);
-    }
-    if(size!=mbuf->gmem->stride) {
-      printf("error: wrong stride in restart gather\n");
-      terminate(1);
-    }
-    if(size!=mbuf->gmem->size) {
-      printf("error: wrong size in restart gather\n");
-      terminate(1);
-    }
-    if(field!=mbuf->gmem->mem) {
-      printf("error: wrong field in restart gather\n");
-      terminate(1);
-    }
-  }
-
-  do_gather(mtag);
-}
-
 
 /**********************************************************************
  *                      MULTI-GATHER ROUTINES                         *
@@ -1976,25 +1678,25 @@ restart_gather_field(
 
    msg_tag *tag1, *tag2, *mtag;
 
-   tag1 = declare_gather_site( F_OFFSET(phi), sizeof(vector), XUP,
-	                  EVEN, gen_pt1 );
-   tag2 = declare_gather_site( F_OFFSET(phi), sizeof(vector), XDOWN,
-	                  EVEN, gen_pt2 );
+   tag1 = declare_gather_site(F_OFFSET(phi), sizeof(vector), XUP,
+                    EVEN, gen_pt1);
+   tag2 = declare_gather_site(F_OFFSET(phi), sizeof(vector), XDOWN,
+                    EVEN, gen_pt2);
    mtag = NULL;
-   accumulate_gather( &mtag, tag1 );
-   accumulate_gather( &mtag, tag2 );
-   prepare_gather( mtag );  ** optional **
-   do_gather( mtag );
-   wait_gather( mtag );
+   accumulate_gather(&mtag, tag1);
+   accumulate_gather(&mtag, tag2);
+   prepare_gather(mtag);  ** optional **
+   do_gather(mtag);
+   wait_gather(mtag);
    ** stuff **
-   do_gather( tag1 );     ** this is valid as long as the combined gather
-   wait_gather( tag1 );      (mtag) has been waited on **
+   do_gather(tag1);     ** this is valid as long as the combined gather
+   wait_gather(tag1);      (mtag) has been waited on **
    ** stuff **
-   do_gather( mtag );
-   wait_gather( mtag );
-   cleanup_gather( mtag );
-   cleanup_gather( tag1 );
-   cleanup_gather( tag2 );
+   do_gather(mtag);
+   wait_gather(mtag);
+   cleanup_gather(mtag);
+   cleanup_gather(tag1);
+   cleanup_gather(tag2);
 
  Note that mtag must be set to NULL first in this case.
  If there is no need to use the single gathers alone one could do:
@@ -2002,25 +1704,25 @@ restart_gather_field(
    msg_tag *mtag;
 
    mtag = NULL;
-   declare_accumulate_gather_site( &mtag, F_OFFSET(phi), sizeof(vector), XUP,
-	                      EVEN, gen_pt1 );
-   declare_accumulate_gather_site( &mtag, F_OFFSET(phi), sizeof(vector), XDOWN,
-	                      EVEN, gen_pt2 );
-   prepare_gather( mtag );  ** optional **
-   do_gather( mtag );
-   wait_gather( mtag );
+   declare_accumulate_gather_site(&mtag, F_OFFSET(phi), sizeof(vector), XUP,
+                        EVEN, gen_pt1);
+   declare_accumulate_gather_site(&mtag, F_OFFSET(phi), sizeof(vector), XDOWN,
+                        EVEN, gen_pt2);
+   prepare_gather(mtag);  ** optional **
+   do_gather(mtag);
+   wait_gather(mtag);
    ** stuff **
-   do_gather( mtag );
-   wait_gather( mtag );
-   cleanup_gather( mtag );
+   do_gather(mtag);
+   wait_gather(mtag);
+   cleanup_gather(mtag);
 
  one coule also replace
    mtag = NULL;
-   declare_accumulate_gather_site( &mtag, F_OFFSET(phi), sizeof(vector), XUP,
-	                      EVEN, gen_pt1 );
+   declare_accumulate_gather_site(&mtag, F_OFFSET(phi), sizeof(vector), XUP,
+                        EVEN, gen_pt1);
  with
-   mtag = declare_gather_site( F_OFFSET(phi), sizeof(vector), XUP,
-	                  EVEN, gen_pt1 );
+   mtag = declare_gather_site(F_OFFSET(phi), sizeof(vector), XUP,
+                    EVEN, gen_pt1);
  since they do the same thing, however the first form is a bit more uniform
  in the given example.
 */
@@ -2034,7 +1736,7 @@ copy_gmem(gmem_t **dest, gmem_t *src)
   while(*dest!=NULL) dest = &((*dest)->next);
   do {
     *dest = (gmem_t *)malloc(sizeof(gmem_t));
-    if(*dest==NULL) {
+    if (*dest==NULL) {
       printf("error copy_gmem malloc node:%i\n",mynode());
       terminate(1);
     }
@@ -2049,31 +1751,31 @@ copy_gmem(gmem_t **dest, gmem_t *src)
 **  helper function that merges a source msg_sr_t structure into the dest
 */
 static void
-add_msgt(msg_sr_t **dest, int *ndest, msg_sr_t *src, int nsrc/*, int nids*/)
+add_msgt(msg_sr_t **dest, int *ndest, msg_sr_t *src, int nsrc)
 {
   int i, j, n;
 
   n = 0;
-  for(i=0; i<nsrc; ++i) {
-    for(j=0; j<*ndest; ++j) {
-      if((*dest)[j].msg_node==src[i].msg_node) {
-	++n;
-	break;
+  for (i = 0; i < nsrc; ++i) {
+    for (j = 0; j < *ndest; ++j) {
+      if ((*dest)[j].msg_node==src[i].msg_node) {
+  ++n;
+  break;
       }
     }
   }
   n = *ndest + nsrc - n;
 
   *dest = (msg_sr_t *)realloc(*dest, n*sizeof(msg_sr_t));
-  if(*dest==NULL) {
+  if (*dest==NULL) {
     printf("error add_msgt malloc node:%i\n",mynode());
     terminate(1);
   }
-  for(i=0; i<nsrc; ++i) {
-    for(j=0; j<*ndest; ++j) {
-      if((*dest)[j].msg_node==src[i].msg_node) break;
+  for (i = 0; i < nsrc; ++i) {
+    for (j = 0; j < *ndest; ++j) {
+      if ((*dest)[j].msg_node == src[i].msg_node) break;
     }
-    if(j<*ndest) {
+    if (j<*ndest) {
       (*dest)[j].msg_size += src[i].msg_size;
       copy_gmem(&((*dest)[j].gmem), src[i].gmem);
     } else {
@@ -2096,14 +1798,12 @@ accumulate_gather(msg_tag **mmtag, msg_tag *mtag)
 {
   msg_tag *amtag;
 
-  if(*mmtag==NULL) {
+  if (*mmtag==NULL) {
     amtag = (msg_tag *)malloc(sizeof(msg_tag));
-    if(amtag==NULL) {
+    if (amtag==NULL) {
       printf("error accumulate_gather malloc node:%i\n",mynode());
       terminate(1);
     }
-    //amtag->nids = 0;
-    //amtag->ids = NULL;
     amtag->nrecvs = 0;
     amtag->recv_msgs = NULL;
     amtag->nsends = 0;
@@ -2113,11 +1813,10 @@ accumulate_gather(msg_tag **mmtag, msg_tag *mtag)
     amtag = *mmtag;
   }
 
-  add_msgt( &(amtag->recv_msgs), &(amtag->nrecvs),
-	    mtag->recv_msgs, mtag->nrecvs/*, amtag->nids*/ );
-  add_msgt( &(amtag->send_msgs), &(amtag->nsends),
-	    mtag->send_msgs, mtag->nsends/*, amtag->nids*/ );
-  //amtag->nids += mtag->nids;
+  add_msgt(&(amtag->recv_msgs), &(amtag->nrecvs),
+      mtag->recv_msgs, mtag->nrecvs);
+  add_msgt(&(amtag->send_msgs), &(amtag->nsends),
+      mtag->send_msgs, mtag->nsends);
 }
 
 /*
@@ -2127,23 +1826,23 @@ accumulate_gather(msg_tag **mmtag, msg_tag *mtag)
 static void
 declare_accumulate_strided_gather(
   msg_tag **mmtag,      /* tag to accumulate gather into */
-  void *field,	        /* which field? Some member of structure "site" */
+  void *field,          /* which field? Some member of structure "site" */
   int stride,           /* bytes between fields in source buffer */
-  int size,		/* size in bytes of the field (eg sizeof(vector))*/
-  int index,		/* direction to gather from. eg XUP - index into
-			   neighbor tables */
-  int parity,		/* parity of sites whose neighbors we gather.
-			   one of EVEN, ODD or EVENANDODD. */
-  char ** dest)		/* one of the vectors of pointers */
+  int size,   /* size in bytes of the field (eg sizeof(vector))*/
+  int index,    /* direction to gather from. eg XUP - index into
+         neighbor tables */
+  int parity,   /* parity of sites whose neighbors we gather.
+         one of EVEN, ODD or EVENANDODD. */
+  char ** dest)   /* one of the vectors of pointers */
 {
   msg_tag *mtag;
 
-  mtag = declare_strided_gather( field, stride, size, index, parity, dest );
-  if(*mmtag==NULL) {
+  mtag = declare_strided_gather(field, stride, size, index, parity, dest);
+  if (*mmtag==NULL) {
     *mmtag = mtag;
   } else {
-    accumulate_gather( mmtag, mtag );
-    cleanup_gather( mtag );
+    accumulate_gather(mmtag, mtag);
+    cleanup_gather(mtag);
   }
 }
 
@@ -2153,16 +1852,16 @@ declare_accumulate_strided_gather(
 void
 declare_accumulate_gather_site(
   msg_tag **mmtag,
-  field_offset field,	/* which field? Some member of structure "site" */
-  int size,		/* size in bytes of the field (eg sizeof(vector))*/
-  int index,		/* direction to gather from. eg XUP - index into
-			   neighbor tables */
-  int parity,		/* parity of sites whose neighbors we gather.
-			   one of EVEN, ODD or EVENANDODD. */
-  char ** dest)		/* one of the vectors of pointers */
+  field_offset field, /* which field? Some member of structure "site" */
+  int size,   /* size in bytes of the field (eg sizeof(vector))*/
+  int index,    /* direction to gather from. eg XUP - index into
+         neighbor tables */
+  int parity,   /* parity of sites whose neighbors we gather.
+         one of EVEN, ODD or EVENANDODD. */
+  char ** dest)   /* one of the vectors of pointers */
 {
-  declare_accumulate_strided_gather( mmtag, (char *)lattice + field,
-				     sizeof(site), size, index, parity, dest );
+  declare_accumulate_strided_gather(mmtag, (char *)lattice + field,
+             sizeof(site), size, index, parity, dest);
 }
 
 /*
@@ -2171,16 +1870,16 @@ declare_accumulate_gather_site(
 void
 declare_accumulate_gather_field(
   msg_tag **mmtag,
-  void * field,		/* which field? Pointer returned by malloc() */
-  int size,		/* size in bytes of the field (eg sizeof(vector))*/
-  int index,		/* direction to gather from. eg XUP - index into
-			   neighbor tables */
-  int parity,		/* parity of sites whose neighbors we gather.
-			   one of EVEN, ODD or EVENANDODD. */
-  char ** dest)		/* one of the vectors of pointers */
+  void * field,   /* which field? Pointer returned by malloc() */
+  int size,   /* size in bytes of the field (eg sizeof(vector))*/
+  int index,    /* direction to gather from. eg XUP - index into
+         neighbor tables */
+  int parity,   /* parity of sites whose neighbors we gather.
+         one of EVEN, ODD or EVENANDODD. */
+  char ** dest)   /* one of the vectors of pointers */
 {
-  declare_accumulate_strided_gather( mmtag, field, size, size, index, parity,
-				     dest );
+  declare_accumulate_strided_gather(mmtag, field, size, size, index, parity,
+             dest);
 }
 
 
@@ -2192,32 +1891,32 @@ declare_accumulate_gather_field(
    be used as input to subsequent wait_general_gather() and
    cleanup_general_gather() calls.
 
-   usage: tag = start_general_gather_site( source, size, displacement, parity, dest)
+   usage: tag = start_general_gather_site(source, size, displacement, parity, dest)
    example:
-	msg_tag *tag;
-	int disp[4]; 
+  msg_tag *tag;
+  int disp[4];
         disp[XUP]=1; disp[YUP]= -1; disp[ZUP] = disp[TUP] = 0;
-	tag = start_general_gather_site( F_OFFSET(phi), sizeof(vector), disp,
-	    EVEN, gen_pt[0] );
-	  ** do other stuff **
-	wait_general_gather(tag);
-	  ** gen_pt[0][i] now contains the address of the phi
-	   vector (or a copy thereof) on the neighbor of site i in the
-	   XUP direction for all even sites i.
-	   Do whatever you want with it here.
-	  **
-	cleanup_general_gather(tag);
-	  ** subsequent calls will overwrite the gathered fields. but if you
-	   don't clean up, you will eventually run out of space **
+  tag = start_general_gather_site(F_OFFSET(phi), sizeof(vector), disp,
+      EVEN, gen_pt[0]);
+    ** do other stuff **
+  wait_general_gather(tag);
+    ** gen_pt[0][i] now contains the address of the phi
+     vector (or a copy thereof) on the neighbor of site i in the
+     XUP direction for all even sites i.
+     Do whatever you want with it here.
+    **
+  cleanup_general_gather(tag);
+    ** subsequent calls will overwrite the gathered fields. but if you
+     don't clean up, you will eventually run out of space **
 */
 
 struct msg_tmp { int node, count; }; /* temporary structure for keeping track
-					of messages to be sent or received */
-static struct msg_tmp *to_nodes, *from_nodes;	/* arrays for messages */
+          of messages to be sent or received */
+static struct msg_tmp *to_nodes, *from_nodes; /* arrays for messages */
 static int g_gather_flag=0; /* flag to tell if general gather in progress */
-static int tsize;	    /* size of entry in messages =2*sizeof(int)+size */
-static char ** tdest;	    /* tdest is copy of dest */
-/* from_nodes, tsize and tdest are global because they are set in 
+static int tsize;     /* size of entry in messages =2*sizeof(int)+size */
+static char ** tdest;     /* tdest is copy of dest */
+/* from_nodes, tsize and tdest are global because they are set in
    start_general_gather_site() and used in wait_general_gather().  This
    works because we allow only one general_gather in progress at a
    time. */
@@ -2226,28 +1925,28 @@ static char ** tdest;	    /* tdest is copy of dest */
 
 msg_tag *
 start_general_strided_gather(
-  char *field,	        /* source buffer aligned to desired field */
+  char *field,          /* source buffer aligned to desired field */
   int stride,           /* bytes between fields in source buffer */
-  int size,		/* size in bytes of the field (eg sizeof(vector))*/
-  int *displacement,	/* displacement to gather from. four components */
-  int parity,		/* parity of sites to which we gather.
-			   one of EVEN, ODD or EVENANDODD. */
-  char ** dest)		/* one of the vectors of pointers */
+  int size,   /* size in bytes of the field (eg sizeof(vector))*/
+  int *displacement,  /* displacement to gather from. four components */
+  int parity,   /* parity of sites to which we gather.
+         one of EVEN, ODD or EVENANDODD. */
+  char ** dest)   /* one of the vectors of pointers */
 {
-  register int i,j;	/* scratch */
-  register site *s;	/* scratch pointer to site */
-  register char *tpt;	/* scratch pointer in buffers */
-  int nsites;		/* number of sites in this receive or send */
-  int disp_parity;	/* parity of displacement vector */
-  int send_parity;	/* parity of sites that may be sent */
-  int tx,ty,tz,tt;	/* temporary coordinates */
-  int othernode;		/* node sent to or received from */
+  register int i,j; /* scratch */
+  register site *s; /* scratch pointer to site */
+  register char *tpt; /* scratch pointer in buffers */
+  int nsites;   /* number of sites in this receive or send */
+  int disp_parity;  /* parity of displacement vector */
+  int send_parity;  /* parity of sites that may be sent */
+  int tx,ty,tz,tt;  /* temporary coordinates */
+  int othernode;    /* node sent to or received from */
   msg_sr_t *mrecv,*msend;
-  msg_tag *mtag; 		/* message tag, to be returned */
+  msg_tag *mtag;    /* message tag, to be returned */
   int n_send_msgs, n_recv_msgs;
 
   /* check for gather already in progress */
-  if(g_gather_flag!=0){
+  if (g_gather_flag!=0) {
     printf("ERROR: node %d, two general_gathers() at once!\n", mynode());
     terminate(1);
   }
@@ -2256,22 +1955,22 @@ start_general_strided_gather(
   /* Use 2*sizeof int so pointer will be aligned to double word */
   tdest = dest;
   /* find parity of sites that may be sent */
-  if( (displacement[XUP]+displacement[YUP]+displacement[ZUP]+
-       displacement[TUP])%2 == 0 ) disp_parity = EVEN;
+  if ((displacement[XUP]+displacement[YUP]+displacement[ZUP]+
+       displacement[TUP])%2 == 0) disp_parity = EVEN;
   else disp_parity = ODD;
   switch(parity) {
     case EVEN:
-      if( disp_parity==EVEN ) send_parity = EVEN;
+      if (disp_parity==EVEN) send_parity = EVEN;
       else send_parity = ODD;
       break;
     case ODD:
-      if( disp_parity==EVEN ) send_parity = ODD;
+      if (disp_parity==EVEN) send_parity = ODD;
       else send_parity = EVEN;
       break;
     default: /* EVENANDODD */
-      if(parity!=EVENANDODD) {
-	printf("ERROR: bad parity\n");
-	terminate(parity);
+      if (parity!=EVENANDODD) {
+  printf("ERROR: bad parity\n");
+  terminate(parity);
       }
       send_parity = EVENANDODD;
       break;
@@ -2280,38 +1979,38 @@ start_general_strided_gather(
   /* set pointers in sites whose neighbors are on this node.  (If all
      neighbors are on this node, this is the only thing done.) Make
      list of nodes from whom we expect messages */
-  FORSOMEPARITY(i,s,parity){
-    if(displacement[XUP]!=0) tx = (s->x + displacement[XUP] + nx)%nx;
+  FORSOMEPARITY(i,s,parity) {
+    if (displacement[XUP]!=0) tx = (s->x + displacement[XUP] + nx)%nx;
     else                     tx = s->x;
-    if(displacement[YUP]!=0) ty = (s->y + displacement[YUP] + ny)%ny;
+    if (displacement[YUP]!=0) ty = (s->y + displacement[YUP] + ny)%ny;
     else                     ty = s->y;
-    if(displacement[ZUP]!=0) tz = (s->z + displacement[ZUP] + nz)%nz;
+    if (displacement[ZUP]!=0) tz = (s->z + displacement[ZUP] + nz)%nz;
     else                     tz = s->z;
-    if(displacement[TUP]!=0) tt = (s->t + displacement[TUP] + nt)%nt;
+    if (displacement[TUP]!=0) tt = (s->t + displacement[TUP] + nt)%nt;
     else                     tt = s->t;
     othernode = node_number(tx,ty,tz,tt);
-    if( othernode==this_node ) {
+    if (othernode==this_node) {
       dest[i] = field + node_index(tx,ty,tz,tt) * stride;
     }
     else{
-      for(j=0;j<n_recv_msgs;j++) if(from_nodes[j].node==othernode) break;
-      if(j < n_recv_msgs) {
-	from_nodes[j].count++;
+      for (j = 0; j < n_recv_msgs; j++) if (from_nodes[j].node==othernode) break;
+      if (j < n_recv_msgs) {
+  from_nodes[j].count++;
       }
       else {
-	if(n_recv_msgs==0) {
-	  from_nodes = (struct msg_tmp *)malloc( sizeof(struct msg_tmp) );
-	  from_nodes[0].node = othernode;
-	  from_nodes[0].count = 1;
-	  n_recv_msgs++;
-	}
-	else{
-	  from_nodes = (struct msg_tmp *)
-	    realloc( from_nodes, (n_recv_msgs+1)*sizeof(struct msg_tmp) );
-	  from_nodes[j].node = othernode;
-	  from_nodes[j].count = 1;
-	  n_recv_msgs++;
-	}
+  if (n_recv_msgs==0) {
+    from_nodes = (struct msg_tmp *)malloc(sizeof(struct msg_tmp));
+    from_nodes[0].node = othernode;
+    from_nodes[0].count = 1;
+    n_recv_msgs++;
+  }
+  else{
+    from_nodes = (struct msg_tmp *)
+      realloc(from_nodes, (n_recv_msgs+1)*sizeof(struct msg_tmp));
+    from_nodes[j].node = othernode;
+    from_nodes[j].count = 1;
+    n_recv_msgs++;
+  }
       }
     }
   }
@@ -2319,52 +2018,52 @@ start_general_strided_gather(
   /* scan sites of parity we are sending, make list of nodes to which
      we must send messages and the number of messages to each. */
   FORSOMEPARITY(i,s,send_parity) {
-    if(displacement[XUP]!=0) tx = (s->x - displacement[XUP] + nx)%nx;
+    if (displacement[XUP]!=0) tx = (s->x - displacement[XUP] + nx)%nx;
     else                     tx = s->x;
-    if(displacement[YUP]!=0) ty = (s->y - displacement[YUP] + ny)%ny;
+    if (displacement[YUP]!=0) ty = (s->y - displacement[YUP] + ny)%ny;
     else                     ty = s->y;
-    if(displacement[ZUP]!=0) tz = (s->z - displacement[ZUP] + nz)%nz;
+    if (displacement[ZUP]!=0) tz = (s->z - displacement[ZUP] + nz)%nz;
     else                     tz = s->z;
-    if(displacement[TUP]!=0) tt = (s->t - displacement[TUP] + nt)%nt;
+    if (displacement[TUP]!=0) tt = (s->t - displacement[TUP] + nt)%nt;
     else                     tt = s->t;
     othernode = node_number(tx,ty,tz,tt);
-    if( othernode != this_node ) {
-      for(j=0;j<n_send_msgs;j++) if(to_nodes[j].node==othernode) break;
-      if(j < n_send_msgs) {
-	to_nodes[j].count++;
+    if (othernode != this_node) {
+      for (j = 0; j < n_send_msgs; j++) if (to_nodes[j].node==othernode) break;
+      if (j < n_send_msgs) {
+  to_nodes[j].count++;
       }
       else {
-	if(n_send_msgs==0) {
-	  to_nodes = (struct msg_tmp *)malloc(sizeof(struct msg_tmp));
-	  to_nodes[0].node = othernode;
-	  to_nodes[0].count = 1;
-	  n_send_msgs++;
-	}
-	else{
-	  to_nodes = (struct msg_tmp *)
-	    realloc( to_nodes, (n_send_msgs+1)*sizeof(struct msg_tmp) );
-	  to_nodes[j].node = othernode;
-	  to_nodes[j].count = 1;
-	  n_send_msgs++;
-	}
+  if (n_send_msgs==0) {
+    to_nodes = (struct msg_tmp *)malloc(sizeof(struct msg_tmp));
+    to_nodes[0].node = othernode;
+    to_nodes[0].count = 1;
+    n_send_msgs++;
+  }
+  else{
+    to_nodes = (struct msg_tmp *)
+      realloc(to_nodes, (n_send_msgs+1)*sizeof(struct msg_tmp));
+    to_nodes[j].node = othernode;
+    to_nodes[j].count = 1;
+    n_send_msgs++;
+  }
       }
     }
   }
 
   mtag = (msg_tag *)malloc(sizeof(msg_tag));
 
-  if( n_recv_msgs==0 ) mrecv = NULL;
+  if (n_recv_msgs==0) mrecv = NULL;
   else {
     mrecv = (msg_sr_t *)malloc(n_recv_msgs*sizeof(msg_sr_t));
-    if(mrecv==NULL) {
+    if (mrecv==NULL) {
       printf("NO ROOM for mrecv, node %d\n",mynode());
       terminate(1);
     }
   }
-  if( n_send_msgs==0 ) msend = NULL;
+  if (n_send_msgs==0) msend = NULL;
   else {
     msend = (msg_sr_t *)malloc(n_send_msgs*sizeof(msg_sr_t));
-    if(msend==NULL) {
+    if (msend==NULL) {
       printf("NO ROOM for msend, node %d\n",mynode());
       terminate(1);
     }
@@ -2376,13 +2075,13 @@ start_general_strided_gather(
   mtag->nsends = n_send_msgs;
 
   /* for each node which has neighbors of my sites */
-  for(i=0; i<n_recv_msgs; i++) {
+  for (i = 0; i < n_recv_msgs; i++) {
     /* allocate buffer to receive neighbors */
     nsites = from_nodes[i].count;
     mrecv[i].msg_node = from_nodes[i].node;
     mrecv[i].msg_size = nsites*tsize;
-    mrecv[i].msg_buf = (char *)malloc( nsites*tsize );
-    if(mrecv[i].msg_buf==NULL){
+    mrecv[i].msg_buf = (char *)malloc(nsites*tsize);
+    if (mrecv[i].msg_buf==NULL) {
       printf("NO ROOM for msg_buf, node %d\n",mynode());
       terminate(1);
     }
@@ -2393,10 +2092,10 @@ start_general_strided_gather(
   }
 
   /* for each node whose neighbors I have */
-  for(i=0; i<n_send_msgs; i++) {
+  for (i = 0; i < n_send_msgs; i++) {
     /* Allocate buffer to gather data. */
-    tpt=(char *)malloc( to_nodes[i].count*tsize );
-    if(tpt==NULL) {
+    tpt=(char *)malloc(to_nodes[i].count*tsize);
+    if (tpt==NULL) {
       printf("NO ROOM for tpt, node %d\n",mynode());
       terminate(1);
     }
@@ -2406,7 +2105,7 @@ start_general_strided_gather(
   }
 
   /* reset to_node counters */
-  for(i=0; i<n_send_msgs; i++) to_nodes[i].count = 0;
+  for (i = 0; i < n_send_msgs; i++) to_nodes[i].count = 0;
   /* gather data into the buffers. Each entry in the buffers consists
      of the index of the site to which the data is sent, followed by
      the actual data */
@@ -2416,56 +2115,56 @@ start_general_strided_gather(
     tz = (s->z - displacement[ZUP] + nz)%nz;
     tt = (s->t - displacement[TUP] + nt)%nt;
     othernode = node_number(tx,ty,tz,tt);
-    if( othernode != this_node ) {
-      for(j=0; j<n_send_msgs; j++) if(to_nodes[j].node==othernode) break;
+    if (othernode != this_node) {
+      for (j = 0; j < n_send_msgs; j++) if (to_nodes[j].node==othernode) break;
       tpt = msend[j].msg_buf + to_nodes[j].count*tsize;
       *(int *)tpt = node_index(tx,ty,tz,tt);
       /* index of site on other node */
-      memcpy( tpt+2*sizeof(int), field+i*stride, size);
+      memcpy(tpt+2*sizeof(int), field+i*stride, size);
       to_nodes[j].count++;
     }
   }
 
   /* start the sends */
-  for(i=0; i<n_send_msgs; i++) {
+  for (i = 0; i < n_send_msgs; i++) {
     msend[i].mm = QMP_declare_msgmem(msend[i].msg_buf, msend[i].msg_size);
     msend[i].mh = QMP_declare_send_to(msend[i].mm, to_nodes[i].node, 0);
     QMP_start(msend[i].mh);
   }
 
   /* free temporary arrays */
-  if(n_send_msgs>0) free(to_nodes);
+  if (n_send_msgs>0) free(to_nodes);
   /* mark gather in progress and return */
   g_gather_flag = 1;
 
   return mtag;
 }
 
-#else	/* N_SUBL32 */
+#else /* N_SUBL32 */
 
 msg_tag *
 start_general_strided_gather(
-  char *field,	        /* source buffer aligned to desired field */
+  char *field,          /* source buffer aligned to desired field */
   int stride,           /* bytes between fields in source buffer */
-  int size,		/* size in bytes of the field (eg sizeof(vector))*/
-  int *displacement,	/* displacement to gather from. four components */
-  int subl,		/* subl of sites whose neighbors we gather.
-			   It is EVENANDODD, if all sublattices are done. */
-  char ** dest)		/* one of the vectors of pointers */
+  int size,   /* size in bytes of the field (eg sizeof(vector))*/
+  int *displacement,  /* displacement to gather from. four components */
+  int subl,   /* subl of sites whose neighbors we gather.
+         It is EVENANDODD, if all sublattices are done. */
+  char ** dest)   /* one of the vectors of pointers */
 {
-  register int i,j;	/* scratch */
-  register site *s;	/* scratch pointer to site */
-  register char *tpt;	/* scratch pointer in buffers */
-  int nsites;		/* number of sites in this receive or send */
-  int send_subl;		/* sublattice of sites that may be sent */
-  int tx,ty,tz,tt;	/* temporary coordinates */
-  int othernode;		/* node sent to or received from */
+  register int i,j; /* scratch */
+  register site *s; /* scratch pointer to site */
+  register char *tpt; /* scratch pointer in buffers */
+  int nsites;   /* number of sites in this receive or send */
+  int send_subl;    /* sublattice of sites that may be sent */
+  int tx,ty,tz,tt;  /* temporary coordinates */
+  int othernode;    /* node sent to or received from */
   msg_sr_t *mrecv,*msend;
-  msg_tag *mtag;		/* message tag, to be returned */
+  msg_tag *mtag;    /* message tag, to be returned */
   int n_send_msgs, n_recv_msgs;
 
   /* check for gather already in progress */
-  if(g_gather_flag!=0) {
+  if (g_gather_flag!=0) {
     printf("ERROR: node %d, two general_gathers() at once!\n", mynode());
     terminate(1);
   }
@@ -2477,198 +2176,198 @@ start_general_strided_gather(
   /* find sublattice of sites that may be sent */
   /* This is not needed for EVENANDODD */
   send_subl = subl;
-  if( subl != EVENANDODD ) {
+  if (subl != EVENANDODD) {
     /* Displacments by multiples of 4 in any direction does
        not change sublattice */
     tx = displacement[XUP]%4;
     ty = displacement[YUP]%4;
     tz = displacement[ZUP]%4;
     tt = displacement[TUP]%4;
-    if( tx < 0 ) {
-      for(i=0;i<(-tx);i++) send_subl = neighsubl[send_subl][XDOWN];
+    if (tx < 0) {
+      for (i = 0; i < (-tx); i++) send_subl = neighsubl[send_subl][XDOWN];
     }
     else
-      for(i=0;i<tx;i++) send_subl = neighsubl[send_subl][XUP];
-    if( ty < 0 ) {
-      for(i=0;i<(-ty);i++) send_subl = neighsubl[send_subl][YDOWN];
+      for (i = 0; i < tx; i++) send_subl = neighsubl[send_subl][XUP];
+    if (ty < 0) {
+      for (i = 0; i < (-ty); i++) send_subl = neighsubl[send_subl][YDOWN];
     }
     else
-      for(i=0;i<ty;i++) send_subl = neighsubl[send_subl][YUP];
-    if( tz < 0 ) {
-      for(i=0;i<(-tz);i++) send_subl = neighsubl[send_subl][ZDOWN];
+      for (i = 0; i < ty; i++) send_subl = neighsubl[send_subl][YUP];
+    if (tz < 0) {
+      for (i = 0; i < (-tz); i++) send_subl = neighsubl[send_subl][ZDOWN];
     }
     else
-      for(i=0;i<tz;i++) send_subl = neighsubl[send_subl][ZUP];
-    if( tt < 0 ) {
-      for(i=0;i<(-tt);i++) send_subl = neighsubl[send_subl][TDOWN];
+      for (i = 0; i < tz; i++) send_subl = neighsubl[send_subl][ZUP];
+    if (tt < 0) {
+      for (i = 0; i < (-tt); i++) send_subl = neighsubl[send_subl][TDOWN];
     }
     else
-      for(i=0;i<tt;i++) send_subl = neighsubl[send_subl][TUP];
+      for (i = 0; i < tt; i++) send_subl = neighsubl[send_subl][TUP];
   }
 
   /* set pointers in sites whose neighbors are on this node.  (If all
      neighbors are on this node, this is the only thing done.) Make
      list of nodes from whom we expect messages */
-  if( subl == EVENANDODD ) {
+  if (subl == EVENANDODD) {
     FORALLSITES(i,s) {
-      if(displacement[XUP]!=0) tx = (s->x + displacement[XUP] + nx)%nx;
+      if (displacement[XUP]!=0) tx = (s->x + displacement[XUP] + nx)%nx;
       else                     tx = s->x;
-      if(displacement[YUP]!=0) ty = (s->y + displacement[YUP] + ny)%ny;
+      if (displacement[YUP]!=0) ty = (s->y + displacement[YUP] + ny)%ny;
       else                     ty = s->y;
-      if(displacement[ZUP]!=0) tz = (s->z + displacement[ZUP] + nz)%nz;
+      if (displacement[ZUP]!=0) tz = (s->z + displacement[ZUP] + nz)%nz;
       else                     tz = s->z;
-      if(displacement[TUP]!=0) tt = (s->t + displacement[TUP] + nt)%nt;
+      if (displacement[TUP]!=0) tt = (s->t + displacement[TUP] + nt)%nt;
       else                     tt = s->t;
       othernode = node_number(tx,ty,tz,tt);
-      if( othernode==this_node ) {
-	dest[i] = field + node_index(tx,ty,tz,tt) * stride;
+      if (othernode==this_node) {
+  dest[i] = field + node_index(tx,ty,tz,tt) * stride;
       }
       else{
-	for(j=0;j<n_recv_msgs;j++) if(from_nodes[j].node==othernode) break;
-	if(j < n_recv_msgs) {
-	  from_nodes[j].count++;
-	}
-	else {
-	  if(n_recv_msgs==0) {
-	    from_nodes = (struct msg_tmp *)malloc( sizeof(struct msg_tmp) );
-	    from_nodes[0].node = othernode;
-	    from_nodes[0].count = 1;
-	    n_recv_msgs++;
-	  }
-	  else{
-	    from_nodes = (struct msg_tmp *)
-	      realloc( from_nodes, (n_recv_msgs+1)*sizeof(struct msg_tmp) );
-	    from_nodes[j].node = othernode;
-	    from_nodes[j].count = 1;
-	    n_recv_msgs++;
-	  }
-	}
+  for (j = 0; j < n_recv_msgs; j++) if (from_nodes[j].node==othernode) break;
+  if (j < n_recv_msgs) {
+    from_nodes[j].count++;
+  }
+  else {
+    if (n_recv_msgs==0) {
+      from_nodes = (struct msg_tmp *)malloc(sizeof(struct msg_tmp));
+      from_nodes[0].node = othernode;
+      from_nodes[0].count = 1;
+      n_recv_msgs++;
+    }
+    else{
+      from_nodes = (struct msg_tmp *)
+        realloc(from_nodes, (n_recv_msgs+1)*sizeof(struct msg_tmp));
+      from_nodes[j].node = othernode;
+      from_nodes[j].count = 1;
+      n_recv_msgs++;
+    }
+  }
       }
     }
   }
   else {
     FORSOMESUBLATTICE(i,s,subl) {
-      if(displacement[XUP]!=0) tx = (s->x + displacement[XUP] + nx)%nx;
+      if (displacement[XUP]!=0) tx = (s->x + displacement[XUP] + nx)%nx;
       else                     tx = s->x;
-      if(displacement[YUP]!=0) ty = (s->y + displacement[YUP] + ny)%ny;
+      if (displacement[YUP]!=0) ty = (s->y + displacement[YUP] + ny)%ny;
       else                     ty = s->y;
-      if(displacement[ZUP]!=0) tz = (s->z + displacement[ZUP] + nz)%nz;
+      if (displacement[ZUP]!=0) tz = (s->z + displacement[ZUP] + nz)%nz;
       else                     tz = s->z;
-      if(displacement[TUP]!=0) tt = (s->t + displacement[TUP] + nt)%nt;
+      if (displacement[TUP]!=0) tt = (s->t + displacement[TUP] + nt)%nt;
       else                     tt = s->t;
       othernode = node_number(tx,ty,tz,tt);
-      if( othernode==this_node ) {
-	dest[i] = field + node_index(tx,ty,tz,tt) * stride;
+      if (othernode==this_node) {
+  dest[i] = field + node_index(tx,ty,tz,tt) * stride;
       }
       else {
-	for(j=0;j<n_recv_msgs;j++) if(from_nodes[j].node==othernode) break;
-	if(j < n_recv_msgs) {
-	  from_nodes[j].count++;
-	}
-	else {
-	  if(n_recv_msgs==0) {
-	    from_nodes = (struct msg_tmp *)malloc( sizeof(struct msg_tmp) );
-	    from_nodes[0].node = othernode;
-	    from_nodes[0].count = 1;
-	    n_recv_msgs++;
-	  }
-	  else{
-	    from_nodes = (struct msg_tmp *)
-	      realloc( from_nodes, (n_recv_msgs+1)*sizeof(struct msg_tmp) );
-	    from_nodes[j].node = othernode;
-	    from_nodes[j].count = 1;
-	    n_recv_msgs++;
-	  }
-	}
+  for (j = 0; j < n_recv_msgs; j++) if (from_nodes[j].node==othernode) break;
+  if (j < n_recv_msgs) {
+    from_nodes[j].count++;
+  }
+  else {
+    if (n_recv_msgs==0) {
+      from_nodes = (struct msg_tmp *)malloc(sizeof(struct msg_tmp));
+      from_nodes[0].node = othernode;
+      from_nodes[0].count = 1;
+      n_recv_msgs++;
+    }
+    else{
+      from_nodes = (struct msg_tmp *)
+        realloc(from_nodes, (n_recv_msgs+1)*sizeof(struct msg_tmp));
+      from_nodes[j].node = othernode;
+      from_nodes[j].count = 1;
+      n_recv_msgs++;
+    }
+  }
       }
     }
   }
 
   /* scan sites of sublattice we are sending, make list of nodes to which
      we must send messages and the number of messages to each. */
-  if( subl == EVENANDODD ) {
+  if (subl == EVENANDODD) {
     FORALLSITES(i,s) {
-      if(displacement[XUP]!=0) tx = (s->x - displacement[XUP] + nx)%nx;
+      if (displacement[XUP]!=0) tx = (s->x - displacement[XUP] + nx)%nx;
       else                     tx = s->x;
-      if(displacement[YUP]!=0) ty = (s->y - displacement[YUP] + ny)%ny;
+      if (displacement[YUP]!=0) ty = (s->y - displacement[YUP] + ny)%ny;
       else                     ty = s->y;
-      if(displacement[ZUP]!=0) tz = (s->z - displacement[ZUP] + nz)%nz;
+      if (displacement[ZUP]!=0) tz = (s->z - displacement[ZUP] + nz)%nz;
       else                     tz = s->z;
-      if(displacement[TUP]!=0) tt = (s->t - displacement[TUP] + nt)%nt;
+      if (displacement[TUP]!=0) tt = (s->t - displacement[TUP] + nt)%nt;
       else                     tt = s->t;
       othernode = node_number(tx,ty,tz,tt);
-      if( othernode != this_node ) {
-	for(j=0;j<n_send_msgs;j++) if(to_nodes[j].node==othernode) break;
-	if(j < n_send_msgs) {
-	  to_nodes[j].count++;
-	}
-	else {
-	  if(n_send_msgs==0) {
-	    to_nodes = (struct msg_tmp *)malloc(sizeof(struct msg_tmp));
-	    to_nodes[0].node = othernode;
-	    to_nodes[0].count = 1;
-	    n_send_msgs++;
-	  }
-	  else {
-	    to_nodes = (struct msg_tmp *)
-	      realloc( to_nodes, (n_send_msgs+1)*sizeof(struct msg_tmp) );
-	    to_nodes[j].node = othernode;
-	    to_nodes[j].count = 1;
-	    n_send_msgs++;
-	  }
-	}
+      if (othernode != this_node) {
+  for (j = 0; j < n_send_msgs; j++) if (to_nodes[j].node==othernode) break;
+  if (j < n_send_msgs) {
+    to_nodes[j].count++;
+  }
+  else {
+    if (n_send_msgs==0) {
+      to_nodes = (struct msg_tmp *)malloc(sizeof(struct msg_tmp));
+      to_nodes[0].node = othernode;
+      to_nodes[0].count = 1;
+      n_send_msgs++;
+    }
+    else {
+      to_nodes = (struct msg_tmp *)
+        realloc(to_nodes, (n_send_msgs+1)*sizeof(struct msg_tmp));
+      to_nodes[j].node = othernode;
+      to_nodes[j].count = 1;
+      n_send_msgs++;
+    }
+  }
       }
     }
   }
   else {
     FORSOMESUBLATTICE(i,s,send_subl) {
-      if(displacement[XUP]!=0) tx = (s->x - displacement[XUP] + nx)%nx;
+      if (displacement[XUP]!=0) tx = (s->x - displacement[XUP] + nx)%nx;
       else                     tx = s->x;
-      if(displacement[YUP]!=0) ty = (s->y - displacement[YUP] + ny)%ny;
+      if (displacement[YUP]!=0) ty = (s->y - displacement[YUP] + ny)%ny;
       else                     ty = s->y;
-      if(displacement[ZUP]!=0) tz = (s->z - displacement[ZUP] + nz)%nz;
+      if (displacement[ZUP]!=0) tz = (s->z - displacement[ZUP] + nz)%nz;
       else                     tz = s->z;
-      if(displacement[TUP]!=0) tt = (s->t - displacement[TUP] + nt)%nt;
+      if (displacement[TUP]!=0) tt = (s->t - displacement[TUP] + nt)%nt;
       else                     tt = s->t;
       othernode = node_number(tx,ty,tz,tt);
-      if( othernode != this_node ) {
-	for(j=0;j<n_send_msgs;j++) if(to_nodes[j].node==othernode) break;
-	if(j < n_send_msgs) {
-	  to_nodes[j].count++;
-	}
-	else {
-	  if(n_send_msgs==0) {
-	    to_nodes = (struct msg_tmp *)malloc(sizeof(struct msg_tmp));
-	    to_nodes[0].node = othernode;
-	    to_nodes[0].count = 1;
-	    n_send_msgs++;
-	  }
-	  else {
-	    to_nodes = (struct msg_tmp *)
-	      realloc( to_nodes, (n_send_msgs+1)*sizeof(struct msg_tmp) );
-	    to_nodes[j].node = othernode;
-	    to_nodes[j].count = 1;
-	    n_send_msgs++;
-	  }
-	}
+      if (othernode != this_node) {
+  for (j = 0; j < n_send_msgs; j++) if (to_nodes[j].node==othernode) break;
+  if (j < n_send_msgs) {
+    to_nodes[j].count++;
+  }
+  else {
+    if (n_send_msgs==0) {
+      to_nodes = (struct msg_tmp *)malloc(sizeof(struct msg_tmp));
+      to_nodes[0].node = othernode;
+      to_nodes[0].count = 1;
+      n_send_msgs++;
+    }
+    else {
+      to_nodes = (struct msg_tmp *)
+        realloc(to_nodes, (n_send_msgs+1)*sizeof(struct msg_tmp));
+      to_nodes[j].node = othernode;
+      to_nodes[j].count = 1;
+      n_send_msgs++;
+    }
+  }
       }
     }
   }
 
   mtag = (msg_tag *)malloc(sizeof(msg_tag));
 
-  if( n_recv_msgs==0 ) mrecv = NULL;
+  if (n_recv_msgs==0) mrecv = NULL;
   else {
-    mrecv = (msg_sr_t *)malloc( n_recv_msgs*sizeof(msg_sr_t) );
-    if(mrecv==NULL) {
+    mrecv = (msg_sr_t *)malloc(n_recv_msgs*sizeof(msg_sr_t));
+    if (mrecv==NULL) {
       printf("NO ROOM for mrecv, node %d\n",mynode());
       terminate(1);
     }
   }
-  if( n_send_msgs==0 ) msend=NULL;
+  if (n_send_msgs==0) msend=NULL;
   else {
-    msend = (msg_sr_t *)malloc( n_send_msgs*sizeof(msg_sr_t) );
-    if(msend==NULL) {
+    msend = (msg_sr_t *)malloc(n_send_msgs*sizeof(msg_sr_t));
+    if (msend==NULL) {
       printf("NO ROOM for msend, node %d\n",mynode());
       terminate(1);
     }
@@ -2681,13 +2380,13 @@ start_general_strided_gather(
   mtag->nsends = n_send_msgs;
 
   /* for each node which has neighbors of my sites */
-  for(i=0; i<n_recv_msgs; i++) {
+  for (i = 0; i < n_recv_msgs; i++) {
     /* allocate buffer to receive neighbors */
     nsites = from_nodes[i].count;
     mrecv[i].msg_node = from_nodes[i].node;
     mrecv[i].msg_size = nsites*tsize;
-    mrecv[i].msg_buf = (char *)malloc( nsites*tsize );
-    if(mrecv[i].msg_buf==NULL){
+    mrecv[i].msg_buf = (char *)malloc(nsites*tsize);
+    if (mrecv[i].msg_buf==NULL) {
       printf("NO ROOM for msg_buf, node %d\n",mynode());
       terminate(1);
     }
@@ -2698,10 +2397,10 @@ start_general_strided_gather(
   }
 
   /* for each node whose neighbors I have */
-  for(i=0; i<n_send_msgs; i++) {
+  for (i = 0; i < n_send_msgs; i++) {
     /* Allocate buffer to gather data. */
-    tpt = (char *)malloc( to_nodes[i].count*tsize );
-    if(tpt==NULL) {
+    tpt = (char *)malloc(to_nodes[i].count*tsize);
+    if (tpt==NULL) {
       printf("NO ROOM for tpt, node %d\n",mynode());
       terminate(1);
     }
@@ -2711,24 +2410,24 @@ start_general_strided_gather(
   }
 
   /* reset to_node counters */
-  for(i=0; i<n_send_msgs; i++) to_nodes[i].count = 0;
+  for (i = 0; i < n_send_msgs; i++) to_nodes[i].count = 0;
   /* gather data into the buffers. Each entry in the buffers consists
      of the index of the site to which the data is sent, followed by
      the actual data */
-  if( subl == EVENANDODD ) {
+  if (subl == EVENANDODD) {
     FORALLSITES(i, s) {
       tx = (s->x - displacement[XUP] + nx)%nx;
       ty = (s->y - displacement[YUP] + ny)%ny;
       tz = (s->z - displacement[ZUP] + nz)%nz;
       tt = (s->t - displacement[TUP] + nt)%nt;
       othernode = node_number(tx,ty,tz,tt);
-      if( othernode != this_node ) {
-	for(j=0; j<n_send_msgs; j++) if(to_nodes[j].node==othernode) break;
-	tpt = msend[j].msg_buf + to_nodes[j].count*tsize;
-	*(int *)tpt = node_index(tx,ty,tz,tt);
-	/* index of site on other node */
-	memcpy( tpt+2*sizeof(int), field+i*stride, size);
-	to_nodes[j].count++;
+      if (othernode != this_node) {
+  for (j = 0; j < n_send_msgs; j++) if (to_nodes[j].node==othernode) break;
+  tpt = msend[j].msg_buf + to_nodes[j].count*tsize;
+  *(int *)tpt = node_index(tx,ty,tz,tt);
+  /* index of site on other node */
+  memcpy(tpt+2*sizeof(int), field+i*stride, size);
+  to_nodes[j].count++;
       }
     }
   }
@@ -2739,58 +2438,58 @@ start_general_strided_gather(
       tz = (s->z - displacement[ZUP] + nz)%nz;
       tt = (s->t - displacement[TUP] + nt)%nt;
       othernode = node_number(tx,ty,tz,tt);
-      if( othernode != this_node ) {
-	for(j=0; j<n_send_msgs; j++) if(to_nodes[j].node==othernode) break;
-	tpt = msend[j].msg_buf + to_nodes[j].count*tsize;
-	*(int *)tpt = node_index(tx,ty,tz,tt);
-	/* index of site on other node */
-	memcpy( tpt+2*sizeof(int), field+i*stride, size);
-	to_nodes[j].count++;
+      if (othernode != this_node) {
+  for (j = 0; j < n_send_msgs; j++) if (to_nodes[j].node==othernode) break;
+  tpt = msend[j].msg_buf + to_nodes[j].count*tsize;
+  *(int *)tpt = node_index(tx,ty,tz,tt);
+  /* index of site on other node */
+  memcpy(tpt+2*sizeof(int), field+i*stride, size);
+  to_nodes[j].count++;
       }
     }
   }
 
   /* start the sends */
-  for(i=0; i<n_send_msgs; i++) {
+  for (i = 0; i < n_send_msgs; i++) {
     msend[i].mm = QMP_declare_msgmem(msend[i].msg_buf, msend[i].msg_size);
     msend[i].mh = QMP_declare_send_to(msend[i].mm, to_nodes[i].node, 0);
     QMP_start(msend[i].mh);
   }
 
   /* free temporary arrays */
-  if( n_send_msgs > 0) free(to_nodes);
+  if (n_send_msgs > 0) free(to_nodes);
   /* mark gather in progress and return */
   g_gather_flag = 1;
 
   return mtag;
 }
 
-#endif	/* N_SUBL32 */
+#endif  /* N_SUBL32 */
 
 msg_tag *
 start_general_gather_site(
-  field_offset field,	/* which field? Some member of structure "site" */
-  int size,		/* size in bytes of the field (eg sizeof(vector))*/
-  int *displacement,	/* displacement to gather from. four components */
-  int parity,		/* parity of sites to which we gather.
-			   one of EVEN, ODD or EVENANDODD. */
-  char ** dest)		/* one of the vectors of pointers */
+  field_offset field, /* which field? Some member of structure "site" */
+  int size,   /* size in bytes of the field (eg sizeof(vector))*/
+  int *displacement,  /* displacement to gather from. four components */
+  int parity,   /* parity of sites to which we gather.
+         one of EVEN, ODD or EVENANDODD. */
+  char ** dest)   /* one of the vectors of pointers */
 {
-  return start_general_strided_gather( ((char *)lattice) + field, sizeof(site),
-				       size, displacement, parity, dest );
+  return start_general_strided_gather(((char *)lattice) + field, sizeof(site),
+               size, displacement, parity, dest);
 }
 
 msg_tag *
 start_general_gather_field(
-  void * field,	        /* which field? Pointer returned by malloc() */
-  int size,		/* size in bytes of the field (eg sizeof(vector))*/
-  int *displacement,	/* displacement to gather from. four components */
-  int parity,		/* parity of sites to which we gather.
-			   one of EVEN, ODD or EVENANDODD. */
-  char ** dest)		/* one of the vectors of pointers */
+  void * field,         /* which field? Pointer returned by malloc() */
+  int size,   /* size in bytes of the field (eg sizeof(vector))*/
+  int *displacement,  /* displacement to gather from. four components */
+  int parity,   /* parity of sites to which we gather.
+         one of EVEN, ODD or EVENANDODD. */
+  char ** dest)   /* one of the vectors of pointers */
 {
-  return start_general_strided_gather( (char *)field, size, size,
-				       displacement, parity, dest );
+  return start_general_strided_gather((char *)field, size, size,
+               displacement, parity, dest);
 }
 
 /*
@@ -2803,16 +2502,16 @@ wait_general_gather(msg_tag *mtag)
 
   g_gather_flag=0;
 
-  for(i=0; i<mtag->nrecvs; i++) {
-    QMP_wait( mtag->recv_msgs[i].mh );
+  for (i = 0; i < mtag->nrecvs; i++) {
+    QMP_wait(mtag->recv_msgs[i].mh);
     /* set pointers in sites to correct location */
-    for(j=0; j<from_nodes[i].count; j++) {
+    for (j = 0; j < from_nodes[i].count; j++) {
       /* k = index of site on this node, sent in message */
-      k = *(int *)( mtag->recv_msgs[i].msg_buf + j*tsize );
+      k = *(int *)(mtag->recv_msgs[i].msg_buf + j*tsize);
       tdest[k] = mtag->recv_msgs[i].msg_buf + j*tsize + 2*sizeof(int);
     }
   }
-  if(i>0) free(from_nodes);
+  if (i>0) free(from_nodes);
 }
 
 /*
@@ -2824,17 +2523,17 @@ cleanup_general_gather(msg_tag *mtag)
   int i;
 
   /* free all receive buffers */
-  for(i=0; i<mtag->nrecvs; i++) {
-    QMP_free_msghandle( mtag->recv_msgs[i].mh );
-    QMP_free_msgmem( mtag->recv_msgs[i].mm );
-    free( mtag->recv_msgs[i].msg_buf );
+  for (i = 0; i < mtag->nrecvs; i++) {
+    QMP_free_msghandle(mtag->recv_msgs[i].mh);
+    QMP_free_msgmem(mtag->recv_msgs[i].mm);
+    free(mtag->recv_msgs[i].msg_buf);
   }
   /* wait for all send messages, free all send buffers */
-  for(i=0; i<mtag->nsends; i++) {
-    QMP_wait( mtag->send_msgs[i].mh );
-    QMP_free_msghandle( mtag->send_msgs[i].mh );
-    QMP_free_msgmem( mtag->send_msgs[i].mm );
-    free( mtag->send_msgs[i].msg_buf );
+  for (i = 0; i < mtag->nsends; i++) {
+    QMP_wait(mtag->send_msgs[i].mh);
+    QMP_free_msghandle(mtag->send_msgs[i].mh);
+    QMP_free_msgmem(mtag->send_msgs[i].mm);
+    free(mtag->send_msgs[i].msg_buf);
   }
   /* free the msg_tag buffer */
   free(mtag->recv_msgs);
@@ -2847,12 +2546,12 @@ cleanup_general_gather(msg_tag *mtag)
 ** compute crc32 checksum
 */
 /* Taken from the GNU CVS distribution and
-   modified for SciDAC use  C. DeTar 10/11/2003 
+   modified for SciDAC use  C. DeTar 10/11/2003
    and MILC use 5/3/2005 */
 
 /* crc32.c -- compute the CRC-32 of a data stream
  * Copyright (C) 1995-1996 Mark Adler
- * For conditions of distribution and use, see copyright notice in zlib.h 
+ * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
 /* Copyright notice reproduced from zlib.h -- (C. DeTar)
@@ -2924,7 +2623,7 @@ local void make_crc_table OF((void));
   the information needed to generate CRC's on data a byte at a time for all
   combinations of CRC register values and incoming bytes.
 */
-local void 
+local void
 make_crc_table()
 {
   uLong c;
@@ -2937,7 +2636,7 @@ make_crc_table()
   poly = 0L;
   for (n = 0; n < sizeof(p)/sizeof(Byte); n++)
     poly |= 1L << (31 - p[n]);
- 
+
   for (n = 0; n < 256; n++)
   {
     c = (uLong)n;
@@ -3025,7 +2724,7 @@ uLongf *get_crc_table()
 #define DO8(buf)  DO4(buf); DO4(buf);
 
 /* ========================================================================= */
-u_int32type 
+u_int32type
 crc32(u_int32type crc, const unsigned char *buf, size_t len)
 {
     if (buf == Z_NULL) return 0L;
@@ -3046,3 +2745,4 @@ crc32(u_int32type crc, const unsigned char *buf, size_t len)
 }
 
 #endif
+// -----------------------------------------------------------------

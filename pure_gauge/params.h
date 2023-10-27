@@ -21,25 +21,22 @@ typedef struct {
   char startfile[MAXFILENAME], savefile[MAXFILENAME];
   char stringLFN[MAXFILENAME];  // ILDG LFN if applicable
 
-#ifndef HMC
-  // Over-relaxation parameters
-  int ora_steps;              // Number of over-relaxation steps per sweep
-  int qhb_steps;              // Number of quasi-heatbath steps per sweep
-#else
-  // HMC parameters
-  int hmc_steps;              // Number of hmc steps per trajectory
-  Real traj_length;           // Trajectory length
+  int ora_steps;          // Number of over-relaxation steps per sweep
+  int qhb_steps;          // Number of quasi-heatbath steps per sweep
+#ifdef HMC
+  int hmc_steps;          // Number of hmc steps per trajectory
+  Real traj_length;       // Trajectory length
 #endif
 
 #ifdef LLR
-  // LLR parameters
-  Real Emin;            // Lower edge of lowest energy interval
-  Real Emax;            // Lower edge of highest energy interval
-  Real delta;           // Size of energy interval
-  int NRiter;           // Number of Newton--Raphson iterations
-  int RMiter;           // Number of subsequent Robbins--Monro iterations
-  int Nj;               // Number of Jackknife samples
+  Real Emin;              // Lower edge of lowest energy interval
+  Real Emax;              // Lower edge of highest energy interval
+  Real delta;             // Size of energy interval
+  Real C_Gauss;           // Coefficient of Gaussian window function
+  int NRiter;             // Number of Newton--Raphson iterations
+  int RMiter;             // Number of subsequent Robbins--Monro iterations
+  int Nj;                 // Number of Jackknife samples
 #endif
-}  params;
+} params;
 #endif
 // -----------------------------------------------------------------

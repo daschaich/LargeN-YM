@@ -21,7 +21,7 @@ void update_mom(site *s, int dir, Real eps, matrix *force) {
 
 // -----------------------------------------------------------------
 // Update the momenta with the gauge force
-double update_h(Real eps, double E_min) {
+double update_h(Real eps, Real C, double E_min) {
   register int i, dir, dir2;
   register site *s;
   register Real ebN = eps * beta * one_ov_N;
@@ -98,10 +98,10 @@ double update_h(Real eps, double E_min) {
     FORALLSITES(i, s) {
       mult_na(&(s->link[dir]), &(tempmat2[i]), &tmat);
 #ifdef LLR
-      if (constrained == 1) {   // Add force from Gaussian window
+      if (C > 0) {   // Add force from Gaussian window
         scalar_mult_mat(&tmat, td, &tmat2);
         scalar_mult_add_mat(&tmat2, &tmat, a, &tmat3);
-        mat_copy(&tmat3, &tmat);
+        scalar_mult_mat(&tmat3, C, &tmat);
       }
 #endif
       update_mom(s, dir, ebN, &tmat);

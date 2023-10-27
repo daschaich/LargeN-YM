@@ -15,6 +15,7 @@ traj_length 1.0
 Emin -3.39
 Emax -3.23
 delta 0.323
+C_Gauss 1.0
 NRiter 5
 RMiter 5
 Nj 1

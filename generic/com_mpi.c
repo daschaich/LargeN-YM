@@ -73,7 +73,6 @@
 //                        Free all the buffers that were allocated
 //                          NB: The gathered data may soon disappear
 
-
 // jobgeom()              Dimensions of the multijob layout, product = numjobs
 // ionodegeom()           Dimensions of the I/O partition layout
 //                          Product = number of files
@@ -261,7 +260,7 @@ static void get_arg(int argc, char **argv, char *tag, int *first, int *last,
           int j;
           *a = (int *) malloc(n*sizeof(int));
           //printf("%i %p\n", n, *a);
-          for (j=0; j<n; j++) {
+          for (j = 0; j < n; j++) {
             (*a)[j] = atoi(argv[*first+1+j]);
             //printf(" %i", (*a)[j]);
           }
@@ -981,8 +980,8 @@ sort_site_list(
     terminate(1);
   }
 
-  /* Construct sort key */
-  for (j=0; j<n; j++) {
+  // Construct sort key
+  for (j = 0; j < n; j++) {
     s = &(lattice[list[j]]);
     func(s->x,s->y,s->z,s->t,args,forw_back,&x,&y,&z,&t);
     key[j] = node_index(x,y,z,t);
@@ -1066,7 +1065,7 @@ make_send_receive_list(
   firstpt = NULL;
   comptpt = &firstpt;
   /* for each neighbor_counter that is nonzero, create a comlink */
-  for (j=0; j<numnodes(); j++) {
+  for (j = 0; j < numnodes(); j++) {
     if (j==mynode()) continue;  /* not for local node */
     if (tbuf[j]==0) continue;   /* no neighbors on this node */
 
@@ -1091,7 +1090,7 @@ make_send_receive_list(
 
   /* clear neighbor_numbers, to be used as counters now */
   for (subl=0; subl<NUM_SUBL; subl++) {
-    for (i = 0; i<numnodes(); i++) sbuf[subl][i] = 0;
+    for (i = 0; i < numnodes(); i++) sbuf[subl][i] = 0;
   }
 
   /* scan sites in node again */
@@ -1561,7 +1560,7 @@ declare_strided_gather(
   mtag->send_msgs = msend;
 
   /* for each node which has neighbors of my sites */
-  for (i=0, compt = gt->neighborlist; compt != NULL;
+  for (i = 0, compt = gt->neighborlist; compt != NULL;
        i++, compt = compt->nextcomlink) {
     if (compt->n_subl_connected[subl]==0) continue;
     mrecv[i].msg_node = compt->othernode;
@@ -1653,7 +1652,7 @@ prepare_gather(msg_tag *mtag)
     /* set pointers in sites to correct location */
     gmem = mrecv[i].gmem;
     do {
-      for (j=0; j<gmem->num; ++j,tpt+=gmem->size) {
+      for (j = 0; j < gmem->num; ++j,tpt+=gmem->size) {
   ((char **)gmem->mem)[gmem->sitelist[j]] = tpt;
       }
     } while((gmem=gmem->next)!=NULL);
@@ -1661,7 +1660,7 @@ prepare_gather(msg_tag *mtag)
 
   msend = mtag->send_msgs;
   /* for each node whose neighbors I have */
-  for (i = 0; i<mtag->nsends; ++i) {
+  for (i = 0; i < mtag->nsends; ++i) {
     msend[i].msg_buf = (char *)malloc(msend[i].msg_size+CRCBYTES);
     if (msend[i].msg_buf==NULL) {
       printf("NO ROOM for msg_buf, node %d\n",mynode());
@@ -1694,12 +1693,12 @@ do_gather(msg_tag *mtag)  /* previously returned by start_gather_site */
 
   mbuf = mtag->send_msgs;
   /* for each node whose neighbors I have */
-  for (i = 0; i<mtag->nsends; ++i) {
+  for (i = 0; i < mtag->nsends; ++i) {
     /* gather data into the buffer */
     tpt = mbuf[i].msg_buf;
     gmem = mbuf[i].gmem;
     do {
-      for (j=0; j<gmem->num; ++j,tpt+=gmem->size) {
+      for (j = 0; j < gmem->num; ++j,tpt+=gmem->size) {
   memcpy(tpt, gmem->mem + gmem->sitelist[j]*gmem->stride, gmem->size);
       }
     } while((gmem=gmem->next)!=NULL);
@@ -1748,17 +1747,17 @@ wait_gather(msg_tag *mtag)
 #endif
 
   /* wait for all receive messages */
-  for (i = 0; i<mtag->nrecvs; i++) {
+  for (i = 0; i < mtag->nrecvs; i++) {
     MPI_Wait(&mtag->recv_msgs[i].msg_req, &status);
   }
 
   /* wait for all send messages */
-  for (i = 0; i<mtag->nsends; i++) {
+  for (i = 0; i < mtag->nsends; i++) {
     MPI_Wait(&mtag->send_msgs[i].msg_req, &status);
   }
 #if COM_CRC
   /* Verify the checksums received */
-  for (i = 0; i<mtag->nrecvs; i++) {
+  for (i = 0; i < mtag->nrecvs; i++) {
     {
       u_int32type crcgot;
       msg_sr_t *mbuf;
@@ -2019,8 +2018,8 @@ add_msgt(msg_sr_t **dest, int *ndest, msg_sr_t *src, int nsrc, int nids)
   int i, j, n;
 
   n = 0;
-  for (i = 0; i<nsrc; ++i) {
-    for (j=0; j<*ndest; ++j) {
+  for (i = 0; i < nsrc; ++i) {
+    for (j = 0; j < *ndest; ++j) {
       if ((*dest)[j].msg_node==src[i].msg_node) {
   ++n;
   break;
@@ -2036,8 +2035,8 @@ add_msgt(msg_sr_t **dest, int *ndest, msg_sr_t *src, int nsrc, int nids)
       terminate(1);
     }
     for (i = 0; i<nsrc; ++i) {
-      for (j=0; j<*ndest; ++j) {
-  if ((*dest)[j].msg_node==src[i].msg_node) break;
+      for (j = 0; j < *ndest; ++j) {
+  if ((*dest)[j].msg_node == src[i].msg_node) break;
       }
       if (j<*ndest) {
   (*dest)[j].msg_size += src[i].msg_size;
@@ -2261,7 +2260,7 @@ start_general_strided_gather(
       dest[i] = field + node_index(tx,ty,tz,tt) * stride;
     }
     else{
-      for (j=0;j<n_recv_msgs;j++) if (from_nodes[j].node==othernode) break;
+      for (j = 0; j < n_recv_msgs; j++) if (from_nodes[j].node==othernode) break;
       if (j < n_recv_msgs) {
   from_nodes[j].count++;
       }
@@ -2296,7 +2295,7 @@ start_general_strided_gather(
     else                     tt = s->t;
     othernode = node_number(tx,ty,tz,tt);
     if (othernode != this_node) {
-      for (j=0;j<n_send_msgs;j++) if (to_nodes[j].node==othernode) break;
+      for (j = 0; j < n_send_msgs; j++) if (to_nodes[j].node==othernode) break;
       if (j < n_send_msgs) {
   to_nodes[j].count++;
       }
@@ -2343,7 +2342,7 @@ start_general_strided_gather(
   mtag->nsends = n_send_msgs;
 
   /* for each node which has neighbors of my sites */
-  for (i = 0; i<n_recv_msgs; i++) {
+  for (i = 0; i < n_recv_msgs; i++) {
     /* allocate buffer to receive neighbors */
     nsites = from_nodes[i].count;
     mrecv[i].msg_node = from_nodes[i].node;
@@ -2384,7 +2383,7 @@ start_general_strided_gather(
     tt = (s->t - displacement[TUP] + nt)%nt;
     othernode = node_number(tx,ty,tz,tt);
     if (othernode != this_node) {
-      for (j=0; j<n_send_msgs; j++) if (to_nodes[j].node==othernode) break;
+      for (j = 0; j < n_send_msgs; j++) if (to_nodes[j].node==othernode) break;
       tpt = msend[j].msg_buf + to_nodes[j].count*tsize;
       *(int *)tpt = node_index(tx,ty,tz,tt);
       /* index of site on other node */
@@ -2453,25 +2452,25 @@ start_general_strided_gather(
     tz = displacement[ZUP]%4;
     tt = displacement[TUP]%4;
     if (tx < 0) {
-      for (i = 0;i<(-tx);i++) send_subl = neighsubl[send_subl][XDOWN];
+      for (i = 0; i < (-tx); i++) send_subl = neighsubl[send_subl][XDOWN];
     }
     else
-      for (i = 0;i<tx;i++) send_subl = neighsubl[send_subl][XUP];
+      for (i = 0; i < tx; i++) send_subl = neighsubl[send_subl][XUP];
     if (ty < 0) {
-      for (i = 0;i<(-ty);i++) send_subl = neighsubl[send_subl][YDOWN];
+      for (i = 0; i < (-ty); i++) send_subl = neighsubl[send_subl][YDOWN];
     }
     else
-      for (i = 0;i<ty;i++) send_subl = neighsubl[send_subl][YUP];
+      for (i = 0; i < ty; i++) send_subl = neighsubl[send_subl][YUP];
     if (tz < 0) {
-      for (i = 0;i<(-tz);i++) send_subl = neighsubl[send_subl][ZDOWN];
+      for (i = 0; i < (-tz); i++) send_subl = neighsubl[send_subl][ZDOWN];
     }
     else
-      for (i = 0;i<tz;i++) send_subl = neighsubl[send_subl][ZUP];
+      for (i = 0; i < tz; i++) send_subl = neighsubl[send_subl][ZUP];
     if (tt < 0) {
-      for (i = 0;i<(-tt);i++) send_subl = neighsubl[send_subl][TDOWN];
+      for (i = 0; i < (-tt); i++) send_subl = neighsubl[send_subl][TDOWN];
     }
     else
-      for (i = 0;i<tt;i++) send_subl = neighsubl[send_subl][TUP];
+      for (i = 0; i < tt; i++) send_subl = neighsubl[send_subl][TUP];
   }
 
   /* set pointers in sites whose neighbors are on this node.  (If all
@@ -2492,7 +2491,7 @@ start_general_strided_gather(
   dest[i] = field + node_index(tx,ty,tz,tt) * stride;
       }
       else{
-  for (j=0;j<n_recv_msgs;j++) if (from_nodes[j].node==othernode) break;
+  for (j = 0; j < n_recv_msgs; j++) if (from_nodes[j].node==othernode) break;
   if (j < n_recv_msgs) {
     from_nodes[j].count++;
   }
@@ -2529,7 +2528,7 @@ start_general_strided_gather(
   dest[i] = field + node_index(tx,ty,tz,tt) * stride;
       }
       else {
-  for (j=0;j<n_recv_msgs;j++) if (from_nodes[j].node==othernode) break;
+  for (j = 0; j < n_recv_msgs; j++) if (from_nodes[j].node==othernode) break;
   if (j < n_recv_msgs) {
     from_nodes[j].count++;
   }
@@ -2566,7 +2565,7 @@ start_general_strided_gather(
       else                     tt = s->t;
       othernode = node_number(tx,ty,tz,tt);
       if (othernode != this_node) {
-  for (j=0;j<n_send_msgs;j++) if (to_nodes[j].node==othernode) break;
+  for (j = 0; j < n_send_msgs; j++) if (to_nodes[j].node==othernode) break;
   if (j < n_send_msgs) {
     to_nodes[j].count++;
   }
@@ -2600,7 +2599,7 @@ start_general_strided_gather(
       else                     tt = s->t;
       othernode = node_number(tx,ty,tz,tt);
       if (othernode != this_node) {
-  for (j=0;j<n_send_msgs;j++) if (to_nodes[j].node==othernode) break;
+  for (j = 0; j < n_send_msgs; j++) if (to_nodes[j].node==othernode) break;
   if (j < n_send_msgs) {
     to_nodes[j].count++;
   }
@@ -2649,7 +2648,7 @@ start_general_strided_gather(
   mtag->nsends = n_send_msgs;
 
   /* for each node which has neighbors of my sites */
-  for (i = 0; i<n_recv_msgs; i++) {
+  for (i = 0; i < n_recv_msgs; i++) {
     /* allocate buffer to receive neighbors */
     nsites = from_nodes[i].count;
     mrecv[i].msg_node = from_nodes[i].node;
@@ -2691,7 +2690,7 @@ start_general_strided_gather(
       tt = (s->t - displacement[TUP] + nt)%nt;
       othernode = node_number(tx,ty,tz,tt);
       if (othernode != this_node) {
-  for (j=0; j<n_send_msgs; j++) if (to_nodes[j].node==othernode) break;
+  for (j = 0; j < n_send_msgs; j++) if (to_nodes[j].node==othernode) break;
   tpt = msend[j].msg_buf + to_nodes[j].count*tsize;
   *(int *)tpt = node_index(tx,ty,tz,tt);
   /* index of site on other node */
@@ -2708,7 +2707,7 @@ start_general_strided_gather(
       tt = (s->t - displacement[TUP] + nt)%nt;
       othernode = node_number(tx,ty,tz,tt);
       if (othernode != this_node) {
-  for (j=0; j<n_send_msgs; j++) if (to_nodes[j].node==othernode) break;
+  for (j = 0; j < n_send_msgs; j++) if (to_nodes[j].node==othernode) break;
   tpt = msend[j].msg_buf + to_nodes[j].count*tsize;
   *(int *)tpt = node_index(tx,ty,tz,tt);
   /* index of site on other node */
@@ -2773,10 +2772,10 @@ wait_general_gather(msg_tag *mtag)
 
   g_gather_flag=0;
 
-  for (i = 0; i<mtag->nrecvs; i++) {
+  for (i = 0; i < mtag->nrecvs; i++) {
     MPI_Wait(&mtag->recv_msgs[i].msg_req, &status);
     /* set pointers in sites to correct location */
-    for (j=0; j<from_nodes[i].count; j++) {
+    for (j = 0; j < from_nodes[i].count; j++) {
       /* k = index of site on this node, sent in message */
       k = *(int *)(mtag->recv_msgs[i].msg_buf + j*tsize);
       tdest[k] = mtag->recv_msgs[i].msg_buf + j*tsize + 2*sizeof(int);
@@ -2795,11 +2794,11 @@ cleanup_general_gather(msg_tag *mtag)
   MPI_Status status;
 
   /* free all receive buffers */
-  for (i = 0; i<mtag->nrecvs; i++) {
+  for (i = 0; i < mtag->nrecvs; i++) {
     free(mtag->recv_msgs[i].msg_buf);
   }
   /* wait for all send messages, free all send buffers */
-  for (i = 0; i<mtag->nsends; i++) {
+  for (i = 0; i < mtag->nsends; i++) {
     MPI_Wait(&mtag->send_msgs[i].msg_req, &status);
     free(mtag->send_msgs[i].msg_buf);
   }

@@ -30,7 +30,7 @@ void gauge_field_copy(field_offset src, field_offset dest) {
 
 
 // -----------------------------------------------------------------
-void hmc_traj(double E_min) {
+void hmc_traj(Real C, double E_min) {
   int step;
   Real xrandom, tr;
   Real eps = traj_length / (Real)hmc_steps;
@@ -40,7 +40,7 @@ void hmc_traj(double E_min) {
   ranmom();
 
   // Find initial action
-  startaction = action(E_min);
+  startaction = action(C, E_min);
   // Copy link field to old_link
   gauge_field_copy(F_OFFSET(link[0]), F_OFFSET(old_link[0]));
 
@@ -50,7 +50,7 @@ void hmc_traj(double E_min) {
 
   // Inner steps p(t) u(t)
   for (step = 0; step < hmc_steps; step++) {
-    tr = update_h(eps, E_min);
+    tr = update_h(eps, C, E_min);
     fnorm += tr;
     if (tr > max_f)
       max_f = tr;
@@ -68,7 +68,7 @@ void hmc_traj(double E_min) {
   reunitarize();
 
   // Find ending action
-  endaction = action(E_min);
+  endaction = action(C, E_min);
   change = endaction - startaction;
   // Reject configurations giving overflow
 #ifndef HAVE_IEEEFP_H

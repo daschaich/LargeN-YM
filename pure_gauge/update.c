@@ -16,9 +16,9 @@ void update_ora() {
 
 // HMC updates including energy interval info for LLR
 #ifdef HMC
-void update_hmc(double E_min) {
+void update_hmc(Real C, double E_min) {
   check_unitarity();
-  hmc_traj(E_min);
+  hmc_traj(C, E_min);
   reunitarize();
 }
 #endif

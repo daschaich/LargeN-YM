@@ -1,4 +1,4 @@
-/* field_strength.h 
+/* field_strength.h
 *
 * definitions for field_strength and smeared links
 */

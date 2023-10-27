@@ -37,11 +37,11 @@ void update_ora();
 
 // HMC stuff, including energy interval info for LLR
 #ifdef HMC
-double action(double E_min);
+double action(Real C, double E_min);
 void update_u(Real eps);
-double update_h(Real eps, double E_min);
-void hmc_traj(double E_min);
-void update_hmc(double E_min);
+double update_h(Real eps, Real C, double E_min);
+void hmc_traj(Real C, double E_min);
+void update_hmc(Real C, double E_min);
 #endif
 
 // LLR stuff

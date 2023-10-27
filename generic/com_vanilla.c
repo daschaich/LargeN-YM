@@ -723,25 +723,6 @@ msg_tag* start_gather_site(
 
   return mt;
 }
-
-/*
-**  old style routine used to restart a previously waited gather
-**  this finction is now depreciated and users should call do_gather()
-**  instead
-*/
-void
-restart_gather_site(
-  field_offset field, /* which field? Some member of structure "site" */
-  int size,   /* size in bytes of the field (eg sizeof(vector))*/
-  int index,    /* direction to gather from. eg XUP - index into
-         neighbor tables */
-  int parity,   /* parity of sites whose neighbors we gather.
-         one of EVEN, ODD or EVENANDODD. */
-  char ** dest,   /* one of the vectors of pointers */
-  msg_tag *mtag)        /* previously returned by start_gather_site */
-{
-  do_gather(mtag);
-}
 // -----------------------------------------------------------------
 
 
@@ -778,24 +759,6 @@ msg_tag* start_gather_field(
   do_gather(mt);
 
   return mt;
-}
-
-/*
-**  old style routine used to restart a previously waited gather
-**  this finction is now depreciated and users should call do_gather()
-**  instead
-*/
-void restart_gather_field(
-  void *field,    /* which field? Pointer returned by malloc() */
-  int size,   /* size in bytes of the field (eg sizeof(vector))*/
-  int index,    /* direction to gather from. eg XUP - index into
-         neighbor tables */
-  int parity,   /* parity of sites whose neighbors we gather.
-         one of EVEN, ODD or EVENANDODD. */
-  char ** dest,   /* one of the vectors of pointers */
-  msg_tag *mtag)          /* previously returned by start_gather_field */
-{
-  do_gather(mtag);
 }
 // -----------------------------------------------------------------
 
