@@ -19,70 +19,6 @@
 
 
 // -----------------------------------------------------------------
-/* ape_smear.c */
-void ape_smear_field(
-  matrix *src,       /* Gauge field input unsmeared */
-  matrix *dest,      /* Gauge field output smeared */
-  Real staple_weight,    /* single staple weight */
-  Real link_u0,          /* single link weight - used in normalization
-                             if SU(3) projection is turned off */
-  int space_only,         /* = 1 (true) smear space-like links with
-                only spacelike staples
-           = 0 (false) smear all links with
-           all staples */
-  int nhits,              /* reproject onto SU(3): number of
-           SU(2) hits. 0 for no reprojection */
-  Real tol               /* tolerance for SU(3) projection.
-           If nonzero, treat nhits as a maximum
-           number of hits.  If zero, treat nhits
-           as a prescribed number of hits. */
-  );
-
-void ape_smear_dir(
-  field_offset src,       /* field offset for matrix[4] type
-           input unsmeared links */
-  int dir1,               /* link direction to smear */
-  field_offset dest,      /* field offset for matrix type
-           pointing to a specific direction
-           output smeared links */
-  Real staple_weight,    /* single staple weight */
-  Real link_u0,          /* single link weight - used in normalization
-                             if SU(3) projection is turned off */
-  int space_only,         /* = 1 (true) smear space-like links with
-                only spacelike staples
-           = 0 (false) smear all links with
-           all staples */
-  int nhits,              /* reproject onto SU(3): number of
-           SU(2) hits. 0 for no reprojection */
-  Real tol               /* tolerance for SU(3) projection.
-           If nonzero, treat nhits as a maximum
-           number of hits.  If zero, treat nhits
-           as a prescribed number of hits. */
-  );
-
-void ape_smear(
-  field_offset src,       /* field offset for matrix type
-           input unsmeared links */
-  field_offset dest,      /* field offset for matrix type
-           output smeared links */
-  Real staple_weight,    /* single staple weight */
-  Real link_u0,          /* single link weight - used in normalization
-                             if SU(3) projection is turned off */
-  int space_only,         /* = 1 (true) smear space-like links with
-                only spacelike staples
-           = 0 (false) smear all links with
-           all staples */
-  int nhits,              /* reproject onto SU(3): number of
-           SU(2) hits. 0 for no reprojection */
-  Real tol               /* tolerance for SU(3) projection.
-           If nonzero, treat nhits as a maximum
-           number of hits.  If zero, treat nhits
-           as a prescribed number of hits. */
-  );
-
-/* ax_gauge.c */
-void ax_gauge();
-
 // check_unitarity.c
 Real check_unit(matrix *c);
 Real check_unitarity();
@@ -92,9 +28,6 @@ void linktrsum(double_complex *linktr);
 
 // plaquette.c
 void plaquette(double *ss_plaq, double *st_plaq);
-
-// plaquette_lcl.c
-void plaquette_lcl(double *ss_plaq, double *st_plaq);
 
 // field_strength.c
 // link_src is offset for matrix link[4] in site struct
